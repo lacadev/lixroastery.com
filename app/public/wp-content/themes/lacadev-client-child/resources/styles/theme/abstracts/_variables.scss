@@ -1,0 +1,9 @@
+// Forward tất cả variables từ parent theme
+@forward "@parent/styles/theme/abstracts/variables";
+
+$mainFont: "ShopeeDisplay", sans-serif;
+
+// Theme colors
+$primaryColor: var(--primary-color);
+$secondColor: var(--second-color);
+$bgColor: var(--bg-color);

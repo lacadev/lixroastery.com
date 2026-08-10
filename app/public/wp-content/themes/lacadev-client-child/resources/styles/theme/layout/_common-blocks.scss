@@ -1,0 +1,37 @@
+@use "../abstracts/mixin" as *;
+@use "../abstracts/variables" as *;
+
+section {
+  padding: 6rem 0 !important;
+
+  @include maxWidth($xl) {
+    padding: 4rem 0 !important;
+  }
+
+  @include maxWidth($lg) {
+    padding: 3rem 0 !important;
+  }
+}
+
+  // ── Header ────────────────────────────────────────────────────────────
+  .header-section {
+    .heading {
+      margin-bottom: 6rem;
+      color: $secondColor;
+      font-size: rem(32);
+      text-transform: uppercase;
+
+      @include maxWidth($xxl) {
+        font-size: rem(24);
+      }
+
+      @include maxWidth($lg) {
+        margin-bottom: 4rem;
+        font-size: rem(18);
+      }
+
+      @include maxWidth($xs) {
+        margin-bottom: 3rem;
+      }
+    }
+  }

@@ -1,0 +1,31 @@
+// Custom list table columns (thumbnail + feature toggle).
+// Keep this file focused on post list table layout only.
+
+form#posts-filter {
+  position: relative;
+}
+
+.column-featured_image,
+.column-is_feature {
+  width: 80px !important;
+}
+
+.column-is_feature a {
+  padding: 2px;
+  // Ensure feature icons are large enough only inside this column.
+  width: unset !important;
+  height: unset !important;
+  font-size: 30px;
+}
+
+.column-is_feature a.dashicons-yes {
+  color: #3a878f;
+}
+
+.column-is_feature a.dashicons-no {
+  color: #dc665c;
+}
+
+.wp-list-table td {
+  vertical-align: middle;
+}

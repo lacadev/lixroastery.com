@@ -1,0 +1,96 @@
+@use "./variables.scss" as *;
+
+@function rem($px) {
+  @return #{$px / 16}rem;
+}
+
+@mixin resFont($min-size, $max-size, $important: false) {
+  $font-size: #{$max-size};
+  & {
+    font-size: $font-size;
+    @if $important {
+      font-size: #{$max-size} !important;
+    }
+  }
+
+  @include maxWidth($lg) {
+    $font-size: calc(#{$max-size} - ((#{$max-size} - #{$min-size})) / 2);
+    & {
+      font-size: $font-size;
+      @if $important {
+        font-size: calc(#{$max-size} - ((#{$max-size} - #{$min-size})) / 2) !important;
+      }
+    }
+  }
+
+  @include maxWidth($sm) {
+    $font-size: #{$min-size};
+    & {
+      font-size: $font-size;
+      @if $important {
+        font-size: #{$min-size} !important;
+      }
+    }
+  }
+}
+
+@mixin minWidth($min-width) {
+  @media only screen and (min-width: $min-width) {
+    @content;
+  }
+}
+
+@mixin maxWidth($max-width) {
+  @media only screen and (max-width: $max-width) {
+    @content;
+  }
+}
+
+@mixin aspectRatio($ratio: 16/9) {
+  height: 0;
+  padding-bottom: 100% / $ratio;
+
+  @supports (aspect-ratio: 16/9) {
+    aspect-ratio: $ratio;
+    height: initial;
+    padding-bottom: initial;
+  }
+}
+
+@mixin ulReset {
+  padding: 0;
+  margin: 0;
+  list-style-type: none;
+}
+
+@mixin limitLine($lines) {
+  & {
+    display: -webkit-box;
+    line-clamp: $lines;
+    -webkit-line-clamp: $lines;
+    -webkit-box-orient: vertical;
+    text-overflow: ellipsis;
+    overflow: hidden;
+  }
+}
+
+@mixin breakText {
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  -ms-word-break: break-all;
+  word-break: break-all;
+  word-break: break-word;
+  -ms-hyphens: auto;
+  -moz-hyphens: auto;
+  -webkit-hyphens: auto;
+  hyphens: auto;
+}
+
+@mixin delay($rule, $number, $value) {
+  @for $i from 1 to ($number + 1) {
+    &:nth-child(#{$i}) {
+      -webkit-#{$rule}-delay: (#{$i * $value});
+      #{$rule}-delay: (#{$i * $value});
+    }
+  }
+}

@@ -1,0 +1,43 @@
+/**
+ * Editor-specific styles for Gutenberg blocks
+ * 
+ * Wraps block styles to work within Gutenberg editor context
+ */
+
+// Import fonts
+@use "../theme/base/fonts";
+
+// Import theme utilities
+@use "../theme/abstracts/variables.scss" as *;
+@use "../theme/abstracts/mixin.scss" as *;
+@use "../theme/layout/general.scss" as *;
+
+// Import blocks module to access the mixin
+
+// Editor wrapper - ensures styles apply in Gutenberg context
+.editor-styles-wrapper,
+.block-editor-writing-flow {
+  font-family: $themeFont !important;
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: $themeFont !important;
+  }
+}
+
+// Fix for hidden image control buttons in InspectorControls
+.components-panel__body {
+  .editor-post-featured-image__actions {
+    // Override theme CSS that hides buttons
+    opacity: 1 !important;
+    bottom: auto !important;
+    padding: 0 !important;
+    position: relative !important;
+        
+    // Ensure buttons are visible and clickable
+    button {
+      opacity: 1 !important;
+      visibility: visible !important;
+      pointer-events: auto !important;
+    }
+  }
+}

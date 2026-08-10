@@ -1,0 +1,34 @@
+/**
+ * Child Theme CSS Overrides
+ *
+ * File này load SAU toàn bộ CSS của parent theme.
+ * Dùng để ghi đè styles mà không cần sửa theme gốc.
+ */
+
+// Variables & Mixins từ parent theme
+@use "@parent/styles/theme/abstracts/variables" as *;
+@use "@parent/styles/theme/abstracts/mixin" as *;
+
+// === Fonts (child) ===
+@use "./theme/base/fonts";
+
+// === Layout ===
+@use "./theme/layout/common-blocks";
+@use "./theme/layout/general";
+@use "./theme/layout/header";
+@use "./theme/layout/footer";
+@use "./theme/layout/archive";
+@use "./theme/layout/single-post";
+@use "./theme/layout/archive-project";
+@use "./theme/layout/archive-gallery";
+@use "./theme/layout/single-project";
+
+// === Components ===
+@use "./theme/components/breadcumb";
+@use "./theme/components/pagination";
+@use "./theme/components/share-post";
+
+// === Pages ===
+@use "./theme/pages/contact";
+
+

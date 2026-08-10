@@ -1,0 +1,502 @@
+@use "../abstracts/variables.scss" as *;
+@use "../abstracts/mixin.scss" as *;
+
+
+// =============================================================================
+// HEADER — CENTER LOGO / SPLIT MENU
+// =============================================================================
+
+.header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 100;
+  background-color: $bgColor;
+  background-color: color-mix(in srgb, $bgColor 85%, transparent);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+
+  &--scrolled {
+    box-shadow: 0 2px 20px rgba(0, 0, 0, 0.08);
+  }
+
+  &--hidden {
+    transform: translateY(-100%);
+  }
+
+  // ─── Inner row ────────────────────────────────────────────────────
+  &__inner {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    height: 5.6rem;
+
+    @include maxWidth($lg) {
+      display: flex;
+      justify-content: space-between;
+      height: 4rem;
+    }
+  }
+
+  // ─── Logo ─────────────────────────────────────────────────────────
+  &__logo {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 0 2.4rem;
+    flex-shrink: 0;
+
+    &-link {
+      display: flex;
+      align-items: center;
+    }
+
+    &-img {
+      width: auto;
+      max-height: 3rem;
+      object-fit: contain;
+    }
+
+    @include maxWidth($lg) {
+      justify-content: flex-start;
+      padding: 0;
+    }
+  }
+
+  // ─── Desktop nav columns ──────────────────────────────────────────
+  &__nav-left {
+    display: flex;
+    justify-content: start;
+
+    @include maxWidth($lg) {
+      display: none;
+    }
+  }
+
+  &__nav-right {
+    display: flex;
+    justify-content: end;
+
+    @include maxWidth($lg) {
+      display: none;
+    }
+  }
+
+  // ─── Menu list (shared for left & right) ─────────────────────────
+  &__menu-list {
+    display: flex;
+    align-items: center;
+    column-gap: 5rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+
+    > .menu-item {
+      position: relative;
+      font-size: 1.35rem;
+
+      > a {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+        padding: 1.4rem 1rem;
+        font-weight: $medium;
+        color: #fff;
+        text-decoration: none;
+        white-space: nowrap;
+        transition: color 0.2s ease;
+        text-transform: uppercase;
+
+        &::after {
+          content: "";
+          position: absolute;
+          bottom: 1.2rem;
+          left: 1.2rem;
+          right: 1.2rem;
+          height: 2px;
+          // fallback for browsers without color-mix
+          background-color: #fff;
+          // opacity layer via a CSS var trick — prefer actual rgba/opacity
+          opacity: 0.45;
+          transform: scaleX(0);
+          transform-origin: left;
+          transition: transform 0.25s ease, opacity 0.25s ease;
+        }
+      }
+
+      &:hover > a,
+      &.actived-menu > a {
+        color: $secondColor;
+
+        &::after {
+          transform: scaleX(1);
+          opacity: 0.5;
+        }
+      }
+
+      // Dropdown indicator arrow
+      &.has-children > a {
+        padding-right: 2rem;
+
+
+        &::before {
+          content: "";
+          position: absolute;
+          right: 0.8rem;
+          top: 50%;
+          width: 0.5rem;
+          height: 0.5rem;
+          border-right: 1.5px solid currentColor;
+          border-bottom: 1.5px solid currentColor;
+          transform: translateY(-70%) rotate(45deg);
+          transition: transform 0.2s ease;
+        }
+      }
+
+      &.has-children:hover > a::before {
+        transform: translateY(-30%) rotate(-135deg);
+      }
+
+      // ─ First-level dropdown ────────────────────────────────────
+      > .sub-menu {
+        position: absolute;
+        top: 100%;
+        left: 50%;
+        transform: translate(-50%, 1rem);
+        min-width: 17rem;
+        padding: 1.2rem 0;
+        margin: 0;
+        list-style: none;
+        background-color: #fff;
+        border-radius: 1rem;
+        box-shadow: 0 1.2rem 3.2rem rgba(0, 0, 0, 0.12);
+        z-index: 200;
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+        transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s;
+
+        .menu-item > a {
+          display: block;
+          padding: 0.7rem 1.8rem;
+          font-size: 1.4rem;
+          font-weight: $regular;
+          color: #333;
+          text-decoration: none;
+          white-space: nowrap;
+          transition: color 0.2s ease, background-color 0.2s ease;
+
+          &::after { display: none; }
+
+          &:hover {
+            color: $secondColor;
+          }
+        }
+      }
+
+      &.has-children:hover > .sub-menu,
+      &.has-children:focus-within > .sub-menu {
+        opacity: 1;
+        visibility: visible;
+        pointer-events: auto;
+        transform: translate(-50%, 0);
+      }
+
+      // ─ Mega menu ──────────────────────────────────────────────
+      // Kích hoạt khi menu item có class "mega-menu"
+      &.mega-menu > .sub-menu {
+        left: 50%;
+        transform: translate(-50%, 1rem);
+        display: flex;
+        gap: 3.6rem;
+        min-width: 60rem;
+        max-width: 80rem;
+        padding: 2.8rem 3.2rem;
+
+        // Background: $secondColor 85% opacity
+        // background-color: $secondColor;
+        // background-color: color-mix(in srgb, var(--secondary-color) 85%, transparent);
+        border-radius: 1.2rem;
+        box-shadow: 0 1.6rem 4rem rgba(0, 0, 0, 0.18);
+
+        // Override sub-menu defaults
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+
+        // ── Group heading (top-level children with their own children)
+        .menu-item.has-children > a {
+          display: block;
+          font-size: 1.5rem;
+          font-weight: $semiBold;
+          // color: $primaryColor;
+          padding: 0 0 0.8rem;
+          margin-bottom: 0.8rem;
+          border-bottom: 1.5px solid color-mix(in srgb, var(--primary-color) 30%, transparent);
+          text-decoration: none;
+          white-space: nowrap;
+
+          &::after { display: none; }
+
+          &:hover {
+            background: transparent;
+            color: $primaryColor;
+          }
+        }
+
+        // ── Nested sub-menu (leaf links)
+        .menu-item.has-children > .sub-menu {
+          position: static;
+          opacity: 1;
+          visibility: visible;
+          pointer-events: auto;
+          transform: none;
+          min-width: 0;
+          padding: 0;
+          box-shadow: none;
+          border-radius: 0;
+          background: transparent;
+          display: flex;
+          flex-direction: column;
+          gap: 0;
+
+          .menu-item > a {
+            display: block;
+            padding: 0.55rem 0;
+            font-size: 1.4rem;
+            font-weight: $regular;
+            color: $primaryColor;
+            text-decoration: none;
+            white-space: nowrap;
+            transition: color 0.2s ease;
+
+            &::after { display: none; }
+
+            &:hover {
+              background: transparent;
+              color: $secondColor;
+            }
+          }
+        }
+
+        // ── Simple leaf links directly in mega-menu sub-menu
+        > .menu-item:not(.has-children) > a {
+          display: block;
+          padding: 0.55rem 0;
+          font-size: 1.4rem;
+          font-weight: $regular;
+          color: $primaryColor;
+          text-decoration: none;
+          white-space: nowrap;
+          transition: color 0.2s ease;
+
+          &::after { display: none; }
+
+          &:hover { color: #fff; }
+        }
+      }
+
+      &.mega-menu:hover > .sub-menu,
+      &.mega-menu:focus-within > .sub-menu {
+        opacity: 1;
+        visibility: visible;
+        pointer-events: auto;
+        transform: translate(-50%, 0);
+      }
+    }
+  }
+
+  // ─── Hamburger ────────────────────────────────────────────────────
+  &__hamburger {
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-end;
+    gap: 0.5rem;
+    width: 3.2rem;
+    height: 3.2rem;
+    cursor: pointer;
+    margin-left: auto;
+
+    span {
+      display: block;
+      width: 2.4rem;
+      height: 2px;
+      background-color: #fff;
+      border-radius: 2px;
+      transform-origin: right center;
+      transition: transform 0.3s ease, opacity 0.3s ease, width 0.3s ease;
+
+      &:nth-child(2) {
+        width: 1.8rem;
+      }
+    }
+
+    &.active span {
+      &:nth-child(1) {
+        transform: rotate(-45deg) translate(0.2rem, -0.1rem);
+        width: 2.4rem;
+      }
+
+      &:nth-child(2) {
+        opacity: 0;
+        width: 0;
+      }
+
+      &:nth-child(3) {
+        transform: rotate(45deg) translate(0.2rem, 0.1rem);
+        width: 2.4rem;
+      }
+    }
+
+    @include maxWidth($lg) {
+      display: flex;
+    }
+  }
+}
+
+// =============================================================================
+// MOBILE OVERLAY
+// =============================================================================
+
+.header__overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 999;
+  visibility: hidden;
+  pointer-events: none;
+
+  &.active {
+    visibility: visible;
+    pointer-events: auto;
+
+    .header__overlay-backdrop {
+      opacity: 1;
+    }
+
+    .header__overlay-panel {
+      transform: translateX(0);
+    }
+  }
+
+  &-backdrop {
+    position: absolute;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.45);
+    opacity: 0;
+    transition: opacity 0.35s ease;
+  }
+
+  &-panel {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: min(38rem, 88vw);
+    height: 100%;
+    background-color: #fff;
+    overflow-y: auto;
+    padding: 4rem 1rem 4rem;
+    transform: translateX(100%);
+    transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  &-close {
+    position: absolute;
+    top: 1em;
+    right: 1rem;
+    z-index: 10;
+    width: 3rem;
+    height: 3rem;
+    background: none;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+
+    span {
+      position: absolute;
+      width: 2.2rem;
+      height: 2px;
+      background-color: #111;
+      border-radius: 2px;
+
+      &:nth-child(1) { transform: rotate(45deg); }
+      &:nth-child(2) { transform: rotate(-45deg); }
+    }
+  }
+
+  // ─ Overlay menu list ────────────────────────────────────────────
+  &-menu-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+
+    .menu-item {
+      border-bottom: 1px solid #f0f0f0;
+
+      > a {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0.95rem 0;
+        font-size: 1.25rem;
+        font-weight: $medium;
+        color: #111;
+        text-decoration: none;
+        transition: color 0.2s ease;
+
+        &:hover {
+          color: $primaryColor;
+        }
+      }
+
+      &.has-children > a::after {
+        content: "";
+        flex-shrink: 0;
+        width: 0.7rem;
+        height: 0.7rem;
+        border-right: 1.5px solid currentColor;
+        border-bottom: 1.5px solid currentColor;
+        transform: rotate(45deg);
+        transition: transform 0.25s ease;
+        margin-left: 0.8rem;
+      }
+
+      &.open > a {
+        color: $primaryColor;
+
+        &::after {
+          transform: rotate(-135deg);
+        }
+      }
+
+      .sub-menu {
+        display: none;
+        list-style: none;
+        padding: 0.4rem 0 0.8rem 1.6rem;
+        margin: 0;
+
+        .menu-item {
+          border-bottom: none;
+
+          > a {
+            padding: 0.55rem 0;
+            font-size: 1.3rem;
+            color: #555;
+            font-weight: $regular;
+          }
+        }
+      }
+
+      &.open > .sub-menu {
+        display: block;
+      }
+    }
+  }
+}
+
+body.menu-open {
+  overflow: hidden;
+}

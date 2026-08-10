@@ -1,0 +1,29 @@
+/*
+ * Theme Name: La Cà Dev - Client Child
+ * Author: La Cà Dev
+ * Description: Child theme của La Cà Dev - Client. Dùng để tùy chỉnh giao diện mà không ảnh hưởng đến theme gốc.
+ * Version: 1.0
+ * Template: lacadev-client/theme
+ * Theme URI: https://lacadev.com
+ * Author URI: https://lacadev.com
+ * Textdomain: laca
+ */
+
+.footer__grid {
+	display: grid !important;
+    grid-template-columns: 4fr 2fr 2fr !important;
+}
+
+.footer__title {
+	color: #F0C11B !important;
+}
+.footer__title:after {
+	position: none !important;
+}
+
+
+@media only screen and (max-width: 768px) {
+	.footer__grid {
+		grid-template-columns: 1fr !important;
+	}
+}

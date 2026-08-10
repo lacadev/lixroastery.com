@@ -1,0 +1,211 @@
+/**
+ * Archive Page – Layout Styles
+ * BEM parent: .laca-news-list-archive
+ *
+ * Mirror layout của news-list-block nhưng trong ngữ cảnh archive template.
+ * Các modifier block (.laca-news-list__*) được lặp lại ở đây để không phụ
+ * thuộc vào block CSS (vốn chỉ load khi block được render trên trang).
+ */
+
+@use "../abstracts/variables" as *;
+@use "../abstracts/mixin" as *;
+
+// ── Wrapper ───────────────────────────────────────────────────────────────────
+.laca-news-list-archive {
+
+	// ── Grid (4 cột desktop → 3 tablet → 2 sm → 1 mobile) ─────────────────
+	.laca-news-list__grid {
+		display: grid;
+		grid-template-columns: repeat(4, 1fr);
+		gap: 2.4rem;
+		position: relative;
+		transition: opacity 0.25s ease;
+
+		// Loading state khi AJAX đang fetch
+		&--loading {
+			opacity: 0.4;
+			pointer-events: none;
+
+			&::after {
+				content: '';
+				position: absolute;
+				inset: 0;
+				z-index: 10;
+				background: rgba(255, 255, 255, 0.35);
+				backdrop-filter: blur(2px);
+			}
+		}
+
+		@include maxWidth($lg) {
+			grid-template-columns: repeat(3, 1fr);
+			gap: 2rem;
+		}
+
+		@include maxWidth($md) {
+			grid-template-columns: repeat(2, 1fr);
+			gap: 1.6rem;
+		}
+
+		@include maxWidth($sm) {
+			grid-template-columns: 1fr;
+		}
+	}
+
+	// ── Item card ──────────────────────────────────────────────────────────
+	.laca-news-list__item {
+		display: flex;
+		flex-direction: column;
+		background: #fff;
+		border-radius: 0.8rem;
+		overflow: hidden;
+		transition: box-shadow 0.3s ease, transform 0.3s ease;
+
+		&:hover {
+			box-shadow: 0 1.2rem 4rem rgba(0, 0, 0, 0.12);
+			transform: translateY(-4px);
+
+			.laca-news-list__img {
+				transform: scale(1.05);
+			}
+		}
+	}
+
+	// ── Thumbnail ─────────────────────────────────────────────────────────
+	.laca-news-list__thumb-link {
+		display: block;
+		overflow: hidden;
+	}
+
+	.laca-news-list__thumb {
+		position: relative;
+		width: 100%;
+		aspect-ratio: 4 / 3;
+		overflow: hidden;
+		background: #f0f0f0;
+	}
+
+	.laca-news-list__img {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		display: block;
+		transition: transform 0.5s ease;
+	}
+
+	.laca-news-list__img-placeholder {
+		width: 100%;
+		height: 100%;
+		background: linear-gradient(135deg, #ececec 25%, #ddd 50%, #ececec 75%);
+	}
+
+	// ── Content area ──────────────────────────────────────────────────────
+	.laca-news-list__content {
+		display: flex;
+		flex-direction: column;
+		gap: 0.8rem;
+		padding: 1.6rem;
+		flex: 1;
+
+		@include maxWidth($md) {
+			padding: 1rem;
+		}
+	}
+
+	.laca-news-list__cat {
+		display: inline-block;
+		font-size: rem(20);
+		font-weight: 600;
+		color: $secondColor;
+		text-decoration: none;
+		text-transform: uppercase;
+		letter-spacing: 0.06em;
+
+		&:hover {
+			text-decoration: underline;
+		}
+
+		@include maxWidth($md) {
+			font-size: rem(18);
+		}
+	}
+
+	.laca-news-list__item-title {
+		font-size: rem(20);
+		font-weight: 700;
+		line-height: 1.3;
+		margin: 0;
+		color: #333;
+
+		display: -webkit-box;
+		-webkit-line-clamp: 2;
+		line-clamp: 2;
+		-webkit-box-orient: vertical;
+		overflow: hidden;
+
+		a {
+			color: inherit;
+			text-decoration: none;
+			transition: color 0.2s ease;
+
+			&:hover {
+				color: $secondColor;
+			}
+		}
+
+		@include maxWidth($md) {
+			font-size: rem(18);
+		}
+	}
+
+	.laca-news-list__excerpt {
+		font-size: rem(18);
+		line-height: 1.5;
+		color: #666;
+		margin: 0;
+
+		display: -webkit-box;
+		-webkit-line-clamp: 3;
+		line-clamp: 3;
+		-webkit-box-orient: vertical;
+		overflow: hidden;
+
+		@include maxWidth($md) {
+			font-size: rem(14);
+		}
+	}
+
+	.laca-news-list__read-more {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.6rem;
+		font-size: 1.4rem;
+		font-weight: 600;
+		color: $secondColor;
+		text-decoration: none;
+		margin-top: auto;
+		transition: gap 0.2s ease;
+
+		&::after {
+			content: '→';
+			display: inline-block;
+			transition: transform 0.2s ease;
+		}
+
+		&:hover::after {
+			transform: translateX(4px);
+		}
+	}
+
+	// ── Pagination ────────────────────────────────────────────────────────
+	#archive-pagination {
+		margin-top: 3rem;
+	}
+
+	// ── Empty state ───────────────────────────────────────────────────────
+	.laca-news-list__empty {
+		padding: 3rem 1rem;
+		text-align: center;
+		color: var(--color-text-muted, #888);
+		font-size: 1.1rem;
+	}
+}

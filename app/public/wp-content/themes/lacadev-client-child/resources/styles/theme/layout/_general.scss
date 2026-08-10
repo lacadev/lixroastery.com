@@ -1,0 +1,52 @@
+@use "../abstracts/variables.scss" as *;
+@use "../abstracts/mixin.scss" as *;
+
+body:not(.wp-admin) {
+  font-family: $mainFont !important;
+  background-color: $bgColor;
+  line-height: 1.2 !important;
+}
+
+main#main_content {
+  padding-top: rem(90);
+
+  @include maxWidth($md) {
+    padding-top: rem(30);
+  }
+}
+
+.container {
+  max-width: $lg;
+}
+
+.container-fluid {
+  max-width: 95%;
+  margin: 0 auto;
+  padding: 0;
+  padding-right: 0.9375rem;
+  padding-left: 0.9375rem;
+}
+
+h1.page-title {
+    color: $secondColor;
+    text-transform: uppercase;
+    font-size: rem(30);
+    font-weight: $semiBold;
+
+    @include maxWidth($md) {
+			font-size: rem(24);
+      text-align: center;
+		}
+}
+
+figcaption {
+  color: #fff !important;
+}
+
+.page-hero {
+  padding: 3rem 0;
+
+  @include maxWidth($md) {
+    padding: 0 0 2rem;
+  }
+}

@@ -1,0 +1,113 @@
+@use "../abstracts/variables.scss" as *;
+@use "../abstracts/mixin.scss" as *;
+
+.share-post {
+  .inner {
+    margin-top: 0 !important;
+    display: flex;
+    align-items: center;
+
+    .social-share {
+      ul {
+        display: flex;
+        column-gap: 0.9375rem;
+
+        li {
+          width: 1.875rem;
+          height: 1.875rem;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          border: 1px solid silver;
+          border-radius: 50%;
+          transition: all 0.25s linear;
+
+          a {
+            line-height: 1em;
+          }
+
+          i {
+            color: silver;
+          }
+
+          &:hover {
+            i {
+              color: #fff !important;
+            }
+
+            &.facebook {
+              border: 1px solid #3b5998;
+              background-color: #3b5998;
+            }
+
+            &.twitter {
+              border: 1px solid #1da1f2;
+              background-color: #1da1f2;
+            }
+
+            &.linkedin {
+              border: 1px solid #0077b5;
+              background-color: #0077b5;
+            }
+
+            &.pinterest {
+              border: 1px solid #bd081c;
+              background-color: #bd081c;
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+// Clean Style for single service
+.share-post-clean {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: rem(15);
+
+  .share-label {
+      font-weight: 500;
+      color: var(--text-color, #333);
+      font-size: rem(11); // 0.6875rem
+      text-transform: uppercase;
+  }
+
+  .social-share-links {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      gap: rem(12);
+
+      li {
+          a {
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              width: rem(40);
+              height: rem(40);
+              border-radius: 50%;
+              background: var(--bg-color-alt, #f5f5f5);
+              color: var(--text-muted, #666);
+              transition: all 0.25s ease;
+
+              svg {
+                  width: rem(20);
+                  height: rem(20);
+              }
+
+              &:hover {
+                  color: #fff;
+                  transform: translateY(rem(-2));
+              }
+          }
+
+          &.facebook a:hover { background-color: #3b5998; border-color: #3b5998; }
+          &.twitter a:hover { background-color: #1da1f2; border-color: #1da1f2; }
+          &.linkedin a:hover { background-color: #0077b5; border-color: #0077b5; }
+      }
+  }
+}

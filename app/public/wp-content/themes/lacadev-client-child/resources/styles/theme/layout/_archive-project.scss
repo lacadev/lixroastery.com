@@ -1,0 +1,233 @@
+/**
+ * Archive Project Page – Layout Styles
+ * BEM parent: .laca-project-archive
+ *
+ * Sử dụng lại .laca-project-list__* từ project-list-block/style.scss
+ * (vốn được include qua block CSS) và thêm styles riêng cho archive wrapper.
+ */
+
+@use "../abstracts/variables" as *;
+@use "../abstracts/mixin" as *;
+
+// ── Wrapper ───────────────────────────────────────────────────────────────────
+.laca-project-archive {
+	.laca-gallery-card__link {
+		display: flex;
+		flex-direction: column;
+		height: 100%;
+		color: inherit;
+		text-decoration: none;
+		transition: transform 0.3s ease;
+	}
+
+	.laca-gallery-card__title {
+		transition: color 0.25s ease;
+	}
+
+	.laca-gallery-card:hover .laca-gallery-card__title {
+		color: $secondColor;
+	}
+
+	.laca-gallery-card:hover .laca-gallery-card__img img {
+		transform: scale(1.06);
+	}
+
+	// ── Filter tabs ────────────────────────────────────────────────────────
+	&__filter {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 1rem;
+		align-items: center;
+		margin-bottom: 3rem;
+
+		@include maxWidth($sm) {
+			gap: 0.8rem;
+		}
+	}
+
+	&__filter-btn {
+		display: inline-flex;
+		align-items: center;
+		padding: 0.8rem 2rem;
+		border: 1px solid #d0cfc9;
+		border-radius: 5rem;
+		font-size: 1.4rem;
+		font-weight: $medium;
+		color: #fff;
+		background: transparent;
+		cursor: pointer;
+		text-decoration: none;
+		white-space: nowrap;
+		transition: background 0.25s ease, color 0.25s ease, border-color 0.25s ease;
+
+		&:hover,
+		&.is-active {
+			background: $primaryColor;
+			border-color: $primaryColor;
+			color: #fff;
+		}
+
+		// "Tất cả" luôn có màu tối mặc định
+		&:first-child {
+			// background: $textColor;
+			// border-color: $textColor;
+			color: #fff;
+
+			&:hover,
+			&.is-active {
+				background: $primaryColor;
+				border-color: $primaryColor;
+			}
+		}
+	}
+
+	// ── Grid – sử dụng lại laca-project-list__grid ─────────────────────────
+	// Block CSS có thể chưa load trên trang archive → định nghĩa lại ở đây
+	.laca-project-list__grid {
+		display: grid;
+		grid-template-columns: repeat(4, 1fr);
+		gap: 2.4rem;
+		position: relative;
+		transition: opacity 0.25s ease;
+
+		// Loading state khi AJAX đang fetch
+		&--loading {
+			opacity: 0.4;
+			pointer-events: none;
+
+			&::after {
+				content: '';
+				position: absolute;
+				inset: 0;
+				z-index: 10;
+				background: rgba(255, 255, 255, 0.35);
+				backdrop-filter: blur(2px);
+			}
+		}
+
+		@include maxWidth($lg) {
+			grid-template-columns: repeat(3, 1fr);
+			gap: 2rem;
+		}
+
+		@include maxWidth($md) {
+			grid-template-columns: repeat(2, 1fr);
+			gap: 1.6rem;
+		}
+
+		@include maxWidth($xs) {
+			grid-template-columns: 1fr;
+		}
+	}
+
+	// ── Card – sử dụng lại laca-project-list__card ─────────────────────────
+	.laca-project-list__card {
+		display: flex;
+		flex-direction: column;
+	}
+
+	.laca-project-list__card-link {
+		display: block;
+		text-decoration: none;
+		color: inherit;
+	}
+
+	.laca-project-list__card-img {
+		position: relative;
+		overflow: hidden;
+		border-radius: 0.8rem;
+		aspect-ratio: 4 / 3;
+		background: #f0ede8;
+		margin-bottom: 1.6rem;
+
+		img {
+			width: 100%;
+			height: 100%;
+			object-fit: cover;
+			display: block;
+			transition: transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+		}
+
+		&:hover img {
+			transform: scale(1.06);
+		}
+	}
+
+	.laca-project-list__card-img-placeholder {
+		width: 100%;
+		height: 100%;
+		background: linear-gradient(135deg, #e8e5df 0%, #d0ccc4 100%);
+	}
+
+	.laca-project-list__card-body {
+		flex: 1;
+		display: flex;
+		flex-direction: column;
+	}
+
+	.laca-project-list__card-title {
+		font-size: 1.6rem;
+		font-weight: $semiBold;
+		line-height: 1.4;
+		margin: 0 0 1.2rem;
+		// color: $textColor;
+		display: -webkit-box;
+		-webkit-line-clamp: 3;
+		line-clamp: 3;
+		-webkit-box-orient: vertical;
+		overflow: hidden;
+
+		a {
+			color: #fff;
+			text-decoration: none;
+			transition: color 0.2s ease;
+
+			&:hover {
+				color: $secondColor;
+			}
+		}
+	}
+
+	.laca-project-list__card-meta {
+		list-style: none;
+		padding: 0;
+		margin: 0;
+		display: flex;
+		flex-direction: column;
+		gap: 0.6rem;
+
+		li {
+			display: flex;
+			align-items: center;
+			gap: 0.6rem;
+			font-size: 1.35rem;
+			color: #fff;
+			line-height: 1.4;
+
+			svg {
+				width: 1.4rem;
+				height: 1.4rem;
+				flex-shrink: 0;
+				fill: $secondColor;
+			}
+
+			strong {
+				// color: $textColor;
+				font-weight: $medium;
+			}
+		}
+	}
+
+	.laca-project-list__empty {
+		grid-column: 1 / -1;
+		text-align: center;
+		color: #999;
+		font-style: italic;
+		padding: 3rem 0;
+	}
+
+	// ── Pagination ───────────────────────────────────────────────────────
+	#archive-pagination {
+		margin-top: 3rem;
+	}
+}

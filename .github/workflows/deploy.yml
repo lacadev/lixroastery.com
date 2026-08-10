@@ -1,0 +1,103 @@
+name: Deploy to cPanel (Theme & Plugins)
+
+on:
+  push:
+    branches: [main, master]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # dist/ (CSS/JS/fonts/images đã compile của theme) và
+      # block-gutenberg/**/build (JS/CSS đã compile của từng block) đều bị
+      # .gitignore loại khỏi git (xem lacadev-client-child/.gitignore) —
+      # KHÔNG tồn tại trong checkout ở trên, nên PHẢI build lại cả 2 ở đây
+      # trước khi FTP. Trước đây chỉ build blocks, thiếu build:theme khiến
+      # dist/ trên server là bản cache thủ công cũ, dẫn tới font/asset 404
+      # mỗi khi source (font, ảnh...) thay đổi mà không ai tự tay upload lại.
+      # Bỏ qua bước critical CSS (yarn critical) vì nó cần fetch từ 1 URL
+      # WordPress đang chạy thật (config.json trỏ *.local) — không tồn tại
+      # trên CI runner, sẽ luôn fail nếu chạy ở đây.
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.x
+
+      - name: Create config.json from dist
+        working-directory: app/public/wp-content/themes/lacadev-client-child
+        run: cp config.json.dist config.json
+
+      - name: Install Node dependencies
+        working-directory: app/public/wp-content/themes/lacadev-client-child
+        run: yarn install --frozen-lockfile
+
+      - name: Build theme assets (dist/ — CSS/JS/fonts/images)
+        working-directory: app/public/wp-content/themes/lacadev-client-child
+        run: yarn build:theme
+
+      - name: Build Gutenberg blocks (block-gutenberg/**/build)
+        working-directory: app/public/wp-content/themes/lacadev-client-child
+        run: yarn build:blocks
+
+      - name: Deploy Theme & Plugins
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          server-dir: /public_html/ # deploy thẳng vào gốc public_html/ của hosting (không có thư mục app/ trên server)
+
+          # local-dir làm gốc đồng bộ — bỏ hẳn tiền tố app/public/, server
+          # chỉ có wp-content/... ở gốc (không có thư mục app/ trên server).
+          local-dir: app/public/
+
+          # Chỉ deploy 2 thư mục quan trọng (đường dẫn tính từ local-dir ở trên)
+          include: |
+            wp-content/themes/**
+
+          # Loại trừ những thứ không cần
+          # Quan trọng: exclude mới thực sự chặn xoá trên server (include chỉ ưu tiên
+          # upload, không giới hạn phạm vi xoá) — nên các file core WP phải nằm ở đây,
+          # để việc gỡ chúng khỏi git không kéo theo xoá trên hosting.
+          exclude: |
+            .git/
+            .github/
+            *.md
+            .cpanel.yml
+            .gitignore
+            wp-content/themes/**/node_modules/**
+            wp-content/plugins/**
+            wp-content/uploads/**
+            wp-admin/**
+            wp-includes/**
+            wp-content/upgrade/**
+            wp-content/cache/**
+            wp-content/languages/**
+            wp-content/wflogs/**
+            wp-content/litespeed/**
+            wp-content/upgrade-temp-backup/**
+            wp-content/backup-db/**
+            wp-content/debug.log
+            .htaccess
+            license.txt
+            local-xdebuginfo.php
+            local-phpinfo.php
+            readme.html
+            wp-activate.php
+            wp-blog-header.php
+            wp-comments-post.php
+            wp-config-sample.php
+            wp-config.php
+            wp-cron.php
+            wp-links-opml.php
+            wp-load.php
+            wp-mail.php
+            wp-settings.php
+            wp-signup.php
+            wp-trackback.php
+            wp-login.php
+            xmlrpc.php
+            index.php

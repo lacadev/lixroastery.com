@@ -1,0 +1,12 @@
+logs/
+/app/sql/
+local-site.json
+conf/
+/logs/
+.claude/
+.codex/
+.github/skills/
+.agent/
+.envrc
+.DS_Store
+local-phpinfo.php

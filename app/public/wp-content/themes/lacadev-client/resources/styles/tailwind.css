@@ -1,0 +1,9 @@
+/**
+ * Tailwind CSS v3 — Entry Point
+ *
+ * File .css thuần (không qua sass-loader) để PostCSS/Tailwind xử lý.
+ * Import từ JS entry: resources/scripts/theme/index.js
+ */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;

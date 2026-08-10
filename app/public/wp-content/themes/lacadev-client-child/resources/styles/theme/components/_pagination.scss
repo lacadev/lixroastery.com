@@ -1,0 +1,96 @@
+@use "../abstracts/variables.scss" as *;
+@use "../abstracts/mixin.scss" as *;
+
+.pagination-container {
+    margin-top: 6rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    .pagination-list {
+        display: flex;
+        align-items: center;
+        gap: 1.2rem;
+        flex-wrap: wrap;
+        justify-content: center;
+        @include ulReset;
+
+        @include maxWidth($xs) {
+            gap: 0.8rem;
+        }
+    }
+
+    .pagination-item {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+
+        a, .page-numbers {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 2.8rem;
+            height: 2.8rem;
+            border-radius: 50%;
+            background-color: transparent;
+            border: 1px solid rgba($secondColor, 0.1);
+            color: #fff;
+            font-size: 1.6rem;
+            font-weight: $medium;
+            text-decoration: none;
+            transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+            cursor: pointer;
+
+            &:hover {
+                border-color: $secondColor;
+                opacity: 0.8;
+            }
+
+            &.current, &.is-active {
+                background-color: $secondColor;
+                border-color: $secondColor;
+                color: #fff;
+                box-shadow: 0 0.8rem 2rem rgba($secondColor, 0.2);
+            }
+
+            &.prev, &.next {
+
+                &:hover {
+                    opacity: 0.8;
+                }
+            }
+
+            @include maxWidth($md) {
+                min-width: 1.8rem;
+                height: 1.8rem;
+                font-size: rem(16);
+            }
+        }
+
+        &.is-active {
+            a, span {
+                background-color: $secondColor;
+                border-color: $secondColor;
+                color: #fff;
+                box-shadow: 0 0.8rem 2rem rgba($secondColor, 0.2);
+                pointer-events: none;
+            }
+        }
+
+        &.is-dots {
+            .page-numbers {
+                border: none;
+                background: none;
+                min-width: 2rem;
+                cursor: default;
+                &:hover {
+                    transform: none;
+                }
+            }
+        }
+    }
+
+    @include maxWidth($sm) {
+        margin-top: 4rem;
+    }
+}

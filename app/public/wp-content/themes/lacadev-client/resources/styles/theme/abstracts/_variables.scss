@@ -1,0 +1,64 @@
+// Fonts
+$themeFont: "Quicksand", sans-serif;
+
+// Admin colors
+$primaryColorAd: var(--primary-color-ad);
+$secondaryColorAd: var(--secondary-color-ad);
+$backgroundColorAd: var(--bg-color-ad);
+$textColorAd: var(--text-color-ad);
+
+// Theme colors (dùng trong _general.scss)
+$primaryColor: var(--primary-color);
+$secondColor: var(--second-color);
+$bgColor: var(--bg-color);
+
+// Font weights
+$thin: 100;
+$extraLight: 200;
+$light: 300;
+$regular: 400;
+$medium: 500;
+$semiBold: 600;
+$bold: 700;
+$extraBold: 800;
+$black: 900;
+
+// Breakpoints (common devices in 2026)
+// Mobile small: 320-359, Mobile standard: 360-430
+// Tablet: 768-1024, Laptop: 1280-1440, Desktop: 1536+
+$xxs: 360px;
+$xs: 576px;
+$sm: 768px;
+$md: 992px;
+$lg: 1200px;
+$xl: 1440px;
+$xxl: 1536px;
+$ultra: 1920px;
+
+// Typography
+$fsXs: 0.75rem; // 12px
+$fsSm: 0.875rem; // 14px
+$fsBase: 1rem; // 16px
+$fsLg: 1.125rem; // 18px
+$fsXl: 1.5rem; // 24px
+$fs2xl: 2rem; // 32px
+$fs3xl: 2.625rem; // 42px
+$lhBase: 1.5;
+
+// Spacing scale
+$sp1: 0.25rem; // 4px
+$sp2: 0.5rem; // 8px
+$sp3: 0.75rem; // 12px
+$sp4: 1rem; // 16px
+$sp5: 1.25rem; // 20px
+$sp6: 1.5rem; // 24px
+$sp8: 2rem; // 32px
+$sp10: 2.5rem; // 40px
+$sp12: 3rem; // 48px
+
+// Radius
+$rSm: 0.25rem; // 4px
+$rMd: 0.625rem; // 10px
+$rLg: 0.875rem; // 14px
+$rXl: 1.25rem; // 20px
+$rPill: 62.4375rem; // 999px

@@ -1,0 +1,366 @@
+@use "../abstracts/variables.scss" as *;
+@use "../abstracts/mixin.scss" as *;
+
+.page-404 {
+  padding: 0 0.9375rem;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  place-items: center;
+  background-color: #fff;
+  z-index: 10000;
+
+  .inner {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.25rem;
+
+    @include maxWidth($md) {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  h1 {
+    display: block;
+    line-height: 1em;
+    font-weight: bold;
+    text-transform: uppercase;
+    -webkit-text-fill-color: transparent;
+    -webkit-text-stroke: 2px var(--primary-color);
+
+    @include resFont(5, 8.125);
+
+    @include maxWidth($md) {
+      text-align: center;
+    }
+  }
+
+  h2 {
+    margin: 0.625rem 0;
+    display: block;
+    font-weight: bold;
+
+    @include maxWidth($md) {
+      text-align: center;
+    }
+  }
+
+  p {
+    @include maxWidth($md) {
+      text-align: center;
+    }
+  }
+
+  .btn {
+    padding: 8px 3.125rem;
+    position: relative;
+    border-radius: 1.875rem;
+    border: 4px solid #000;
+    font-size: clamp(1rem, 3.6vw, 1.125rem);
+    font-weight: bold;
+    text-transform: uppercase;
+    background: transparent;
+    transition: all 0.5s ease-in-out;
+    overflow: hidden;
+    z-index: 1;
+    cursor: pointer;
+
+    &:before {
+      content: "";
+      position: absolute;
+      width: 0;
+      height: 100%;
+      left: 0;
+      top: 0;
+      background: #000;
+      transition: 0.5s ease;
+      z-index: -1;
+    }
+
+    &:hover {
+      color: #fff;
+      transition: 0.5s ease;
+      border: 4px solid #000;
+
+      &:before {
+        width: 100%;
+      }
+    }
+
+    @include maxWidth($md) {
+      padding: 5px 1.875rem;
+    }
+  }
+
+  svg {
+    width: 100%;
+  }
+}
+
+// Maintenance Mode Page Styles (Black & White Theme)
+.maintenance-body {
+  font-family: 'Nunito', sans-serif;
+  background: #fff;
+  color: #333;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  position: relative;
+  margin: 0;
+
+  /* Stars Background (Inverted for white bg - gray dots) */
+  .stars {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 0;
+
+    .star {
+      position: absolute;
+      background: #333;
+      border-radius: 50%;
+      opacity: 0.8;
+      animation: twinkle 4s infinite ease-in-out;
+    }
+  }
+
+  /* Content Container */
+  .content-container {
+    z-index: 10;
+    text-align: center;
+    padding: 1.25rem;
+    max-width: 800px;
+    width: 100%;
+    position: relative;
+  }
+
+  /* Illustration: Tent & Fire (Monochrome) */
+  .illustration {
+    height: 350px;
+    width: 450px;
+    margin: 0 auto 1.875rem;
+    position: relative;
+
+    /* Crescent Moon */
+    .moon {
+      position: absolute;
+      top: -60px;
+      right: -20px;
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      box-shadow: -15px 8px 0 0 #333; /* Crescent shape matching stars */
+      transform: rotate(-25deg);
+      opacity: 0.9;
+      animation: moonFloat 8s ease-in-out infinite alternate;
+    }
+
+    .ground {
+      position: absolute;
+      bottom: 0;
+      width: 100%;
+      height: 15px;
+      background: #f0f0f0;
+      border-radius: 50%;
+    }
+
+    /* Tent */
+    .tent {
+      position: absolute;
+      bottom: 10px;
+      left: 50%;
+      transform: translateX(-80%);
+      width: 0;
+      height: 0;
+      border-left: 100px solid transparent;
+      border-right: 100px solid transparent;
+      border-bottom: 160px solid #333; /* Dark tent body */
+      z-index: 2;
+
+      &::before {
+        content: '';
+        position: absolute;
+        top: 5px;
+        left: -90px;
+        width: 0;
+        height: 0;
+        border-left: 90px solid transparent;
+        border-right: 90px solid transparent;
+        border-bottom: 155px solid #555; /* Slightly lighter side */
+      }
+    }
+
+    .tent-door {
+      position: absolute;
+      bottom: -160px;
+      left: -30px;
+      width: 0;
+      height: 0;
+      border-left: 30px solid transparent;
+      border-right: 30px solid transparent;
+      border-bottom: 60px solid #fff; /* White interior/door */
+    }
+
+    /* Bonfire (Grayscale Fire) */
+    .fire-pit {
+      position: absolute;
+      bottom: 15px;
+      right: 20%;
+      width: 40px;
+      height: 10px;
+      background: #ccc;
+      border-radius: 10px;
+    }
+
+    .wood {
+      position: absolute;
+      bottom: 20px;
+      right: 22%;
+      width: 30px;
+      height: 6px;
+      background: #333;
+      transform: rotate(15deg);
+
+      &.w2 {
+        transform: rotate(-15deg);
+      }
+    }
+
+    .fire {
+      position: absolute;
+      bottom: 25px;
+      right: 23%;
+      width: 20px;
+      height: 20px;
+      border-radius: 50% 0 50% 50%;
+      background: #999; 
+      transform: rotate(-45deg);
+      animation: burn 0.5s infinite alternate;
+      box-shadow: 0 0 20px #ccc;
+      filter: blur(1px);
+    }
+  }
+
+  /* Typography */
+  h1 {
+    font-size: 2.1875rem;
+    margin-bottom: 0.9375rem;
+    font-weight: 800;
+    letter-spacing: 1px;
+    color: #333;
+  }
+
+  p {
+    font-size: 0.9375rem;
+    line-height: 1.6;
+    margin-bottom: 1.875rem;
+    color: #666;
+  }
+
+  /* Socials */
+  .socials {
+    display: flex;
+    justify-content: center;
+    gap: 1.875rem;
+    flex-wrap: wrap;
+
+    a {
+      color: #333;
+      font-size: 0.875rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      text-decoration: none;
+      transition: all 0.3s ease;
+      position: relative;
+      letter-spacing: 1px;
+
+      &:hover {
+        opacity: 0.8;
+      }
+    }
+  }
+
+  /* Lang Switcher Toggle */
+  .lang-switch {
+    position: absolute;
+    top: 1.25rem;
+    right: 50%;
+    transform: translateX(50%);
+    z-index: 20;
+
+    .toggle-checkbox {
+      display: none;
+            
+      &:checked + .toggle-label {
+        .toggle-knob {
+          transform: translateX(44px); // Move knob to right
+        }
+      }
+    }
+
+    .toggle-label {
+      display: block;
+      width: 80px;
+      height: 40px;
+      border: 2px solid #333;
+      border-radius: 40px;
+      position: relative;
+      cursor: pointer;
+      background: rgba(255, 255, 255, 0.8);
+      transition: background 0.3s ease;
+
+      &:hover {
+        background: #fff;
+      }
+
+      .toggle-knob {
+        position: absolute;
+        top: 2px;
+        left: 2px;
+        width: 32px;
+        height: 32px;
+        background: #333;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: transform 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55); // Bouncy effect
+                
+        .knob-text {
+          color: #fff;
+          font-size: 12px;
+          font-weight: 800;
+          line-height: 1;
+          user-select: none;
+        }
+      }
+    }
+  }
+
+  footer {
+    position: absolute;
+    bottom: 0.625rem;
+    font-size: 0.5625rem;
+    color: #999;
+  }
+}
+
+@keyframes twinkle {
+  0%, 100% { opacity: 0.3; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.2); }
+}
+
+@keyframes burn {
+  0% { transform: rotate(-45deg) scale(1); opacity: 0.7; }
+  100% { transform: rotate(-45deg) scale(1.1); opacity: 1; height: 25px; }
+}
