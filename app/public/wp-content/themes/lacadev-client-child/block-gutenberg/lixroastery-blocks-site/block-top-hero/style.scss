@@ -1,0 +1,95 @@
+@use "../../../resources/styles/theme/abstracts/variables" as *;
+@use "@parent/styles/theme/abstracts/mixin" as *;
+
+.block-top-hero {
+    position: relative;
+    overflow: hidden;
+    padding: 0 !important;
+
+    &__bg {
+        display: block;
+        width: 100%;
+
+        @include maxWidth($md) {
+            object-fit: cover;
+            object-position: center;
+            min-height: rem(500);
+        }
+    }
+
+    &--custom &__bg {
+        position: absolute;
+        inset: 0;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    &--full &__bg {
+        position: relative;
+        height: auto;
+    }
+
+    &__overlay {
+        position: absolute;
+        inset: 0;
+    }
+
+    &__content {
+        margin: 0 auto;
+        max-width: 60%;
+        position: absolute;
+        bottom: 20%;
+        left: 0;
+        right: 0;
+
+        @include maxWidth($xl) {
+            max-width: 80%;
+        }
+
+        @include maxWidth($md) {
+            max-width: 90%;
+            bottom: 50%;
+            transform: translateY(50%);
+        }
+    }
+
+    &__headline {
+        margin: 0 0 1.2rem;
+        display: flex;
+        flex-direction: column;
+        text-align: center;
+        gap: 0.2em;
+        color: $lightColor;
+        font-family: $subFont;
+        font-weight: $regular;
+        text-transform: uppercase;
+        letter-spacing: 0.02em;
+
+        @include resFont(rem(18), rem(50));
+
+        @include maxWidth($sm) {
+            gap: 0.1em;
+        }
+    }
+
+    &__desc {
+        margin: 0 auto;
+        font-family: $mainFont;
+        font-weight: $regular;
+        line-height: 1.7;
+        color: $lightColor;
+
+        @include resFont(rem(16), rem(20));
+    }
+}
+
+// Editor admin 
+.wp-block-lacadev-top-hero-block {
+    .block-top-hero {
+        margin-left: 0;
+        margin-right: 0;
+        width: auto;
+        left: auto;
+        right: auto;
+    }
+}

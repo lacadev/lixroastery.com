@@ -1,0 +1,63 @@
+{
+    "$schema": "https://schemas.wp.org/trunk/block.json",
+    "apiVersion": 3,
+    "name": "lacadev/top-hero-block",
+    "title": "Top Hero",
+    "category": "lixroastery-blocks-site",
+    "icon": "cover-image",
+    "editorScript": "block-block-top-hero-editor",
+    "style": "block-block-top-hero",
+    "textdomain": "laca",
+    "supports": {
+        "html": false,
+        "align": ["full"]
+    },
+    "attributes": {
+        "align": {
+            "type": "string",
+            "default": "full"
+        },
+        "heroImageId": {
+            "type": "number",
+            "default": 0
+        },
+        "heroImageUrl": {
+            "type": "string",
+            "default": ""
+        },
+        "headline": {
+            "type": "string",
+            "default": "SUSTAINABILITY IS NOT A CHOICE\nIT'S OUR FUNDAMENTAL RESPONSIBILITY"
+        },
+        "description": {
+            "type": "string",
+            "default": ""
+        },
+        "overlayColor": {
+            "type": "string",
+            "default": "#0f1f13"
+        },
+        "overlayOpacity": {
+            "type": "number",
+            "default": 45
+        },
+        "heightMode": {
+            "type": "string",
+            "default": "custom"
+        },
+        "minHeight": {
+            "type": "number",
+            "default": 560
+        },
+        "__isPreview": {
+            "type": "boolean",
+            "default": false
+        }
+    },
+    "example": {
+        "viewportWidth": 800,
+        "attributes": {
+            "__isPreview": true
+        }
+    }
+}
