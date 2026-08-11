@@ -30,7 +30,7 @@
     }
   },
   "development": {
-    "url": "http://lacadev.local",
+    "url": "http://lixroastery.local",
     "port": 3000
   },
   "release": {

@@ -21,7 +21,7 @@ function child_enqueue_frontend_assets()
     $child_version = wp_get_theme()->get('Version');
     $child_dir_uri = dirname(get_stylesheet_directory_uri());
 
-	// ------------------------------------------------------------------
+    // ------------------------------------------------------------------
     // Theme style.css (cho phép viết CSS trực tiếp vào theme/style.css)
     // ------------------------------------------------------------------
     wp_enqueue_style(
@@ -30,7 +30,7 @@ function child_enqueue_frontend_assets()
         ['theme-css-bundle'], // load sau parent CSS
         $child_version
     );
-	
+
     // ------------------------------------------------------------------
     // CSS override từ resources/ (dùng khi không có build step)
     // ------------------------------------------------------------------
@@ -68,17 +68,6 @@ function child_enqueue_frontend_assets()
             ['theme-js-bundle'], // load sau parent JS
             filemtime($child_dist_js), // cache-bust khi file thay đổi
             true // in footer
-        );
-    }
-    // Stats Counter Block animation script — enqueue trực tiếp
-    $sc_js = get_stylesheet_directory() . '/block-gutenberg/phucdainam-blocks-site/block-stats-counter/stats-counter.js';
-    if ( file_exists( $sc_js ) ) {
-        wp_enqueue_script(
-            'block-stats-counter-js',
-            get_stylesheet_directory_uri() . '/block-gutenberg/phucdainam-blocks-site/block-stats-counter/stats-counter.js',
-            [],
-            filemtime( $sc_js ),
-            true
         );
     }
 }
