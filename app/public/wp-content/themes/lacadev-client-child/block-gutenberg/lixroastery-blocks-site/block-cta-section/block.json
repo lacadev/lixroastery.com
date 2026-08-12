@@ -1,0 +1,63 @@
+{
+    "$schema": "https://schemas.wp.org/trunk/block.json",
+    "apiVersion": 3,
+    "name": "lacadev/cta-section-block",
+    "title": "CTA Section",
+    "category": "lixroastery-blocks-site",
+    "icon": "align-center",
+    "editorScript": "block-block-cta-section-editor",
+    "style": "block-block-cta-section",
+    "textdomain": "laca",
+    "supports": {
+        "html": false,
+        "align": ["wide", "full"]
+    },
+    "attributes": {
+        "headlineLine1": {
+            "type": "string",
+            "default": "SUSTAINABILITY IS NOT A CHOICE"
+        },
+        "headlineLine2": {
+            "type": "string",
+            "default": "IT'S OUR FUNDAMENTAL RESPONSIBILITY"
+        },
+        "description": {
+            "type": "string",
+            "default": ""
+        },
+        "buttonText": {
+            "type": "string",
+            "default": "Manifesto"
+        },
+        "buttonLink": {
+            "type": "string",
+            "default": ""
+        },
+        "textColor": {
+            "type": "string",
+            "default": "#1c2b1f"
+        },
+        "buttonColor": {
+            "type": "string",
+            "default": "#2f4a34"
+        },
+        "bgColor": {
+            "type": "string",
+            "default": "#ffffff"
+        },
+        "bgOpacity": {
+            "type": "number",
+            "default": 100
+        },
+        "__isPreview": {
+            "type": "boolean",
+            "default": false
+        }
+    },
+    "example": {
+        "viewportWidth": 800,
+        "attributes": {
+            "__isPreview": true
+        }
+    }
+}

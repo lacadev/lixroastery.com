@@ -1,0 +1,73 @@
+@use "@parent/styles/theme/abstracts/variables" as *;
+@use "@parent/styles/theme/abstracts/mixin" as *;
+@use "../../../resources/styles/theme/abstracts/variables" as *;
+
+.block-cta-section {
+
+    &__inner {
+        max-width: 60%;
+        margin: 0 auto;
+        color: $darkColor;
+
+        @include maxWidth($xl) {
+            max-width: 80%;
+        }
+
+        @include maxWidth($md) {
+            max-width: 90%;
+        }
+    }
+
+    &__headline {
+        margin: 0 0 1.2rem;
+        display: flex;
+        flex-direction: column;
+        text-align: center;
+        gap: 0.2em;
+        font-family: $subFont;
+        font-weight: $regular;
+        text-transform: uppercase;
+        letter-spacing: 0.02em;
+        line-height: 1.2;
+
+        @include resFont(rem(18), rem(50));
+
+        @include maxWidth($sm) {
+            gap: 0.1em;
+        }
+    }
+
+    &__desc {
+        margin: rem(50) auto;
+        font-weight: $regular;
+        line-height: 1.7;
+
+        @include resFont(rem(16), rem(20));
+    }
+
+    &__btn {
+        text-align: center;
+    }
+
+    &__link {
+        padding: 0.85em 2em;
+        font-family: $subFont;
+        background-color: $primaryColor;
+        color: $lightColor;
+        text-decoration: none;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        font-weight: $light;
+        border-radius: $rSm;
+        border: 1px solid transparent;
+        transition: opacity 0.25s ease;
+
+        @include resFont(rem(16), rem(20));
+
+        &:hover {
+            background-color: $lightColor;
+            color: $primaryColor;
+            border-color: $primaryColor;
+        }
+    }
+}
