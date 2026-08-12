@@ -1,0 +1,56 @@
+@use "@parent/styles/theme/abstracts/variables" as *;
+@use "@parent/styles/theme/abstracts/mixin" as *;
+@use "../../../resources/styles/theme/abstracts/variables" as *;
+
+.block-stats-info {
+
+    &__grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 0;
+
+        @include maxWidth($md) {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 2.5rem 1.5rem;
+        }
+
+        @include maxWidth($xs) {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    &__item {
+        position: relative;
+        padding: 0 2rem;
+
+        @include maxWidth($md) {
+            padding: 0 1rem;
+        }
+    }
+
+    &__number {
+        font-family: $subFont;
+        font-weight: $regular;
+        line-height: 1;
+        margin-bottom: rem(20);
+
+        @include resFont(rem(30), rem(100));
+    }
+
+    &__label {
+        font-family: $subFont;
+        font-weight: $regular;
+        text-transform: uppercase;
+        margin-bottom: rem(20);
+
+        @include resFont(rem(16), rem(20));
+    }
+
+    &__desc {
+        margin: 0;
+        font-weight: $regular;
+        line-height: 1.2;
+
+        @include resFont(rem(16), rem(20));
+    }
+}

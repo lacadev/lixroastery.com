@@ -1,0 +1,56 @@
+{
+    "$schema": "https://schemas.wp.org/trunk/block.json",
+    "apiVersion": 3,
+    "name": "lacadev/stats-info-block",
+    "title": "Stats Info",
+    "category": "lixroastery-blocks-site",
+    "icon": "chart-bar",
+    "editorScript": "block-block-stats-info-editor",
+    "style": "block-block-stats-info",
+    "textdomain": "laca",
+    "supports": {
+        "html": false,
+        "align": ["wide", "full"]
+    },
+    "attributes": {
+        "items": {
+            "type": "array",
+            "default": [
+                { "number": "+20", "label": "Global partners in the world", "description": "Direct and indirect, transparent alliances with distinguished partners worldwide." },
+                { "number": "+50", "label": "Specialty standards to rare gems", "description": "A curated portfolio ranging from standard specialty to outstanding-rare gems." },
+                { "number": "+40", "label": "Guides to the world of sensory science", "description": "A team of sensory experts armed with deep knowledge, from agronomy to brewing." },
+                { "number": "+03", "label": "Sensory reset experience", "description": "Absolute 'Sensory Reset' sanctuaries spanning Vietnam." }
+            ]
+        },
+        "numberColor": {
+            "type": "string",
+            "default": "#1c2b1f"
+        },
+        "labelColor": {
+            "type": "string",
+            "default": "#1c2b1f"
+        },
+        "descriptionColor": {
+            "type": "string",
+            "default": "#6b7568"
+        },
+        "bgColor": {
+            "type": "string",
+            "default": "#ffffff"
+        },
+        "bgOpacity": {
+            "type": "number",
+            "default": 100
+        },
+        "__isPreview": {
+            "type": "boolean",
+            "default": false
+        }
+    },
+    "example": {
+        "viewportWidth": 800,
+        "attributes": {
+            "__isPreview": true
+        }
+    }
+}

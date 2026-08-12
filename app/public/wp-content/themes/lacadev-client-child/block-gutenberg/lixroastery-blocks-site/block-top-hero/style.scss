@@ -3,9 +3,9 @@
 @use "../../../resources/styles/theme/abstracts/variables" as *;
 
 .block-top-hero {
+    padding-top: 0 !important;
     position: relative;
     overflow: hidden;
-    padding: 0 !important;
 
     &__bg {
         display: block;
@@ -78,7 +78,7 @@
     }
 }
 
-// Editor admin 
+// Editor admin
 .wp-block-lacadev-top-hero-block {
     .block-top-hero {
         margin-left: 0;
@@ -87,6 +87,13 @@
         left: auto;
         right: auto;
     }
+}
+
+// Parent theme ép font h1-h6 trong editor về $themeFont (Quicksand) bằng
+// !important (editor/index.scss) — cần selector cụ thể hơn + !important để
+// tiêu đề block vẫn hiện đúng font riêng ($subFont) khi soạn thảo.
+.editor-styles-wrapper .block-top-hero__headline {
+    font-family: $subFont !important;
 }
 
 .editor-styles-wrapper :where(:not(.is-layout-flex,.is-layout-grid))>.wp-block {

@@ -44,6 +44,7 @@
 
     &__link {
         padding: 0.85em 2em;
+        display: inline-block;
         font-family: $subFont;
         background-color: $primaryColor;
         color: $lightColor;
@@ -63,4 +64,11 @@
             border-color: $primaryColor;
         }
     }
+}
+
+// Parent theme ép font h1-h6 trong editor về $themeFont (Quicksand) bằng
+// !important (editor/index.scss) — cần selector cụ thể hơn + !important để
+// tiêu đề block vẫn hiện đúng font riêng ($subFont) khi soạn thảo.
+.editor-styles-wrapper .block-cta-section__headline {
+    font-family: $subFont !important;
 }
