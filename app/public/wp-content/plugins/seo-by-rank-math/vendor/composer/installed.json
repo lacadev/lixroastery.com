@@ -314,17 +314,17 @@
         },
         {
             "name": "wp-media/wp-mixpanel",
-            "version": "v1.4.1",
-            "version_normalized": "1.4.1.0",
+            "version": "v1.4.4",
+            "version_normalized": "1.4.4.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/wp-media/wp-mixpanel.git",
-                "reference": "09dea8a51f97e8047defc9f8a995b87dec76baad"
+                "reference": "424106dea366f96cb21d9ccb537e388ec1187a57"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/wp-media/wp-mixpanel/zipball/09dea8a51f97e8047defc9f8a995b87dec76baad",
-                "reference": "09dea8a51f97e8047defc9f8a995b87dec76baad",
+                "url": "https://api.github.com/repos/wp-media/wp-mixpanel/zipball/424106dea366f96cb21d9ccb537e388ec1187a57",
+                "reference": "424106dea366f96cb21d9ccb537e388ec1187a57",
                 "shasum": ""
             },
             "require": {
@@ -341,7 +341,7 @@
                 "wp-coding-standards/wpcs": "^3",
                 "wp-media/phpunit": "^3"
             },
-            "time": "2026-05-29T18:02:43+00:00",
+            "time": "2026-08-05T15:47:15+00:00",
             "type": "library",
             "installation-source": "dist",
             "autoload": {
@@ -366,7 +366,7 @@
             "description": "WordPress Mixpanel Integration",
             "support": {
                 "issues": "https://github.com/wp-media/wp-mixpanel/issues",
-                "source": "https://github.com/wp-media/wp-mixpanel/tree/v1.4.1"
+                "source": "https://github.com/wp-media/wp-mixpanel/tree/v1.4.4"
             },
             "install-path": "../wp-media/wp-mixpanel"
         }
