@@ -1,14 +1,19 @@
 import { __ } from '@wordpress/i18n';
-import { useBlockProps, InspectorControls } from '@wordpress/block-editor';
+import {
+	useBlockProps,
+	InspectorControls,
+	RichText,
+} from '@wordpress/block-editor';
 import {
 	PanelBody,
 	TextControl,
-	TextareaControl,
 	ColorPicker,
 	RangeControl,
+	SelectControl,
 } from '@wordpress/components';
-import ServerSideRender from '@wordpress/server-side-render';
 import { useInserterPreview, BlockPreviewMock } from '../../utils/preview';
+import { hexToRgba } from '../../utils/style';
+import previewImage from './preview.png';
 
 export default function Edit( { attributes, setAttributes } ) {
 	const isPreview = useInserterPreview( attributes );
@@ -18,18 +23,19 @@ export default function Edit( { attributes, setAttributes } ) {
 		return (
 			<BlockPreviewMock
 				kicker={ __( 'CTA Section', 'laca' ) }
-				title={ attributes.headlineLine1 || __( 'Kêu gọi hành động', 'laca' ) }
+				title={ __( 'Kêu gọi hành động', 'laca' ) }
 				columns={ 1 }
+				image={ previewImage }
 			/>
 		);
 	}
 
 	const {
-		headlineLine1,
-		headlineLine2,
+		headline,
 		description,
 		buttonText,
 		buttonLink,
+		buttonTarget,
 		textColor,
 		buttonColor,
 		bgColor,
@@ -39,40 +45,43 @@ export default function Edit( { attributes, setAttributes } ) {
 	return (
 		<>
 			<InspectorControls>
-				<PanelBody title={ __( 'Nội dung', 'laca' ) } initialOpen={ true }>
-					<TextControl
-						label={ __( 'Tiêu đề — dòng 1', 'laca' ) }
-						value={ headlineLine1 }
-						onChange={ ( v ) => setAttributes( { headlineLine1: v } ) }
-					/>
-					<TextControl
-						label={ __( 'Tiêu đề — dòng 2', 'laca' ) }
-						value={ headlineLine2 }
-						onChange={ ( v ) => setAttributes( { headlineLine2: v } ) }
-					/>
-					<TextareaControl
-						label={ __( 'Mô tả', 'laca' ) }
-						value={ description }
-						onChange={ ( v ) => setAttributes( { description: v } ) }
-					/>
-				</PanelBody>
-
-				<PanelBody title={ __( 'Nút bấm', 'laca' ) } initialOpen={ true }>
-					<TextControl
-						label={ __( 'Text nút', 'laca' ) }
-						value={ buttonText }
-						onChange={ ( v ) => setAttributes( { buttonText: v } ) }
-					/>
+				<PanelBody
+					title={ __( 'Nút bấm', 'laca' ) }
+					initialOpen={ true }
+				>
 					<TextControl
 						label={ __( 'Đường dẫn', 'laca' ) }
 						value={ buttonLink }
 						onChange={ ( v ) => setAttributes( { buttonLink: v } ) }
 						placeholder="https://…"
 					/>
+					<SelectControl
+						label={ __( 'Mở liên kết', 'laca' ) }
+						value={ buttonTarget }
+						options={ [
+							{
+								label: __( 'Cùng tab (mặc định)', 'laca' ),
+								value: '_self',
+							},
+							{ label: __( 'Tab mới', 'laca' ), value: '_blank' },
+						] }
+						onChange={ ( v ) =>
+							setAttributes( { buttonTarget: v } )
+						}
+					/>
 				</PanelBody>
 
-				<PanelBody title={ __( 'Giao diện', 'laca' ) } initialOpen={ false }>
-					<p style={ { fontSize: '0.8rem', fontWeight: 600, marginBottom: '0.5rem' } }>
+				<PanelBody
+					title={ __( 'Giao diện', 'laca' ) }
+					initialOpen={ false }
+				>
+					<p
+						style={ {
+							fontSize: '0.8rem',
+							fontWeight: 600,
+							marginBottom: '0.5rem',
+						} }
+					>
 						{ __( 'Màu chữ', 'laca' ) }
 					</p>
 					<ColorPicker
@@ -80,15 +89,29 @@ export default function Edit( { attributes, setAttributes } ) {
 						onChange={ ( v ) => setAttributes( { textColor: v } ) }
 						enableAlpha={ false }
 					/>
-					<p style={ { fontSize: '0.8rem', fontWeight: 600, margin: '1rem 0 0.5rem' } }>
+					<p
+						style={ {
+							fontSize: '0.8rem',
+							fontWeight: 600,
+							margin: '1rem 0 0.5rem',
+						} }
+					>
 						{ __( 'Màu nút', 'laca' ) }
 					</p>
 					<ColorPicker
 						color={ buttonColor }
-						onChange={ ( v ) => setAttributes( { buttonColor: v } ) }
+						onChange={ ( v ) =>
+							setAttributes( { buttonColor: v } )
+						}
 						enableAlpha={ false }
 					/>
-					<p style={ { fontSize: '0.8rem', fontWeight: 600, margin: '1rem 0 0.5rem' } }>
+					<p
+						style={ {
+							fontSize: '0.8rem',
+							fontWeight: 600,
+							margin: '1rem 0 0.5rem',
+						} }
+					>
 						{ __( 'Màu nền section', 'laca' ) }
 					</p>
 					<ColorPicker
@@ -107,9 +130,47 @@ export default function Edit( { attributes, setAttributes } ) {
 				</PanelBody>
 			</InspectorControls>
 
-			<div { ...blockProps }>
-				<ServerSideRender block="lacadev/cta-section-block" attributes={ attributes } />
-			</div>
+			<section
+				{ ...blockProps }
+				style={ {
+					...blockProps.style,
+					background: hexToRgba( bgColor, bgOpacity ),
+					color: textColor,
+				} }
+			>
+				<div className="container block-cta-section__inner">
+					<RichText
+						tagName="h2"
+						className="block-cta-section__headline"
+						value={ headline }
+						onChange={ ( v ) => setAttributes( { headline: v } ) }
+						placeholder={ __( 'Nhập tiêu đề…', 'laca' ) }
+						allowedFormats={ [] }
+					/>
+					<RichText
+						tagName="div"
+						className="block-cta-section__desc"
+						value={ description }
+						onChange={ ( v ) =>
+							setAttributes( { description: v } )
+						}
+						placeholder={ __( 'Nhập mô tả…', 'laca' ) }
+					/>
+					<div className="block-cta-section__btn">
+						<RichText
+							tagName="span"
+							className="block-cta-section__link"
+							style={ { display: 'inline-block' } }
+							value={ buttonText }
+							onChange={ ( v ) =>
+								setAttributes( { buttonText: v } )
+							}
+							placeholder={ __( 'Text nút…', 'laca' ) }
+							allowedFormats={ [] }
+						/>
+					</div>
+				</div>
+			</section>
 		</>
 	);
 }

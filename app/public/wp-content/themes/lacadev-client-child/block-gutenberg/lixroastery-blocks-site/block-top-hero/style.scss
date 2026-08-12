@@ -1,5 +1,6 @@
-@use "../../../resources/styles/theme/abstracts/variables" as *;
+@use "@parent/styles/theme/abstracts/variables" as *;
 @use "@parent/styles/theme/abstracts/mixin" as *;
+@use "../../../resources/styles/theme/abstracts/variables" as *;
 
 .block-top-hero {
     position: relative;
@@ -55,25 +56,19 @@
 
     &__headline {
         margin: 0 0 1.2rem;
-        display: flex;
-        flex-direction: column;
         text-align: center;
-        gap: 0.2em;
         color: $lightColor;
         font-family: $subFont;
         font-weight: $regular;
         text-transform: uppercase;
         letter-spacing: 0.02em;
+        line-height: 1.3;
 
         @include resFont(rem(18), rem(50));
-
-        @include maxWidth($sm) {
-            gap: 0.1em;
-        }
     }
 
     &__desc {
-        margin: 0 auto;
+        margin: rem(50) auto 0;
         font-family: $mainFont;
         font-weight: $regular;
         line-height: 1.7;
@@ -92,4 +87,9 @@
         left: auto;
         right: auto;
     }
+}
+
+.editor-styles-wrapper :where(:not(.is-layout-flex,.is-layout-grid))>.wp-block {
+    margin-left: auto !important;
+    margin-right: auto !important;
 }

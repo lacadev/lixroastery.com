@@ -2,19 +2,19 @@ import { __ } from '@wordpress/i18n';
 import {
 	useBlockProps,
 	InspectorControls,
+	RichText,
 	MediaUpload,
 	MediaUploadCheck,
 } from '@wordpress/block-editor';
 import {
 	PanelBody,
-	TextareaControl,
 	Button,
 	ColorPicker,
 	RangeControl,
 	RadioControl,
 } from '@wordpress/components';
-import ServerSideRender from '@wordpress/server-side-render';
 import { useInserterPreview, BlockPreviewMock } from '../../utils/preview';
+import { hexToRgba } from '../../utils/style';
 import previewImage from './preview.png';
 
 function ImagePicker( { imageUrl, imageId, onSelect, label } ) {
@@ -74,7 +74,7 @@ export default function Edit( { attributes, setAttributes } ) {
 		return (
 			<BlockPreviewMock
 				kicker={ __( 'Top Hero', 'laca' ) }
-				title={ attributes.headline || __( 'Hero banner', 'laca' ) }
+				title={ __( 'Hero banner', 'laca' ) }
 				columns={ 1 }
 				image={ previewImage }
 			/>
@@ -91,6 +91,13 @@ export default function Edit( { attributes, setAttributes } ) {
 		heightMode,
 		minHeight,
 	} = attributes;
+
+	let sectionStyle;
+	if ( heightMode === 'custom' ) {
+		sectionStyle = { minHeight: `${ minHeight }px` };
+	} else if ( ! heroImageUrl ) {
+		sectionStyle = { minHeight: '400px' };
+	}
 
 	return (
 		<>
@@ -142,28 +149,6 @@ export default function Edit( { attributes, setAttributes } ) {
 				</PanelBody>
 
 				<PanelBody
-					title={ __( 'Nội dung', 'laca' ) }
-					initialOpen={ true }
-				>
-					<TextareaControl
-						label={ __(
-							'Tiêu đề (Enter để xuống dòng tùy ý)',
-							'laca'
-						) }
-						value={ headline }
-						onChange={ ( v ) => setAttributes( { headline: v } ) }
-						rows={ 3 }
-					/>
-					<TextareaControl
-						label={ __( 'Mô tả ngắn', 'laca' ) }
-						value={ description }
-						onChange={ ( v ) =>
-							setAttributes( { description: v } )
-						}
-					/>
-				</PanelBody>
-
-				<PanelBody
 					title={ __( 'Giao diện', 'laca' ) }
 					initialOpen={ false }
 				>
@@ -196,12 +181,52 @@ export default function Edit( { attributes, setAttributes } ) {
 				</PanelBody>
 			</InspectorControls>
 
-			<div { ...blockProps }>
-				<ServerSideRender
-					block="lacadev/top-hero-block"
-					attributes={ attributes }
+			<section
+				{ ...blockProps }
+				className={ `${ blockProps.className } block-top-hero--${ heightMode }` }
+				style={ { ...blockProps.style, ...sectionStyle } }
+			>
+				{ heroImageUrl && (
+					<img
+						src={ heroImageUrl }
+						alt=""
+						className="block-top-hero__bg"
+					/>
+				) }
+
+				<div
+					className="block-top-hero__overlay"
+					style={ {
+						background: `linear-gradient(180deg, ${ hexToRgba(
+							overlayColor,
+							overlayOpacity
+						) } 0%, ${ hexToRgba(
+							overlayColor,
+							overlayOpacity
+						) } 100%)`,
+					} }
 				/>
-			</div>
+
+				<div className="block-top-hero__content">
+					<RichText
+						tagName="h1"
+						className="block-top-hero__headline"
+						value={ headline }
+						onChange={ ( v ) => setAttributes( { headline: v } ) }
+						placeholder={ __( 'Nhập tiêu đề…', 'laca' ) }
+						allowedFormats={ [] }
+					/>
+					<RichText
+						tagName="div"
+						className="block-top-hero__desc"
+						value={ description }
+						onChange={ ( v ) =>
+							setAttributes( { description: v } )
+						}
+						placeholder={ __( 'Nhập mô tả ngắn…', 'laca' ) }
+					/>
+				</div>
+			</section>
 		</>
 	);
 }

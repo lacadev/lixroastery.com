@@ -4,7 +4,9 @@ if (!defined('ABSPATH')) {
 }
 
 $hero_image_url = esc_url($attributes['heroImageUrl'] ?? '');
-$headline_raw    = (string) ($attributes['headline'] ?? '');
+// headline/description được nhập trực tiếp trong canvas qua RichText
+// (edit.js) nên đã là HTML an toàn, chỉ cần lọc qua wp_kses_post().
+$headline        = wp_kses_post($attributes['headline'] ?? '');
 $description     = wp_kses_post($attributes['description'] ?? '');
 $height_mode      = ($attributes['heightMode'] ?? 'custom') === 'full' ? 'full' : 'custom';
 $min_height       = max(320, min(1200, intval($attributes['minHeight'] ?? 560)));
@@ -17,10 +19,6 @@ $r = hexdec(substr($overlay_color, 1, 2));
 $g = hexdec(substr($overlay_color, 3, 2));
 $b = hexdec(substr($overlay_color, 5, 2));
 $overlay_rgba = 'rgba(' . $r . ',' . $g . ',' . $b . ',' . $overlay_opacity . ')';
-
-// Giữ nguyên xuống dòng người dùng tự nhập trong textarea — mỗi dòng render
-// riêng 1 <span>, không gộp lại thành 1 dòng duy nhất.
-$headline_lines = array_filter(array_map('trim', explode("\n", $headline_raw)));
 
 $section_class = 'block-top-hero block-top-hero--' . $height_mode;
 $wrapper_attrs = get_block_wrapper_attributes(['class' => $section_class]);
@@ -41,12 +39,8 @@ $section_style = $height_mode === 'custom'
     <div class="block-top-hero__overlay" style="background:linear-gradient(180deg, <?php echo esc_attr($overlay_rgba); ?> 0%, <?php echo esc_attr($overlay_rgba); ?> 100%);"></div>
 
     <div class="block-top-hero__content">
-        <?php if (!empty($headline_lines)) : ?>
-            <h1 class="block-top-hero__headline">
-                <?php foreach ($headline_lines as $line) : ?>
-                    <span><?php echo esc_html($line); ?></span>
-                <?php endforeach; ?>
-            </h1>
+        <?php if ($headline) : ?>
+            <h1 class="block-top-hero__headline"><?php echo $headline; ?></h1>
         <?php endif; ?>
         <?php if ($description) : ?>
             <div class="block-top-hero__desc"><?php echo $description; ?></div>

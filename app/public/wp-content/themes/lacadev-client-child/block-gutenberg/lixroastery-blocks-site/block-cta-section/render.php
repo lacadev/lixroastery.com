@@ -3,11 +3,14 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-$headline_1 = esc_html($attributes['headlineLine1'] ?? '');
-$headline_2 = esc_html($attributes['headlineLine2'] ?? '');
+// headline/description/buttonText được nhập trực tiếp trong canvas qua
+// RichText (edit.js) nên đã là HTML an toàn (RichText tự escape nội dung),
+// chỉ cần lọc qua wp_kses_post() trước khi in ra.
+$headline = wp_kses_post($attributes['headline'] ?? '');
 $description = wp_kses_post($attributes['description'] ?? '');
-$button_text = esc_html($attributes['buttonText'] ?? '');
+$button_text = wp_kses_post($attributes['buttonText'] ?? '');
 $button_link = esc_url($attributes['buttonLink'] ?? '');
+$button_target = ($attributes['buttonTarget'] ?? '_self') === '_blank' ? '_blank' : '_self';
 
 $text_color = preg_match('/^#[0-9a-fA-F]{6}$/', $attributes['textColor'] ?? '')
     ? $attributes['textColor']
@@ -30,18 +33,17 @@ $wrapper_attrs = get_block_wrapper_attributes(['class' => 'block-cta-section']);
 <section <?php echo $wrapper_attrs; ?>
     style="background:<?php echo esc_attr($bg_rgba); ?>;color:<?php echo esc_attr($text_color); ?>;">
     <div class="container block-cta-section__inner">
-        <?php if ($headline_1 || $headline_2): ?>
-            <h2 class="block-cta-section__headline">
-                <?php if ($headline_1): ?><span><?php echo $headline_1; ?></span><?php endif; ?>
-                <?php if ($headline_2): ?><span><?php echo $headline_2; ?></span><?php endif; ?>
-            </h2>
+        <?php if ($headline): ?>
+            <h2 class="block-cta-section__headline"><?php echo $headline; ?></h2>
         <?php endif; ?>
         <?php if ($description): ?>
             <div class="block-cta-section__desc"><?php echo $description; ?></div>
         <?php endif; ?>
         <?php if ($button_text): ?>
             <div class="block-cta-section__btn">
-                <a class="block-cta-section__link" href="<?php echo $button_link ?: '#'; ?>">
+                <a class="block-cta-section__link" href="<?php echo $button_link ?: '#'; ?>"
+                    target="<?php echo esc_attr($button_target); ?>"
+                    <?php echo $button_target === '_blank' ? 'rel="noopener noreferrer"' : ''; ?>>
                     <?php echo $button_text; ?>
                 </a>
             </div>

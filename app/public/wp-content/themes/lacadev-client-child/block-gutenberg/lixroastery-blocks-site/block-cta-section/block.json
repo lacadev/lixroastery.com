@@ -13,13 +13,9 @@
         "align": ["wide", "full"]
     },
     "attributes": {
-        "headlineLine1": {
+        "headline": {
             "type": "string",
-            "default": "SUSTAINABILITY IS NOT A CHOICE"
-        },
-        "headlineLine2": {
-            "type": "string",
-            "default": "IT'S OUR FUNDAMENTAL RESPONSIBILITY"
+            "default": "SUSTAINABILITY IS NOT A CHOICE<br>IT'S OUR FUNDAMENTAL RESPONSIBILITY"
         },
         "description": {
             "type": "string",
@@ -32,6 +28,10 @@
         "buttonLink": {
             "type": "string",
             "default": ""
+        },
+        "buttonTarget": {
+            "type": "string",
+            "default": "_self"
         },
         "textColor": {
             "type": "string",

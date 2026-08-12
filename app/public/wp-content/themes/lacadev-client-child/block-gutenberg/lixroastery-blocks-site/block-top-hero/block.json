@@ -27,7 +27,7 @@
         },
         "headline": {
             "type": "string",
-            "default": "SUSTAINABILITY IS NOT A CHOICE\nIT'S OUR FUNDAMENTAL RESPONSIBILITY"
+            "default": "SUSTAINABILITY IS NOT A CHOICE<br>IT'S OUR FUNDAMENTAL RESPONSIBILITY"
         },
         "description": {
             "type": "string",
