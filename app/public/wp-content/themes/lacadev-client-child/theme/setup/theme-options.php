@@ -79,7 +79,104 @@ $optionsPage = Container::make('theme_options', __('Laca Theme', 'laca'))
 			->set_attribute('placeholder', 'zalo'),
 	])
 
+	->add_tab(__('🦶 Footer', 'laca'), [
+		Field::make('html', 'footer_intro', __('', 'laca'))
+			->set_html('<div style="background:#f0f9ff;border:1px solid #bae6fd;border-radius:6px;padding:14px 16px;margin:8px 0"><p style="margin:0 0 8px;font-weight:600;color:#0369a1">🔧 Footer</p><p style="margin:0;font-size:13px;color:#374151">Thông tin công ty và các cột liên kết hiển thị ở footer cuối trang. Địa chỉ, email, mạng xã hội đã nhập ở tab <strong>Contact | Liên hệ</strong> — footer tự lấy lại, không cần nhập lại ở đây.</p></div>'),
 
+		Field::make('text', 'footer_company_name' . currentLanguage(), __('Tên công ty', 'laca'))
+			->set_width(50)
+			->set_attribute('placeholder', 'VD: Công ty TNHH ABC'),
+		Field::make('text', 'footer_business_reg' . currentLanguage(), __('Giấy CNĐKKD số', 'laca'))
+			->set_width(50)
+			->set_attribute('placeholder', 'VD: 0123456789 do Sở KH&ĐT ... cấp ngày ...'),
+
+		Field::make('complex', 'footer_links_col1' . currentLanguage(), __('Cột liên kết 1', 'laca'))
+			->set_width(50)
+			->set_layout('tabbed-vertical')
+			->add_fields([
+				Field::make('text', 'name', __('Tên hiển thị', 'laca'))->set_width(50),
+				Field::make('text', 'url', __('Đường dẫn', 'laca'))->set_width(50)
+					->set_attribute('placeholder', 'https://…'),
+			])
+			->set_header_template('<% if (name) { %><%- name %><% } %>')
+			->set_default_value([
+				['name' => 'Điều khoản sử dụng', 'url' => '#'],
+				['name' => 'Chính sách bảo mật', 'url' => '#'],
+				['name' => 'Chính sách bán hàng', 'url' => '#'],
+				['name' => 'Chính sách vận chuyển', 'url' => '#'],
+			]),
+
+		Field::make('complex', 'footer_links_col2' . currentLanguage(), __('Cột liên kết 2', 'laca'))
+			->set_width(50)
+			->set_layout('tabbed-vertical')
+			->add_fields([
+				Field::make('text', 'name', __('Tên hiển thị', 'laca'))->set_width(50),
+				Field::make('text', 'url', __('Đường dẫn', 'laca'))->set_width(50)
+					->set_attribute('placeholder', 'https://…'),
+			])
+			->set_header_template('<% if (name) { %><%- name %><% } %>')
+			->set_default_value([
+				['name' => 'Tuyển dụng', 'url' => '#'],
+				['name' => 'Liên hệ', 'url' => '#'],
+				['name' => 'Câu hỏi thường gặp', 'url' => '#'],
+				['name' => 'Sơ đồ trang web', 'url' => '#'],
+			]),
+
+		Field::make('complex', 'footer_badges' . currentLanguage(), __('Đăng ký / Chứng nhận', 'laca'))
+			->set_width(50)
+			->set_layout('tabbed-vertical')
+			->add_fields([
+				Field::make('text', 'name', __('Tên hiển thị', 'laca'))->set_width(50),
+				Field::make('text', 'url', __('Đường dẫn', 'laca'))->set_width(50)
+					->set_attribute('placeholder', 'https://…'),
+			])
+			->set_header_template('<% if (name) { %><%- name %><% } %>')
+			->set_default_value([
+				['name' => 'Đăng ký Bộ Công Thương', 'url' => '#'],
+				['name' => 'Đăng ký DMCA', 'url' => '#'],
+			]),
+	])
+
+	->add_tab(__('☕ Trang sản phẩm | Product Page', 'laca'), [
+		Field::make('html', 'product_page_intro', __('', 'laca'))
+			->set_html('<div style="background:#f0f9ff;border:1px solid #bae6fd;border-radius:6px;padding:14px 16px;margin:8px 0"><p style="margin:0 0 8px;font-weight:600;color:#0369a1">🔧 Trang chi tiết sản phẩm</p><p style="margin:0;font-size:13px;color:#374151">Các nội dung dưới đây dùng chung cho <strong>mọi sản phẩm</strong> (mục "How to use" và "Reviews" ở trang chi tiết sản phẩm) — chỉ cần nhập 1 lần ở đây, không cần lặp lại cho từng sản phẩm.</p></div>'),
+
+		Field::make('html', 'how_to_use_label', __('', 'laca'))
+			->set_html('----<i> How to use | Cách sử dụng & bảo quản </i>----'),
+		Field::make('text', 'how_to_use_title' . currentLanguage(), __('Tiêu đề', 'laca'))
+			->set_attribute('placeholder', 'Recommendations for storage and use'),
+		Field::make('rich_text', 'how_to_use_content' . currentLanguage(), __('Nội dung hướng dẫn', 'laca')),
+
+		Field::make('html', 'water_quality_label', __('', 'laca'))
+			->set_html('----<i> Water quality | Chất lượng nước pha cà phê </i>----'),
+		Field::make('text', 'water_quality_title' . currentLanguage(), __('Tiêu đề', 'laca'))
+			->set_attribute('placeholder', 'The optimum water quality for brewing coffee'),
+		Field::make('text', 'water_quality_calcium' . currentLanguage(), __('Calcium Hardness', 'laca'))
+			->set_width(25)
+			->set_attribute('placeholder', '10 ppm CaCO3'),
+		Field::make('text', 'water_quality_magnesium' . currentLanguage(), __('Magnesium Hardness', 'laca'))
+			->set_width(25)
+			->set_attribute('placeholder', '58 ppm CaCO3'),
+		Field::make('text', 'water_quality_alkalinity' . currentLanguage(), __('Total Alkalinity', 'laca'))
+			->set_width(25)
+			->set_attribute('placeholder', '10 ppm CaCO3'),
+		Field::make('text', 'water_quality_sodium' . currentLanguage(), __('Sodium', 'laca'))
+			->set_width(25)
+			->set_attribute('placeholder', '10 ppm CaCO3'),
+
+		Field::make('html', 'reviews_label', __('', 'laca'))
+			->set_html('----<i> Reviews | Đánh giá khách hàng </i>----'),
+		Field::make('complex', 'reviews_list' . currentLanguage(), __('Danh sách đánh giá', 'laca'))
+			->set_layout('tabbed-vertical')
+			->add_fields([
+				Field::make('text', 'name', __('Tên khách hàng', 'laca'))
+					->set_attribute('placeholder', 'Mr.A'),
+				Field::make('textarea', 'content', __('Nội dung đánh giá', 'laca')),
+				Field::make('text', 'link', __('Đường dẫn (không bắt buộc)', 'laca'))
+					->set_attribute('placeholder', 'https://…'),
+			])
+			->set_header_template('<% if (name) { %><%- name %><% } %>'),
+	])
 
 	->add_tab(__('AI Translation | Dịch thuật AI', 'laca'), [
 		Field::make('html', 'ai_intro', __('', 'laca'))

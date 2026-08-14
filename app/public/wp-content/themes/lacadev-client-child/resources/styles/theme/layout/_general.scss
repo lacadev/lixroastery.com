@@ -3,11 +3,10 @@
 
 body:not(.wp-admin) {
   font-family: $mainFont !important;
-  background-color: $bgColor;
   line-height: 1.2 !important;
 }
 
-main#main_content {
+body:not(.home) main#main_content {
   padding-top: rem(90);
 
   @include maxWidth($md) {
@@ -28,7 +27,6 @@ main#main_content {
 }
 
 h1.page-title {
-    color: $secondColor;
     text-transform: uppercase;
     font-size: rem(30);
     font-weight: $semiBold;

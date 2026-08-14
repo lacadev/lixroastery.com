@@ -1,3 +1,87 @@
 @use "../abstracts/variables.scss" as *;
 @use "../abstracts/mixin.scss" as *;
 
+.footer {
+    padding: 3rem 0 2.5rem;
+
+    &__rule {
+        border: none;
+        border-top: 3px solid $primaryColor;
+        margin: 0 0 2.5rem;
+    }
+
+    // Cột 1 (Công ty) chiếm 50%, 3 cột còn lại chia đều 50% còn lại
+    // (3fr : 1fr : 1fr : 1fr = 50% : 16.67% : 16.67% : 16.67%).
+    &__grid {
+        display: grid;
+        grid-template-columns: 3fr 1fr 1fr 1fr;
+        gap: 2.5rem 2rem;
+
+        @include maxWidth($sm) {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    &__col {
+        &--end {
+            text-align: right;
+
+            @include maxWidth($sm) {
+                text-align: left;
+            }
+        }
+    }
+
+    &__list {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+
+        li {
+            margin-bottom: 0.7rem;
+            font-family: $subFont;
+            font-weight: $light;
+            font-size: rem(20);
+            letter-spacing: 0;
+            color: $darkColor;
+
+            &:last-child {
+                margin-bottom: 0;
+            }
+        }
+
+        a {
+            color: inherit;
+            text-decoration: none;
+
+            &:hover {
+                color: $primaryColor;
+            }
+        }
+    }
+
+    &__socials {
+        display: flex;
+        justify-content: flex-end;
+        gap: 0.9rem;
+        margin-top: 0.9rem;
+
+        @include maxWidth($sm) {
+            justify-content: flex-start;
+        }
+    }
+
+    &__social-link {
+        display: inline-flex;
+        color: $darkColor;
+        transition: color 0.2s ease;
+
+        &:hover {
+            color: $primaryColor;
+        }
+    }
+
+    &__social-icon {
+        font-size: rem(18);
+    }
+}

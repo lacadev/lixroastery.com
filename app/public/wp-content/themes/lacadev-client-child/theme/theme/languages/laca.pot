@@ -1,0 +1,205 @@
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: La Cà Dev - Client Child\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-08-12 03:33+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: \n"
+"Language: \n"
+"Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Loco https://localise.biz/\n"
+"X-Loco-Version: 2.8.8; wp-7.0.3; php-8.3.17\n"
+"X-Domain: laca"
+
+#: template-parts/comment-single.php:35
+#, php-format
+msgid "%s ago"
+msgstr ""
+
+#: page_templates/template-contact.php:119
+msgid "09xx xxx xxx"
+msgstr ""
+
+#: setup/theme-options.php:84
+msgid "AI Translation | Dịch thuật AI"
+msgstr ""
+
+#: setup/theme-options.php:100
+msgid "Anthropic API Key"
+msgstr ""
+
+#: setup/theme-options.php:18
+msgid "Branding | Thương hiệu"
+msgstr ""
+
+#: setup/theme-options.php:103
+msgid "Bô xử lý ưu tiên"
+msgstr ""
+
+#: page_templates/template-contact.php:29
+msgid ""
+"Bạn có ý tưởng mới, một dự án hay ho hay đơn giản là muốn chia sẻ một hành "
+"trình? Đừng ngần ngại, trạm luôn mở cửa đón chờ!"
+msgstr ""
+
+#: template-parts/share_box.php:12
+msgid "Chia sẻ bài viết:"
+msgstr ""
+
+#: page_templates/template-contact.php:160
+msgid "Chính sách bảo mật"
+msgstr ""
+
+#: archive.php:144
+msgid "Chưa có bài viết nào trong mục này."
+msgstr ""
+
+#. Name of the template
+#: page_templates/template-contact.php:2
+msgid "Contact Page"
+msgstr ""
+
+#: setup/theme-options.php:30
+msgid "Contact | Liên hệ"
+msgstr ""
+
+#: page_templates/template-contact.php:163
+msgid "của Google."
+msgstr ""
+
+#: setup/theme-options.php:94
+msgid "DeepSeek API Key"
+msgstr ""
+
+#: setup/theme-options.php:26
+msgid "Default image | Hình ảnh mặc định"
+msgstr ""
+
+#: template-parts/post-hero.php:9
+msgid "Dịch vụ chuyên nghiệp"
+msgstr ""
+
+#: page_templates/template-contact.php:44
+msgid "Email"
+msgstr ""
+
+#: page_templates/template-contact.php:128
+msgid "Email liên hệ"
+msgstr ""
+
+#: setup/theme-options.php:128
+msgid "Footer Script"
+msgstr ""
+
+#: setup/theme-options.php:88
+msgid "Gemini API Key"
+msgstr ""
+
+#: setup/theme-options.php:91
+msgid "Groq API Key"
+msgstr ""
+
+#: page_templates/template-contact.php:176
+msgid "Gửi lời nhắn"
+msgstr ""
+
+#: setup/theme-options.php:127
+msgid "Header Script"
+msgstr ""
+
+#: page_templates/template-contact.php:101
+msgid "Họ và tên"
+msgstr ""
+
+#: page_templates/template-contact.php:106
+msgid "Họ và tên của bạn"
+msgstr ""
+
+#: setup/theme-options.php:15
+msgid "Laca Theme"
+msgstr ""
+
+#. Name of the theme
+msgid "lacadev-client-child/lacadev-client-child/theme"
+msgstr ""
+
+#: setup/theme-options.php:22
+msgid "Logo"
+msgstr ""
+
+#: setup/theme-options.php:24
+msgid "Logo Footer"
+msgstr ""
+
+#: page_templates/template-contact.php:144
+msgid "Nơi bạn viết nên những ý tưởng hoặc lời nhắn gửi..."
+msgstr ""
+
+#: page_templates/template-contact.php:139
+msgid "Nội dung"
+msgstr ""
+
+#: setup/theme-options.php:97
+msgid "OpenAI API Key"
+msgstr ""
+
+#: page_templates/template-contact.php:28
+msgid "Ping tôi tại đây"
+msgstr ""
+
+#: setup/theme-options.php:123
+msgid "Scripts"
+msgstr ""
+
+#: header.php:57
+msgid "Skip to content"
+msgstr ""
+
+#: setup/theme-options.php:42
+msgid "Số hotline"
+msgstr ""
+
+#: page_templates/template-contact.php:114
+msgid "Số điện thoại"
+msgstr ""
+
+#: page_templates/template-contact.php:159
+msgid "Trang này được bảo vệ bởi reCAPTCHA và tuân thủ"
+msgstr ""
+
+#: page_templates/template-contact.php:161
+msgid "và"
+msgstr ""
+
+#: template-parts/comment-single.php:42
+msgid "Your comment is awaiting moderation."
+msgstr ""
+
+#: page_templates/template-contact.php:162
+msgid "Điều khoản dịch vụ"
+msgstr ""
+
+#: page_templates/template-contact.php:56
+msgid "Điện thoại"
+msgstr ""
+
+#: template-parts/rating-box.php:8
+msgid "Đánh giá bài viết"
+msgstr ""
+
+#: page_templates/template-contact.php:133
+msgid "Để tôi có thể gửi phản hồi (Không bắt buộc)"
+msgstr ""
+
+#: setup/theme-options.php:51 page_templates/template-contact.php:67
+msgid "Địa điểm"
+msgstr ""
+
+#: setup/theme-options.php:114
+msgid "🛒 Block Marketplace"
+msgstr ""

@@ -39,6 +39,12 @@ add_action('after_setup_theme', function () {
     // Load child theme options (Carbon Fields)
     require_once CHILD_THEME_SETUP_DIR . 'theme-options.php';
 
+    // Carbon Fields cho post type "product" (WooCommerce)
+    require_once CHILD_THEME_SETUP_DIR . 'product_meta.php';
+
+    // Taxonomy riêng cho post type "product" (WooCommerce)
+    require_once CHILD_THEME_SETUP_DIR . 'product_taxonomy.php';
+
 }, 20); // priority 20 — sau parent (10)
 
 // =============================================================================

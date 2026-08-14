@@ -1,0 +1,375 @@
+// $primaryColor/$lightColor/$darkColor/$mainFont/$subFont được định nghĩa ở
+// child theme (không còn ở parent) — @use theo đường dẫn tương đối, không
+// phải @parent/...
+@use "../abstracts/variables" as *;
+@use "../abstracts/mixin" as *;
+
+.single-product-page {
+    &__nav {
+        position: sticky;
+        top: 0;
+        z-index: 20;
+        background: #fff;
+        text-align: center;
+        padding: 1.5rem 1rem;
+        font-size: rem(12);
+        letter-spacing: 0.05em;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+
+        a {
+            color: rgba(0, 0, 0, 0.45);
+            text-decoration: none;
+            text-transform: uppercase;
+            transition: color 0.2s ease;
+
+            &.is-active,
+            &:hover {
+                color: $darkColor;
+            }
+        }
+
+        span {
+            margin: 0 0.6em;
+            color: rgba(0, 0, 0, 0.25);
+        }
+
+        @include maxWidth($sm) {
+            overflow-x: auto;
+            white-space: nowrap;
+            text-align: left;
+
+            span {
+                margin: 0 0.4em;
+            }
+        }
+    }
+
+    &__hero {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 3rem;
+        padding: 3rem 0;
+
+        @include maxWidth($md) {
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+        }
+    }
+
+    &__subname {
+        font-family: $subFont;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: rgba(0, 0, 0, 0.5);
+        margin: 0 0 0.5rem;
+    }
+
+    &__section {
+        padding: 4rem 0;
+
+        &--dark-media {
+            padding-bottom: 0;
+        }
+    }
+
+    &__title {
+        font-family: $subFont;
+        font-weight: $regular;
+        text-transform: uppercase;
+        text-align: center;
+        margin: 0 0 1.5rem;
+
+        @include resFont(rem(20), rem(32));
+    }
+
+    &__desc,
+    &__sca {
+        max-width: 640px;
+        margin: 0 auto 1.5rem;
+        text-align: center;
+        color: rgba(0, 0, 0, 0.65);
+        line-height: 1.8;
+
+        @include resFont(rem(14), rem(16));
+    }
+
+    &__stats {
+        display: flex;
+        justify-content: center;
+        gap: 3rem;
+        text-align: center;
+        margin-bottom: 2.5rem;
+        flex-wrap: wrap;
+
+        &--4col {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.5rem;
+            border-top: 1px solid rgba(0, 0, 0, 0.12);
+            padding-top: 1.5rem;
+
+            @include maxWidth($sm) {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    }
+
+    &__stat {
+        &-value {
+            display: block;
+            font-family: $subFont;
+            font-weight: $regular;
+            margin-bottom: 0.3rem;
+
+            @include resFont(rem(18), rem(26));
+
+            &--sm {
+                @include resFont(rem(13), rem(14));
+            }
+        }
+
+        &-label {
+            display: block;
+            font-size: rem(12);
+            color: rgba(0, 0, 0, 0.55);
+        }
+    }
+
+    &__media {
+        width: 100%;
+        aspect-ratio: 16 / 9;
+        background: $primaryColor;
+        margin-top: 2rem;
+        overflow: hidden;
+
+        iframe,
+        img {
+            display: block;
+            width: 100%;
+            height: 100%;
+            border: none;
+            object-fit: cover;
+        }
+    }
+
+    &__info-list {
+        list-style: none;
+        margin: 2rem 0 0;
+        padding: 0;
+        max-width: 700px;
+        margin-left: auto;
+        margin-right: auto;
+
+        li {
+            display: flex;
+            justify-content: space-between;
+            gap: 1rem;
+            padding: 0.7rem 0;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+            font-size: rem(14);
+
+            span:first-child {
+                color: rgba(0, 0, 0, 0.5);
+            }
+
+            span:last-child {
+                font-weight: $medium;
+                text-align: right;
+            }
+        }
+    }
+
+    &__flavor-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 2.5rem 1.5rem;
+        margin-top: 2.5rem;
+
+        @include maxWidth($sm) {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    &__flavor-item {
+        border-top: 1px solid rgba(0, 0, 0, 0.15);
+        padding-top: 1rem;
+    }
+
+    &__flavor-label {
+        display: block;
+        font-family: $subFont;
+        text-transform: uppercase;
+        font-weight: $regular;
+        margin-bottom: 0.4rem;
+
+        @include resFont(rem(15), rem(18));
+    }
+
+    &__flavor-value {
+        display: block;
+        font-size: rem(13);
+        color: rgba(0, 0, 0, 0.6);
+    }
+
+    &__journal-content {
+        margin-bottom: 2.5rem;
+
+        &--bottom {
+            margin-top: 2.5rem;
+            margin-bottom: 0;
+        }
+    }
+
+    &__journal-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        align-items: start;
+        gap: 1.5rem;
+
+        @include maxWidth($sm) {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    &__journal-card {
+        position: relative;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end;
+        color: inherit;
+        text-decoration: none;
+        background: $primaryColor;
+        padding: 1.5rem;
+        aspect-ratio: 4 / 5;
+        min-height: 260px;
+
+        // Xen kẽ nhỏ-to/to-nhỏ theo checkerboard (xem $is_tall trong single-product.php).
+        &--tall {
+            aspect-ratio: 5 / 8;
+        }
+
+        @include maxWidth($sm) {
+            aspect-ratio: auto;
+            min-height: 260px;
+
+            &--tall {
+                aspect-ratio: auto;
+                min-height: 340px;
+            }
+        }
+    }
+
+    &__journal-thumb {
+        position: absolute;
+        inset: 0;
+
+        img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0.35;
+        }
+    }
+
+    &__journal-title,
+    &__journal-excerpt {
+        position: relative;
+        color: $lightColor;
+        margin: 0;
+    }
+
+    &__journal-title {
+        font-family: $subFont;
+        font-weight: $regular;
+        margin-bottom: 0.5rem;
+
+        @include resFont(rem(14), rem(16));
+    }
+
+    &__journal-excerpt {
+        font-size: rem(12);
+        opacity: 0.8;
+        line-height: 1.6;
+    }
+
+    &__journal-link {
+        position: relative;
+        display: inline-block;
+        margin-top: 0.8rem;
+        color: $lightColor;
+        font-size: rem(11);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        text-decoration: none;
+        opacity: 0.85;
+        transition: opacity 0.2s ease;
+
+        &:hover {
+            opacity: 1;
+            text-decoration: underline;
+        }
+    }
+
+    &__how-to-use,
+    &__water-quality {
+        max-width: 700px;
+        margin: 0 auto 2.5rem;
+
+        h3 {
+            text-align: center;
+            font-family: $subFont;
+            font-weight: $regular;
+            text-transform: uppercase;
+            margin: 0 0 1.5rem;
+
+            @include resFont(rem(14), rem(16));
+        }
+    }
+
+    &__rich-text {
+        font-size: rem(14);
+        line-height: 1.9;
+        color: rgba(0, 0, 0, 0.7);
+    }
+
+    &__reviews-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 2rem;
+
+        @include maxWidth($sm) {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    &__review-card {
+        display: block;
+        text-decoration: none;
+        color: inherit;
+        border-top: 1px solid rgba(0, 0, 0, 0.15);
+        padding-top: 1.2rem;
+    }
+
+    &__review-stars {
+        color: #f5c400;
+        letter-spacing: 0.15em;
+        margin-bottom: 0.6rem;
+    }
+
+    &__review-name {
+        font-family: $subFont;
+        font-weight: $regular;
+        text-transform: uppercase;
+        margin: 0 0 0.5rem;
+
+        @include resFont(rem(14), rem(16));
+    }
+
+    &__review-content {
+        font-size: rem(13);
+        color: rgba(0, 0, 0, 0.6);
+        line-height: 1.7;
+        margin: 0;
+    }
+}

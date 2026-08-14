@@ -8,22 +8,3 @@
  * Author URI: https://lacadev.com
  * Textdomain: laca
  */
-
-.footer__grid {
-	display: grid !important;
-    grid-template-columns: 4fr 2fr 2fr !important;
-}
-
-.footer__title {
-	color: #F0C11B !important;
-}
-.footer__title:after {
-	position: none !important;
-}
-
-
-@media only screen and (max-width: 768px) {
-	.footer__grid {
-		grid-template-columns: 1fr !important;
-	}
-}

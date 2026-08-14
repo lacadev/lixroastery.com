@@ -17,14 +17,36 @@ export function useInserterPreview( attributes = {} ) {
 /**
  * Shared lightweight preview mock for Gutenberg inserter.
  *
- * @param {Object} props         Component props.
- * @param {string} props.kicker  Small label above title.
- * @param {string} props.title   Main preview heading.
- * @param {number} props.columns Number of mock cards.
+ * @param {Object}   props         Component props.
+ * @param {string}   props.kicker  Small label above title.
+ * @param {string}   props.title   Main preview heading.
+ * @param {number}   props.columns Number of mock cards.
+ * @param {string}   props.image   URL ảnh preview.png thật của block (import
+ *                                 từ edit.js) — nếu có, hiện nguyên ảnh này
+ *                                 thay cho khối mock chung (nền đen + card xám).
+ * @param {string[]} props.images  Ảnh thật của từng thẻ trong block dạng lưới
+ *                                 (nếu instance đã chọn) — hiện theo index cột
+ *                                 thay cho ô placeholder xám tương ứng.
  * @return {JSX.Element} Inserter preview markup.
  */
-export function BlockPreviewMock( { kicker = '', title = '', columns = 3 } ) {
+export function BlockPreviewMock( {
+	kicker = '',
+	title = '',
+	columns = 3,
+	image = '',
+	images = [],
+} ) {
 	const safeColumns = Math.max( 1, Math.min( 4, Number( columns ) || 3 ) );
+
+	if ( image ) {
+		return (
+			<img
+				src={ image }
+				alt={ title || kicker || '' }
+				style={ { display: 'block', width: '100%', height: 'auto' } }
+			/>
+		);
+	}
 
 	return (
 		<div
@@ -63,40 +85,47 @@ export function BlockPreviewMock( { kicker = '', title = '', columns = 3 } ) {
 			) : null }
 
 			<div style={ { display: 'flex', gap: '1rem', overflow: 'hidden' } }>
-				{ Array.from( { length: safeColumns } ).map( ( _, index ) => (
-					<div
-						key={ `preview-${ index }` }
-						style={ {
-							flex: '0 0 31%',
-							aspectRatio: '4/3',
-							background: '#333',
-							borderRadius: '4px',
-							position: 'relative',
-						} }
-					>
+				{ Array.from( { length: safeColumns } ).map( ( _, index ) => {
+					const cardImage = images[ index ];
+					return (
 						<div
+							key={ `preview-${ index }` }
 							style={ {
-								position: 'absolute',
-								bottom: 0,
-								left: 0,
-								right: 0,
-								padding: '1.2rem',
-								background:
-									'linear-gradient(transparent,rgba(0,0,0,.8))',
+								flex: '0 0 31%',
+								aspectRatio: '4/3',
+								background: cardImage
+									? `center / cover no-repeat url(${ cardImage })`
+									: '#333',
+								borderRadius: '4px',
+								position: 'relative',
 							} }
 						>
-							<p
-								style={ {
-									color: '#fff',
-									margin: 0,
-									fontSize: '0.9rem',
-								} }
-							>
-								Preview { index + 1 }
-							</p>
+							{ ! cardImage && (
+								<div
+									style={ {
+										position: 'absolute',
+										bottom: 0,
+										left: 0,
+										right: 0,
+										padding: '1.2rem',
+										background:
+											'linear-gradient(transparent,rgba(0,0,0,.8))',
+									} }
+								>
+									<p
+										style={ {
+											color: '#fff',
+											margin: 0,
+											fontSize: '0.9rem',
+										} }
+									>
+										Preview { index + 1 }
+									</p>
+								</div>
+							) }
 						</div>
-					</div>
-				) ) }
+					);
+				} ) }
 			</div>
 		</div>
 	);
