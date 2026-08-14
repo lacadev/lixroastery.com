@@ -1,0 +1,59 @@
+{
+    "$schema": "https://schemas.wp.org/trunk/block.json",
+    "apiVersion": 3,
+    "name": "lacadev/product-grid-block",
+    "title": "Product Grid",
+    "category": "lixroastery-blocks-site",
+    "icon": "grid-view",
+    "editorScript": "block-block-product-grid-editor",
+    "style": "block-block-product-grid",
+    "textdomain": "laca",
+    "supports": {
+        "html": false,
+        "align": ["wide", "full"]
+    },
+    "attributes": {
+        "sectionTitle": {
+            "type": "string",
+            "default": "SHOP"
+        },
+        "viewAllText": {
+            "type": "string",
+            "default": "View all"
+        },
+        "viewAllLink": {
+            "type": "string",
+            "default": ""
+        },
+        "columns": {
+            "type": "number",
+            "default": 4
+        },
+        "mode": {
+            "type": "string",
+            "default": "auto"
+        },
+        "autoQuery": {
+            "type": "string",
+            "default": "newest"
+        },
+        "autoCount": {
+            "type": "number",
+            "default": 8
+        },
+        "selectedProducts": {
+            "type": "array",
+            "default": []
+        },
+        "__isPreview": {
+            "type": "boolean",
+            "default": false
+        }
+    },
+    "example": {
+        "viewportWidth": 800,
+        "attributes": {
+            "__isPreview": true
+        }
+    }
+}

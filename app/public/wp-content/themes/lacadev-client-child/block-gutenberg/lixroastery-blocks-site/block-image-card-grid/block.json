@@ -1,0 +1,51 @@
+{
+    "$schema": "https://schemas.wp.org/trunk/block.json",
+    "apiVersion": 3,
+    "name": "lacadev/image-card-grid-block",
+    "title": "Image Card Grid",
+    "category": "lixroastery-blocks-site",
+    "icon": "layout",
+    "editorScript": "block-block-image-card-grid-editor",
+    "style": "block-block-image-card-grid",
+    "textdomain": "laca",
+    "supports": {
+        "html": false,
+        "align": ["wide", "full"]
+    },
+    "attributes": {
+        "columns": {
+            "type": "number",
+            "default": 3
+        },
+        "layoutMode": {
+            "type": "string",
+            "default": "grid"
+        },
+        "aspectRatio": {
+            "type": "string",
+            "default": "3:4"
+        },
+        "bgColor": {
+            "type": "string",
+            "default": "#2f4a34"
+        },
+        "items": {
+            "type": "array",
+            "default": [
+                { "imageId": 0, "imageUrl": "", "title": "TRANSPARENCY", "desc": "Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat.", "link": "", "linkTarget": "_self" },
+                { "imageId": 0, "imageUrl": "", "title": "RESPONSIBILITY", "desc": "Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat.", "link": "", "linkTarget": "_self" },
+                { "imageId": 0, "imageUrl": "", "title": "SUSTAINABILITY", "desc": "Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat.", "link": "", "linkTarget": "_self" }
+            ]
+        },
+        "__isPreview": {
+            "type": "boolean",
+            "default": false
+        }
+    },
+    "example": {
+        "viewportWidth": 800,
+        "attributes": {
+            "__isPreview": true
+        }
+    }
+}

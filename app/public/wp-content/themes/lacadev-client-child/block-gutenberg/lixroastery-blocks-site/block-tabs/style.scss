@@ -1,0 +1,135 @@
+// $primaryColor/$subFont/$mainFont... được định nghĩa ở CHILD theme — @use
+// theo đường dẫn tương đối, không phải @parent/...
+@use "../../../resources/styles/theme/abstracts/variables" as *;
+@use "@parent/styles/theme/abstracts/mixin" as *;
+
+.tabs-block {
+    padding: 3rem 0;
+
+    @include maxWidth($sm) {
+        padding: 2rem 0;
+    }
+
+    &__nav {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 0.6em;
+        margin-bottom: 3rem;
+        flex-wrap: wrap;
+    }
+
+    &__nav-link {
+        font-family: $subFont;
+        font-weight: $regular;
+        line-height: normal;
+        letter-spacing: 0;
+        text-align: center;
+        text-transform: uppercase;
+        text-decoration: none;
+        color: $darkColor;
+        opacity: 0.3;
+        transition: opacity 0.2s ease;
+
+        @include resFont(rem(20), rem(30));
+
+        &.is-active {
+            opacity: 1;
+        }
+
+        &:hover {
+            opacity: 1;
+        }
+    }
+
+    &__nav-sep {
+        color: rgba(0, 0, 0, 0.25);
+    }
+
+    // Editor: hiển thị tất cả tab-panel xếp chồng để dễ soạn nội dung —
+    // hành vi ẩn/hiện theo tab chỉ áp dụng ở frontend (JS trong render.php).
+    &__editor-note {
+        font-size: 12px;
+        color: #666;
+        background: #f0f9ff;
+        border: 1px solid #bae6fd;
+        border-radius: 6px;
+        padding: 10px 14px;
+        margin: 0 0 16px;
+    }
+
+    &__editor-panels {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+
+        > .tab-panel {
+            border: 1px dashed rgba(0, 0, 0, 0.15);
+            border-radius: 6px;
+            padding: 1rem;
+
+            > .tab-panel__title-editor {
+                margin: -1rem -1rem 1rem;
+                border-radius: 6px 6px 0 0;
+            }
+        }
+    }
+
+    &__footer {
+        display: flex;
+        justify-content: space-between;
+    }
+
+    &__prev,
+    &__next {
+        font-family: $subFont;
+        font-weight: $light;
+        text-transform: uppercase;
+        text-decoration: none;
+        color: $darkColor;
+        transition: color 0.2s ease;
+
+        @include resFont(rem(16), rem(20));
+
+        &:hover {
+            color: $primaryColor;
+        }
+    }
+}
+
+// Block khác (CTA Section, Image Card Grid…) chèn vào trong 1 tab đều tự
+// bọc trong <section> — rule global `section { padding: rem(150/100/60) !important; }`
+// (_common-blocks.scss) quá lớn cho không gian bên trong tab đã compact sẵn,
+// nên thu nhỏ lại còn rem(80) khi section đó nằm trong .tab-panel. Vẫn cần
+// !important để đè rule global cũng !important — selector ".tab-panel section"
+// có specificity cao hơn "section" (thêm 1 class) nên luôn thắng, không phụ
+// thuộc thứ tự nạp CSS. Không đổi rule global vì section top-level khác trên
+// trang vẫn cần padding lớn như cũ.
+.tab-panel section {
+    padding: rem(80) 0 !important;
+}
+
+// .container-fluid mặc định max-width: 95% (theme/layout/_general.scss) —
+// trong không gian đã hẹp sẵn của tab-panel, giới hạn 95% đó tạo khoảng
+// trắng thừa không cần thiết, nên cho chiếm full 100% chiều rộng section cha.
+.tab-panel section .container-fluid {
+    max-width: 100%;
+    padding-right: 0;
+    padding-left: 0;
+}
+
+// Heading tiêu đề tab (vd "THE ORIGIN") đang bị rơi về style h2 mặc định của
+// theme (Afacad Bold 24px) — đè lại đúng theo thiết kế: Oswald Regular 40px.
+.tab-panel h2 {
+    font-family: $subFont;
+    font-weight: $regular;
+    font-size: rem(40);
+    line-height: 1;
+}
+
+// KHÔNG đặt "display: none" mặc định cho .tab-panel ở đây — file này được
+// đăng ký làm "style" (load cả trong iframe editor), nên rule ẩn/hiện theo
+// tab sẽ khiến toàn bộ Tab Panel biến mất khi soạn (JS toggle .is-active chỉ
+// chạy ở frontend, không chạy trong editor). Hành vi ẩn/hiện thật được đặt
+// trong <style> inline ngay tại render.php (file chỉ chạy ở frontend, không
+// bao giờ được editor gọi tới) — xem $inline_style ở đó.

@@ -1,0 +1,75 @@
+{
+    "$schema": "https://schemas.wp.org/trunk/block.json",
+    "apiVersion": 3,
+    "name": "lacadev/journal-grid-block",
+    "title": "Journal Grid",
+    "category": "lixroastery-blocks-site",
+    "icon": "welcome-write-blog",
+    "editorScript": "block-block-journal-grid-editor",
+    "style": "block-block-journal-grid",
+    "textdomain": "laca",
+    "supports": {
+        "html": false,
+        "align": ["wide", "full"]
+    },
+    "attributes": {
+        "sectionTitle": {
+            "type": "string",
+            "default": "JOURNAL"
+        },
+        "viewAllText": {
+            "type": "string",
+            "default": "View all"
+        },
+        "viewAllLink": {
+            "type": "string",
+            "default": ""
+        },
+        "postType": {
+            "type": "string",
+            "default": "post"
+        },
+        "taxonomy": {
+            "type": "string",
+            "default": ""
+        },
+        "selectedTerms": {
+            "type": "array",
+            "default": []
+        },
+        "mode": {
+            "type": "string",
+            "default": "auto"
+        },
+        "orderBy": {
+            "type": "string",
+            "default": "date"
+        },
+        "order": {
+            "type": "string",
+            "default": "DESC"
+        },
+        "postsCount": {
+            "type": "number",
+            "default": 6
+        },
+        "selectedPosts": {
+            "type": "array",
+            "default": []
+        },
+        "columns": {
+            "type": "number",
+            "default": 2
+        },
+        "__isPreview": {
+            "type": "boolean",
+            "default": false
+        }
+    },
+    "example": {
+        "viewportWidth": 800,
+        "attributes": {
+            "__isPreview": true
+        }
+    }
+}

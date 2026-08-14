@@ -12,6 +12,7 @@ import {
 } from '@wordpress/components';
 import { useInserterPreview, BlockPreviewMock } from '../../utils/preview';
 import { hexToRgba } from '../../utils/style';
+import previewImage from './preview.png';
 
 export default function Edit( { attributes, setAttributes } ) {
 	const isPreview = useInserterPreview( attributes );
@@ -23,6 +24,7 @@ export default function Edit( { attributes, setAttributes } ) {
 				kicker={ __( 'Stats Info', 'laca' ) }
 				title={ __( 'Chỉ số nổi bật', 'laca' ) }
 				columns={ 4 }
+				image={ previewImage }
 			/>
 		);
 	}

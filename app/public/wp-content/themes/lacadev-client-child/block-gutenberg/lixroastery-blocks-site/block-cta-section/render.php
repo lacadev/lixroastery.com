@@ -39,7 +39,7 @@ $wrapper_attrs = get_block_wrapper_attributes(['class' => 'block-cta-section']);
         <?php if ($description): ?>
             <div class="block-cta-section__desc"><?php echo $description; ?></div>
         <?php endif; ?>
-        <?php if ($button_text): ?>
+        <?php if ($button_text && $button_link): ?>
             <div class="block-cta-section__btn">
                 <a class="block-cta-section__link" href="<?php echo $button_link ?: '#'; ?>"
                     target="<?php echo esc_attr($button_target); ?>"
