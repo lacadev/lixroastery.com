@@ -14,6 +14,7 @@ import {
 	Button,
 } from '@wordpress/components';
 import { useInserterPreview, BlockPreviewMock } from '../../utils/preview';
+import previewImage from './preview.png';
 
 function ImagePicker( { imageUrl, imageId, onSelect } ) {
 	return (
@@ -59,6 +60,7 @@ export default function Edit( { attributes, setAttributes } ) {
 				kicker={ __( 'Content Rows', 'laca' ) }
 				title={ mainTitle || __( 'Nội dung bài viết', 'laca' ) }
 				columns={ 2 }
+				image={ previewImage }
 			/>
 		);
 	}
