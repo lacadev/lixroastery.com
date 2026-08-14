@@ -1,0 +1,131 @@
+// $primaryColor/$subFont/$mainFont... được định nghĩa ở CHILD theme — @use
+// theo đường dẫn tương đối, không phải @parent/...
+@use "../../../resources/styles/theme/abstracts/variables" as *;
+@use "@parent/styles/theme/abstracts/mixin" as *;
+
+.block-content-rows {
+
+    &__main-title {
+        font-family: $subFont;
+        font-weight: $regular;
+        text-transform: uppercase;
+        letter-spacing: 0.02em;
+        margin: 0 0 3rem;
+
+        @include resFont(rem(20), rem(40));
+    }
+
+    &__row {
+        display: grid;
+        grid-template-columns: 1.3fr 1fr;
+        gap: 3rem;
+        margin-bottom: 3.5rem;
+
+        &:last-child {
+            margin-bottom: 0;
+        }
+
+        @include maxWidth($md) {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    &__sub-title {
+        font-family: $subFont;
+        font-weight: $regular;
+        text-transform: uppercase;
+        letter-spacing: 0.02em;
+        margin: 0 0 1.2rem;
+
+        @include resFont(rem(18), rem(30));
+    }
+
+    &__text {
+        color: $darkColor;
+        line-height: 1.8;
+        text-align: justify;
+
+        @include resFont(rem(16), rem(20));
+
+        p {
+            margin: 0 0 1.2rem;
+
+            &:last-child {
+                margin-bottom: 0;
+            }
+        }
+    }
+
+    &__aside {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+
+    &__image-card {
+        display: block;
+        color: inherit;
+        text-decoration: none;
+    }
+
+    &__image-card img {
+        display: block;
+        width: 100%;
+        aspect-ratio: 4 / 3;
+        object-fit: cover;
+        margin-bottom: 1rem;
+        background: $primaryColor;
+    }
+
+    &__image-title {
+        font-family: $subFont;
+        font-weight: $regular;
+        text-align: center;
+        margin: 0 0 0.5rem;
+
+        @include resFont(rem(16), rem(20));
+    }
+
+    &__image-desc {
+        color: $darkColor;
+        text-align: center;
+        line-height: 1.6;
+        margin: 0;
+
+        @include resFont(rem(14), rem(16));
+    }
+
+    &__quote {
+        margin: 0;
+        padding-top: 0.5rem;
+    }
+
+    &__quote-text {
+        font-family: $subFont;
+        font-weight: $regular;
+        color: $darkColor;
+        line-height: 1.5;
+        margin: 0 0 1.5rem;
+
+        @include resFont(rem(20), rem(40));
+    }
+
+    &__quote-author {
+        display: block;
+        font-style: normal;
+        font-weight: $medium;
+        text-align: right;
+        margin: 0 0 0.4rem;
+
+        @include resFont(rem(16), rem(20));
+    }
+
+    &__quote-source {
+        color: $darkColor;
+        text-align: right;
+        line-height: 1.5;
+        margin: 0;
+
+        @include resFont(rem(16), rem(20));
+    }
+}

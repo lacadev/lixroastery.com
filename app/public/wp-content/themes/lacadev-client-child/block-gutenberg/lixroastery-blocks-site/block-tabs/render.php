@@ -94,7 +94,7 @@ $js = <<<JS
 })();
 JS;
 // Đăng ký vào 'theme-js-bundle' — handle luôn tồn tại (đã xác nhận qua bug
-// tương tự ở block-projects-slider/block-newsletter-signup), KHÔNG dùng
+// tương tự ở block-projects-slider), KHÔNG dùng
 // handle riêng của block vì wp_add_inline_script() sẽ âm thầm không làm gì
 // nếu handle đó chưa được register tại thời điểm gọi.
 wp_add_inline_script('theme-js-bundle', $js);

@@ -1,0 +1,49 @@
+{
+    "$schema": "https://schemas.wp.org/trunk/block.json",
+    "apiVersion": 3,
+    "name": "lacadev/content-rows-block",
+    "title": "Content Rows",
+    "category": "lixroastery-blocks-site",
+    "icon": "align-pull-left",
+    "editorScript": "block-block-content-rows-editor",
+    "style": "block-block-content-rows",
+    "textdomain": "laca",
+    "supports": {
+        "html": false,
+        "align": ["wide", "full"]
+    },
+    "attributes": {
+        "mainTitle": {
+            "type": "string",
+            "default": "TITLE"
+        },
+        "containerType": {
+            "type": "string",
+            "default": "container-fluid"
+        },
+        "rows": {
+            "type": "array",
+            "default": [
+                {
+                    "subTitle": "Sub title 1",
+                    "content": "<p>Nhập nội dung đoạn văn ở đây…</p>",
+                    "asideType": "none",
+                    "asideImages": [],
+                    "quoteText": "",
+                    "quoteAuthor": "",
+                    "quoteSource": ""
+                }
+            ]
+        },
+        "__isPreview": {
+            "type": "boolean",
+            "default": false
+        }
+    },
+    "example": {
+        "viewportWidth": 800,
+        "attributes": {
+            "__isPreview": true
+        }
+    }
+}
