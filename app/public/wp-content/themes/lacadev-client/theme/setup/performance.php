@@ -67,8 +67,13 @@ class ThemePerformance
             return $settings;
         });
 
-        // Remove login errors
-        add_filter('login_errors', '__return_null');
+        // Ẩn thông báo lỗi đăng nhập CHI TIẾT (tránh dò email/username hợp
+        // lệ) nhưng vẫn phải trả về 1 câu chung — __return_null() xoá trắng
+        // hoàn toàn, khiến form "shake" báo có lỗi mà không hiển thị gì,
+        // trông như bug thay vì cố ý ẩn thông tin.
+        add_filter('login_errors', function () {
+            return __('That key doesn\'t seem to work. Please check and try again.', 'laca');
+        });
     }
 
     /**

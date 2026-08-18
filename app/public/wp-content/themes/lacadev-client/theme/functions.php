@@ -224,11 +224,13 @@ new \App\Features\DynamicCPT\DynamicCptManager();
 add_action('after_switch_theme', function () {
     \App\Databases\ContactFormTable::install();
     \App\Settings\EmailLog\EmailLogTable::install();
+    \App\Settings\LoginLog\LoginLogTable::install();
 });
 
 // Đảm bảo bảng luôn tồn tại
 \App\Databases\ContactFormTable::install();
 \App\Settings\EmailLog\EmailLogTable::install();
+\App\Settings\LoginLog\LoginLogTable::install();
 
 // =============================================================================
 // COMMENTS CALLBACK

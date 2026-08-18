@@ -178,6 +178,17 @@ add_action('init', function () {
 });
 
 /**
+ * Login Log — ghi lại lý do thật của đăng nhập thất bại (xem
+ * theme/setup/performance.php — login_errors filter chỉ hiện 1 câu chung
+ * cho người dùng, chi tiết thật được lưu riêng ở đây cho admin kiểm tra).
+ */
+add_action('init', function () {
+    if (class_exists('\App\Settings\LoginLog\LoginLogManager')) {
+        (new \App\Settings\LoginLog\LoginLogManager())->init();
+    }
+});
+
+/**
  * Related Posts
  */
 add_action('init', function () {
