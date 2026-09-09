@@ -56,6 +56,55 @@ body.menu-open {
         .menu-item.actived-menu > a {
             color: $primaryColor;
         }
+
+        // Dropdown submenu (menu item có menu con, vd "Journal") — mặc định
+        // ẩn, chỉ hiện khi hover/focus vào item cha.
+        .menu-item {
+            position: relative;
+        }
+
+        .sub-menu {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            z-index: 10;
+            display: none;
+            flex-direction: column;
+            min-width: 160px;
+            background: #fff;
+            border: 1px solid rgba(0, 0, 0, 0.15);
+            padding: 0;
+            margin: 0;
+            list-style: none;
+
+            .menu-item > a {
+                display: block;
+                padding: rem(10) rem(16);
+                white-space: nowrap;
+
+                &:hover {
+                    background: rgba(0, 0, 0, 0.05);
+                    color: $darkColor;
+                }
+            }
+
+            // Menu cấp 3 trở lên xổ ra BÊN CẠNH (flyout), không nằm chung
+            // cột với cấp 2 — .menu-item cha đã có position:relative nên
+            // .sub-menu con định vị theo đúng item đó, không theo cấp 1.
+            // margin âm để bù viền 1px của khung cha, tránh lệch viền.
+            .sub-menu {
+                top: 0;
+                left: 100%;
+                margin: -1px 0 0 -1px;
+            }
+        }
+
+        .menu-item.has-children:hover > .sub-menu,
+        .menu-item.has-children:focus-within > .sub-menu,
+        .menu-item-has-children:hover > .sub-menu,
+        .menu-item-has-children:focus-within > .sub-menu {
+            display: flex;
+        }
     }
 
     &__logo {
@@ -242,6 +291,32 @@ body.menu-open {
             text-transform: uppercase;
             text-decoration: none;
             color: $darkColor;
+        }
+
+        // Accordion submenu — mobile-menu.js toggle class "open" trên
+        // .menu-item cha khi click, xem components/mobile-menu.js.
+        .sub-menu {
+            list-style: none;
+            margin: 0.75rem 0 0;
+            padding: 0 0 0 1rem;
+            display: none;
+
+            .sub-menu {
+                padding-left: 1rem;
+            }
+
+            .menu-item {
+                margin-bottom: 0.6rem;
+            }
+
+            .menu-item > a {
+                font-size: rem(14);
+                color: rgba(0, 0, 0, 0.65);
+            }
+        }
+
+        .menu-item.open > .sub-menu {
+            display: block;
         }
 
         &--secondary {
