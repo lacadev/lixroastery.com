@@ -35,7 +35,10 @@ add_action('after_setup_theme', function () {
 
     // Load child assets
     require_once CHILD_THEME_SETUP_DIR . 'assets.php';
-    
+
+    // Menu location riêng cho header của site này
+    require_once CHILD_THEME_SETUP_DIR . 'menus.php';
+
     // Load child theme options (Carbon Fields)
     require_once CHILD_THEME_SETUP_DIR . 'theme-options.php';
 

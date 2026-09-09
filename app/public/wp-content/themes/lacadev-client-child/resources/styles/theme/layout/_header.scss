@@ -1,3 +1,252 @@
 @use "../abstracts/variables.scss" as *;
 @use "../abstracts/mixin.scss" as *;
 
+// mobile-menu.js thêm class này vào <body> khi mở overlay mobile.
+body.menu-open {
+    overflow: hidden;
+}
+
+.header {
+    background: #fff;
+    padding: 1.5rem 0;
+
+    &__inner {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1.5rem;
+    }
+
+    &__nav {
+        flex: 1 1 0;
+
+        @include maxWidth($md) {
+            display: none;
+        }
+
+        &--right {
+            display: flex;
+            justify-content: flex-end;
+        }
+    }
+
+    &__menu-list {
+        display: flex;
+        align-items: center;
+        gap: rem(28);
+        list-style: none;
+        margin: 0;
+        padding: 0;
+
+        .menu-item > a {
+            font-family: $subFont;
+            font-weight: $light;
+            font-size: rem(13);
+            letter-spacing: 0;
+            text-transform: uppercase;
+            text-decoration: none;
+            color: $darkColor;
+            transition: color 0.2s ease;
+
+            &:hover {
+                color: $primaryColor;
+            }
+        }
+
+        .menu-item.actived-menu > a {
+            color: $primaryColor;
+        }
+    }
+
+    &__logo {
+        flex: 0 0 auto;
+        text-align: center;
+    }
+
+    &__logo-link {
+        display: inline-block;
+        text-decoration: none;
+    }
+
+    &__logo-img {
+        display: block;
+        max-height: 32px;
+        width: auto;
+    }
+
+    &__logo-text {
+        font-family: $subFont;
+        font-weight: $medium;
+        font-size: rem(18);
+        letter-spacing: 0.02em;
+        text-transform: uppercase;
+        color: $darkColor;
+        white-space: nowrap;
+    }
+
+    &__right {
+        flex: 1 1 0;
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: rem(28);
+
+        @include maxWidth($md) {
+            flex: 0 0 auto;
+        }
+    }
+
+    // Danh sách ngôn ngữ (theLanguageSwitcher() — xem app/helpers/template_tags.php)
+    .language-switcher {
+        display: flex;
+        align-items: center;
+        gap: rem(10);
+        list-style: none;
+        margin: 0;
+        padding: 0;
+
+        a {
+            font-family: $subFont;
+            font-weight: $light;
+            font-size: rem(13);
+            text-transform: uppercase;
+            text-decoration: none;
+            color: $darkColor;
+            transition: color 0.2s ease;
+
+            &:hover {
+                color: $primaryColor;
+            }
+        }
+    }
+
+    &__hamburger {
+        display: none;
+        flex-direction: column;
+        justify-content: center;
+        gap: 5px;
+        width: 24px;
+        cursor: pointer;
+
+        @include maxWidth($md) {
+            display: flex;
+        }
+
+        span {
+            display: block;
+            height: 1px;
+            width: 100%;
+            background: $darkColor;
+            transition: transform 0.2s ease, opacity 0.2s ease;
+        }
+
+        &.active {
+            span:nth-child(1) {
+                transform: translateY(6px) rotate(45deg);
+            }
+
+            span:nth-child(2) {
+                opacity: 0;
+            }
+
+            span:nth-child(3) {
+                transform: translateY(-6px) rotate(-45deg);
+            }
+        }
+    }
+
+    // Overlay menu mobile
+    &__overlay {
+        position: fixed;
+        inset: 0;
+        z-index: 999;
+        visibility: hidden;
+        opacity: 0;
+        transition: opacity 0.3s ease, visibility 0.3s ease;
+
+        // mobile-menu.js dùng class "active" (không phải "is-active")
+        &.active {
+            visibility: visible;
+            opacity: 1;
+        }
+    }
+
+    &__overlay-backdrop {
+        position: absolute;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.4);
+    }
+
+    &__overlay-panel {
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        width: min(320px, 85vw);
+        background: #fff;
+        padding: 2rem 1.75rem;
+        overflow-y: auto;
+        transform: translateX(100%);
+        transition: transform 0.3s ease;
+    }
+
+    &__overlay.active &__overlay-panel {
+        transform: translateX(0);
+    }
+
+    &__overlay-close {
+        position: relative;
+        width: 24px;
+        height: 24px;
+        background: none;
+        border: none;
+        cursor: pointer;
+        margin: 0 0 2rem auto;
+        display: block;
+
+        span {
+            position: absolute;
+            top: 50%;
+            left: 0;
+            width: 100%;
+            height: 1px;
+            background: $darkColor;
+
+            &:first-child {
+                transform: rotate(45deg);
+            }
+
+            &:last-child {
+                transform: rotate(-45deg);
+            }
+        }
+    }
+
+    &__overlay-menu-list {
+        list-style: none;
+        margin: 0 0 1.5rem;
+        padding: 0;
+
+        .menu-item {
+            margin-bottom: 1rem;
+
+            &:last-child {
+                margin-bottom: 0;
+            }
+        }
+
+        .menu-item > a {
+            font-family: $subFont;
+            font-weight: $light;
+            font-size: rem(16);
+            text-transform: uppercase;
+            text-decoration: none;
+            color: $darkColor;
+        }
+
+        &--secondary {
+            padding-top: 1.5rem;
+            border-top: 1px solid rgba(0, 0, 0, 0.1);
+        }
+    }
+}

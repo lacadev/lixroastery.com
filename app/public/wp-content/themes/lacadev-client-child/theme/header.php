@@ -69,7 +69,96 @@ if (!defined('ABSPATH')) {
 				<div class="container-fluid">
 					<div class="header__inner">
 
+						<!-- Menu chính — bên trái -->
+						<nav class="header__nav header__nav--left" aria-label="<?php esc_attr_e('Main menu', 'laca'); ?>">
+							<?php
+							wp_nav_menu([
+								'theme_location' => 'main-menu',
+								'container' => false,
+								'items_wrap' => '<ul class="%2$s">%3$s</ul>',
+								'menu_class' => 'header__menu-list',
+								'walker' => new Laca_Menu_Walker(),
+								'fallback_cb' => false,
+							]);
+							?>
+						</nav>
 
+						<!-- Logo / tên site — giữa -->
+						<div class="header__logo">
+							<a href="<?php echo esc_url(home_url('/')); ?>" class="header__logo-link">
+								<?php
+								$logo_id = carbon_get_theme_option('logo');
+								$logo_url = $logo_id ? wp_get_attachment_image_url($logo_id, 'full') : '';
+								if ($logo_url):
+									?>
+									<img src="<?php echo esc_url($logo_url); ?>" class="header__logo-img"
+										alt="<?php echo esc_attr(get_bloginfo('name')); ?>">
+								<?php else: ?>
+									<span class="header__logo-text"><?php bloginfo('name'); ?></span>
+								<?php endif; ?>
+							</a>
+						</div>
+
+						<!-- Menu phụ + đổi ngôn ngữ — bên phải -->
+						<div class="header__right">
+							<nav class="header__nav header__nav--right"
+								aria-label="<?php esc_attr_e('Secondary menu', 'laca'); ?>">
+								<?php
+								wp_nav_menu([
+									'theme_location' => 'header-right-menu',
+									'container' => false,
+									'items_wrap' => '<ul class="%2$s">%3$s</ul>',
+									'menu_class' => 'header__menu-list',
+									'walker' => new Laca_Menu_Walker(),
+									'fallback_cb' => false,
+								]);
+								?>
+							</nav>
+							<?php theLanguageSwitcher(false); ?>
+						</div>
+
+						<!-- Hamburger (mobile) -->
+						<div class="header__hamburger" id="btn-hamburger"
+							aria-label="<?php esc_attr_e('Mở menu', 'laca'); ?>" role="button" tabindex="0"
+							aria-expanded="false" aria-controls="header-overlay">
+							<span></span>
+							<span></span>
+							<span></span>
+						</div>
+
+					</div>
+				</div>
+
+				<!-- Mobile overlay: gộp cả 2 menu + ngôn ngữ -->
+				<div class="header__overlay" id="header-overlay" aria-hidden="true">
+					<div class="header__overlay-backdrop"></div>
+					<div class="header__overlay-panel">
+						<button class="header__overlay-close" id="btn-overlay-close"
+							aria-label="<?php esc_attr_e('Đóng menu', 'laca'); ?>">
+							<span></span>
+							<span></span>
+						</button>
+						<nav class="header__overlay-nav" aria-label="<?php esc_attr_e('Main menu mobile', 'laca'); ?>">
+							<?php
+							wp_nav_menu([
+								'theme_location' => 'main-menu',
+								'container' => false,
+								'items_wrap' => '<ul class="%2$s">%3$s</ul>',
+								'menu_class' => 'header__overlay-menu-list',
+								'walker' => new Laca_Menu_Walker(),
+								'fallback_cb' => false,
+							]);
+							wp_nav_menu([
+								'theme_location' => 'header-right-menu',
+								'container' => false,
+								'items_wrap' => '<ul class="%2$s">%3$s</ul>',
+								'menu_class' => 'header__overlay-menu-list header__overlay-menu-list--secondary',
+								'walker' => new Laca_Menu_Walker(),
+								'fallback_cb' => false,
+							]);
+							?>
+						</nav>
+						<?php theLanguageSwitcher(false); ?>
 					</div>
 				</div>
 			</header>
