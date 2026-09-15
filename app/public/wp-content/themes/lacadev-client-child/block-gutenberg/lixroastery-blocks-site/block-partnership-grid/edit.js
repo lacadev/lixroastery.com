@@ -135,21 +135,30 @@ export default function Edit( { attributes, setAttributes } ) {
 	return (
 		<>
 			<InspectorControls>
-				<PanelBody title={ __( 'Hiển thị', 'laca' ) } initialOpen={ true }>
+				<PanelBody
+					title={ __( 'Hiển thị', 'laca' ) }
+					initialOpen={ true }
+				>
 					<TextControl
 						label={ __( 'Tiêu đề section', 'laca' ) }
 						value={ sectionTitle }
-						onChange={ ( v ) => setAttributes( { sectionTitle: v } ) }
+						onChange={ ( v ) =>
+							setAttributes( { sectionTitle: v } )
+						}
 					/>
 					<TextControl
 						label={ __( 'Text "Xem tất cả"', 'laca' ) }
 						value={ viewAllText }
-						onChange={ ( v ) => setAttributes( { viewAllText: v } ) }
+						onChange={ ( v ) =>
+							setAttributes( { viewAllText: v } )
+						}
 					/>
 					<TextControl
 						label={ __( 'Đường dẫn "Xem tất cả"', 'laca' ) }
 						value={ viewAllLink }
-						onChange={ ( v ) => setAttributes( { viewAllLink: v } ) }
+						onChange={ ( v ) =>
+							setAttributes( { viewAllLink: v } )
+						}
 						placeholder="https://…"
 					/>
 					<RangeControl
@@ -161,13 +170,22 @@ export default function Edit( { attributes, setAttributes } ) {
 					/>
 				</PanelBody>
 
-				<PanelBody title={ __( 'Nguồn bài viết', 'laca' ) } initialOpen={ true }>
+				<PanelBody
+					title={ __( 'Nguồn bài viết', 'laca' ) }
+					initialOpen={ true }
+				>
 					<RadioControl
 						label={ __( 'Chế độ', 'laca' ) }
 						selected={ mode }
 						options={ [
-							{ label: __( 'Tự động (query)', 'laca' ), value: 'auto' },
-							{ label: __( 'Thủ công (chọn tay)', 'laca' ), value: 'manual' },
+							{
+								label: __( 'Tự động (query)', 'laca' ),
+								value: 'auto',
+							},
+							{
+								label: __( 'Thủ công (chọn tay)', 'laca' ),
+								value: 'manual',
+							},
 						] }
 						onChange={ ( v ) => setAttributes( { mode: v } ) }
 					/>
@@ -178,7 +196,11 @@ export default function Edit( { attributes, setAttributes } ) {
 							value={ postType }
 							options={ postTypes }
 							onChange={ ( v ) =>
-								setAttributes( { postType: v, selectedTerms: [], selectedPosts: [] } )
+								setAttributes( {
+									postType: v,
+									selectedTerms: [],
+									selectedPosts: [],
+								} )
 							}
 						/>
 					) }
@@ -190,13 +212,24 @@ export default function Edit( { attributes, setAttributes } ) {
 									label={ __( 'Taxonomy', 'laca' ) }
 									value={ taxonomy }
 									options={ taxonomyOptions }
-									onChange={ ( v ) => setAttributes( { taxonomy: v, selectedTerms: [] } ) }
+									onChange={ ( v ) =>
+										setAttributes( {
+											taxonomy: v,
+											selectedTerms: [],
+										} )
+									}
 								/>
 							) }
 
 							{ taxonomy && terms.length > 0 && (
 								<>
-									<p style={ { fontSize: '11px', fontWeight: 600, marginBottom: '6px' } }>
+									<p
+										style={ {
+											fontSize: '11px',
+											fontWeight: 600,
+											marginBottom: '6px',
+										} }
+									>
 										{ __( 'Chọn danh mục', 'laca' ) }
 									</p>
 									<div
@@ -212,10 +245,15 @@ export default function Edit( { attributes, setAttributes } ) {
 											<CheckboxControl
 												key={ term.id }
 												label={ `${ term.name } (${ term.count })` }
-												checked={ selectedTerms.includes( term.id ) }
+												checked={ selectedTerms.includes(
+													term.id
+												) }
 												onChange={ () =>
 													setAttributes( {
-														selectedTerms: toggleId( selectedTerms, term.id ),
+														selectedTerms: toggleId(
+															selectedTerms,
+															term.id
+														),
 													} )
 												}
 											/>
@@ -229,35 +267,62 @@ export default function Edit( { attributes, setAttributes } ) {
 								value={ postsCount }
 								min={ 1 }
 								max={ 20 }
-								onChange={ ( v ) => setAttributes( { postsCount: v } ) }
+								onChange={ ( v ) =>
+									setAttributes( { postsCount: v } )
+								}
 							/>
 
 							<SelectControl
 								label={ __( 'Sắp xếp theo', 'laca' ) }
 								value={ orderBy }
 								options={ [
-									{ label: __( 'Ngày đăng', 'laca' ), value: 'date' },
-									{ label: __( 'Tiêu đề', 'laca' ), value: 'title' },
-									{ label: __( 'Menu Order', 'laca' ), value: 'menu_order' },
+									{
+										label: __( 'Ngày đăng', 'laca' ),
+										value: 'date',
+									},
+									{
+										label: __( 'Tiêu đề', 'laca' ),
+										value: 'title',
+									},
+									{
+										label: __( 'Menu Order', 'laca' ),
+										value: 'menu_order',
+									},
 								] }
-								onChange={ ( v ) => setAttributes( { orderBy: v } ) }
+								onChange={ ( v ) =>
+									setAttributes( { orderBy: v } )
+								}
 							/>
 
 							<SelectControl
 								label={ __( 'Thứ tự', 'laca' ) }
 								value={ order }
 								options={ [
-									{ label: __( 'Mới nhất (DESC)', 'laca' ), value: 'DESC' },
-									{ label: __( 'Cũ nhất (ASC)', 'laca' ), value: 'ASC' },
+									{
+										label: __( 'Mới nhất (DESC)', 'laca' ),
+										value: 'DESC',
+									},
+									{
+										label: __( 'Cũ nhất (ASC)', 'laca' ),
+										value: 'ASC',
+									},
 								] }
-								onChange={ ( v ) => setAttributes( { order: v } ) }
+								onChange={ ( v ) =>
+									setAttributes( { order: v } )
+								}
 							/>
 						</>
 					) }
 
 					{ mode === 'manual' && (
 						<>
-							<p style={ { fontSize: '11px', color: '#666', margin: '4px 0 8px' } }>
+							<p
+								style={ {
+									fontSize: '11px',
+									color: '#666',
+									margin: '4px 0 8px',
+								} }
+							>
 								{ __( 'Đã chọn: ', 'laca' ) }
 								<strong>{ selectedPosts.length }</strong>
 							</p>
@@ -279,11 +344,19 @@ export default function Edit( { attributes, setAttributes } ) {
 								{ manualPosts.map( ( post ) => (
 									<CheckboxControl
 										key={ post.id }
-										label={ post.title?.rendered || `#${ post.id }` }
-										checked={ selectedPosts.includes( post.id ) }
+										label={
+											post.title?.rendered ||
+											`#${ post.id }`
+										}
+										checked={ selectedPosts.includes(
+											post.id
+										) }
 										onChange={ () =>
 											setAttributes( {
-												selectedPosts: toggleId( selectedPosts, post.id ),
+												selectedPosts: toggleId(
+													selectedPosts,
+													post.id
+												),
 											} )
 										}
 									/>
@@ -295,7 +368,10 @@ export default function Edit( { attributes, setAttributes } ) {
 			</InspectorControls>
 
 			<div { ...blockProps }>
-				<ServerSideRender block="lacadev/partnership-grid-block" attributes={ attributes } />
+				<ServerSideRender
+					block="lacadev/partnership-grid-block"
+					attributes={ attributes }
+				/>
 			</div>
 		</>
 	);

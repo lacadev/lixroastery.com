@@ -20,13 +20,13 @@ body.menu-open {
     &__nav {
         flex: 1 1 0;
 
-        @include maxWidth($md) {
-            display: none;
-        }
-
         &--right {
             display: flex;
             justify-content: flex-end;
+        }
+
+        @include maxWidth($md) {
+            display: none;
         }
     }
 
@@ -177,10 +177,6 @@ body.menu-open {
         width: 24px;
         cursor: pointer;
 
-        @include maxWidth($md) {
-            display: flex;
-        }
-
         span {
             display: block;
             height: 1px;
@@ -201,6 +197,10 @@ body.menu-open {
             span:nth-child(3) {
                 transform: translateY(-6px) rotate(-45deg);
             }
+        }
+
+        @include maxWidth($md) {
+            display: flex;
         }
     }
 

@@ -1,6 +1,15 @@
 import { __ } from '@wordpress/i18n';
-import { useBlockProps, InspectorControls, RichText } from '@wordpress/block-editor';
-import { PanelBody, RangeControl, RadioControl, Button } from '@wordpress/components';
+import {
+	useBlockProps,
+	InspectorControls,
+	RichText,
+} from '@wordpress/block-editor';
+import {
+	PanelBody,
+	RangeControl,
+	RadioControl,
+	Button,
+} from '@wordpress/components';
 import { useInserterPreview, BlockPreviewMock } from '../../utils/preview';
 import previewImage from './preview.png';
 
@@ -38,7 +47,10 @@ export default function Edit( { attributes, setAttributes } ) {
 	return (
 		<>
 			<InspectorControls>
-				<PanelBody title={ __( 'Bố cục', 'laca' ) } initialOpen={ true }>
+				<PanelBody
+					title={ __( 'Bố cục', 'laca' ) }
+					initialOpen={ true }
+				>
 					<RangeControl
 						label={ __( 'Số cột', 'laca' ) }
 						value={ columns }
@@ -50,16 +62,39 @@ export default function Edit( { attributes, setAttributes } ) {
 						label={ __( 'Chiều rộng khung', 'laca' ) }
 						selected={ containerType }
 						options={ [
-							{ label: __( 'Full width (container-fluid)', 'laca' ), value: 'container-fluid' },
-							{ label: __( 'Giới hạn (container)', 'laca' ), value: 'container' },
+							{
+								label: __(
+									'Full width (container-fluid)',
+									'laca'
+								),
+								value: 'container-fluid',
+							},
+							{
+								label: __( 'Giới hạn (container)', 'laca' ),
+								value: 'container',
+							},
 						] }
-						onChange={ ( v ) => setAttributes( { containerType: v } ) }
+						onChange={ ( v ) =>
+							setAttributes( { containerType: v } )
+						}
 					/>
 				</PanelBody>
 
-				<PanelBody title={ __( 'Danh sách mục', 'laca' ) } initialOpen={ true }>
-					<p style={ { fontSize: '11px', color: '#666', margin: '4px 0 8px' } }>
-						{ __( 'Tiêu đề và mô tả sửa trực tiếp trong khung soạn thảo.', 'laca' ) }
+				<PanelBody
+					title={ __( 'Danh sách mục', 'laca' ) }
+					initialOpen={ true }
+				>
+					<p
+						style={ {
+							fontSize: '11px',
+							color: '#666',
+							margin: '4px 0 8px',
+						} }
+					>
+						{ __(
+							'Tiêu đề và mô tả sửa trực tiếp trong khung soạn thảo.',
+							'laca'
+						) }
 					</p>
 					{ items.map( ( item, index ) => (
 						<Button
@@ -79,19 +114,30 @@ export default function Edit( { attributes, setAttributes } ) {
 			</InspectorControls>
 
 			<section { ...blockProps }>
-				<div className={ containerType === 'container' ? 'container' : 'container-fluid' }>
+				<div
+					className={
+						containerType === 'container'
+							? 'container'
+							: 'container-fluid'
+					}
+				>
 					<div
 						className="block-content-grid__grid"
 						style={ { '--ctg-columns': columns } }
 					>
 						{ items.map( ( item, index ) => (
-							<div className="block-content-grid__item" key={ index }>
+							<div
+								className="block-content-grid__item"
+								key={ index }
+							>
 								<hr className="block-content-grid__rule" />
 								<RichText
 									tagName="h3"
 									className="block-content-grid__title"
 									value={ item.title }
-									onChange={ ( v ) => updateItem( index, 'title', v ) }
+									onChange={ ( v ) =>
+										updateItem( index, 'title', v )
+									}
 									placeholder={ __( 'Tiêu đề…', 'laca' ) }
 									allowedFormats={ [] }
 								/>
@@ -99,7 +145,9 @@ export default function Edit( { attributes, setAttributes } ) {
 									tagName="p"
 									className="block-content-grid__desc"
 									value={ item.desc }
-									onChange={ ( v ) => updateItem( index, 'desc', v ) }
+									onChange={ ( v ) =>
+										updateItem( index, 'desc', v )
+									}
 									placeholder={ __( 'Mô tả…', 'laca' ) }
 								/>
 							</div>

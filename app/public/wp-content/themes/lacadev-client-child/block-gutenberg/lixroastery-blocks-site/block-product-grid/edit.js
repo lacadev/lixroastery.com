@@ -65,21 +65,30 @@ export default function Edit( { attributes, setAttributes } ) {
 	return (
 		<>
 			<InspectorControls>
-				<PanelBody title={ __( 'Hiển thị', 'laca' ) } initialOpen={ true }>
+				<PanelBody
+					title={ __( 'Hiển thị', 'laca' ) }
+					initialOpen={ true }
+				>
 					<TextControl
 						label={ __( 'Tiêu đề section', 'laca' ) }
 						value={ sectionTitle }
-						onChange={ ( v ) => setAttributes( { sectionTitle: v } ) }
+						onChange={ ( v ) =>
+							setAttributes( { sectionTitle: v } )
+						}
 					/>
 					<TextControl
 						label={ __( 'Text "Xem tất cả"', 'laca' ) }
 						value={ viewAllText }
-						onChange={ ( v ) => setAttributes( { viewAllText: v } ) }
+						onChange={ ( v ) =>
+							setAttributes( { viewAllText: v } )
+						}
 					/>
 					<TextControl
 						label={ __( 'Đường dẫn "Xem tất cả"', 'laca' ) }
 						value={ viewAllLink }
-						onChange={ ( v ) => setAttributes( { viewAllLink: v } ) }
+						onChange={ ( v ) =>
+							setAttributes( { viewAllLink: v } )
+						}
 						placeholder={ __( 'Để trống = trang Shop', 'laca' ) }
 					/>
 					<RangeControl
@@ -91,13 +100,22 @@ export default function Edit( { attributes, setAttributes } ) {
 					/>
 				</PanelBody>
 
-				<PanelBody title={ __( 'Nguồn sản phẩm', 'laca' ) } initialOpen={ true }>
+				<PanelBody
+					title={ __( 'Nguồn sản phẩm', 'laca' ) }
+					initialOpen={ true }
+				>
 					<RadioControl
 						label={ __( 'Chế độ', 'laca' ) }
 						selected={ mode }
 						options={ [
 							{ label: __( 'Tự động', 'laca' ), value: 'auto' },
-							{ label: __( 'Thủ công (tìm & chọn tay)', 'laca' ), value: 'manual' },
+							{
+								label: __(
+									'Thủ công (tìm & chọn tay)',
+									'laca'
+								),
+								value: 'manual',
+							},
 						] }
 						onChange={ ( v ) => setAttributes( { mode: v } ) }
 					/>
@@ -108,27 +126,55 @@ export default function Edit( { attributes, setAttributes } ) {
 								label={ __( 'Kiểu tự động', 'laca' ) }
 								value={ autoQuery }
 								options={ [
-									{ label: __( 'Mới nhất', 'laca' ), value: 'newest' },
-									{ label: __( 'Bán chạy', 'laca' ), value: 'best_selling' },
-									{ label: __( 'Đang giảm giá', 'laca' ), value: 'on_sale' },
-									{ label: __( 'Nổi bật (Featured)', 'laca' ), value: 'featured' },
-									{ label: __( 'Ngẫu nhiên', 'laca' ), value: 'random' },
+									{
+										label: __( 'Mới nhất', 'laca' ),
+										value: 'newest',
+									},
+									{
+										label: __( 'Bán chạy', 'laca' ),
+										value: 'best_selling',
+									},
+									{
+										label: __( 'Đang giảm giá', 'laca' ),
+										value: 'on_sale',
+									},
+									{
+										label: __(
+											'Nổi bật (Featured)',
+											'laca'
+										),
+										value: 'featured',
+									},
+									{
+										label: __( 'Ngẫu nhiên', 'laca' ),
+										value: 'random',
+									},
 								] }
-								onChange={ ( v ) => setAttributes( { autoQuery: v } ) }
+								onChange={ ( v ) =>
+									setAttributes( { autoQuery: v } )
+								}
 							/>
 							<RangeControl
 								label={ __( 'Số lượng sản phẩm', 'laca' ) }
 								value={ autoCount }
 								min={ 1 }
 								max={ 20 }
-								onChange={ ( v ) => setAttributes( { autoCount: v } ) }
+								onChange={ ( v ) =>
+									setAttributes( { autoCount: v } )
+								}
 							/>
 						</>
 					) }
 
 					{ mode === 'manual' && (
 						<>
-							<p style={ { fontSize: '11px', color: '#666', margin: '4px 0 8px' } }>
+							<p
+								style={ {
+									fontSize: '11px',
+									color: '#666',
+									margin: '4px 0 8px',
+								} }
+							>
 								{ __( 'Đã chọn: ', 'laca' ) }
 								<strong>{ selectedProducts.length }</strong>
 							</p>
@@ -136,7 +182,10 @@ export default function Edit( { attributes, setAttributes } ) {
 								label={ __( 'Tìm sản phẩm', 'laca' ) }
 								value={ productSearch }
 								onChange={ setProductSearch }
-								placeholder={ __( 'Nhập tên sản phẩm…', 'laca' ) }
+								placeholder={ __(
+									'Nhập tên sản phẩm…',
+									'laca'
+								) }
 							/>
 							<div
 								style={ {
@@ -150,11 +199,19 @@ export default function Edit( { attributes, setAttributes } ) {
 								{ manualProducts.map( ( product ) => (
 									<CheckboxControl
 										key={ product.id }
-										label={ product.title?.rendered || `#${ product.id }` }
-										checked={ selectedProducts.includes( product.id ) }
+										label={
+											product.title?.rendered ||
+											`#${ product.id }`
+										}
+										checked={ selectedProducts.includes(
+											product.id
+										) }
 										onChange={ () =>
 											setAttributes( {
-												selectedProducts: toggleId( selectedProducts, product.id ),
+												selectedProducts: toggleId(
+													selectedProducts,
+													product.id
+												),
 											} )
 										}
 									/>
@@ -166,7 +223,10 @@ export default function Edit( { attributes, setAttributes } ) {
 			</InspectorControls>
 
 			<div { ...blockProps }>
-				<ServerSideRender block="lacadev/product-grid-block" attributes={ attributes } />
+				<ServerSideRender
+					block="lacadev/product-grid-block"
+					attributes={ attributes }
+				/>
 			</div>
 		</>
 	);

@@ -10,6 +10,20 @@ export default function Edit( { attributes, setAttributes } ) {
 	const isPreview = useInserterPreview( attributes );
 	const { tabTitle } = attributes;
 
+	const blockProps = useBlockProps( { className: 'tab-panel' } );
+	const innerBlocksProps = useInnerBlocksProps(
+		{ className: 'tab-panel__content' },
+		{
+			templateLock: false,
+			template: [
+				[
+					'core/paragraph',
+					{ placeholder: __( 'Nội dung tab…', 'laca' ) },
+				],
+			],
+		}
+	);
+
 	if ( isPreview ) {
 		return (
 			<BlockPreviewMock
@@ -19,15 +33,6 @@ export default function Edit( { attributes, setAttributes } ) {
 			/>
 		);
 	}
-
-	const blockProps = useBlockProps( { className: 'tab-panel' } );
-	const innerBlocksProps = useInnerBlocksProps(
-		{ className: 'tab-panel__content' },
-		{
-			templateLock: false,
-			template: [ [ 'core/paragraph', { placeholder: __( 'Nội dung tab…', 'laca' ) } ] ],
-		}
-	);
 
 	return (
 		<div { ...blockProps }>

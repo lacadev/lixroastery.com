@@ -121,11 +121,11 @@
             font-weight: $regular;
             margin-bottom: 0.3rem;
 
-            @include resFont(rem(18), rem(26));
-
             &--sm {
                 @include resFont(rem(13), rem(14));
             }
+
+            @include resFont(rem(18), rem(26));
         }
 
         &-label {

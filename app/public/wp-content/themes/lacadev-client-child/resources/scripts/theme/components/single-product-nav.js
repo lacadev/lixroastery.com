@@ -6,7 +6,9 @@ const initSingleProductNav = () => {
 
 	const links = Array.from( nav.querySelectorAll( 'a[href^="#"]' ) );
 	const sections = links
-		.map( ( link ) => document.getElementById( link.getAttribute( 'href' ).slice( 1 ) ) )
+		.map( ( link ) =>
+			document.getElementById( link.getAttribute( 'href' ).slice( 1 ) )
+		)
 		.filter( Boolean );
 
 	if ( ! sections.length ) {
@@ -15,7 +17,10 @@ const initSingleProductNav = () => {
 
 	const setActive = ( id ) => {
 		links.forEach( ( link ) => {
-			link.classList.toggle( 'is-active', link.getAttribute( 'href' ) === `#${ id }` );
+			link.classList.toggle(
+				'is-active',
+				link.getAttribute( 'href' ) === `#${ id }`
+			);
 		} );
 	};
 

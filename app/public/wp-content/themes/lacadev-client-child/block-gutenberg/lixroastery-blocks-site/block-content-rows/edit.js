@@ -38,8 +38,14 @@ function ImagePicker( { imageUrl, imageId, onSelect } ) {
 								} }
 							/>
 						) }
-						<Button variant="secondary" onClick={ open } style={ { fontSize: 11 } }>
-							{ imageUrl ? __( 'Đổi ảnh', 'laca' ) : __( 'Chọn ảnh', 'laca' ) }
+						<Button
+							variant="secondary"
+							onClick={ open }
+							style={ { fontSize: 11 } }
+						>
+							{ imageUrl
+								? __( 'Đổi ảnh', 'laca' )
+								: __( 'Chọn ảnh', 'laca' ) }
 						</Button>
 					</div>
 				) }
@@ -95,7 +101,10 @@ export default function Edit( { attributes, setAttributes } ) {
 	const updateAsideImage = ( rowIndex, imgIndex, field, value ) => {
 		const row = rows[ rowIndex ];
 		const nextImages = [ ...row.asideImages ];
-		nextImages[ imgIndex ] = { ...nextImages[ imgIndex ], [ field ]: value };
+		nextImages[ imgIndex ] = {
+			...nextImages[ imgIndex ],
+			[ field ]: value,
+		};
 		updateRow( rowIndex, 'asideImages', nextImages );
 	};
 
@@ -119,19 +128,36 @@ export default function Edit( { attributes, setAttributes } ) {
 	return (
 		<>
 			<InspectorControls>
-				<PanelBody title={ __( 'Bố cục', 'laca' ) } initialOpen={ true }>
+				<PanelBody
+					title={ __( 'Bố cục', 'laca' ) }
+					initialOpen={ true }
+				>
 					<RadioControl
 						label={ __( 'Chiều rộng khung', 'laca' ) }
 						selected={ containerType }
 						options={ [
-							{ label: __( 'Full width (container-fluid)', 'laca' ), value: 'container-fluid' },
-							{ label: __( 'Giới hạn (container)', 'laca' ), value: 'container' },
+							{
+								label: __(
+									'Full width (container-fluid)',
+									'laca'
+								),
+								value: 'container-fluid',
+							},
+							{
+								label: __( 'Giới hạn (container)', 'laca' ),
+								value: 'container',
+							},
 						] }
-						onChange={ ( v ) => setAttributes( { containerType: v } ) }
+						onChange={ ( v ) =>
+							setAttributes( { containerType: v } )
+						}
 					/>
 				</PanelBody>
 
-				<PanelBody title={ __( 'Các đoạn nội dung', 'laca' ) } initialOpen={ true }>
+				<PanelBody
+					title={ __( 'Các đoạn nội dung', 'laca' ) }
+					initialOpen={ true }
+				>
 					{ rows.map( ( row, index ) => (
 						<div
 							key={ index }
@@ -142,59 +168,118 @@ export default function Edit( { attributes, setAttributes } ) {
 								marginBottom: 12,
 							} }
 						>
-							<p style={ { fontSize: '11px', fontWeight: 600, marginBottom: 6 } }>
+							<p
+								style={ {
+									fontSize: '11px',
+									fontWeight: 600,
+									marginBottom: 6,
+								} }
+							>
 								{ __( 'Đoạn', 'laca' ) } { index + 1 }
 							</p>
 							<SelectControl
 								label={ __( 'Đối diện bên phải', 'laca' ) }
 								value={ row.asideType }
 								options={ [
-									{ label: __( 'Không có', 'laca' ), value: 'none' },
-									{ label: __( 'Ảnh thẻ', 'laca' ), value: 'image' },
-									{ label: __( 'Trích dẫn', 'laca' ), value: 'quote' },
+									{
+										label: __( 'Không có', 'laca' ),
+										value: 'none',
+									},
+									{
+										label: __( 'Ảnh thẻ', 'laca' ),
+										value: 'image',
+									},
+									{
+										label: __( 'Trích dẫn', 'laca' ),
+										value: 'quote',
+									},
 								] }
-								onChange={ ( v ) => updateRow( index, 'asideType', v ) }
+								onChange={ ( v ) =>
+									updateRow( index, 'asideType', v )
+								}
 							/>
 
 							{ row.asideType === 'image' && (
 								<>
-									<p style={ { fontSize: '11px', color: '#666', margin: '8px 0 4px' } }>
-										{ __( 'Ảnh thẻ (có thể thêm nhiều, xếp chồng) — tiêu đề/mô tả sửa trực tiếp trong khung soạn thảo.', 'laca' ) }
+									<p
+										style={ {
+											fontSize: '11px',
+											color: '#666',
+											margin: '8px 0 4px',
+										} }
+									>
+										{ __(
+											'Ảnh thẻ (có thể thêm nhiều, xếp chồng) — tiêu đề/mô tả sửa trực tiếp trong khung soạn thảo.',
+											'laca'
+										) }
 									</p>
-									{ row.asideImages.map( ( img, imgIndex ) => (
-										<div
-											key={ imgIndex }
-											style={ {
-												border: '1px solid #eee',
-												borderRadius: 4,
-												padding: 8,
-												marginBottom: 8,
-											} }
-										>
-											<ImagePicker
-												imageUrl={ img.imageUrl }
-												imageId={ img.imageId }
-												onSelect={ ( media ) => {
-													updateAsideImage( index, imgIndex, 'imageId', media.id );
-													updateAsideImage( index, imgIndex, 'imageUrl', media.url );
+									{ row.asideImages.map(
+										( img, imgIndex ) => (
+											<div
+												key={ imgIndex }
+												style={ {
+													border: '1px solid #eee',
+													borderRadius: 4,
+													padding: 8,
+													marginBottom: 8,
 												} }
-											/>
-											<TextControl
-												label={ __( 'Đường dẫn', 'laca' ) }
-												value={ img.link }
-												onChange={ ( v ) => updateAsideImage( index, imgIndex, 'link', v ) }
-												placeholder="https://…"
-											/>
-											<Button
-												variant="secondary"
-												isDestructive
-												onClick={ () => removeAsideImage( index, imgIndex ) }
 											>
-												{ __( 'Xóa ảnh này', 'laca' ) }
-											</Button>
-										</div>
-									) ) }
-									<Button variant="secondary" onClick={ () => addAsideImage( index ) }>
+												<ImagePicker
+													imageUrl={ img.imageUrl }
+													imageId={ img.imageId }
+													onSelect={ ( media ) => {
+														updateAsideImage(
+															index,
+															imgIndex,
+															'imageId',
+															media.id
+														);
+														updateAsideImage(
+															index,
+															imgIndex,
+															'imageUrl',
+															media.url
+														);
+													} }
+												/>
+												<TextControl
+													label={ __(
+														'Đường dẫn',
+														'laca'
+													) }
+													value={ img.link }
+													onChange={ ( v ) =>
+														updateAsideImage(
+															index,
+															imgIndex,
+															'link',
+															v
+														)
+													}
+													placeholder="https://…"
+												/>
+												<Button
+													variant="secondary"
+													isDestructive
+													onClick={ () =>
+														removeAsideImage(
+															index,
+															imgIndex
+														)
+													}
+												>
+													{ __(
+														'Xóa ảnh này',
+														'laca'
+													) }
+												</Button>
+											</div>
+										)
+									) }
+									<Button
+										variant="secondary"
+										onClick={ () => addAsideImage( index ) }
+									>
 										{ __( '+ Thêm ảnh', 'laca' ) }
 									</Button>
 								</>
@@ -217,7 +302,13 @@ export default function Edit( { attributes, setAttributes } ) {
 			</InspectorControls>
 
 			<section { ...blockProps }>
-				<div className={ containerType === 'container' ? 'container' : 'container-fluid' }>
+				<div
+					className={
+						containerType === 'container'
+							? 'container'
+							: 'container-fluid'
+					}
+				>
 					<RichText
 						tagName="h2"
 						className="block-content-rows__main-title"
@@ -234,7 +325,9 @@ export default function Edit( { attributes, setAttributes } ) {
 									tagName="h3"
 									className="block-content-rows__sub-title"
 									value={ row.subTitle }
-									onChange={ ( v ) => updateRow( index, 'subTitle', v ) }
+									onChange={ ( v ) =>
+										updateRow( index, 'subTitle', v )
+									}
 									placeholder={ __( 'Tiêu đề phụ…', 'laca' ) }
 									allowedFormats={ [] }
 								/>
@@ -243,30 +336,63 @@ export default function Edit( { attributes, setAttributes } ) {
 									multiline="p"
 									className="block-content-rows__text"
 									value={ row.content }
-									onChange={ ( v ) => updateRow( index, 'content', v ) }
-									placeholder={ __( 'Nhập nội dung…', 'laca' ) }
+									onChange={ ( v ) =>
+										updateRow( index, 'content', v )
+									}
+									placeholder={ __(
+										'Nhập nội dung…',
+										'laca'
+									) }
 								/>
 							</div>
 
 							<div className="block-content-rows__aside">
 								{ row.asideType === 'image' &&
 									row.asideImages.map( ( img, imgIndex ) => (
-										<div className="block-content-rows__image-card" key={ imgIndex }>
-											{ img.imageUrl && <img src={ img.imageUrl } alt="" /> }
+										<div
+											className="block-content-rows__image-card"
+											key={ imgIndex }
+										>
+											{ img.imageUrl && (
+												<img
+													src={ img.imageUrl }
+													alt=""
+												/>
+											) }
 											<RichText
 												tagName="h4"
 												className="block-content-rows__image-title"
 												value={ img.title }
-												onChange={ ( v ) => updateAsideImage( index, imgIndex, 'title', v ) }
-												placeholder={ __( 'Tiêu đề ảnh…', 'laca' ) }
+												onChange={ ( v ) =>
+													updateAsideImage(
+														index,
+														imgIndex,
+														'title',
+														v
+													)
+												}
+												placeholder={ __(
+													'Tiêu đề ảnh…',
+													'laca'
+												) }
 												allowedFormats={ [] }
 											/>
 											<RichText
 												tagName="p"
 												className="block-content-rows__image-desc"
 												value={ img.desc }
-												onChange={ ( v ) => updateAsideImage( index, imgIndex, 'desc', v ) }
-												placeholder={ __( 'Mô tả ảnh…', 'laca' ) }
+												onChange={ ( v ) =>
+													updateAsideImage(
+														index,
+														imgIndex,
+														'desc',
+														v
+													)
+												}
+												placeholder={ __(
+													'Mô tả ảnh…',
+													'laca'
+												) }
 											/>
 										</div>
 									) ) }
@@ -277,23 +403,50 @@ export default function Edit( { attributes, setAttributes } ) {
 											tagName="p"
 											className="block-content-rows__quote-text"
 											value={ row.quoteText }
-											onChange={ ( v ) => updateRow( index, 'quoteText', v ) }
-											placeholder={ __( 'Nhập câu trích dẫn…', 'laca' ) }
+											onChange={ ( v ) =>
+												updateRow(
+													index,
+													'quoteText',
+													v
+												)
+											}
+											placeholder={ __(
+												'Nhập câu trích dẫn…',
+												'laca'
+											) }
 										/>
 										<RichText
 											tagName="cite"
 											className="block-content-rows__quote-author"
 											value={ row.quoteAuthor }
-											onChange={ ( v ) => updateRow( index, 'quoteAuthor', v ) }
-											placeholder={ __( 'Tác giả…', 'laca' ) }
+											onChange={ ( v ) =>
+												updateRow(
+													index,
+													'quoteAuthor',
+													v
+												)
+											}
+											placeholder={ __(
+												'Tác giả…',
+												'laca'
+											) }
 											allowedFormats={ [] }
 										/>
 										<RichText
 											tagName="p"
 											className="block-content-rows__quote-source"
 											value={ row.quoteSource }
-											onChange={ ( v ) => updateRow( index, 'quoteSource', v ) }
-											placeholder={ __( 'Nguồn trích dẫn…', 'laca' ) }
+											onChange={ ( v ) =>
+												updateRow(
+													index,
+													'quoteSource',
+													v
+												)
+											}
+											placeholder={ __(
+												'Nguồn trích dẫn…',
+												'laca'
+											) }
 										/>
 									</blockquote>
 								) }
