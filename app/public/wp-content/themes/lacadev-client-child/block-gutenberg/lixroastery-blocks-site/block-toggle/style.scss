@@ -1,0 +1,140 @@
+// $primaryColor/$subFont/$mainFont... được định nghĩa ở CHILD theme — @use
+// theo đường dẫn tương đối, không phải @parent/...
+@use "../../../resources/styles/theme/abstracts/variables" as *;
+@use "@parent/styles/theme/abstracts/mixin" as *;
+
+.block-toggle {
+    padding: 4rem 0;
+
+    @include maxWidth($sm) {
+        padding: 2.5rem 0;
+    }
+
+    &__title {
+        font-family: $subFont;
+        font-weight: $regular;
+        text-transform: uppercase;
+        letter-spacing: 0.02em;
+        text-align: center;
+        color: $darkColor;
+        margin: 0 0 1rem;
+
+        @include resFont(rem(20), rem(30));
+    }
+
+    &__description {
+        font-family: $mainFont;
+        color: $darkColor;
+        text-align: center;
+        max-width: rem(560);
+        margin: 0 auto rem(32);
+
+        @include resFont(rem(16), rem(20));
+    }
+
+    &__list {
+        display: flex;
+        flex-direction: column;
+    }
+
+    &__item {
+        border-bottom: 1px solid $darkColor;
+
+        &:first-child {
+            border-top: 1px solid $darkColor;
+        }
+    }
+
+    &__question {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: rem(16);
+        padding: rem(20) 0;
+        appearance: none;
+        -webkit-appearance: none;
+        background: none;
+        border: 0;
+        margin: 0;
+        cursor: pointer;
+        text-align: left;
+        font-family: $subFont;
+        font-weight: $regular;
+        text-transform: uppercase;
+        letter-spacing: 0.01em;
+        color: $darkColor;
+        // Chrome/Safari trên di động (và cả trackpad trên macOS Safari) tô
+        // 1 lớp overlay xanh "nháy" lên toàn bộ <button> ngay lúc chạm/click
+        // (-webkit-tap-highlight-color mặc định), khác với outline focus đã
+        // tắt ở dưới — phải tắt riêng thuộc tính này mới hết hẳn.
+        -webkit-tap-highlight-color: transparent;
+
+        @include resFont(rem(18), rem(25));
+
+        // Safari/Chrome tô nền xanh mặc định cho <button> khi được
+        // click/focus (native control appearance) — bỏ outline mặc định,
+        // thay bằng outline mảnh chỉ khi điều hướng bằng bàn phím
+        // (:focus-visible) để vẫn giữ khả năng tiếp cận (accessibility).
+        &:focus {
+            outline: none;
+        }
+
+        &:focus-visible {
+            outline: 1px solid $darkColor;
+            outline-offset: 2px;
+        }
+
+        // Bỏ luôn background mặc định của trạng thái :active (bấm giữ) —
+        // đây là phần gây ra hiệu ứng "nháy xanh rồi tắt" còn sót lại sau khi
+        // đã tắt outline/tap-highlight ở trên.
+        &:active {
+            background: none;
+        }
+    }
+
+    &__icon {
+        position: relative;
+        flex: 0 0 auto;
+        width: rem(22);
+        height: rem(22);
+        transition: transform 0.3s ease;
+
+        &::before,
+        &::after {
+            content: "";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            background: $darkColor;
+            transform: translate(-50%, -50%);
+        }
+
+        &::before {
+            width: rem(12);
+            height: 1px;
+        }
+
+        &::after {
+            width: 1px;
+            height: rem(12);
+        }
+    }
+
+    &__item.is-active &__icon {
+        transform: rotate(45deg);
+    }
+
+    // Editor: câu trả lời luôn hiển thị đầy đủ để soạn nội dung — hành vi
+    // thu gọn (max-height: 0 + JS toggle) chỉ áp dụng ở frontend, đặt trong
+    // <style> inline tại render.php (file này được đăng ký làm "style", load
+    // cả trong iframe editor, nên KHÔNG được ẩn mặc định ở đây).
+    &__answer p {
+        font-family: $mainFont;
+        color: $darkColor;
+        line-height: 1.7;
+        margin: 0 0 rem(24);
+
+        @include resFont(rem(16), rem(20));
+    }
+}

@@ -1,0 +1,56 @@
+{
+    "$schema": "https://schemas.wp.org/trunk/block.json",
+    "apiVersion": 3,
+    "name": "lacadev/toggle-block",
+    "title": "Toggle / FAQ",
+    "category": "lixroastery-blocks-site",
+    "icon": "editor-expand",
+    "editorScript": "block-block-toggle-editor",
+    "style": "block-block-toggle",
+    "textdomain": "laca",
+    "supports": {
+        "html": false,
+        "align": ["wide", "full"]
+    },
+    "attributes": {
+        "containerType": {
+            "type": "string",
+            "default": "container"
+        },
+        "title": {
+            "type": "string",
+            "default": "Subject 1"
+        },
+        "description": {
+            "type": "string",
+            "default": "Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna"
+        },
+        "items": {
+            "type": "array",
+            "default": [
+                {
+                    "question": "Where does Lix Roastery' coffee come from?",
+                    "answer": "Coffee is seasonal, so at different times of the year we use different coffees. Origin info can be found on the batch of every coffee jar, have full traceability over the entire supply chain. This way we can guarantee quality and sustainability."
+                },
+                {
+                    "question": "Are Lix Roastery's coffees from sustainable farming?",
+                    "answer": "We are working with incredibly dedicated farmers growing some of the best coffees in the world. We pay for quality - the better the coffee, the more we pay. It's the only incentive to establish sustainability and quality. All our coffees are fresh in season and fully traceable. Read more about our partners - here."
+                },
+                {
+                    "question": "What is Direct Trade?",
+                    "answer": "Our approach to coffee sourcing is, wherever feasible, through Direct Trade, which is really key within the specialty coffee market. This means that not only are the farmers we work with paid fairly/fairly traded but that we develop long-term relationships with them to ensure environmental and social sustainability."
+                }
+            ]
+        },
+        "__isPreview": {
+            "type": "boolean",
+            "default": false
+        }
+    },
+    "example": {
+        "viewportWidth": 800,
+        "attributes": {
+            "__isPreview": true
+        }
+    }
+}
