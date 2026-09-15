@@ -1,0 +1,66 @@
+{
+    "$schema": "https://schemas.wp.org/trunk/block.json",
+    "apiVersion": 3,
+    "name": "lacadev/timeline-block",
+    "title": "Timeline",
+    "category": "lixroastery-blocks-site",
+    "icon": "clock",
+    "editorScript": "block-block-timeline-editor",
+    "style": "block-block-timeline",
+    "textdomain": "laca",
+    "supports": {
+        "html": false,
+        "align": ["wide", "full"]
+    },
+    "attributes": {
+        "containerType": {
+            "type": "string",
+            "default": "container-fluid"
+        },
+        "items": {
+            "type": "array",
+            "default": [
+                {
+                    "year": "2018",
+                    "title": "Timeline 1",
+                    "desc": "Lorem ipsum dolor sit amet, consectetuer",
+                    "content": "Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci tation ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat. Duis autem vel eum iriure dolor in hendrerit in vulputate"
+                },
+                {
+                    "year": "2019",
+                    "title": "Timeline 1",
+                    "desc": "Lorem ipsum dolor sit amet, consectetuer",
+                    "content": "Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci tation ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat. Duis autem vel eum iriure dolor in hendrerit in vulputate"
+                },
+                {
+                    "year": "2019",
+                    "title": "Timeline 2",
+                    "desc": "Lorem ipsum dolor sit amet, consectetuer",
+                    "content": "Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci tation ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat. Duis autem vel eum iriure dolor in hendrerit in vulputate"
+                },
+                {
+                    "year": "2020",
+                    "title": "Timeline 1",
+                    "desc": "Lorem ipsum dolor sit amet, consectetuer",
+                    "content": "Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci tation ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat. Duis autem vel eum iriure dolor in hendrerit in vulputate"
+                },
+                {
+                    "year": "2021",
+                    "title": "Timeline 1",
+                    "desc": "Lorem ipsum dolor sit amet, consectetuer",
+                    "content": "Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci tation ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat. Duis autem vel eum iriure dolor in hendrerit in vulputate"
+                }
+            ]
+        },
+        "__isPreview": {
+            "type": "boolean",
+            "default": false
+        }
+    },
+    "example": {
+        "viewportWidth": 800,
+        "attributes": {
+            "__isPreview": true
+        }
+    }
+}

@@ -1,0 +1,86 @@
+// $primaryColor/$subFont/$mainFont... được định nghĩa ở CHILD theme — @use
+// theo đường dẫn tương đối, không phải @parent/...
+@use "../../../resources/styles/theme/abstracts/variables" as *;
+@use "@parent/styles/theme/abstracts/mixin" as *;
+
+.block-timeline {
+    padding: 4rem 0;
+
+    @include maxWidth($sm) {
+        padding: 2.5rem 0;
+    }
+
+    &__list {
+        display: flex;
+        flex-direction: column;
+        gap: rem(48);
+    }
+
+    &__row {
+        display: grid;
+        grid-template-columns: minmax(70px, 100px) 1.4fr 2.4fr;
+        gap: rem(24);
+
+        @include maxWidth($md) {
+            grid-template-columns: minmax(60px, 80px) 1fr;
+            row-gap: rem(8);
+
+            .block-timeline__content {
+                grid-column: 2 / 3;
+            }
+        }
+
+        @include maxWidth($xs) {
+            grid-template-columns: 1fr;
+
+            .block-timeline__content {
+                grid-column: auto;
+            }
+        }
+    }
+
+    &__year {
+        font-family: $subFont;
+        font-weight: $regular;
+        color: $darkColor;
+
+        @include resFont(rem(20), rem(30));
+
+        // Editor: năm trùng với mốc trước vẫn hiện để admin sửa được,
+        // chỉ làm mờ đi (frontend thì ẩn hẳn — xem render.php).
+        &--muted {
+            opacity: 0.25;
+        }
+    }
+
+    &__title {
+        font-family: $subFont;
+        font-weight: $regular;
+        text-transform: uppercase;
+        letter-spacing: 0.02em;
+        color: $darkColor;
+        margin: 0 0 0.5rem;
+
+        @include resFont(rem(20), rem(30));
+    }
+
+    &__desc {
+        font-family: $mainFont;
+        font-weight: $regular;
+        color: $darkColor;
+        line-height: 1.5;
+        margin: 0;
+
+        @include resFont(rem(16), rem(20));
+    }
+
+    &__content p {
+        font-family: $mainFont;
+        font-weight: $regular;
+        color: $darkColor;
+        line-height: 1.7;
+        margin: 0;
+
+        @include resFont(rem(16), rem(20));
+    }
+}
