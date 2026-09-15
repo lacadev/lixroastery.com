@@ -1,0 +1,155 @@
+@use "../abstracts/variables.scss" as *;
+@use "../abstracts/mixin.scss" as *;
+
+.glossary-page {
+    padding: 4rem 0 6rem;
+
+    @include maxWidth($sm) {
+        padding: 2.5rem 0 4rem;
+    }
+
+    &__title {
+        font-family: $subFont;
+        font-weight: $regular;
+        text-transform: uppercase;
+        letter-spacing: 0.02em;
+        text-align: center;
+        margin: 0 0 4rem;
+
+        @include resFont(rem(24), rem(30));
+    }
+
+    &__body {
+        display: flex;
+        align-items: flex-start;
+        gap: rem(68);
+
+        @include maxWidth($sm) {
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+    }
+
+    &__nav {
+        flex: 0 0 auto;
+        position: sticky;
+        top: rem(24);
+        display: flex;
+        flex-direction: column;
+        gap: rem(6);
+
+        @include maxWidth($sm) {
+            position: static;
+            flex-direction: row;
+            flex-wrap: wrap;
+        }
+    }
+
+    &__nav-link {
+        font-family: $subFont;
+        font-weight: $regular;
+        font-size: rem(14);
+        text-decoration: none;
+        color: $darkColor;
+        transition: color 0.2s ease;
+
+        &:hover {
+            color: $primaryColor;
+        }
+
+        &--disabled {
+            color: rgba(0, 0, 0, 0.25);
+            pointer-events: none;
+            cursor: default;
+        }
+    }
+
+    &__list {
+        flex: 1 1 auto;
+        min-width: 0;
+    }
+
+    &__item {
+        display: grid;
+        grid-template-columns: minmax(300px, 467px) 1fr;
+        gap: rem(32);
+        scroll-margin-top: rem(24);
+        margin-bottom: rem(64);
+
+        &:last-child {
+            margin-bottom: 0;
+        }
+
+        @include maxWidth($sm) {
+            grid-template-columns: 1fr;
+            gap: 0.5rem;
+        }
+    }
+
+    &__term {
+        font-family: $subFont;
+        font-weight: $regular;
+        text-transform: uppercase;
+        letter-spacing: 0.02em;
+        color: $darkColor;
+        line-height: 1.2;
+        margin: 0;
+
+        @include resFont(rem(16), rem(18));
+    }
+
+    &__definition {
+        font-family: $mainFont;
+        color: $darkColor;
+        line-height: 1.4;
+
+        @include resFont(rem(16), rem(20));
+
+        p {
+            margin: 0 0 1em;
+
+            &:last-child {
+                margin-bottom: 0;
+            }
+        }
+    }
+
+    &__related {
+        margin-top: 1rem;
+    }
+
+    &__related-label {
+        font-family: $mainFont;
+        font-weight: $semiBold;
+        font-style: italic;
+        font-size: rem(16);
+        margin: 0 0 0.3rem;
+    }
+
+    &__related-list {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+
+        li {
+            font-style: italic;
+            font-size: rem(16);
+            color: $darkColor;
+            margin-bottom: 0.2rem;
+        }
+
+        a {
+            color: inherit;
+            text-decoration: underline;
+
+            &:hover {
+                color: $primaryColor;
+            }
+        }
+    }
+
+    &__empty {
+        text-align: center;
+        color: rgba(0, 0, 0, 0.5);
+    }
+}

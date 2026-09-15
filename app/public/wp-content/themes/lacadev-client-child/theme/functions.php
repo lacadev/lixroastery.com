@@ -48,6 +48,9 @@ add_action('after_setup_theme', function () {
     // Taxonomy riêng cho post type "product" (WooCommerce)
     require_once CHILD_THEME_SETUP_DIR . 'product_taxonomy.php';
 
+    // Carbon Fields cho post type "glossary" (Dynamic CPT)
+    require_once CHILD_THEME_SETUP_DIR . 'glossary_meta.php';
+
 }, 20); // priority 20 — sau parent (10)
 
 // =============================================================================
