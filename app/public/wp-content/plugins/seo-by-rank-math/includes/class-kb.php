@@ -44,6 +44,7 @@ class KB {
 		'usage-policy'                    => 'https://rankmath.com/usage-tracking/',
 		'logo'                            => 'https://rankmath.com/wordpress/plugin/seo-suite/',
 		'offer'                           => 'https://rankmath.com/offer/',
+		'terms-and-conditions'            => 'https://rankmath.com/terms-and-conditions/',
 
 		// Knowledgebase.
 		'knowledgebase'                   => 'https://rankmath.com/kb/',
@@ -136,6 +137,7 @@ class KB {
 		'yandex-verification-kb'          => 'https://rankmath.com/kb/verifying-your-domain-with-yandex/',
 		'norton-verification-kb'          => 'https://rankmath.com/kb/verify-site-with-norton-safe-web/',
 		'pinterest-verification-kb'       => 'https://rankmath.com/kb/pinterest-site-verification/',
+		'mcp-tools-kb'                    => 'https://rankmath.com/kb/mcp-tools/',
 
 		// SEO Analysis.
 		'analysis-site-tagline'           => 'https://rankmath.com/kb/seo-analysis/?#site-tagline-test',
