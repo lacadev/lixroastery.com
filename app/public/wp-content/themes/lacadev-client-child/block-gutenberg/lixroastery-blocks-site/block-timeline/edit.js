@@ -2,6 +2,7 @@ import { __ } from '@wordpress/i18n';
 import { useBlockProps, InspectorControls, RichText } from '@wordpress/block-editor';
 import { PanelBody, RadioControl, Button } from '@wordpress/components';
 import { useInserterPreview, BlockPreviewMock } from '../../utils/preview';
+import previewImage from './preview.png';
 
 export default function Edit( { attributes, setAttributes } ) {
 	const isPreview = useInserterPreview( attributes );
@@ -15,6 +16,7 @@ export default function Edit( { attributes, setAttributes } ) {
 				kicker={ __( 'Timeline', 'laca' ) }
 				title={ __( 'Cột mốc thời gian', 'laca' ) }
 				columns={ 1 }
+				image={ previewImage }
 			/>
 		);
 	}
