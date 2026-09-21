@@ -343,3 +343,45 @@ function theLanguageSwitcher($showName = true, $showFlag = false) {
       echo '</ul>';
   }
 }
+
+/**
+ * In nội dung 1 Page (soạn bằng Block Editor như trang thường) lên đầu trang
+ * archive của 1 Dynamic CPT — mô hình giống "Shop page" của WooCommerce:
+ * archive vẫn do code kiểm soát (loop danh sách bài viết), nhưng phần giới
+ * thiệu ở đầu trang thì admin tự soạn qua 1 Page riêng (chọn trong màn hình
+ * Custom Post Types), không cần sửa code mỗi khi đổi nội dung.
+ *
+ * Gọi trong theme/archive.php (fallback dùng chung cho MỌI post type không
+ * có archive-{slug}.php riêng) nên áp dụng tự động cho mọi Dynamic CPT tạo
+ * sau này — không cần làm gì thêm khi tạo CPT mới, chỉ cần chọn Page trong
+ * màn hình cấu hình CPT đó. CPT nào có archive-{slug}.php viết tay riêng
+ * (không dùng archive.php mặc định, vd archive-glossary.php) muốn dùng tính
+ * năng này thì tự gọi thêm hàm này 1 dòng trong file đó.
+ *
+ * @param string $post_type Bỏ trống để tự lấy post type hiện tại.
+ */
+function laca_render_dynamic_cpt_archive_intro(string $post_type = ''): void
+{
+    if (!class_exists(\App\Features\DynamicCPT\DynamicCptManager::class)) {
+        return;
+    }
+
+    $post_type = $post_type ?: (string) get_post_type();
+    if (!$post_type) {
+        return;
+    }
+
+    $page_id = \App\Features\DynamicCPT\DynamicCptManager::getArchiveContentPageId($post_type);
+    if (!$page_id) {
+        return;
+    }
+
+    $page = get_post($page_id);
+    if (!$page || 'page' !== $page->post_type || 'publish' !== $page->post_status) {
+        return;
+    }
+
+    echo '<div class="dynamic-cpt-archive-intro">';
+    echo apply_filters('the_content', $page->post_content); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+    echo '</div>';
+}

@@ -286,6 +286,27 @@ class DynamicCptAdminPage
                             </div>
                         </div>
 
+                        <!-- Section: Archive -->
+                        <div class="laca-form-section">
+                            <p class="laca-section-label"><?php esc_html_e('Archive', 'laca'); ?></p>
+
+                            <div class="laca-field">
+                                <label for="cpt_archive_page_id">
+                                    <?php esc_html_e('Trang nội dung Archive (tùy chọn)', 'laca'); ?>
+                                    <span class="laca-field-hint"><?php esc_html_e('soạn bằng Block Editor, hiện ở đầu trang archive — giống Shop page của WooCommerce', 'laca'); ?></span>
+                                </label>
+                                <?php
+                                wp_dropdown_pages([
+                                    'name'              => 'cpt_archive_page_id',
+                                    'id'                => 'cpt_archive_page_id',
+                                    'selected'          => (int)($editing['archive_content_page_id'] ?? 0),
+                                    'show_option_none'  => __('— Không dùng —', 'laca'),
+                                    'option_none_value' => '0',
+                                ]);
+                                ?>
+                            </div>
+                        </div>
+
                         <!-- Section: Taxonomy -->
                         <div class="laca-form-section">
                             <p class="laca-section-label"><?php esc_html_e('Taxonomy', 'laca'); ?></p>
@@ -593,6 +614,7 @@ class DynamicCptAdminPage
         $plural   = sanitize_text_field($_POST['cpt_plural']   ?? '');
         $icon     = sanitize_text_field($_POST['cpt_icon']     ?? 'dashicons-admin-post');
         $supports = array_map('sanitize_key', (array)($_POST['cpt_supports'] ?? ['title', 'editor']));
+        $archive_page_id = (int)($_POST['cpt_archive_page_id'] ?? 0);
         $index    = (int)($_POST['cpt_index'] ?? -1);
 
         $page_url = admin_url('admin.php?page=' . self::MENU_SLUG);
@@ -629,13 +651,14 @@ class DynamicCptAdminPage
         }
 
         $cpt_data = [
-            'slug'       => $slug,
-            'url_slug'   => $url_slug,
-            'singular'   => $singular,
-            'plural'     => $plural,
-            'menu_icon'  => $icon,
-            'supports'   => $supports,
-            'taxonomies' => $taxonomies,
+            'slug'                     => $slug,
+            'url_slug'                 => $url_slug,
+            'singular'                 => $singular,
+            'plural'                   => $plural,
+            'menu_icon'                => $icon,
+            'supports'                 => $supports,
+            'archive_content_page_id'  => $archive_page_id,
+            'taxonomies'               => $taxonomies,
         ];
 
         $cpts    = DynamicCptManager::getAll();

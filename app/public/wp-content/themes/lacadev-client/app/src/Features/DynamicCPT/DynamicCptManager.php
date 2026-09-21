@@ -57,6 +57,23 @@ class DynamicCptManager
     }
 
     /**
+     * ID của Page chứa nội dung hiển thị ở đầu trang archive của 1 CPT (do
+     * admin chọn trong màn hình Custom Post Types) — mô hình y hệt
+     * "Shop page" của WooCommerce. 0 nếu CPT chưa cấu hình hoặc không tồn tại.
+     *
+     * @see template_tags.php::laca_render_dynamic_cpt_archive_intro()
+     */
+    public static function getArchiveContentPageId(string $postType): int
+    {
+        foreach (self::getAll() as $cpt) {
+            if (($cpt['slug'] ?? '') === $postType) {
+                return (int)($cpt['archive_content_page_id'] ?? 0);
+            }
+        }
+        return 0;
+    }
+
+    /**
      * Thêm cột ảnh đại diện vào admin list — y hệt AbstractPostType::showThumbnailOnList.
      */
     private function registerThumbnailColumn(string $slug): void
