@@ -21,6 +21,10 @@
     --cf-input-spacing: #{rem(14)} #{rem(16)};
     --cf-label-color: #{$darkColor};
     --cf-btn-radius: #{rem(4)};
+    // Mặc định căn giữa nếu form không tự chọn riêng ở tab "Giao diện"
+    // (field "Căn nút Submit" — admin chọn thì rule đó scope theo ID
+    // #laca-cf-{id}, độ ưu tiên cao hơn nên tự override được giá trị này).
+    --cf-submit-align: center;
 
     max-width: rem(560);
     margin: 0 auto;
@@ -91,8 +95,6 @@
 }
 
 .laca-cf-submit-btn {
-    width: 100%;
-    justify-content: center;
     font-family: $mainFont;
     font-weight: $regular;
     padding: rem(14) rem(24);

@@ -619,8 +619,8 @@ class ContactFormAjaxHandler
         .laca-cf-radio-label, .laca-cf-checkbox-label { display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 14px; }
         .laca-cf-multiselect { padding: 4px; }
         .laca-cf-hint { margin: 4px 0 0; font-size: 12px; color: #888; }
-        /* Submit row */
-        .laca-cf-submit-row { flex-direction: row; align-items: center; justify-content: flex-end; }
+        /* Submit row — căn trái/giữa/phải qua --cf-submit-align (tab Giao diện) */
+        .laca-cf-submit-row { flex-direction: row; align-items: center; justify-content: var(--cf-submit-align, flex-end); }
         .laca-cf-submit-btn {
             display: inline-flex; align-items: center; gap: 8px;
             padding: 11px 28px; background: var(--cf-primary, var(--primary-color, #2271b1));
@@ -777,6 +777,19 @@ class ContactFormAjaxHandler
         // Show label
         if (isset($s['show_label']) && !$s['show_label']) {
             $vars[] = '--cf-label-display:none';
+        }
+
+        // Căn nút Submit (trái/giữa/phải)
+        if (!empty($s['submit_align'])) {
+            $align = match ($s['submit_align']) {
+                'left'   => 'flex-start',
+                'center' => 'center',
+                'right'  => 'flex-end',
+                default  => '',
+            };
+            if ($align) {
+                $vars[] = '--cf-submit-align:' . $align;
+            }
         }
 
         $css = '';

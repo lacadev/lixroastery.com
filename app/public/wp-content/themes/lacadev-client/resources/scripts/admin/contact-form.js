@@ -24,8 +24,9 @@ const FIELD_TYPES = window.LacaContactFormVars.FIELD_TYPES;
                 primary_color: '#2271b1', secondary_color: '#1a5a9e',
                 input_border_color: '#cccccc', label_color: '#333333',
                 btn_border_radius: 6, input_border_radius: 6,
-                btn_text: 'Gửi thông tin',
+                btn_text: 'Gửi thông tin', submit_align: 'right',
             };
+            const SUBMIT_ALIGN_TO_JUSTIFY = { left: 'flex-start', center: 'center', right: 'flex-end' };
             let styles = Object.assign({}, DEFAULT_STYLES, (function() {
                 try { return JSON.parse(document.getElementById('style-json-input').value || '{}'); } catch(e) { return {}; }
             })());
@@ -579,7 +580,8 @@ const FIELD_TYPES = window.LacaContactFormVars.FIELD_TYPES;
                 var inpS = document.getElementById('s-input-spacing');
                 var lblS = document.getElementById('s-show-label');
                 var cusC = document.getElementById('s-custom-css');
-                
+                var subA = document.getElementById('s-submit-align');
+
                 if (btnR) btnR.value = styles.btn_border_radius;
                 if (btnN) btnN.value = styles.btn_border_radius;
                 if (inpR) inpR.value = styles.input_border_radius;
@@ -588,6 +590,7 @@ const FIELD_TYPES = window.LacaContactFormVars.FIELD_TYPES;
                 if (inpS) inpS.value = styles.input_spacing || '';
                 if (lblS) lblS.checked = styles.show_label !== false;
                 if (cusC) cusC.value = styles.custom_css || '';
+                if (subA) subA.value = styles.submit_align || DEFAULT_STYLES.submit_align;
             }
 
             // ── Build live form preview HTML ───────────────────────────────────
@@ -695,7 +698,8 @@ const FIELD_TYPES = window.LacaContactFormVars.FIELD_TYPES;
                     html += '</div>';
                 });
 
-                html += '<div style="display:flex;justify-content:flex-end;margin-top:4px">';
+                var submitJustify = SUBMIT_ALIGN_TO_JUSTIFY[styles.submit_align] || SUBMIT_ALIGN_TO_JUSTIFY[DEFAULT_STYLES.submit_align];
+                html += '<div style="display:flex;justify-content:' + submitJustify + ';margin-top:4px">';
                 html += '<button type="button" class="lcf-pv-btn">' + escHtml(btnText) + '</button>';
                 html += '</div>';
                 html += '</form></div>';

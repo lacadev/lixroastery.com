@@ -606,6 +606,14 @@ class ContactFormManager
                                             Hiển thị Label các trường
                                         </label>
                                     </div>
+                                    <div class="laca-cf-field-group">
+                                        <label class="lcf-form-label">Căn nút Submit</label>
+                                        <select class="widefat" id="s-submit-align" onchange="lcfStyleUpdate('submit_align',this.value)">
+                                            <option value="left">Trái</option>
+                                            <option value="center">Giữa</option>
+                                            <option value="right">Phải</option>
+                                        </select>
+                                    </div>
                                     <div class="laca-cf-field-group" style="grid-column:1/-1">
                                         <label class="lcf-form-label">Chữ nút Submit</label>
                                         <input type="text" class="widefat" id="s-btn-text"
@@ -910,8 +918,15 @@ class ContactFormManager
         if (!empty($rawStyle['input_spacing'])) {
             $cleanStyle['input_spacing'] = sanitize_text_field($rawStyle['input_spacing']);
         }
-        if (isset($rawStyle['hide_labels'])) {
-            $cleanStyle['hide_labels'] = (bool) $rawStyle['hide_labels'];
+        // Sửa lại đúng key "show_label" — JS gửi lên và buildScopedCss() đọc
+        // đều dùng "show_label", trước đây code này sanitize nhầm sang key
+        // "hide_labels" nên cài đặt "Hiển thị Label các trường" luôn bị mất
+        // khi lưu (không lỗi rõ ràng, chỉ âm thầm không có tác dụng).
+        if (isset($rawStyle['show_label'])) {
+            $cleanStyle['show_label'] = (bool) $rawStyle['show_label'];
+        }
+        if (in_array($rawStyle['submit_align'] ?? '', ['left', 'center', 'right'], true)) {
+            $cleanStyle['submit_align'] = $rawStyle['submit_align'];
         }
         if (!empty($rawStyle['custom_css'])) {
             // Strip tags but allow proper CSS syntax, wp_strip_all_tags handles basic sanitization
