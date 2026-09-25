@@ -4,6 +4,8 @@
 body:not(.wp-admin) {
   font-family: $mainFont !important;
   line-height: 1.2 !important;
+
+  @include resFont(rem(14), rem(16));
 }
 
 body:not(.home) main#main_content {

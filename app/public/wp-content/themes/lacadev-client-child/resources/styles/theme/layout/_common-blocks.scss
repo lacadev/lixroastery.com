@@ -2,13 +2,13 @@
 @use "../abstracts/variables" as *;
 
 section {
-  padding: rem(150) 0 !important;
+  padding: rem(60) 0 !important;
 
   @include maxWidth($xl) {
-    padding: rem(100) 0 !important;
+    padding: rem(40) 0 !important;
   }
 
   @include maxWidth($md) {
-    padding: rem(60) 0 !important;
+    padding: rem(30) 0 !important;
   }
 }
