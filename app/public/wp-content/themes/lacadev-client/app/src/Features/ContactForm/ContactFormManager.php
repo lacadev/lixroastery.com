@@ -43,6 +43,10 @@ class ContactFormManager
         'datetime' => 'Ngày & Giờ (Datetime)',
         'url' => 'Đường dẫn (URL)',
         'hidden' => 'Ẩn (Hidden)',
+        // Không thu thập dữ liệu người dùng — chỉ để admin viết ghi chú/nội
+        // dung tĩnh chèn giữa các field (hỗ trợ in đậm/in nghiêng/link qua
+        // nút soạn thảo, xem contact-form.js buildFieldCard()).
+        'content' => 'Nội dung tĩnh (ghi chú, có thể gắn link)',
     ];
 
     /** Allowed column spans in 12-col grid */
@@ -150,13 +154,18 @@ class ContactFormManager
         }
         // Old flat format: first item has 'type' and no 'cols'
         if (isset($raw[0]['type']) && !isset($raw[0]['cols'])) {
-            return $raw;
+            return array_values(array_filter($raw, fn($f) => ($f['type'] ?? '') !== 'content'));
         }
         // New row-based format
         $fields = [];
         foreach ($raw as $row) {
             foreach ($row['cols'] ?? [] as $col) {
                 foreach ($col['fields'] ?? [] as $field) {
+                    // "content" là ghi chú tĩnh, không thu thập dữ liệu — bỏ
+                    // qua khi liệt kê field cho bảng submissions/CSV export.
+                    if (($field['type'] ?? '') === 'content') {
+                        continue;
+                    }
                     $fields[] = $field;
                 }
             }
@@ -600,12 +609,6 @@ class ContactFormManager
                                                oninput="lcfStyleUpdate('input_spacing',this.value)"
                                                placeholder="Ví dụ: 10px 14px">
                                     </div>
-                                    <div class="laca-cf-field-group" style="display:flex;align-items:center;">
-                                        <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-weight:600;font-size:13px;margin-top:10px;">
-                                            <input type="checkbox" id="s-show-label" onchange="lcfStyleUpdate('show_label',this.checked)">
-                                            Hiển thị Label các trường
-                                        </label>
-                                    </div>
                                     <div class="laca-cf-field-group">
                                         <label class="lcf-form-label">Căn nút Submit</label>
                                         <select class="widefat" id="s-submit-align" onchange="lcfStyleUpdate('submit_align',this.value)">
@@ -863,6 +866,20 @@ class ContactFormManager
             foreach ($row['cols'] as $col) {
                 $cleanFields = [];
                 foreach ($col['fields'] ?? [] as $field) {
+                    $type = in_array($field['type'] ?? '', array_keys(self::FIELD_TYPES), true) ? $field['type'] : 'text';
+
+                    // "content" là ghi chú tĩnh (không thu thập dữ liệu) nên
+                    // không cần "name" — mọi field còn lại vẫn bắt buộc phải
+                    // có "name" vì đó là key dữ liệu khi submit/email.
+                    if ($type === 'content') {
+                        $cleanFields[] = [
+                            'id' => sanitize_key($field['id'] ?? uniqid('field_', true)),
+                            'type' => 'content',
+                            'content' => wp_kses_post($field['content'] ?? ''),
+                        ];
+                        continue;
+                    }
+
                     // Label KHÔNG bắt buộc — nhiều field chỉ dùng placeholder
                     // làm gợi ý hiển thị (label vẫn được render cho screen
                     // reader/email nhưng có thể để trống). Chỉ "name" (dùng
@@ -872,7 +889,7 @@ class ContactFormManager
                     }
                     $cleanFields[] = [
                         'id' => sanitize_key($field['id'] ?? uniqid('field_', true)),
-                        'type' => in_array($field['type'], array_keys(self::FIELD_TYPES), true) ? $field['type'] : 'text',
+                        'type' => $type,
                         'name' => sanitize_key($field['name']),
                         'label' => sanitize_text_field($field['label'] ?? ''),
                         'placeholder' => sanitize_text_field($field['placeholder'] ?? ''),

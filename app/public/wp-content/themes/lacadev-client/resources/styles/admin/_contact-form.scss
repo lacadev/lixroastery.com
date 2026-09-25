@@ -175,6 +175,23 @@
     line-height: 1.5;
 }
 
+// Trước đây chưa có style riêng — dùng mặc định của trình duyệt (không
+// khớp với nút Xoá bên cạnh, trông như 2 phong cách khác nhau).
+.lcf-duplicate-field-btn {
+    padding: 1px 7px;
+    flex-shrink: 0;
+    line-height: 1.5;
+    border: 1px solid #2271b1;
+    background: #fff;
+    color: #2271b1;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 11px;
+    white-space: nowrap;
+
+    &:hover { background: #e8f0fc; }
+}
+
 /* Column slots */
 .laca-cf-row-content {
     display: flex;
@@ -231,31 +248,54 @@
     padding: 8px 10px;
     border-top: 1px dashed #e0e0e0;
     display: flex;
-    gap: 5px;
+    align-items: stretch;
+    gap: 6px;
     background: #f5f5f5;
+
+    // select và button trước đây cùng khai báo height:26px nhưng <select>
+    // vẫn cao hơn button trên thực tế — do <select> mặc định box-sizing:
+    // content-box (border/padding CỘNG THÊM vào height thay vì nằm trong),
+    // trong khi <button> lại theo border-box — ép box-sizing giống nhau cho
+    // cả 2 mới thực sự bằng chiều cao.
+    select,
+    button {
+        box-sizing: border-box;
+        height: 40px;
+        font-size: 16px !important;
+        font-weight: 500 !important;
+    }
 
     select {
         flex: 1;
-        height: 26px;
-        font-size: 11px;
-        padding: 0 4px;
+        font-size: 12px;
+        padding: 0 8px;
         border: 1px solid #ccc;
-        border-radius: 3px;
+        border-radius: 4px;
     }
 
     button {
-        padding: 0 9px;
-        height: 26px;
-        font-size: 11px;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 0 14px;
+        font-size: 12px;
         background: #2271b1;
         color: #fff;
         border: none;
-        border-radius: 3px;
+        border-radius: 4px;
         cursor: pointer;
         white-space: nowrap;
         font-weight: 600;
 
         &:hover { background: #1a5a9e; }
+    }
+
+    // Dấu "+" to hơn hẳn chữ "Field" bên cạnh — nhìn rõ đây là nút thêm mới,
+    // không bị lẫn với các nút/chữ khác trong hàng.
+    .lcf-add-field-plus {
+        font-size: 17px;
+        font-weight: 700;
+        line-height: 1;
     }
 }
 
@@ -355,6 +395,24 @@
     margin: 2px 0 0;
     font-size: 11px;
     color: #999;
+}
+
+/* ── Field "content" — toolbar đậm/nghiêng/link ─────────────────────── */
+.lcf-content-toolbar {
+    display: flex;
+    gap: 6px;
+    margin: 4px 0 6px;
+
+    button {
+        padding: 4px 10px;
+        font-size: 12px;
+        border: 1px solid #ccc;
+        background: #fff;
+        border-radius: 3px;
+        cursor: pointer;
+
+        &:hover { background: #f0f0f1; }
+    }
 }
 
 /* ── Add-row palette ──────────────────────────────────────────────── */
@@ -694,6 +752,14 @@
         outline: none;
         border-color: var(--lcf-primary, #2271b1) !important;
     }
+}
+
+.lcf-pv-content {
+    font-size: 13px;
+    line-height: 1.6;
+    color: #444;
+
+    a { color: var(--lcf-primary, #2271b1); }
 }
 
 .lcf-pv-btn {

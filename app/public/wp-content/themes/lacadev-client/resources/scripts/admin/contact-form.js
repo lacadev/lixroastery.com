@@ -84,6 +84,13 @@ const FIELD_TYPES = window.LacaContactFormVars.FIELD_TYPES;
 
             // ── Build field card HTML ─────────────────────────────────────────
             function buildFieldCard(field) {
+                // "content" là ghi chú tĩnh (không thu thập dữ liệu) — không
+                // có Label/Tên biến/Placeholder/Bắt buộc/Options, chỉ 1 ô
+                // soạn nội dung kèm nút chèn đậm/nghiêng/link.
+                if (field.type === 'content') {
+                    return buildContentFieldCard(field);
+                }
+
                 const typeLabel  = FIELD_TYPES[field.type] || field.type;
                 const hasOptions = HAS_OPTIONS.includes(field.type);
                 const canHaveOther = CAN_HAVE_OTHER.includes(field.type);
@@ -171,6 +178,52 @@ const FIELD_TYPES = window.LacaContactFormVars.FIELD_TYPES;
                 </div>`;
             }
 
+            // ── Build field card HTML riêng cho field type "content" ──────────
+            function buildContentFieldCard(field) {
+                const plainPreview = (field.content || '').replace(/<[^>]+>/g, '').trim();
+                const labelPrev = plainPreview
+                    ? escHtml(plainPreview.slice(0, 50)) + (plainPreview.length > 50 ? '…' : '')
+                    : '<em style="color:#aaa;font-weight:400">Nội dung trống</em>';
+
+                return `<div class="laca-cf-field-card" data-field-id="${escAttr(field.id)}">
+                    <div class="laca-cf-field-card-header" onclick="lcfToggleCard(this.closest('.laca-cf-field-card'))">
+                        <span class="lcf-field-drag-handle" title="Kéo để di chuyển field">
+                            <svg width="10" height="16" viewBox="0 0 10 16" fill="currentColor">
+                                <circle cx="3" cy="2"  r="1.4"/><circle cx="7" cy="2"  r="1.4"/>
+                                <circle cx="3" cy="8"  r="1.4"/><circle cx="7" cy="8"  r="1.4"/>
+                                <circle cx="3" cy="14" r="1.4"/><circle cx="7" cy="14" r="1.4"/>
+                            </svg>
+                        </span>
+                        <span class="lcf-type-badge">${escHtml(FIELD_TYPES.content || 'Nội dung')}</span>
+                        <span class="lcf-label-preview">${labelPrev}</span>
+                        <span class="lcf-toggle-icon">
+                            <svg width="10" height="6" viewBox="0 0 10 6" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M1 1l4 4 4-4"/></svg>
+                        </span>
+                        <button type="button" class="lcf-duplicate-field-btn"
+                            onclick="lcfDuplicateField(event,'${escAttr(field.id)}')"
+                            title="Nhân bản field">⧉</button>
+                        <button type="button" class="lcf-remove-field-btn"
+                            onclick="lcfRemoveField(event,'${escAttr(field.id)}')"
+                            title="Xoá field">✕</button>
+                    </div>
+                    <div class="laca-cf-field-card-body">
+                        <div class="lcf-field-inputs">
+                            <div class="lcf-input-row">
+                                <label class="lcf-label">Nội dung <small style="font-weight:400">(ghi chú tĩnh, không thu thập dữ liệu — chọn chữ rồi bấm nút để định dạng, hoặc tự gõ HTML)</small></label>
+                                <div class="lcf-content-toolbar">
+                                    <button type="button" onclick="lcfContentWrap('${escAttr(field.id)}','strong')" title="In đậm"><strong>B</strong></button>
+                                    <button type="button" onclick="lcfContentWrap('${escAttr(field.id)}','em')" title="In nghiêng"><em>I</em></button>
+                                    <button type="button" onclick="lcfContentInsertLink('${escAttr(field.id)}')" title="Chèn link">🔗 Link</button>
+                                </div>
+                                <textarea class="widefat lcf-content-textarea" rows="4"
+                                    oninput="lcfFieldUpdate('${escAttr(field.id)}','content',this.value)"
+                                >${escHtml(field.content || '')}</textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
+            }
+
             // ── Build row HTML ────────────────────────────────────────────────
             function buildRowHtml(row) {
                 const colInfo = row.cols.map(function(c) {
@@ -192,7 +245,7 @@ const FIELD_TYPES = window.LacaContactFormVars.FIELD_TYPES;
                             </select>
                             <button type="button"
                                 onclick="lcfAddField('${escAttr(row.id)}','${escAttr(col.id)}',this.previousElementSibling.value)">
-                                + Field
+                                <span class="lcf-add-field-plus">+</span> Field
                             </button>
                         </div>
                     </div>`;
@@ -401,6 +454,43 @@ const FIELD_TYPES = window.LacaContactFormVars.FIELD_TYPES;
                 }, 60);
             };
 
+            // ── Toolbar cho field "content" — bọc thẻ HTML quanh phần đang chọn
+            // trong <textarea> (không dùng execCommand vì đó chỉ áp dụng cho
+            // contenteditable, textarea thường phải tự cắt chuỗi theo vị trí
+            // con trỏ/vùng chọn).
+            function wrapTextareaSelection(textarea, before, after) {
+                const start    = textarea.selectionStart;
+                const end      = textarea.selectionEnd;
+                const value    = textarea.value;
+                const selected = value.slice(start, end) || 'text';
+                textarea.value = value.slice(0, start) + before + selected + after + value.slice(end);
+                textarea.focus();
+                textarea.selectionStart = start + before.length;
+                textarea.selectionEnd   = start + before.length + selected.length;
+                // Bắn "input" thủ công để oninput (lcfFieldUpdate) chạy —
+                // gán .value bằng JS không tự kích hoạt sự kiện input.
+                textarea.dispatchEvent(new Event('input', { bubbles: true }));
+            }
+
+            function getContentTextarea(fieldId) {
+                const card = document.querySelector('.laca-cf-field-card[data-field-id="' + fieldId + '"]');
+                return card ? card.querySelector('.lcf-content-textarea') : null;
+            }
+
+            window.lcfContentWrap = function(fieldId, tag) {
+                const textarea = getContentTextarea(fieldId);
+                if (!textarea) return;
+                wrapTextareaSelection(textarea, '<' + tag + '>', '</' + tag + '>');
+            };
+
+            window.lcfContentInsertLink = function(fieldId) {
+                const textarea = getContentTextarea(fieldId);
+                if (!textarea) return;
+                const url = window.prompt('Nhập URL:', 'https://');
+                if (!url) return;
+                wrapTextareaSelection(textarea, '<a href="' + url + '" target="_blank" rel="noopener noreferrer">', '</a>');
+            };
+
             // ── Public: add layout row ────────────────────────────────────────
             window.lcfAddRow = function(template) {
                 const spans = ROW_TEMPLATES[template] || [12];
@@ -450,7 +540,7 @@ const FIELD_TYPES = window.LacaContactFormVars.FIELD_TYPES;
                 const newField = {
                     id: uid(), type: type, name: '', label: '',
                     placeholder: '', required: false, options: [], _autoName: '',
-                    has_other: false, other_label: '',
+                    has_other: false, other_label: '', content: '',
                 };
                 col.fields.push(newField);
                 renderRows();
@@ -520,6 +610,11 @@ const FIELD_TYPES = window.LacaContactFormVars.FIELD_TYPES;
                 });
                 for (let i = 0; i < allFields.length; i++) {
                     const f = allFields[i];
+                    // "content" là ghi chú tĩnh, không có tên biến (không thu
+                    // thập dữ liệu) nên bỏ qua check này.
+                    if (f.type === 'content') {
+                        continue;
+                    }
                     // Label không bắt buộc (nhiều field chỉ dùng placeholder
                     // làm gợi ý hiển thị) — chỉ "name" (dùng làm key dữ liệu)
                     // mới thực sự bắt buộc.
@@ -578,7 +673,6 @@ const FIELD_TYPES = window.LacaContactFormVars.FIELD_TYPES;
                 var inpN = document.getElementById('s-input-radius-num');
                 var btnT = document.getElementById('s-btn-text');
                 var inpS = document.getElementById('s-input-spacing');
-                var lblS = document.getElementById('s-show-label');
                 var cusC = document.getElementById('s-custom-css');
                 var subA = document.getElementById('s-submit-align');
 
@@ -588,7 +682,6 @@ const FIELD_TYPES = window.LacaContactFormVars.FIELD_TYPES;
                 if (inpN) inpN.value = styles.input_border_radius;
                 if (btnT) btnT.value = styles.btn_text || DEFAULT_STYLES.btn_text;
                 if (inpS) inpS.value = styles.input_spacing || '';
-                if (lblS) lblS.checked = styles.show_label !== false;
                 if (cusC) cusC.value = styles.custom_css || '';
                 if (subA) subA.value = styles.submit_align || DEFAULT_STYLES.submit_align;
             }
@@ -596,16 +689,22 @@ const FIELD_TYPES = window.LacaContactFormVars.FIELD_TYPES;
             // ── Build live form preview HTML ───────────────────────────────────
             function buildFieldPreviewHtml(field) {
                 var type        = field.type || 'text';
-                var label       = field.label || '(chưa đặt nhãn)';
+                var label       = field.label || '';
                 var placeholder = field.placeholder || '';
                 var req         = field.required;
                 var html        = '<div class="lcf-pv-field-row">';
-                if (type !== 'hidden') {
+                // Không nhập Label thì để trống hẳn (không hiện gợi ý
+                // "(chưa đặt nhãn)") — khớp đúng hành vi frontend thật, nơi
+                // nhiều field chỉ dùng placeholder, không cần label.
+                if (type !== 'hidden' && label) {
                     html += '<label class="lcf-pv-label">' + escHtml(label);
                     if (req) html += ' <span style="color:#e53e3e">*</span>';
                     html += '</label>';
                 }
                 switch (type) {
+                    case 'content':
+                        html += '<div class="lcf-pv-content">' + (field.content || '<em style="color:#aaa">(chưa nhập nội dung)</em>') + '</div>';
+                        break;
                     case 'textarea':
                         html += '<textarea class="lcf-pv-input" placeholder="' + escAttr(placeholder) + '" rows="3" disabled></textarea>';
                         break;

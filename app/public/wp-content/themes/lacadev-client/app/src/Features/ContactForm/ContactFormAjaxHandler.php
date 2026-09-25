@@ -364,6 +364,39 @@ class ContactFormAjaxHandler
                 formEl.addEventListener('change', syncOtherToggles);
                 syncOtherToggles();
 
+                // ── Khoá nút Submit cho tới khi tick hết checkbox đơn bắt buộc ──
+                // (vd "Đồng ý điều khoản") — chỉ áp dụng cho checkbox ĐƠN (name
+                // không có "[]"), không áp dụng cho nhóm nhiều lựa chọn vì
+                // "bắt buộc" ở nhóm nghĩa là "chọn ít nhất 1 option", không phải
+                // "phải tick 1 ô cụ thể". Khai báo syncSubmitLock() ở scope
+                // ngoài để submit handler bên dưới gọi lại được sau khi
+                // formEl.reset() (reset không tự bắn "change") — mặc định
+                // (không có checkbox bắt buộc nào) phải LUÔN mở khoá, không
+                // được để no-op, vì loading-state của submit handler có set
+                // disabled=true tạm thời bất kể form có checkbox hay không.
+                let syncSubmitLock = function() {
+                    const btn2 = formEl.querySelector('.laca-cf-submit-btn');
+                    if (btn2) btn2.disabled = false;
+                };
+                const requiredSingleCheckboxes = Array.prototype.slice
+                    .call(formEl.querySelectorAll('input[type="checkbox"][required]'))
+                    .filter(function(cb) { return cb.name.indexOf('[') === -1; });
+
+                if (requiredSingleCheckboxes.length) {
+                    const submitBtnEl = formEl.querySelector('.laca-cf-submit-btn');
+                    syncSubmitLock = function() {
+                        const allChecked = requiredSingleCheckboxes.every(function(cb) { return cb.checked; });
+                        if (submitBtnEl) {
+                            submitBtnEl.disabled = !allChecked;
+                            submitBtnEl.classList.toggle('is-locked', !allChecked);
+                        }
+                    };
+                    requiredSingleCheckboxes.forEach(function(cb) {
+                        cb.addEventListener('change', syncSubmitLock);
+                    });
+                    syncSubmitLock();
+                }
+
                 // ── Submit handler ────────────────────────────────────────────
 
                 formEl.addEventListener('submit', function(e) {
@@ -397,6 +430,7 @@ class ContactFormAjaxHandler
                             });
                             formEl.reset();
                             clearAllErrors();
+                            syncSubmitLock(); // reset() không tự bắn "change" trên checkbox
                         } else {
                             const msg = (json.data && json.data.message)
                                 ? json.data.message
@@ -418,10 +452,10 @@ class ContactFormAjaxHandler
                         });
                     })
                     .finally(function() {
-                        btn.disabled = false;
                         btn.setAttribute('aria-busy', 'false');
                         btnText.hidden = false;
                         btnLoad.hidden = true;
+                        syncSubmitLock(); // trả lại đúng trạng thái khoá thay vì luôn mở khoá cứng
                     });
                 });
             }
@@ -444,6 +478,17 @@ class ContactFormAjaxHandler
 
     private function renderField(array $field): void
     {
+        // "content" không có name/label/placeholder — chỉ in ra ghi chú tĩnh
+        // (admin tự viết, hỗ trợ <a>/<strong>/<em> qua nút soạn thảo), không
+        // thu thập dữ liệu nên tách riêng khỏi luồng render field thông thường.
+        if (($field['type'] ?? '') === 'content') {
+            $content = wp_kses_post($field['content'] ?? '');
+            if ($content !== '') {
+                echo '<div class="laca-cf-form-row laca-cf-type-content laca-cf-content-block">' . $content . '</div>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+            }
+            return;
+        }
+
         $name        = esc_attr($field['name']);
         $label       = esc_html($field['label']);
         $placeholder = esc_attr($field['placeholder'] ?? '');
@@ -619,6 +664,8 @@ class ContactFormAjaxHandler
         .laca-cf-radio-label, .laca-cf-checkbox-label { display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 14px; }
         .laca-cf-multiselect { padding: 4px; }
         .laca-cf-hint { margin: 4px 0 0; font-size: 12px; color: #888; }
+        .laca-cf-content-block { font-size: 14px; line-height: 1.6; color: #444; }
+        .laca-cf-content-block a { color: var(--cf-primary, var(--primary-color, #2271b1)); text-decoration: underline; }
         /* Submit row — căn trái/giữa/phải qua --cf-submit-align (tab Giao diện) */
         .laca-cf-submit-row { flex-direction: row; align-items: center; justify-content: var(--cf-submit-align, flex-end); }
         .laca-cf-submit-btn {
@@ -664,13 +711,18 @@ class ContactFormAjaxHandler
         }
         // Old flat format: first item has 'type' and no 'cols'
         if (isset($raw[0]['type']) && !isset($raw[0]['cols'])) {
-            return $raw;
+            return array_values(array_filter($raw, fn($f) => ($f['type'] ?? '') !== 'content'));
         }
         // New row-based format
         $fields = [];
         foreach ($raw as $row) {
             foreach ($row['cols'] ?? [] as $col) {
                 foreach ($col['fields'] ?? [] as $field) {
+                    // "content" là ghi chú tĩnh, không thu thập dữ liệu — bỏ
+                    // qua ở đây để không bị validate/submit như field thật.
+                    if (($field['type'] ?? '') === 'content') {
+                        continue;
+                    }
                     $fields[] = $field;
                 }
             }

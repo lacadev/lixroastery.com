@@ -107,3 +107,30 @@
 
     @include resFont(rem(13), rem(14));
 }
+
+// Field "content" — ghi chú tĩnh admin tự viết (vd "Review our Raw Material
+// Quality Standards & Protocol before submitting", có gắn link).
+.laca-cf-content-block {
+    font-family: $mainFont;
+    font-weight: $regular;
+    color: rgba(0, 0, 0, 0.75);
+    line-height: 1.6;
+
+    @include resFont(rem(13), rem(14));
+
+    a {
+        color: $primaryColor;
+        text-decoration: underline;
+    }
+
+    strong {
+        font-weight: $semiBold;
+    }
+}
+
+// Khoá nút Submit khi checkbox đơn bắt buộc (vd "Đồng ý điều khoản") chưa
+// tick — dùng chung style :disabled đã có sẵn (opacity/cursor), thêm nhẹ
+// viền để rõ ràng hơn là "đang khoá" chứ không phải "đang xử lý".
+.laca-cf-submit-btn.is-locked {
+    box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.15);
+}
