@@ -4,6 +4,8 @@ import './components/footer-contact-form.js';
 import './components/aos-global.js';
 import './components/single-product-nav.js';
 import './components/glossary-nav.js';
+import './components/cpt-grid.js';
+import './components/journal-directory.js';
 import { initMobileMenu } from './components/mobile-menu.js';
 
 if ( document.readyState === 'loading' ) {

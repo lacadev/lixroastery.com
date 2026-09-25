@@ -1,0 +1,59 @@
+{
+    "$schema": "https://schemas.wp.org/trunk/block.json",
+    "apiVersion": 3,
+    "name": "lacadev/cpt-grid-block",
+    "title": "CPT Grid",
+    "category": "lixroastery-blocks-site",
+    "icon": "grid-view",
+    "editorScript": "block-block-cpt-grid-editor",
+    "style": "block-block-cpt-grid",
+    "textdomain": "laca",
+    "supports": {
+        "html": false,
+        "align": ["wide", "full"]
+    },
+    "attributes": {
+        "containerType": {
+            "type": "string",
+            "default": "container-fluid"
+        },
+        "postType": {
+            "type": "string",
+            "default": "post"
+        },
+        "taxonomy": {
+            "type": "string",
+            "default": ""
+        },
+        "columns": {
+            "type": "number",
+            "default": 3
+        },
+        "paginationMode": {
+            "type": "string",
+            "default": "numbered"
+        },
+        "perPagePC": {
+            "type": "number",
+            "default": 9
+        },
+        "perPageMobile": {
+            "type": "number",
+            "default": 0
+        },
+        "minCount": {
+            "type": "number",
+            "default": 6
+        },
+        "__isPreview": {
+            "type": "boolean",
+            "default": false
+        }
+    },
+    "example": {
+        "viewportWidth": 1200,
+        "attributes": {
+            "__isPreview": true
+        }
+    }
+}

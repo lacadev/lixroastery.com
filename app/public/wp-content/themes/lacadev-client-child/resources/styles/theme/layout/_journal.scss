@@ -1,0 +1,118 @@
+@use "../abstracts/variables" as *;
+@use "../abstracts/mixin" as *;
+
+// Dùng chung cho archive-journal.php (/journal) và taxonomy-journal-cat.php
+// (/journal-cat/{slug}) — phần header (title/desc) + khung tab (tái dùng
+// class .block-cpt-grid__tabs-* của block CPT Grid, xem _hooks.php enqueue).
+.journal-archive {
+    padding: 4rem 0;
+
+    @include maxWidth($sm) {
+        padding: 2.5rem 0;
+    }
+
+    &__title {
+        font-family: $subFont;
+        font-weight: $regular;
+        text-transform: uppercase;
+        letter-spacing: 0.02em;
+        text-align: center;
+        color: $darkColor;
+        margin: 0 0 1.5rem;
+
+        @include resFont(rem(28), rem(44));
+    }
+
+    &__desc,
+    &__desc p {
+        font-family: $mainFont;
+        color: rgba(0, 0, 0, 0.7);
+        text-align: center;
+        max-width: rem(720);
+        margin: 0 auto rem(48);
+        line-height: 1.7;
+
+        @include resFont(rem(13), rem(15));
+    }
+
+    &__empty {
+        text-align: center;
+        color: rgba(0, 0, 0, 0.5);
+    }
+}
+
+// ── Lưới danh mục con (chỉ ở archive-journal.php cấp gốc) ─────────────────
+.journal-directory {
+    &__header {
+        text-align: center;
+        margin-bottom: rem(40);
+    }
+
+    &__title {
+        font-family: $subFont;
+        font-weight: $regular;
+        text-transform: uppercase;
+        letter-spacing: 0.02em;
+        color: $darkColor;
+        margin: 0 0 1rem;
+
+        @include resFont(rem(24), rem(36));
+    }
+
+    &__desc,
+    &__desc p {
+        font-family: $mainFont;
+        color: rgba(0, 0, 0, 0.7);
+        max-width: rem(720);
+        margin: 0 auto;
+        line-height: 1.7;
+
+        @include resFont(rem(13), rem(15));
+    }
+
+    &__grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 0;
+
+        @include maxWidth($md) {
+            grid-template-columns: repeat(1, 1fr);
+        }
+    }
+
+    &__card {
+        display: block;
+        text-decoration: none;
+        color: inherit;
+        text-align: center;
+        padding: rem(32) rem(16);
+        // border-top trên MỌI card tạo đường kẻ ngang phía trên từng hàng
+        // (kể cả hàng đầu) — đúng thiết kế: 1 đường trên hàng 1, 1 đường
+        // giữa hàng 1 và hàng 2.
+        border-top: 1px solid rgba(0, 0, 0, 0.15);
+    }
+
+    &__card-title {
+        font-family: $subFont;
+        font-weight: $regular;
+        text-transform: uppercase;
+        color: $darkColor;
+        margin: 0 0 0.75rem;
+
+        @include resFont(rem(16), rem(18));
+    }
+
+    &__card-desc {
+        font-family: $mainFont;
+        color: rgba(0, 0, 0, 0.7);
+        line-height: 1.6;
+        margin: 0;
+
+        @include resFont(rem(13), rem(14));
+    }
+
+    &__empty {
+        text-align: center;
+        color: rgba(0, 0, 0, 0.5);
+    }
+}

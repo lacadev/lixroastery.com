@@ -1,0 +1,259 @@
+@use "../../../resources/styles/theme/abstracts/variables" as *;
+@use "@parent/styles/theme/abstracts/mixin" as *;
+
+.block-cpt-grid {
+    padding: 3rem 0;
+
+    @include maxWidth($sm) {
+        padding: 2rem 0;
+    }
+
+    &__admin-notice {
+        padding: 1rem;
+        background: #fff8e1;
+        border: 1px solid #f0c14b;
+        color: #6b5900;
+        font-size: rem(13);
+    }
+
+    // ── Tabs (lọc theo taxonomy) ────────────────────────────────────────────
+    &__tabs-wrap {
+        display: flex;
+        align-items: center;
+        gap: rem(16);
+        border-bottom: 1px solid rgba(0, 0, 0, 0.15);
+        margin-bottom: rem(32);
+        padding-bottom: rem(14);
+    }
+
+    &__tabs-nav {
+        flex: 0 0 auto;
+        background: none;
+        border: 0;
+        padding: 0;
+        cursor: pointer;
+        font-family: $mainFont;
+        font-weight: $regular;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: rgba(0, 0, 0, 0.4);
+        transition: color 0.2s ease;
+
+        @include resFont(rem(11), rem(12));
+
+        &:hover {
+            color: $darkColor;
+        }
+    }
+
+    &__tabs {
+        flex: 1 1 auto;
+        display: flex;
+        gap: rem(24);
+        overflow-x: auto;
+        scrollbar-width: none;
+
+        &::-webkit-scrollbar {
+            display: none;
+        }
+    }
+
+    &__tab {
+        flex: 0 0 auto;
+        background: none;
+        border: 0;
+        padding: 0;
+        cursor: pointer;
+        white-space: nowrap;
+        font-family: $mainFont;
+        font-weight: $regular;
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+        color: rgba(0, 0, 0, 0.45);
+        transition: color 0.2s ease;
+
+        @include resFont(rem(12), rem(13));
+
+        &:hover {
+            color: $darkColor;
+        }
+
+        &.is-active {
+            color: $darkColor;
+            font-weight: $semiBold;
+        }
+    }
+
+    // ── Grid ─────────────────────────────────────────────────────────────
+    &__list {
+        display: grid;
+        gap: rem(32);
+        grid-template-columns: repeat(3, 1fr);
+
+        &--cols-1 {
+            grid-template-columns: repeat(1, 1fr);
+        }
+
+        &--cols-2 {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        &--cols-3 {
+            grid-template-columns: repeat(3, 1fr);
+        }
+
+        &--cols-4 {
+            grid-template-columns: repeat(4, 1fr);
+        }
+
+        @include maxWidth($md) {
+            grid-template-columns: repeat(2, 1fr) !important;
+        }
+
+        @include maxWidth($xs) {
+            grid-template-columns: repeat(1, 1fr) !important;
+        }
+    }
+
+    &__empty {
+        grid-column: 1 / -1;
+        text-align: center;
+        color: rgba(0, 0, 0, 0.5);
+        padding: rem(40) 0;
+    }
+
+    // ── Card ─────────────────────────────────────────────────────────────
+    &__card-link {
+        display: block;
+        text-decoration: none;
+        color: inherit;
+    }
+
+    &__card-thumb {
+        aspect-ratio: 4 / 3;
+        overflow: hidden;
+        margin-bottom: rem(16);
+
+        img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            transition: transform 0.4s ease;
+        }
+    }
+
+    &__card-thumb-placeholder {
+        width: 100%;
+        height: 100%;
+        background: $primaryColor;
+    }
+
+    &__card-link:hover &__card-thumb img {
+        transform: scale(1.05);
+    }
+
+    &__card-meta {
+        font-family: $mainFont;
+        font-weight: $regular;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: rgba(0, 0, 0, 0.45);
+        margin: 0 0 rem(8);
+
+        @include resFont(rem(11), rem(12));
+    }
+
+    &__card-meta-sep {
+        margin: 0 rem(6);
+    }
+
+    &__card-title {
+        font-family: $subFont;
+        font-weight: $regular;
+        text-transform: uppercase;
+        color: $darkColor;
+        margin: 0 0 rem(8);
+
+        @include resFont(rem(16), rem(18));
+    }
+
+    &__card-excerpt {
+        font-family: $mainFont;
+        font-weight: $regular;
+        color: rgba(0, 0, 0, 0.7);
+        line-height: 1.6;
+        margin: 0;
+
+        @include resFont(rem(13), rem(14));
+    }
+
+    // ── Pagination (đánh số) ─────────────────────────────────────────────
+    &__pagination {
+        margin-top: rem(48);
+
+        .pagination-container {
+            display: flex;
+            justify-content: center;
+        }
+
+        .pagination-list {
+            display: flex;
+            align-items: center;
+            gap: rem(10);
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        .pagination-item {
+            a,
+            span {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                min-width: rem(32);
+                height: rem(32);
+                font-family: $mainFont;
+                font-size: rem(13);
+                color: $darkColor;
+                text-decoration: none;
+            }
+
+            &.is-active a,
+            &.is-active span {
+                font-weight: $semiBold;
+                text-decoration: underline;
+            }
+        }
+    }
+
+    // ── Load more / infinite scroll ─────────────────────────────────────
+    &__load-more {
+        margin-top: rem(32);
+        text-align: center;
+    }
+
+    &__sentinel {
+        height: 1px;
+    }
+
+    &__loading-text {
+        font-family: $mainFont;
+        font-size: rem(13);
+        color: rgba(0, 0, 0, 0.5);
+        opacity: 0;
+        transition: opacity 0.2s ease;
+        margin: 0;
+    }
+
+    &__inner.is-loading &__loading-text {
+        opacity: 1;
+    }
+
+    &__inner.is-loading &__list {
+        opacity: 0.5;
+        pointer-events: none;
+        transition: opacity 0.2s ease;
+    }
+}
