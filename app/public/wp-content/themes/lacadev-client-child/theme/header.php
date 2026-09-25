@@ -114,7 +114,7 @@ if (!defined('ABSPATH')) {
 								]);
 								?>
 							</nav>
-							<?php theLanguageSwitcher(false); ?>
+							<?php laca_language_switcher_hover(); ?>
 						</div>
 
 						<!-- Hamburger (mobile) -->
@@ -158,7 +158,7 @@ if (!defined('ABSPATH')) {
 							]);
 							?>
 						</nav>
-						<?php theLanguageSwitcher(false); ?>
+						<?php laca_language_switcher_hover(); ?>
 					</div>
 				</div>
 			</header>

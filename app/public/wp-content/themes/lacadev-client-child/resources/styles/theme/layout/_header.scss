@@ -41,12 +41,13 @@ body.menu-open {
         .menu-item > a {
             font-family: $subFont;
             font-weight: $light;
-            font-size: rem(13);
             letter-spacing: 0;
             text-transform: uppercase;
             text-decoration: none;
             color: $darkColor;
             transition: color 0.2s ease;
+
+             @include resFont(rem(14), rem(16));
 
             &:hover {
                 color: $primaryColor;
@@ -145,14 +146,44 @@ body.menu-open {
         }
     }
 
-    // Danh sách ngôn ngữ (theLanguageSwitcher() — xem app/helpers/template_tags.php)
+    // Danh sách ngôn ngữ (laca_language_switcher_hover() — theme/setup/language-switcher.php).
+    // Mặc định chỉ hiện ngôn ngữ hiện tại, hover vào .language-switcher thì
+    // đổi chỗ hiện ngôn ngữ còn lại — cả 2 <li> nằm chồng lên nhau bằng
+    // position: absolute, ẩn/hiện bằng opacity, KHÔNG đổi layout khi hover
+    // (tham khảo cách làm của xliiicoffee, resources/styles/theme/layout/_header.scss).
     .language-switcher {
-        display: flex;
-        align-items: center;
-        gap: rem(10);
+        position: relative;
         list-style: none;
         margin: 0;
         padding: 0;
+        min-width: rem(70);
+        height: rem(18);
+
+        li {
+            position: absolute;
+            top: 0;
+            left: 0;
+            white-space: nowrap;
+            opacity: 0;
+            z-index: 1;
+            transition: opacity 0.3s ease;
+
+            &.current-lang {
+                opacity: 1;
+                z-index: 2;
+            }
+        }
+
+        &:hover li,
+        &:focus-within li {
+            opacity: 1;
+            z-index: 2;
+
+            &.current-lang {
+                opacity: 0;
+                z-index: 1;
+            }
+        }
 
         a {
             font-family: $subFont;

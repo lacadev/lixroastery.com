@@ -39,6 +39,9 @@ add_action('after_setup_theme', function () {
     // Menu location riêng cho header của site này
     require_once CHILD_THEME_SETUP_DIR . 'menus.php';
 
+    // Language switcher kiểu "hover để đổi" cho header (riêng site này)
+    require_once CHILD_THEME_SETUP_DIR . 'language-switcher.php';
+
     // Load child theme options (Carbon Fields)
     require_once CHILD_THEME_SETUP_DIR . 'theme-options.php';
 
