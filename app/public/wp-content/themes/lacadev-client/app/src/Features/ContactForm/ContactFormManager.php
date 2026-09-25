@@ -55,6 +55,7 @@ class ContactFormManager
         add_action('admin_enqueue_scripts', [$this, 'enqueueAssets']);
         add_action('admin_post_laca_cf_save', [$this, 'handleSave']);
         add_action('admin_post_laca_cf_delete', [$this, 'handleDelete']);
+        add_action('admin_post_laca_cf_duplicate', [$this, 'handleDuplicate']);
         add_action('admin_post_laca_cf_delete_submission', [$this, 'handleDeleteSubmission']);
         add_action('admin_post_laca_cf_mark_read', [$this, 'handleMarkRead']);
         add_action('admin_post_laca_cf_export_csv', [$this, 'handleExportCsv']);
@@ -402,6 +403,13 @@ class ContactFormManager
                                 <td>
                                     <a href="<?php echo esc_url($editUrl); ?>" class="button button-small">Sửa</a>
                                     <a href="<?php echo esc_url($subsUrl); ?>" class="button button-small">Xem Submissions</a>
+                                    <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>"
+                                          style="display:inline">
+                                        <?php wp_nonce_field(self::NONCE_ACTION, self::NONCE_FIELD); ?>
+                                        <input type="hidden" name="action" value="laca_cf_duplicate">
+                                        <input type="hidden" name="form_id" value="<?php echo esc_attr($formId); ?>">
+                                        <button type="submit" class="button button-small">Nhân bản</button>
+                                    </form>
                                     <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>"
                                           style="display:inline"
                                           class="laca-cf-delete-form">
@@ -847,17 +855,23 @@ class ContactFormManager
             foreach ($row['cols'] as $col) {
                 $cleanFields = [];
                 foreach ($col['fields'] ?? [] as $field) {
-                    if (empty($field['name']) || empty($field['label'])) {
+                    // Label KHÔNG bắt buộc — nhiều field chỉ dùng placeholder
+                    // làm gợi ý hiển thị (label vẫn được render cho screen
+                    // reader/email nhưng có thể để trống). Chỉ "name" (dùng
+                    // làm key dữ liệu) mới thực sự bắt buộc.
+                    if (empty($field['name'])) {
                         continue;
                     }
                     $cleanFields[] = [
                         'id' => sanitize_key($field['id'] ?? uniqid('field_', true)),
                         'type' => in_array($field['type'], array_keys(self::FIELD_TYPES), true) ? $field['type'] : 'text',
                         'name' => sanitize_key($field['name']),
-                        'label' => sanitize_text_field($field['label']),
+                        'label' => sanitize_text_field($field['label'] ?? ''),
                         'placeholder' => sanitize_text_field($field['placeholder'] ?? ''),
                         'required' => !empty($field['required']),
                         'options' => array_map('sanitize_text_field', (array) ($field['options'] ?? [])),
+                        'has_other' => !empty($field['has_other']),
+                        'other_label' => sanitize_text_field($field['other_label'] ?? ''),
                     ];
                 }
                 $span = (int) ($col['span'] ?? 12);
@@ -939,6 +953,38 @@ class ContactFormManager
         }
 
         wp_redirect(admin_url('admin.php?page=' . self::MENU_SLUG . '&laca_msg=deleted'));
+        exit;
+    }
+
+    public function handleDuplicate(): void
+    {
+        if (!current_user_can(self::CAP)) {
+            wp_die(esc_html__('Không có quyền.', 'laca'));
+        }
+        check_admin_referer(self::NONCE_ACTION, self::NONCE_FIELD);
+
+        $formId = absint($_POST['form_id'] ?? 0);
+        $source = $formId > 0 ? ContactFormTable::getForm($formId) : null;
+
+        if (!$source) {
+            wp_redirect(admin_url('admin.php?page=' . self::MENU_SLUG));
+            exit;
+        }
+
+        $data = [
+            'name' => $source['name'] . ' (Copy)',
+            'fields' => json_decode($source['fields'] ?? '[]', true) ?: [],
+            'notify_email' => $source['notify_email'],
+            'email_admin_subject' => $source['email_admin_subject'],
+            'email_admin_body' => $source['email_admin_body'],
+            'email_customer_subject' => $source['email_customer_subject'],
+            'email_customer_body' => $source['email_customer_body'],
+            'style_settings' => json_decode($source['style_settings'] ?? '{}', true) ?: [],
+        ];
+
+        $newId = ContactFormTable::insertForm($data);
+
+        wp_redirect($this->buildRedirectUrl($newId, 'duplicated'));
         exit;
     }
 
@@ -1049,6 +1095,7 @@ class ContactFormManager
         $map = [
             'saved' => ['type' => 'success', 'text' => 'Đã lưu form thành công.'],
             'deleted' => ['type' => 'success', 'text' => 'Đã xoá thành công.'],
+            'duplicated' => ['type' => 'success', 'text' => 'Đã nhân bản form. Sửa tên/nội dung nếu cần.'],
             'marked_read' => ['type' => 'success', 'text' => 'Đã đánh dấu đã đọc.'],
             'error_name' => ['type' => 'error', 'text' => 'Vui lòng nhập tên form.'],
         ];

@@ -3,6 +3,7 @@ import Swal from 'sweetalert2';
 if (window.LacaContactFormVars) {
 const FIELD_TYPES = window.LacaContactFormVars.FIELD_TYPES;
             const HAS_OPTIONS = ['select', 'multiselect', 'radio', 'checkbox'];
+            const CAN_HAVE_OTHER = ['radio', 'checkbox'];
 
             // Row layout templates: array of spans (12-col grid)
             const ROW_TEMPLATES = {
@@ -84,6 +85,7 @@ const FIELD_TYPES = window.LacaContactFormVars.FIELD_TYPES;
             function buildFieldCard(field) {
                 const typeLabel  = FIELD_TYPES[field.type] || field.type;
                 const hasOptions = HAS_OPTIONS.includes(field.type);
+                const canHaveOther = CAN_HAVE_OTHER.includes(field.type);
                 const reqMark    = field.required ? ' <span style="color:#d9534f">*</span>' : '';
                 const labelPrev  = field.label
                     ? escHtml(field.label)
@@ -96,6 +98,19 @@ const FIELD_TYPES = window.LacaContactFormVars.FIELD_TYPES;
                             placeholder="Lựa chọn 1&#10;Lựa chọn 2"
                             oninput="lcfFieldUpdate('${escAttr(field.id)}','options',this.value.split('\\n').map(function(s){return s.trim();}).filter(Boolean))"
                         >${escHtml((field.options || []).join('\n'))}</textarea>
+                    </div>` : '';
+
+                const otherHtml = canHaveOther ? `
+                    <div class="lcf-input-row" style="margin-top:10px">
+                        <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px">
+                            <input type="checkbox" ${field.has_other ? 'checked' : ''}
+                                onchange="lcfFieldUpdate('${escAttr(field.id)}','has_other',this.checked)">
+                            Tự động thêm lựa chọn "Khác" kèm ô nhập chi tiết
+                        </label>
+                        ${field.has_other ? `
+                        <input type="text" class="widefat" style="margin-top:6px" placeholder="Nhãn cho lựa chọn Khác (mặc định: Khác)"
+                            value="${escAttr(field.other_label || '')}"
+                            oninput="lcfFieldUpdate('${escAttr(field.id)}','other_label',this.value)">` : ''}
                     </div>` : '';
 
                 return `<div class="laca-cf-field-card" data-field-id="${escAttr(field.id)}">
@@ -112,6 +127,9 @@ const FIELD_TYPES = window.LacaContactFormVars.FIELD_TYPES;
                         <span class="lcf-toggle-icon">
                             <svg width="10" height="6" viewBox="0 0 10 6" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M1 1l4 4 4-4"/></svg>
                         </span>
+                        <button type="button" class="lcf-duplicate-field-btn"
+                            onclick="lcfDuplicateField(event,'${escAttr(field.id)}')"
+                            title="Nhân bản field">⧉</button>
                         <button type="button" class="lcf-remove-field-btn"
                             onclick="lcfRemoveField(event,'${escAttr(field.id)}')"
                             title="Xoá field">✕</button>
@@ -119,7 +137,7 @@ const FIELD_TYPES = window.LacaContactFormVars.FIELD_TYPES;
                     <div class="laca-cf-field-card-body">
                         <div class="lcf-field-inputs">
                             <div class="lcf-input-row">
-                                <label class="lcf-label">Nhãn (Label) <span class="required">*</span></label>
+                                <label class="lcf-label">Nhãn (Label) <small style="font-weight:400">(không bắt buộc)</small></label>
                                 <input type="text" class="widefat" placeholder="VD: Họ và tên"
                                     value="${escAttr(field.label)}"
                                     oninput="lcfFieldUpdate('${escAttr(field.id)}','label',this.value)">
@@ -146,6 +164,7 @@ const FIELD_TYPES = window.LacaContactFormVars.FIELD_TYPES;
                                 </label>
                             </div>
                             ${optHtml}
+                            ${otherHtml}
                         </div>
                     </div>
                 </div>`;
@@ -341,8 +360,44 @@ const FIELD_TYPES = window.LacaContactFormVars.FIELD_TYPES;
                     if (strong) strong.textContent = value || 'ten_bien';
                 }
 
+                if (key === 'has_other' && cardEl) {
+                    // Cần rebuild card để hiện/ẩn ô nhập "Nhãn cho lựa chọn
+                    // Khác" — thay outerHTML tại chỗ (không renderRows() toàn
+                    // bộ) để không làm mất trạng thái mở/đóng của các card khác.
+                    const wasOpen = cardEl.classList.contains('is-open');
+                    cardEl.outerHTML = buildFieldCard(field);
+                    if (wasOpen) {
+                        const newCard = document.querySelector('.laca-cf-field-card[data-field-id="' + fieldId + '"]');
+                        if (newCard) newCard.classList.add('is-open');
+                    }
+                }
+
                 updateJsonInput();
                 updatePreview();
+            };
+
+            // ── Public: duplicate field ────────────────────────────────────────
+            window.lcfDuplicateField = function(event, fieldId) {
+                event.stopPropagation(); // prevent accordion toggle
+                const found = findField(fieldId);
+                if (!found) return;
+                const { col, field } = found;
+
+                const clone = JSON.parse(JSON.stringify(field));
+                clone.id = uid();
+                clone.name = field.name ? field.name + '_copy' : '';
+                clone._autoName = '';
+
+                const idx = col.fields.findIndex(function(f) { return f.id === fieldId; });
+                col.fields.splice(idx + 1, 0, clone);
+                renderRows();
+
+                setTimeout(function() {
+                    const card = document.querySelector('.laca-cf-field-card[data-field-id="' + clone.id + '"]');
+                    if (!card) return;
+                    card.classList.add('is-open');
+                    card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }, 60);
             };
 
             // ── Public: add layout row ────────────────────────────────────────
@@ -394,6 +449,7 @@ const FIELD_TYPES = window.LacaContactFormVars.FIELD_TYPES;
                 const newField = {
                     id: uid(), type: type, name: '', label: '',
                     placeholder: '', required: false, options: [], _autoName: '',
+                    has_other: false, other_label: '',
                 };
                 col.fields.push(newField);
                 renderRows();
@@ -463,14 +519,12 @@ const FIELD_TYPES = window.LacaContactFormVars.FIELD_TYPES;
                 });
                 for (let i = 0; i < allFields.length; i++) {
                     const f = allFields[i];
-                    if (!f.label) {
-                        e.preventDefault();
-                        Swal.fire({ title: 'Lỗi', text: 'Có field chưa điền nhãn (Label).', icon: 'error' });
-                        return;
-                    }
+                    // Label không bắt buộc (nhiều field chỉ dùng placeholder
+                    // làm gợi ý hiển thị) — chỉ "name" (dùng làm key dữ liệu)
+                    // mới thực sự bắt buộc.
                     if (!f.name) {
                         e.preventDefault();
-                        Swal.fire({ title: 'Lỗi', text: 'Field "' + f.label + '" cần có tên biến (name).', icon: 'error' });
+                        Swal.fire({ title: 'Lỗi', text: 'Field "' + (f.label || f.type) + '" cần có tên biến (name).', icon: 'error' });
                         return;
                     }
                 }
@@ -562,17 +616,25 @@ const FIELD_TYPES = window.LacaContactFormVars.FIELD_TYPES;
                         (field.options || []).forEach(function(opt) {
                             html += '<label style="display:flex;align-items:center;gap:6px;font-size:13px;margin-bottom:4px"><input type="radio" disabled> ' + escHtml(opt) + '</label>';
                         });
+                        if (field.has_other) {
+                            html += '<label style="display:flex;align-items:center;gap:6px;font-size:13px;margin-bottom:4px"><input type="radio" disabled> ' + escHtml(field.other_label || 'Khác') + '</label>';
+                            html += '<input type="text" class="lcf-pv-input" placeholder="Vui lòng ghi rõ…" disabled style="margin-top:2px">';
+                        }
                         html += '</div>';
                         break;
                     case 'checkbox':
                         var opts = field.options || [];
-                        if (opts.length <= 1) {
+                        if (opts.length <= 1 && !field.has_other) {
                             html += '<label style="display:flex;align-items:center;gap:6px;font-size:13px"><input type="checkbox" disabled> ' + escHtml(opts[0] || 'yes') + '</label>';
                         } else {
                             html += '<div>';
                             opts.forEach(function(opt) {
                                 html += '<label style="display:flex;align-items:center;gap:6px;font-size:13px;margin-bottom:4px"><input type="checkbox" disabled> ' + escHtml(opt) + '</label>';
                             });
+                            if (field.has_other) {
+                                html += '<label style="display:flex;align-items:center;gap:6px;font-size:13px;margin-bottom:4px"><input type="checkbox" disabled> ' + escHtml(field.other_label || 'Khác') + '</label>';
+                                html += '<input type="text" class="lcf-pv-input" placeholder="Vui lòng ghi rõ…" disabled style="margin-top:2px">';
+                            }
                             html += '</div>';
                         }
                         break;

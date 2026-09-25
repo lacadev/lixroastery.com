@@ -1,0 +1,107 @@
+@use "../abstracts/variables" as *;
+@use "../abstracts/mixin" as *;
+
+// Style cho form builder có sẵn (App\Features\ContactForm — shortcode
+// [laca_contact_form id="X"]), dùng ở trang Contact (Origin Partners /
+// Destination Partners / Career...).
+//
+// CSS mặc định của hệ thống được in INLINE ở wp_footer (không nằm trong
+// resources/styles nào — xem ContactFormAjaxHandler::printInlineCss()),
+// border/radius/padding của input dùng CSS custom property
+// (--cf-input-border/--cf-input-radius/--cf-input-spacing...) nên set lại
+// qua custom property ở đây thay vì đè trực tiếp thuộc tính (tránh phải
+// canh !important) — admin vẫn override riêng được từng form qua tab
+// "Giao diện" trong Form Liên Hệ nếu cần, vì rule đó scope theo ID
+// (#laca-cf-{id}) nên độ ưu tiên cao hơn class ở đây.
+.laca-contact-form-wrap {
+    --cf-primary: #{$primaryColor};
+    --cf-secondary: #{$darkColor};
+    --cf-input-border: rgba(0, 0, 0, 0.2);
+    --cf-input-radius: #{rem(4)};
+    --cf-input-spacing: #{rem(14)} #{rem(16)};
+    --cf-label-color: #{$darkColor};
+    --cf-btn-radius: #{rem(4)};
+
+    max-width: rem(560);
+    margin: 0 auto;
+}
+
+.laca-contact-form {
+    gap: rem(20);
+}
+
+.laca-cf-input,
+.laca-cf-textarea,
+.laca-cf-select {
+    font-family: $mainFont;
+    font-weight: $regular;
+    color: $darkColor;
+
+    @include resFont(rem(13), rem(14));
+
+    &::placeholder {
+        color: rgba(0, 0, 0, 0.4);
+    }
+}
+
+// Ẩn label phía trên các field nhập 1 dòng — dùng placeholder bên trong ô
+// nhập thay cho label riêng, giống thiết kế (nhập text vào field
+// "Placeholder" khi tạo form ở Form Liên Hệ, để trống "Label" cũng được).
+// KHÔNG áp dụng cho checkbox/radio/select vì các câu hỏi dạng đó cần hiện
+// tiêu đề rõ ràng, không có khái niệm placeholder.
+.laca-cf-type-text .laca-cf-label,
+.laca-cf-type-email .laca-cf-label,
+.laca-cf-type-phone .laca-cf-label,
+.laca-cf-type-number .laca-cf-label,
+.laca-cf-type-url .laca-cf-label,
+.laca-cf-type-date .laca-cf-label,
+.laca-cf-type-datetime .laca-cf-label,
+.laca-cf-type-textarea .laca-cf-label {
+    display: none;
+}
+
+.laca-cf-label {
+    font-family: $mainFont;
+    font-weight: $regular;
+
+    @include resFont(rem(13), rem(14));
+}
+
+// Checkbox / radio — dùng accent-color thay vì tự vẽ control riêng, đơn
+// giản mà vẫn đổi được màu tick theo primaryColor.
+.laca-cf-radio-group,
+.laca-cf-checkbox-group {
+    gap: rem(12);
+}
+
+.laca-cf-radio-label,
+.laca-cf-checkbox-label {
+    font-family: $mainFont;
+    font-weight: $regular;
+    color: rgba(0, 0, 0, 0.75);
+
+    @include resFont(rem(13), rem(14));
+
+    input {
+        accent-color: $primaryColor;
+        width: rem(18);
+        height: rem(18);
+        flex: 0 0 auto;
+    }
+}
+
+.laca-cf-submit-btn {
+    width: 100%;
+    justify-content: center;
+    font-family: $mainFont;
+    font-weight: $regular;
+    padding: rem(14) rem(24);
+
+    @include resFont(rem(14), rem(15));
+}
+
+.laca-cf-fallback-msg {
+    font-family: $mainFont;
+
+    @include resFont(rem(13), rem(14));
+}

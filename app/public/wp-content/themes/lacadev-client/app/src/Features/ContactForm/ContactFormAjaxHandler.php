@@ -61,8 +61,14 @@ class ContactFormAjaxHandler
             // Lấy giá trị raw từ POST
             $rawValue = $_POST[$name] ?? '';
 
-            // Multiselect / checkbox gửi dạng array
-            if (in_array($type, ['multiselect', 'checkbox'], true)) {
+            // checkbox có 2 dạng: 1 ô đơn (options rỗng/1 phần tử — gửi lên
+            // dạng STRING khi tick, KHÔNG có key khi bỏ tick, name không có
+            // "[]") hoặc nhóm nhiều lựa chọn (name="...[]", luôn gửi dạng
+            // array). Trước đây ép CẢ 2 dạng thành array nên ô đơn luôn bị
+            // coi là rỗng dù đã tick (bug) — chỉ ép array cho multiselect và
+            // checkbox NHÓM, không áp dụng cho checkbox đơn.
+            $isSingleCheckbox = $type === 'checkbox' && count($field['options'] ?? []) <= 1;
+            if ($type === 'multiselect' || ($type === 'checkbox' && !$isSingleCheckbox)) {
                 $rawValue = is_array($rawValue) ? $rawValue : [];
             }
 
@@ -86,6 +92,24 @@ class ContactFormAjaxHandler
             }
 
             $data[$name] = $cleanValue;
+
+            // Option "Khác" (has_other) — lấy thêm giá trị tự do người dùng
+            // nhập ở ô nhập kèm theo, rồi thay sentinel "__other__" bằng nội
+            // dung thật để hiện đúng trong email/CSV thay vì hiện chữ thô.
+            if (!empty($field['has_other']) && in_array($type, ['checkbox', 'radio'], true)) {
+                $otherRaw = sanitize_text_field((string) ($_POST[$name . '_other'] ?? ''));
+                $data[$name . '_other'] = $otherRaw;
+
+                $otherText = $otherRaw !== '' ? $otherRaw : ($field['other_label'] ?: __('Khác', 'laca'));
+                if (is_array($cleanValue)) {
+                    $data[$name] = array_map(
+                        fn($v) => $v === '__other__' ? $otherText : $v,
+                        $cleanValue
+                    );
+                } elseif ($cleanValue === '__other__') {
+                    $data[$name] = $otherText;
+                }
+            }
         }
 
         if (!empty($errors)) {
@@ -321,6 +345,25 @@ class ContactFormAjaxHandler
                     });
                 });
 
+                // ── "Khác" (has_other): hiện/ẩn ô nhập chi tiết theo lựa chọn ──
+                // Lắng nghe change trên cả form (không chỉ riêng ô toggle) vì
+                // với radio, bấm 1 lựa chọn KHÁC (không phải "Khác") cũng phải
+                // ẩn ô nhập lại — event delegation xử lý đúng cả 2 hướng.
+                const syncOtherToggles = function() {
+                    formEl.querySelectorAll('.laca-cf-other-toggle').forEach(function(toggle) {
+                        const target = document.getElementById(toggle.dataset.otherTarget || '');
+                        if (!target) return;
+                        if (toggle.checked) {
+                            target.style.display = '';
+                        } else {
+                            target.style.display = 'none';
+                            target.value = '';
+                        }
+                    });
+                };
+                formEl.addEventListener('change', syncOtherToggles);
+                syncOtherToggles();
+
                 // ── Submit handler ────────────────────────────────────────────
 
                 formEl.addEventListener('submit', function(e) {
@@ -446,18 +489,30 @@ class ContactFormAjaxHandler
                     break;
 
                 case 'radio':
-                    $options = $field['options'] ?? [];
+                    $options    = $field['options'] ?? [];
+                    $hasOther   = !empty($field['has_other']);
+                    $otherLabel = ($field['other_label'] ?? '') !== '' ? $field['other_label'] : __('Khác', 'laca');
                     echo '<div class="laca-cf-radio-group" id="' . esc_attr($fieldId) . '" ' . $reqAttr . '>';
                     foreach ($options as $idx => $opt) {
                         $optId = esc_attr($fieldId . '-' . $idx);
                         echo '<label class="laca-cf-radio-label"><input type="radio" id="' . $optId . '" name="' . $name . '" value="' . esc_attr($opt) . '"> ' . esc_html($opt) . '</label>';
                     }
+                    if ($hasOther) {
+                        $otherOptId   = esc_attr($fieldId . '-other');
+                        $otherInputId = esc_attr($fieldId . '-other-input');
+                        echo '<label class="laca-cf-radio-label"><input type="radio" id="' . $otherOptId . '" name="' . $name . '" value="__other__" class="laca-cf-other-toggle" data-other-target="' . $otherInputId . '"> ' . esc_html($otherLabel) . '</label>';
+                        echo '<input type="text" id="' . $otherInputId . '" name="' . $name . '_other" class="laca-cf-input laca-cf-other-input" placeholder="' . esc_attr__('Vui lòng ghi rõ…', 'laca') . '" style="display:none">';
+                    }
                     echo '</div>';
                     break;
 
                 case 'checkbox':
-                    $options = $field['options'] ?? [];
-                    if (count($options) <= 1) {
+                    $options    = $field['options'] ?? [];
+                    $hasOther   = !empty($field['has_other']);
+                    $otherLabel = ($field['other_label'] ?? '') !== '' ? $field['other_label'] : __('Khác', 'laca');
+                    // Bật "Khác" thì luôn coi là nhóm nhiều lựa chọn (dù chỉ
+                    // có 0-1 option thật) vì đã có ít nhất 2 lựa chọn hiển thị.
+                    if (count($options) <= 1 && !$hasOther) {
                         // Single checkbox
                         $singleOpt = $options[0] ?? 'yes';
                         echo '<label class="laca-cf-checkbox-label"><input type="checkbox" id="' . esc_attr($fieldId) . '" name="' . $name . '" value="' . esc_attr($singleOpt) . '" ' . $reqAttr . '> ' . esc_html($singleOpt) . '</label>';
@@ -467,6 +522,12 @@ class ContactFormAjaxHandler
                         foreach ($options as $idx => $opt) {
                             $optId = esc_attr($fieldId . '-' . $idx);
                             echo '<label class="laca-cf-checkbox-label"><input type="checkbox" id="' . $optId . '" name="' . $name . '[]" value="' . esc_attr($opt) . '" data-required="' . ($required ? 'true' : 'false') . '"> ' . esc_html($opt) . '</label>';
+                        }
+                        if ($hasOther) {
+                            $otherOptId   = esc_attr($fieldId . '-other');
+                            $otherInputId = esc_attr($fieldId . '-other-input');
+                            echo '<label class="laca-cf-checkbox-label"><input type="checkbox" id="' . $otherOptId . '" name="' . $name . '[]" value="__other__" class="laca-cf-other-toggle" data-other-target="' . $otherInputId . '"> ' . esc_html($otherLabel) . '</label>';
+                            echo '<input type="text" id="' . $otherInputId . '" name="' . $name . '_other" class="laca-cf-input laca-cf-other-input" placeholder="' . esc_attr__('Vui lòng ghi rõ…', 'laca') . '" style="display:none">';
                         }
                         echo '</div>';
                     }
@@ -623,12 +684,30 @@ class ContactFormAjaxHandler
 
     private static function sanitizeByType(string $type, mixed $value, array $field): mixed
     {
-        if (in_array($type, ['multiselect', 'checkbox'], true) && is_array($value)) {
+        $isSingleCheckbox = $type === 'checkbox' && count($field['options'] ?? []) <= 1;
+        $hasOther         = !empty($field['has_other']);
+
+        if (in_array($type, ['multiselect', 'checkbox'], true) && is_array($value) && !$isSingleCheckbox) {
+            // Nhóm checkbox/multiselect có bật "Khác" sẽ gửi thêm giá trị
+            // sentinel "__other__" (xem renderField()) — phải cho phép nó
+            // lọt qua array_filter, không thì bị coi như 1 lựa chọn không
+            // hợp lệ và bị loại bỏ.
             $allowed = $field['options'] ?? [];
+            if ($hasOther) {
+                $allowed[] = '__other__';
+            }
             return array_filter($value, fn($v) => in_array($v, $allowed, true));
         }
 
         $value = (string) $value;
+
+        if ($type === 'radio') {
+            $allowed = $field['options'] ?? [];
+            if ($hasOther) {
+                $allowed[] = '__other__';
+            }
+            return in_array($value, $allowed, true) ? sanitize_text_field($value) : '';
+        }
 
         return match ($type) {
             'email'  => sanitize_email($value),
@@ -636,7 +715,7 @@ class ContactFormAjaxHandler
             'number' => is_numeric($value) ? $value : '',
             'date', 'datetime' => sanitize_text_field($value),
             'textarea' => sanitize_textarea_field($value),
-            'select', 'radio' => in_array($value, $field['options'] ?? [], true) ? sanitize_text_field($value) : '',
+            'select' => in_array($value, $field['options'] ?? [], true) ? sanitize_text_field($value) : '',
             default   => sanitize_text_field($value),
         };
     }
