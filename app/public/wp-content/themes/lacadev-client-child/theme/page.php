@@ -11,18 +11,18 @@
 ?>
 <?php
 if (!is_front_page() && is_page()):
-    // echo get_template_part('template-parts/breadcrumb');
+	echo get_template_part('template-parts/breadcrumb');
 endif;
 
 if (is_front_page()):
-    the_content();
+	the_content();
 else:
-    ?>
-		<div class="wrapper-content">
-			<?php
-			the_content();
-			?>
-		</div>
-    <?php
+	?>
+	<div class="wrapper-content">
+		<?php
+		the_content();
+		?>
+	</div>
+	<?php
 endif;
 ?>
