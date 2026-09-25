@@ -80,8 +80,20 @@ $get_cat = static function (WP_Post $post, string $taxonomy): string {
 
 // Ước lượng thời gian đọc theo số từ trong nội dung (chuẩn ~200 từ/phút),
 // WordPress không có API sẵn cho việc này.
+//
+// KHÔNG dùng str_word_count() — hàm này không nhận diện ký tự có dấu tiếng
+// Việt (multi-byte UTF-8) là "word character", nên mỗi từ có dấu (được,
+// triển, phát...) bị tách vụn thành nhiều "từ" giả, đếm dư ~60-70% so với
+// số từ thật (đã verify: bài ~558 từ thật bị đếm thành 924, hiện "5 min"
+// thay vì đúng "3 min"). Tách theo khoảng trắng với modifier /u (UTF-8-aware)
+// để đếm đúng số từ tiếng Việt.
 $get_read_time = static function (WP_Post $post): int {
-    $word_count = str_word_count(wp_strip_all_tags(strip_shortcodes($post->post_content)));
+    $text = trim(wp_strip_all_tags(strip_shortcodes($post->post_content)));
+    if ($text === '') {
+        return 1;
+    }
+    $words = preg_split('/\s+/u', $text, -1, PREG_SPLIT_NO_EMPTY);
+    $word_count = is_array($words) ? count($words) : 0;
     return max(1, (int) ceil($word_count / 200));
 };
 
@@ -106,7 +118,15 @@ $wrapper_attrs = get_block_wrapper_attributes(['class' => 'block-journal-grid'])
                 $cat_name = $get_cat($post, $taxonomy);
                 $date = esc_html(get_the_date('M d', $post));
                 $title = esc_html(get_the_title($post));
-                $excerpt = esc_html(wp_trim_words(get_the_excerpt($post), 40));
+                // Không dùng get_the_excerpt() — hàm này chạy qua bộ lọc
+                // 'get_the_excerpt' (Rank Math và các plugin SEO khác cũng
+                // hook vào đây), một số filter phụ thuộc global $post/loop
+                // chính thay vì tham số $post được truyền vào, nên khi gọi
+                // ngoài vòng lặp chính (như ở đây) dễ bị trả về rỗng ngay cả
+                // khi bài viết có nội dung — đọc thẳng post_excerpt/post_content
+                // để chắc chắn luôn tự động lấy đoạn đầu khi chưa nhập excerpt.
+                $raw_excerpt = $post->post_excerpt !== '' ? $post->post_excerpt : $post->post_content;
+                $excerpt = esc_html(wp_trim_words(wp_strip_all_tags(strip_shortcodes($raw_excerpt)), 40));
                 $read_time = $get_read_time($post);
                 ?>
                 <a href="<?php echo $post_url; ?>" class="block-journal-grid__card">
