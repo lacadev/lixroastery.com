@@ -62,19 +62,6 @@ function initJournalDirectory( root ) {
 				} );
 		} );
 	} );
-
-	// Nút prev/next cuộn ngang thanh tab (dùng chung class với block CPT Grid).
-	const tabsList = root.querySelector( '.block-cpt-grid__tabs' );
-	const prevBtn = root.querySelector( '.block-cpt-grid__tabs-nav--prev' );
-	const nextBtn = root.querySelector( '.block-cpt-grid__tabs-nav--next' );
-	if ( tabsList && prevBtn && nextBtn ) {
-		prevBtn.addEventListener( 'click', () => {
-			tabsList.scrollBy( { left: -200, behavior: 'smooth' } );
-		} );
-		nextBtn.addEventListener( 'click', () => {
-			tabsList.scrollBy( { left: 200, behavior: 'smooth' } );
-		} );
-	}
 }
 
 function initAllJournalDirectories() {

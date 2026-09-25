@@ -17,39 +17,20 @@
     }
 
     // ── Tabs (lọc theo taxonomy) ────────────────────────────────────────────
+    // Không có nút Prev/Next — danh sách tab canh giữa, tự cuộn ngang bằng
+    // vuốt/scroll khi tràn (overflow-x: auto), không cần nút điều khiển riêng.
     &__tabs-wrap {
         display: flex;
-        align-items: center;
-        gap: rem(16);
+        justify-content: center;
         border-bottom: 1px solid rgba(0, 0, 0, 0.15);
         margin-bottom: rem(32);
         padding-bottom: rem(14);
     }
 
-    &__tabs-nav {
-        flex: 0 0 auto;
-        background: none;
-        border: 0;
-        padding: 0;
-        cursor: pointer;
-        font-family: $mainFont;
-        font-weight: $regular;
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-        color: rgba(0, 0, 0, 0.4);
-        transition: color 0.2s ease;
-
-        @include resFont(rem(11), rem(12));
-
-        &:hover {
-            color: $darkColor;
-        }
-    }
-
     &__tabs {
-        flex: 1 1 auto;
         display: flex;
         gap: rem(24);
+        max-width: 100%;
         overflow-x: auto;
         scrollbar-width: none;
 

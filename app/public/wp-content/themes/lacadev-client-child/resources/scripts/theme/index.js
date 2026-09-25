@@ -6,6 +6,7 @@ import './components/single-product-nav.js';
 import './components/glossary-nav.js';
 import './components/cpt-grid.js';
 import './components/journal-directory.js';
+import './components/floating-contact.js';
 import { initMobileMenu } from './components/mobile-menu.js';
 
 if ( document.readyState === 'loading' ) {

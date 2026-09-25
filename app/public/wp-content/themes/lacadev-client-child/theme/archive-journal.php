@@ -39,7 +39,6 @@ $unique_id = wp_unique_id('lix-journal-archive-');
                 ])); ?>'
             >
                 <div class="block-cpt-grid__tabs-wrap">
-                    <button type="button" class="block-cpt-grid__tabs-nav block-cpt-grid__tabs-nav--prev"><?php esc_html_e('Prev', 'laca'); ?></button>
                     <div class="block-cpt-grid__tabs">
                         <?php foreach ($terms as $i => $term) : ?>
                             <button
@@ -49,7 +48,6 @@ $unique_id = wp_unique_id('lix-journal-archive-');
                             ><?php echo esc_html($term->name); ?></button>
                         <?php endforeach; ?>
                     </div>
-                    <button type="button" class="block-cpt-grid__tabs-nav block-cpt-grid__tabs-nav--next"><?php esc_html_e('Next', 'laca'); ?></button>
                 </div>
 
                 <div class="journal-directory">

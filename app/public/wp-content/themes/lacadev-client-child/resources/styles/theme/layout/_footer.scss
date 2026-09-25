@@ -30,6 +30,13 @@
                 text-align: left;
             }
         }
+
+        // Dòng đầu tiên (tên công ty) trong cột Công ty — to hơn 1 chút,
+        // giống .footer-bottom .info-company .name của xliiicoffee.
+        &--company .footer__list li:first-child {
+            font-size: rem(15);
+            text-transform: uppercase;
+        }
     }
 
     &__list {
@@ -41,7 +48,10 @@
             margin-bottom: 0.7rem;
             font-family: $subFont;
             font-weight: $light;
-            font-size: rem(20);
+            // 20px trước đây quá to so với 1 dòng footer — canh theo cỡ chữ
+            // footer của xliiicoffee (.info/.footer-menu a: 1.3rem trên nền
+            // html{font-size:62.5%} = 13px; .name: 1.5rem = 15px).
+            font-size: rem(13);
             letter-spacing: 0;
             color: $darkColor;
 

@@ -127,19 +127,6 @@ function initCptGrid( root ) {
 		} );
 	} );
 
-	// ── Nút prev/next cuộn ngang thanh tab ────────────────────────────
-	const tabsList = root.querySelector( '.block-cpt-grid__tabs' );
-	const prevBtn = root.querySelector( '.block-cpt-grid__tabs-nav--prev' );
-	const nextBtn = root.querySelector( '.block-cpt-grid__tabs-nav--next' );
-	if ( tabsList && prevBtn && nextBtn ) {
-		prevBtn.addEventListener( 'click', () => {
-			tabsList.scrollBy( { left: -200, behavior: 'smooth' } );
-		} );
-		nextBtn.addEventListener( 'click', () => {
-			tabsList.scrollBy( { left: 200, behavior: 'smooth' } );
-		} );
-	}
-
 	// ── Phân trang đánh số — event delegation vì markup bị thay mới mỗi lần ──
 	if ( paginationWrap ) {
 		paginationWrap.addEventListener( 'click', ( e ) => {

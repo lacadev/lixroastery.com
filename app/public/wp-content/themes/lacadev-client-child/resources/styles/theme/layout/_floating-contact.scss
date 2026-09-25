@@ -1,0 +1,96 @@
+@use "../abstracts/variables" as *;
+@use "../abstracts/mixin" as *;
+
+// Nút liên hệ nổi (góc dưới phải) — tham khảo cách làm của xliiicoffee
+// (theme/footer.php #show_icon_contact/#show_hidden), giữ nguyên các mốc
+// bottom/kích thước (quy đổi từ rem gốc 10px của xliii sang rem 16px chuẩn
+// của site này — cùng 1 giá trị px thực tế).
+.floating-contact-group.is-hidden {
+    display: none;
+}
+
+.floating-contact-btn {
+    position: fixed;
+    right: rem(30);
+    width: rem(50);
+    height: rem(50);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #fff;
+    border-radius: 50%;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.35);
+    color: $darkColor;
+    z-index: 999;
+    transition:
+        background-color 0.3s ease,
+        color 0.3s ease,
+        opacity 0.3s ease,
+        visibility 0.3s ease;
+
+    &:hover {
+        background: rgba(0, 0, 0, 0.4);
+        color: #fff;
+    }
+}
+
+#floating-back-to-top {
+    bottom: rem(210);
+    opacity: 0;
+    visibility: hidden;
+
+    &.is-visible {
+        opacity: 1;
+        visibility: visible;
+    }
+}
+
+#floating-phone {
+    bottom: rem(150);
+}
+
+#floating-zalo {
+    bottom: rem(90);
+}
+
+.floating-contact-toggle {
+    position: fixed;
+    bottom: rem(30);
+    right: rem(30);
+    width: rem(50);
+    height: rem(50);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #fff;
+    border: 0;
+    padding: 0;
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.35);
+    color: $darkColor;
+    z-index: 1000;
+    transition: background-color 0.3s ease, color 0.3s ease;
+
+    &:hover {
+        background: rgba(0, 0, 0, 0.4);
+        color: #fff;
+    }
+
+    &.is-active {
+        background: #000;
+        color: #fff;
+    }
+
+    &__icon-close {
+        display: none;
+    }
+
+    &.is-active &__icon-open {
+        display: none;
+    }
+
+    &.is-active &__icon-close {
+        display: block;
+    }
+}

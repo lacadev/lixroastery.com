@@ -105,7 +105,6 @@ $config = [
         >
             <?php if (count($tabs) > 1) : ?>
                 <div class="block-cpt-grid__tabs-wrap">
-                    <button type="button" class="block-cpt-grid__tabs-nav block-cpt-grid__tabs-nav--prev"><?php esc_html_e('Prev', 'laca'); ?></button>
                     <div class="block-cpt-grid__tabs">
                         <?php foreach ($tabs as $tab_term) : ?>
                             <button
@@ -115,7 +114,6 @@ $config = [
                             ><?php echo esc_html($tab_term->name); ?></button>
                         <?php endforeach; ?>
                     </div>
-                    <button type="button" class="block-cpt-grid__tabs-nav block-cpt-grid__tabs-nav--next"><?php esc_html_e('Next', 'laca'); ?></button>
                 </div>
             <?php endif; ?>
 
