@@ -1,0 +1,43 @@
+{
+    "$schema": "https://schemas.wp.org/trunk/block.json",
+    "apiVersion": 3,
+    "name": "lacadev/content-text-block",
+    "title": "Content / Quote",
+    "category": "lixroastery-blocks-site",
+    "icon": "editor-quote",
+    "editorScript": "block-block-content-text-editor",
+    "style": "block-block-content-text",
+    "textdomain": "laca",
+    "supports": {
+        "html": false,
+        "align": ["wide", "full"]
+    },
+    "attributes": {
+        "containerType": {
+            "type": "string",
+            "default": "container"
+        },
+        "variant": {
+            "type": "string",
+            "default": "normal"
+        },
+        "textAlign": {
+            "type": "string",
+            "default": "left"
+        },
+        "content": {
+            "type": "string",
+            "default": "Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat."
+        },
+        "__isPreview": {
+            "type": "boolean",
+            "default": false
+        }
+    },
+    "example": {
+        "viewportWidth": 800,
+        "attributes": {
+            "__isPreview": true
+        }
+    }
+}

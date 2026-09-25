@@ -1,0 +1,47 @@
+// $primaryColor/$subFont/$mainFont... được định nghĩa ở CHILD theme — @use
+// theo đường dẫn tương đối, không phải @parent/...
+@use "../../../resources/styles/theme/abstracts/variables" as *;
+@use "@parent/styles/theme/abstracts/mixin" as *;
+
+.block-content-text {
+    padding: 3rem 0;
+
+    @include maxWidth($sm) {
+        padding: 2rem 0;
+    }
+
+    &__body {
+        color: $darkColor;
+
+        p {
+            margin: 0 0 1em;
+
+            &:last-child {
+                margin-bottom: 0;
+            }
+        }
+
+        a {
+            color: $primaryColor;
+            text-decoration: underline;
+        }
+
+        // Nội dung thường — dùng $mainFont (VNF-Futura), cỡ chữ body bình thường.
+        &--normal {
+            font-family: $mainFont;
+            font-weight: $regular;
+            line-height: 1.7;
+
+            @include resFont(rem(15), rem(17));
+        }
+
+        // Trích dẫn lớn — dùng $subFont (SFUfutura), cỡ chữ lớn, giống thiết kế.
+        &--quote {
+            font-family: $subFont;
+            font-weight: $regular;
+            line-height: 1.3;
+
+            @include resFont(rem(24), rem(40));
+        }
+    }
+}
