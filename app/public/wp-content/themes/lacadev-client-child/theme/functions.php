@@ -54,6 +54,9 @@ add_action('after_setup_theme', function () {
     // Carbon Fields cho post type "glossary" (Dynamic CPT)
     require_once CHILD_THEME_SETUP_DIR . 'glossary_meta.php';
 
+    // Carbon Fields cho post type "page" (ẩn/hiện breadcrumb riêng từng trang)
+    require_once CHILD_THEME_SETUP_DIR . 'page_meta.php';
+
 }, 20); // priority 20 — sau parent (10)
 
 // =============================================================================

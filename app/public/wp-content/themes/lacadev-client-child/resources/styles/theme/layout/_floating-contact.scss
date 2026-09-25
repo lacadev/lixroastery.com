@@ -49,8 +49,17 @@
     bottom: rem(150);
 }
 
+// Nút Zalo là CTA chính trong nhóm — tô màu chủ đạo $primaryColor thay vì
+// nền trắng như 2 nút còn lại, giống thiết kế.
 #floating-zalo {
     bottom: rem(90);
+    background: $primaryColor;
+    color: #fff;
+
+    &:hover {
+        background: $darkColor;
+        color: #fff;
+    }
 }
 
 .floating-contact-toggle {
