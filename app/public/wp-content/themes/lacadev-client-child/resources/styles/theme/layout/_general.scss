@@ -17,15 +17,27 @@ body:not(.home) main#main_content {
 }
 
 .container {
-  max-width: $lg;
+  max-width: $xl;
 }
 
 .container-fluid {
-  max-width: 95%;
-  margin: 0 auto;
-  padding: 0;
-  padding-right: 0.9375rem;
-  padding-left: 0.9375rem;
+  padding-right: rem(100) !important;
+  padding-left: rem(100) !important;
+
+  @include maxWidth($lg) {
+    padding-right: rem(50) !important;
+    padding-left: rem(50) !important;
+  }
+
+  @include maxWidth($md) {
+    padding-right: rem(20) !important;
+    padding-left: rem(20) !important;
+  }
+
+  @include maxWidth($sm) {
+    padding-right: rem(15) !important;
+    padding-left: rem(15) !important;
+  }
 }
 
 h1.page-title {
