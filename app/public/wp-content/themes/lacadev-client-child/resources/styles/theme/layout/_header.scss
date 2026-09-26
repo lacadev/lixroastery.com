@@ -157,7 +157,9 @@ body.menu-open {
         margin: 0;
         padding: 0;
         min-width: rem(70);
-        height: rem(18);
+        // Tăng theo font-size mới (13px→16px ở desktop) để không bị cắt chữ —
+        // khớp line-height thật của 16px (~19px, body line-height: 1.2).
+        height: rem(19);
 
         li {
             position: absolute;
@@ -188,11 +190,15 @@ body.menu-open {
         a {
             font-family: $subFont;
             font-weight: $light;
-            font-size: rem(13);
             text-transform: uppercase;
             text-decoration: none;
             color: $darkColor;
             transition: color 0.2s ease;
+
+            // Khớp đúng font-size responsive của menu chính (.header__menu-list
+            // .menu-item > a) — trước đây cố định 13px, nhỏ hơn hẳn 16px của
+            // menu ở desktop.
+            @include resFont(rem(14), rem(16));
 
             &:hover {
                 color: $primaryColor;
