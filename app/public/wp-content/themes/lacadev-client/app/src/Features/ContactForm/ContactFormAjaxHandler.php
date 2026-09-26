@@ -53,6 +53,11 @@ class ContactFormAjaxHandler
         $errors = [];
 
         foreach ($fields as $field) {
+            // Áp bản dịch theo ngôn ngữ Polylang của khách đang xem — để
+            // thông báo lỗi ("$label là bắt buộc.") và fallback nhãn "Khác"
+            // hiện đúng ngôn ngữ khách nhìn thấy trên form, không phải luôn
+            // luôn ngôn ngữ mặc định.
+            $field    = self::applyFieldTranslation($field);
             $name     = $field['name'];
             $label    = $field['label'];
             $required = !empty($field['required']);
@@ -476,8 +481,59 @@ class ContactFormAjaxHandler
     // RENDER FIELD HELPERS
     // =========================================================================
 
+    /**
+     * Áp bản dịch theo ngôn ngữ Polylang hiện tại lên field (nếu form có cấu
+     * hình field['i18n'][lang]) — dùng chung cho renderField() (hiển thị)
+     * và handleSubmit() (thông báo lỗi/fallback nhãn "Khác" đúng ngôn ngữ).
+     *
+     * "options" KHÔNG bị ghi đè — mảng gốc vẫn dùng làm VALUE submit thật để
+     * dữ liệu submissions nhất quán dù khách xem form ở ngôn ngữ nào; bản
+     * dịch của options chỉ lưu riêng vào field['option_labels'] (cùng index)
+     * để renderField() hiển thị nhãn đúng ngôn ngữ mà không đổi value.
+     * "placeholder" của field "hidden" bị dùng làm giá trị submit thật (xem
+     * renderField() case 'hidden') nên KHÔNG dịch, tránh đổi data theo ngôn
+     * ngữ hiển thị.
+     */
+    private static function applyFieldTranslation(array $field): array
+    {
+        if (empty($field['i18n']) || !is_array($field['i18n']) || !function_exists('pll_current_language')) {
+            return $field;
+        }
+        $lang = pll_current_language();
+        $override = $lang ? ($field['i18n'][$lang] ?? null) : null;
+        if (!$override || !is_array($override)) {
+            return $field;
+        }
+
+        $type = $field['type'] ?? '';
+        foreach (['label', 'other_label'] as $key) {
+            if (isset($override[$key]) && $override[$key] !== '') {
+                $field[$key] = $override[$key];
+            }
+        }
+        if ($type !== 'hidden' && isset($override['placeholder']) && $override['placeholder'] !== '') {
+            $field['placeholder'] = $override['placeholder'];
+        }
+        if ($type === 'content' && isset($override['content'])) {
+            $field['content'] = $override['content'];
+        }
+        if (!empty($override['options']) && is_array($override['options'])) {
+            $labels = $field['options'] ?? [];
+            foreach ($override['options'] as $idx => $val) {
+                if ($val !== '') {
+                    $labels[$idx] = $val;
+                }
+            }
+            $field['option_labels'] = $labels;
+        }
+
+        return $field;
+    }
+
     private function renderField(array $field): void
     {
+        $field = self::applyFieldTranslation($field);
+
         // "content" không có name/label/placeholder — chỉ in ra ghi chú tĩnh
         // (admin tự viết, hỗ trợ <a>/<strong>/<em> qua nút soạn thảo), không
         // thu thập dữ liệu nên tách riêng khỏi luồng render field thông thường.
@@ -515,19 +571,21 @@ class ContactFormAjaxHandler
 
                 case 'select':
                     $options = $field['options'] ?? [];
+                    $optionLabels = $field['option_labels'] ?? $options;
                     echo '<select id="' . esc_attr($fieldId) . '" name="' . $name . '" class="laca-cf-select" ' . $reqAttr . '>';
                     echo '<option value="">— Chọn ' . $label . ' —</option>';
-                    foreach ($options as $opt) {
-                        echo '<option value="' . esc_attr($opt) . '">' . esc_html($opt) . '</option>';
+                    foreach ($options as $idx => $opt) {
+                        echo '<option value="' . esc_attr($opt) . '">' . esc_html($optionLabels[$idx] ?? $opt) . '</option>';
                     }
                     echo '</select>';
                     break;
 
                 case 'multiselect':
                     $options = $field['options'] ?? [];
+                    $optionLabels = $field['option_labels'] ?? $options;
                     echo '<select id="' . esc_attr($fieldId) . '" name="' . $name . '[]" class="laca-cf-select laca-cf-multiselect" multiple size="4" ' . $reqAttr . '>';
-                    foreach ($options as $opt) {
-                        echo '<option value="' . esc_attr($opt) . '">' . esc_html($opt) . '</option>';
+                    foreach ($options as $idx => $opt) {
+                        echo '<option value="' . esc_attr($opt) . '">' . esc_html($optionLabels[$idx] ?? $opt) . '</option>';
                     }
                     echo '</select>';
                     echo '<p class="laca-cf-hint">Giữ Ctrl / Cmd để chọn nhiều.</p>';
@@ -535,12 +593,13 @@ class ContactFormAjaxHandler
 
                 case 'radio':
                     $options    = $field['options'] ?? [];
+                    $optionLabels = $field['option_labels'] ?? $options;
                     $hasOther   = !empty($field['has_other']);
                     $otherLabel = ($field['other_label'] ?? '') !== '' ? $field['other_label'] : __('Khác', 'laca');
                     echo '<div class="laca-cf-radio-group" id="' . esc_attr($fieldId) . '" ' . $reqAttr . '>';
                     foreach ($options as $idx => $opt) {
                         $optId = esc_attr($fieldId . '-' . $idx);
-                        echo '<label class="laca-cf-radio-label"><input type="radio" id="' . $optId . '" name="' . $name . '" value="' . esc_attr($opt) . '"> ' . esc_html($opt) . '</label>';
+                        echo '<label class="laca-cf-radio-label"><input type="radio" id="' . $optId . '" name="' . $name . '" value="' . esc_attr($opt) . '"> ' . esc_html($optionLabels[$idx] ?? $opt) . '</label>';
                     }
                     if ($hasOther) {
                         $otherOptId   = esc_attr($fieldId . '-other');
@@ -553,6 +612,7 @@ class ContactFormAjaxHandler
 
                 case 'checkbox':
                     $options    = $field['options'] ?? [];
+                    $optionLabels = $field['option_labels'] ?? $options;
                     $hasOther   = !empty($field['has_other']);
                     $otherLabel = ($field['other_label'] ?? '') !== '' ? $field['other_label'] : __('Khác', 'laca');
                     // Bật "Khác" thì luôn coi là nhóm nhiều lựa chọn (dù chỉ
@@ -560,13 +620,14 @@ class ContactFormAjaxHandler
                     if (count($options) <= 1 && !$hasOther) {
                         // Single checkbox
                         $singleOpt = $options[0] ?? 'yes';
-                        echo '<label class="laca-cf-checkbox-label"><input type="checkbox" id="' . esc_attr($fieldId) . '" name="' . $name . '" value="' . esc_attr($singleOpt) . '" ' . $reqAttr . '> ' . esc_html($singleOpt) . '</label>';
+                        $singleLabel = $optionLabels[0] ?? $singleOpt;
+                        echo '<label class="laca-cf-checkbox-label"><input type="checkbox" id="' . esc_attr($fieldId) . '" name="' . $name . '" value="' . esc_attr($singleOpt) . '" ' . $reqAttr . '> ' . esc_html($singleLabel) . '</label>';
                     } else {
                         // Multiple checkboxes
                         echo '<div class="laca-cf-checkbox-group" id="' . esc_attr($fieldId) . '">';
                         foreach ($options as $idx => $opt) {
                             $optId = esc_attr($fieldId . '-' . $idx);
-                            echo '<label class="laca-cf-checkbox-label"><input type="checkbox" id="' . $optId . '" name="' . $name . '[]" value="' . esc_attr($opt) . '" data-required="' . ($required ? 'true' : 'false') . '"> ' . esc_html($opt) . '</label>';
+                            echo '<label class="laca-cf-checkbox-label"><input type="checkbox" id="' . $optId . '" name="' . $name . '[]" value="' . esc_attr($opt) . '" data-required="' . ($required ? 'true' : 'false') . '"> ' . esc_html($optionLabels[$idx] ?? $opt) . '</label>';
                         }
                         if ($hasOther) {
                             $otherOptId   = esc_attr($fieldId . '-other');

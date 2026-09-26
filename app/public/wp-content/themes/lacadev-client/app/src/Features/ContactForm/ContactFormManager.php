@@ -174,6 +174,78 @@ class ContactFormManager
     }
 
     /**
+     * Danh sách ngôn ngữ Polylang đang bật (chỉ trả về khi có >= 2 ngôn ngữ)
+     * để builder hiện tab "Dịch sang ngôn ngữ khác" cho từng field — form
+     * chỉ có 1 ngôn ngữ (hoặc Polylang tắt/chưa cấu hình) thì không cần dịch
+     * gì cả, JS sẽ tự ẩn toàn bộ UI dịch khi mảng này rỗng.
+     */
+    private static function getActiveLanguages(): array
+    {
+        if (!function_exists('pll_languages_list') || !function_exists('pll_default_language')) {
+            return [];
+        }
+        $slugs = pll_languages_list(['fields' => 'slug']);
+        if (!is_array($slugs) || count($slugs) < 2) {
+            return [];
+        }
+        // Gọi 'name' cùng thứ tự list_order với 'slug' ở trên nên ghép theo
+        // index là đúng — Polylang không có API trả cặp slug+name 1 lần.
+        $names = pll_languages_list(['fields' => 'name']);
+        $default = pll_default_language();
+        $languages = [];
+        foreach ($slugs as $i => $slug) {
+            $languages[] = [
+                'slug' => $slug,
+                'name' => $names[$i] ?? strtoupper($slug),
+                'is_default' => $slug === $default,
+            ];
+        }
+        return $languages;
+    }
+
+    /**
+     * Sanitize bản dịch theo ngôn ngữ của 1 field (field['i18n'][lang] = [...]).
+     * $kind='content' chỉ giữ key "content" (field ghi chú tĩnh), $kind='field'
+     * giữ label/placeholder/other_label/options (field thu thập dữ liệu).
+     *
+     * "options" dịch giữ đúng SỐ LƯỢNG/THỨ TỰ của options gốc (dùng làm nhãn
+     * hiển thị theo index) — KHÔNG đổi giá trị submit thật, xem
+     * ContactFormAjaxHandler::applyFieldTranslation()/renderField().
+     */
+    private static function sanitizeFieldI18n($raw, string $kind): array
+    {
+        if (!is_array($raw)) {
+            return [];
+        }
+        $clean = [];
+        foreach ($raw as $langSlug => $vals) {
+            $langSlug = sanitize_key((string) $langSlug);
+            if (!$langSlug || !is_array($vals)) {
+                continue;
+            }
+            $entry = [];
+            if ($kind === 'content') {
+                if (isset($vals['content'])) {
+                    $entry['content'] = wp_kses_post($vals['content']);
+                }
+            } else {
+                foreach (['label', 'placeholder', 'other_label'] as $key) {
+                    if (isset($vals[$key]) && $vals[$key] !== '') {
+                        $entry[$key] = sanitize_text_field($vals[$key]);
+                    }
+                }
+                if (!empty($vals['options']) && is_array($vals['options'])) {
+                    $entry['options'] = array_map('sanitize_text_field', $vals['options']);
+                }
+            }
+            if (!empty($entry)) {
+                $clean[$langSlug] = $entry;
+            }
+        }
+        return $clean;
+    }
+
+    /**
      * Convert raw DB data to row-based format for the builder JS.
      * Old flat format is auto-converted: each field → single-col row.
      */
@@ -447,6 +519,7 @@ class ContactFormManager
         $pageUrl = admin_url('admin.php?page=' . self::MENU_SLUG);
         $formId = $isNew ? 0 : (int) $form['id'];
         $rows = $isNew ? self::defaultFormRows() : self::toRowsFormat($form);
+        $languages = self::getActiveLanguages();
         $message = $this->getFlashMessage();
 
         $defaultAdminSubject = 'Liên hệ mới: [$name - $phone_number]';
@@ -710,7 +783,8 @@ class ContactFormManager
         <script>
             window.LacaContactFormVars = {
                 FIELD_TYPES: <?php echo wp_json_encode(self::FIELD_TYPES); ?>,
-                rows: <?php echo wp_json_encode($rows); ?>
+                rows: <?php echo wp_json_encode($rows); ?>,
+                languages: <?php echo wp_json_encode($languages); ?>
             };
         </script>
         <?php
@@ -876,6 +950,7 @@ class ContactFormManager
                             'id' => sanitize_key($field['id'] ?? uniqid('field_', true)),
                             'type' => 'content',
                             'content' => wp_kses_post($field['content'] ?? ''),
+                            'i18n' => self::sanitizeFieldI18n($field['i18n'] ?? [], 'content'),
                         ];
                         continue;
                     }
@@ -897,6 +972,7 @@ class ContactFormManager
                         'options' => array_map('sanitize_text_field', (array) ($field['options'] ?? [])),
                         'has_other' => !empty($field['has_other']),
                         'other_label' => sanitize_text_field($field['other_label'] ?? ''),
+                        'i18n' => self::sanitizeFieldI18n($field['i18n'] ?? [], 'field'),
                     ];
                 }
                 $span = (int) ($col['span'] ?? 12);

@@ -415,6 +415,57 @@
     }
 }
 
+/* ── Dịch sang ngôn ngữ khác (i18n) cho từng field ──────────────────── */
+.lcf-i18n-wrap {
+    margin-top: 10px;
+    border-top: 1px dashed #e0e0e0;
+    padding-top: 8px;
+}
+
+.lcf-i18n-toggle {
+    width: 100%;
+    text-align: left;
+    padding: 6px 8px;
+    border: 1px dashed #2271b1;
+    background: #f0f6fc;
+    color: #2271b1;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 11px;
+    font-weight: 600;
+
+    &:hover { background: #e8f0fc; }
+}
+
+.lcf-i18n-block {
+    display: none;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 8px;
+    padding: 10px;
+    background: #fafbfc;
+    border: 1px solid #e5e5e5;
+    border-radius: 4px;
+}
+
+.lcf-i18n-wrap.is-open .lcf-i18n-block { display: flex; }
+
+.lcf-i18n-lang-group {
+    padding: 8px 10px;
+    background: #fff;
+    border: 1px solid #eee;
+    border-radius: 4px;
+}
+
+.lcf-i18n-lang-title {
+    font-size: 11px;
+    font-weight: 700;
+    color: #2271b1;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    margin-bottom: 6px;
+}
+
 /* ── Add-row palette ──────────────────────────────────────────────── */
 .laca-cf-add-row-palette {
     margin-top: 14px;

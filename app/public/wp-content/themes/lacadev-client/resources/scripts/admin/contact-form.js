@@ -4,6 +4,11 @@ if (window.LacaContactFormVars) {
 const FIELD_TYPES = window.LacaContactFormVars.FIELD_TYPES;
             const HAS_OPTIONS = ['select', 'multiselect', 'radio', 'checkbox'];
             const CAN_HAVE_OTHER = ['radio', 'checkbox'];
+            // Danh sách ngôn ngữ Polylang đang bật (rỗng nếu Polylang tắt
+            // hoặc site chỉ có 1 ngôn ngữ) — quyết định có hiện khối "Dịch
+            // sang ngôn ngữ khác" trong từng field-card hay không.
+            const LANGUAGES = window.LacaContactFormVars.languages || [];
+            const NON_DEFAULT_LANGS = LANGUAGES.filter(function(l) { return !l.is_default; });
 
             // Row layout templates: array of spans (12-col grid)
             const ROW_TEMPLATES = {
@@ -80,6 +85,82 @@ const FIELD_TYPES = window.LacaContactFormVars.FIELD_TYPES;
                     }
                 }
                 return null;
+            }
+
+            // ── Khối "Dịch sang ngôn ngữ khác" cho field thường (không áp
+            // dụng cho "hidden" — placeholder của hidden là giá trị submit
+            // thật, dịch sẽ đổi luôn data, xem applyFieldTranslation() phía
+            // PHP) — mỗi ngôn ngữ show lại đúng các input đang có ở field.
+            function buildI18nBlock(field) {
+                if (!NON_DEFAULT_LANGS.length || field.type === 'hidden') return '';
+
+                const hasOptions   = HAS_OPTIONS.includes(field.type);
+                const canHaveOther = CAN_HAVE_OTHER.includes(field.type);
+
+                const groups = NON_DEFAULT_LANGS.map(function(lang) {
+                    const i18n = (field.i18n && field.i18n[lang.slug]) || {};
+                    const optHtml = hasOptions ? `
+                        <div class="lcf-input-row" style="margin-top:8px">
+                            <label class="lcf-label">Các lựa chọn <small style="font-weight:400">(đúng thứ tự bản gốc, để trống dòng nào giữ nguyên dòng đó)</small></label>
+                            <textarea class="widefat" rows="3"
+                                oninput="lcfFieldI18nUpdate('${escAttr(field.id)}','${escAttr(lang.slug)}','options',this.value.split('\\n').map(function(s){return s.trim();}))"
+                            >${escHtml((i18n.options || []).join('\n'))}</textarea>
+                        </div>` : '';
+                    const otherHtml = (canHaveOther && field.has_other) ? `
+                        <div class="lcf-input-row" style="margin-top:8px">
+                            <label class="lcf-label">Nhãn "Khác"</label>
+                            <input type="text" class="widefat" placeholder="${escAttr(field.other_label || 'Khác')}"
+                                value="${escAttr(i18n.other_label || '')}"
+                                oninput="lcfFieldI18nUpdate('${escAttr(field.id)}','${escAttr(lang.slug)}','other_label',this.value)">
+                        </div>` : '';
+
+                    return `<div class="lcf-i18n-lang-group">
+                        <div class="lcf-i18n-lang-title">${escHtml(lang.name)}</div>
+                        <div class="lcf-input-row">
+                            <label class="lcf-label">Nhãn (Label)</label>
+                            <input type="text" class="widefat" placeholder="${escAttr(field.label || '')}"
+                                value="${escAttr(i18n.label || '')}"
+                                oninput="lcfFieldI18nUpdate('${escAttr(field.id)}','${escAttr(lang.slug)}','label',this.value)">
+                        </div>
+                        <div class="lcf-input-row" style="margin-top:8px">
+                            <label class="lcf-label">Placeholder</label>
+                            <input type="text" class="widefat" placeholder="${escAttr(field.placeholder || '')}"
+                                value="${escAttr(i18n.placeholder || '')}"
+                                oninput="lcfFieldI18nUpdate('${escAttr(field.id)}','${escAttr(lang.slug)}','placeholder',this.value)">
+                        </div>
+                        ${optHtml}
+                        ${otherHtml}
+                    </div>`;
+                }).join('');
+
+                return `<div class="lcf-i18n-wrap">
+                    <button type="button" class="lcf-i18n-toggle" onclick="this.closest('.lcf-i18n-wrap').classList.toggle('is-open')">
+                        🌐 Dịch sang ngôn ngữ khác (${NON_DEFAULT_LANGS.length})
+                    </button>
+                    <div class="lcf-i18n-block">${groups}</div>
+                </div>`;
+            }
+
+            // ── Khối dịch riêng cho field "content" (chỉ có 1 ô nội dung) ──────
+            function buildContentI18nBlock(field) {
+                if (!NON_DEFAULT_LANGS.length) return '';
+
+                const groups = NON_DEFAULT_LANGS.map(function(lang) {
+                    const i18n = (field.i18n && field.i18n[lang.slug]) || {};
+                    return `<div class="lcf-i18n-lang-group">
+                        <div class="lcf-i18n-lang-title">${escHtml(lang.name)}</div>
+                        <textarea class="widefat lcf-content-textarea" rows="3"
+                            oninput="lcfFieldI18nUpdate('${escAttr(field.id)}','${escAttr(lang.slug)}','content',this.value)"
+                        >${escHtml(i18n.content || '')}</textarea>
+                    </div>`;
+                }).join('');
+
+                return `<div class="lcf-i18n-wrap">
+                    <button type="button" class="lcf-i18n-toggle" onclick="this.closest('.lcf-i18n-wrap').classList.toggle('is-open')">
+                        🌐 Dịch sang ngôn ngữ khác (${NON_DEFAULT_LANGS.length})
+                    </button>
+                    <div class="lcf-i18n-block">${groups}</div>
+                </div>`;
             }
 
             // ── Build field card HTML ─────────────────────────────────────────
@@ -173,6 +254,7 @@ const FIELD_TYPES = window.LacaContactFormVars.FIELD_TYPES;
                             </div>
                             ${optHtml}
                             ${otherHtml}
+                            ${buildI18nBlock(field)}
                         </div>
                     </div>
                 </div>`;
@@ -219,6 +301,7 @@ const FIELD_TYPES = window.LacaContactFormVars.FIELD_TYPES;
                                     oninput="lcfFieldUpdate('${escAttr(field.id)}','content',this.value)"
                                 >${escHtml(field.content || '')}</textarea>
                             </div>
+                            ${buildContentI18nBlock(field)}
                         </div>
                     </div>
                 </div>`;
@@ -430,6 +513,21 @@ const FIELD_TYPES = window.LacaContactFormVars.FIELD_TYPES;
                 updatePreview();
             };
 
+            // ── Public: update per-language translation of a field property ───
+            // Builder preview luôn hiển thị theo ngôn ngữ mặc định (xem
+            // buildFormPreviewHtml()) nên không cần updatePreview() ở đây —
+            // bản dịch chỉ có tác dụng ở render thật ngoài site theo
+            // pll_current_language() (ContactFormAjaxHandler::renderField()).
+            window.lcfFieldI18nUpdate = function(fieldId, langSlug, key, value) {
+                const found = findField(fieldId);
+                if (!found) return;
+                const { field } = found;
+                field.i18n = field.i18n || {};
+                field.i18n[langSlug] = field.i18n[langSlug] || {};
+                field.i18n[langSlug][key] = value;
+                updateJsonInput();
+            };
+
             // ── Public: duplicate field ────────────────────────────────────────
             window.lcfDuplicateField = function(event, fieldId) {
                 event.stopPropagation(); // prevent accordion toggle
@@ -540,7 +638,7 @@ const FIELD_TYPES = window.LacaContactFormVars.FIELD_TYPES;
                 const newField = {
                     id: uid(), type: type, name: '', label: '',
                     placeholder: '', required: false, options: [], _autoName: '',
-                    has_other: false, other_label: '', content: '',
+                    has_other: false, other_label: '', content: '', i18n: {},
                 };
                 col.fields.push(newField);
                 renderRows();
