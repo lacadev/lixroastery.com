@@ -31,9 +31,26 @@ export default function Edit( { attributes, setAttributes } ) {
 		postsCount,
 		selectedPosts,
 		columns,
+		dateFormat,
 	} = attributes;
 
 	const [ postSearch, setPostSearch ] = useState( '' );
+
+	// ── Format ngày — preset phổ biến + tuỳ chỉnh ──────────────────────────
+	// Giá trị là chuỗi định dạng ngày PHP thật (dùng thẳng trong
+	// get_the_date($dateFormat, $post) ở render.php), ví dụ minh hoạ theo
+	// ngày 20/09/2026 để admin dễ hình dung, không tính theo ngày thực tế.
+	const DATE_FORMAT_PRESETS = [
+		{ label: __( 'TH9 20 (mặc định)', 'laca' ), value: 'M d' },
+		{ label: __( '20/09/2026', 'laca' ), value: 'd/m/Y' },
+		{ label: __( '20-09-2026', 'laca' ), value: 'd-m-Y' },
+		{ label: __( '2026-09-20', 'laca' ), value: 'Y-m-d' },
+		{ label: __( '20 Tháng Chín, 2026', 'laca' ), value: 'd F, Y' },
+		{ label: __( 'TH9 20, 2026', 'laca' ), value: 'M d, Y' },
+	];
+	const isCustomDateFormat = ! DATE_FORMAT_PRESETS.some(
+		( p ) => p.value === dateFormat
+	);
 
 	// ── Post types ─────────────────────────────────────────────────────────
 	const postTypes = useSelect( ( select ) => {
@@ -168,6 +185,43 @@ export default function Edit( { attributes, setAttributes } ) {
 						max={ 2 }
 						onChange={ ( v ) => setAttributes( { columns: v } ) }
 					/>
+
+					<SelectControl
+						label={ __( 'Định dạng ngày', 'laca' ) }
+						value={ isCustomDateFormat ? '__custom__' : dateFormat }
+						options={ [
+							...DATE_FORMAT_PRESETS,
+							{
+								label: __( 'Tuỳ chỉnh…', 'laca' ),
+								value: '__custom__',
+							},
+						] }
+						onChange={ ( v ) => {
+							if ( v === '__custom__' ) {
+								// Giữ format hiện tại nếu đã là custom, chỉ
+								// chuyển sang ô nhập tay — không tự xoá giá
+								// trị đang có.
+								if ( ! isCustomDateFormat ) {
+									setAttributes( { dateFormat: '' } );
+								}
+								return;
+							}
+							setAttributes( { dateFormat: v } );
+						} }
+					/>
+					{ isCustomDateFormat && (
+						<TextControl
+							label={ __( 'Chuỗi định dạng tuỳ chỉnh', 'laca' ) }
+							help={ __(
+								'Theo cú pháp date() của PHP — vd: d/m/Y, F j Y, D, d M.',
+								'laca'
+							) }
+							value={ dateFormat }
+							onChange={ ( v ) =>
+								setAttributes( { dateFormat: v } )
+							}
+						/>
+					) }
 				</PanelBody>
 
 				<PanelBody

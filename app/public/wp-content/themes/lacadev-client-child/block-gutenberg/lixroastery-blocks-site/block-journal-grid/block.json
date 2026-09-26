@@ -61,6 +61,10 @@
             "type": "number",
             "default": 2
         },
+        "dateFormat": {
+            "type": "string",
+            "default": "M d"
+        },
         "__isPreview": {
             "type": "boolean",
             "default": false
