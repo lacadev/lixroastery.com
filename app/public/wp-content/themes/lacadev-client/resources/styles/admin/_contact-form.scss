@@ -458,12 +458,34 @@
 }
 
 .lcf-i18n-lang-title {
-    font-size: 11px;
-    font-weight: 700;
-    color: #2271b1;
-    text-transform: uppercase;
-    letter-spacing: 0.03em;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
     margin-bottom: 6px;
+
+    span {
+        font-size: 11px;
+        font-weight: 700;
+        color: #2271b1;
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+    }
+}
+
+.lcf-i18n-ai-btn {
+    padding: 3px 9px;
+    border: 1px solid #8250df;
+    background: #faf5ff;
+    color: #8250df;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 11px;
+    font-weight: 600;
+    white-space: nowrap;
+
+    &:hover { background: #f3e8fd; }
+    &:disabled { opacity: 0.6; cursor: default; }
 }
 
 /* ── Add-row palette ──────────────────────────────────────────────── */

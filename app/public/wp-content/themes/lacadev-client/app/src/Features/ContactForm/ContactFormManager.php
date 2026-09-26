@@ -3,6 +3,7 @@
 namespace App\Features\ContactForm;
 
 use App\Databases\ContactFormTable;
+use App\Settings\LacaTools\AITranslationHandler;
 
 /**
  * ContactFormManager
@@ -63,6 +64,10 @@ class ContactFormManager
         add_action('admin_post_laca_cf_delete_submission', [$this, 'handleDeleteSubmission']);
         add_action('admin_post_laca_cf_mark_read', [$this, 'handleMarkRead']);
         add_action('admin_post_laca_cf_export_csv', [$this, 'handleExportCsv']);
+        // Nút "✨ Dịch bằng AI" trong khối "🌐 Dịch" của builder — tái dùng
+        // AITranslationHandler có sẵn (Laca Admin > AI Translation), KHÔNG
+        // phải tính năng dịch riêng mới. Gợi ý AI, admin vẫn sửa tay được.
+        add_action('wp_ajax_laca_cf_ai_translate_field', [$this, 'handleAjaxTranslateField']);
     }
 
     public function enqueueAssets(string $hook): void
@@ -784,7 +789,11 @@ class ContactFormManager
             window.LacaContactFormVars = {
                 FIELD_TYPES: <?php echo wp_json_encode(self::FIELD_TYPES); ?>,
                 rows: <?php echo wp_json_encode($rows); ?>,
-                languages: <?php echo wp_json_encode($languages); ?>
+                languages: <?php echo wp_json_encode($languages); ?>,
+                aiTranslate: {
+                    ajaxUrl: <?php echo wp_json_encode(admin_url('admin-ajax.php')); ?>,
+                    nonce: <?php echo wp_json_encode(wp_create_nonce('laca_cf_ai_translate')); ?>
+                }
             };
         </script>
         <?php
@@ -1094,6 +1103,62 @@ class ContactFormManager
 
         wp_redirect($this->buildRedirectUrl($newId, 'duplicated'));
         exit;
+    }
+
+    /**
+     * AJAX: dịch label/placeholder/other_label/content/options của 1 field
+     * sang ngôn ngữ đích bằng AI (tái dùng AITranslationHandler có sẵn ở
+     * Laca Admin > AI Translation — cùng API key/provider dùng để dịch bài
+     * viết). Chỉ trả về gợi ý, admin bấm nút mới gọi và vẫn sửa tay được
+     * sau đó — không tự động ghi đè khi lưu form.
+     */
+    public function handleAjaxTranslateField(): void
+    {
+        check_ajax_referer('laca_cf_ai_translate', 'nonce');
+
+        if (!current_user_can(self::CAP)) {
+            wp_send_json_error(['message' => 'Không có quyền thực hiện thao tác này.']);
+        }
+
+        $targetLang = sanitize_text_field($_POST['target_lang'] ?? '');
+        if (!$targetLang) {
+            wp_send_json_error(['message' => 'Thiếu ngôn ngữ đích.']);
+        }
+
+        $handler = new AITranslationHandler();
+        $result = [];
+
+        foreach (['label', 'placeholder', 'other_label', 'content'] as $key) {
+            $text = trim((string) ($_POST[$key] ?? ''));
+            if ($text === '') {
+                continue;
+            }
+            $translated = $handler->translateText($text, $targetLang, 'Nhãn/nội dung 1 field trong form liên hệ trên website');
+            if (is_wp_error($translated)) {
+                wp_send_json_error(['message' => $translated->get_error_message()]);
+            }
+            $result[$key] = $translated;
+        }
+
+        $rawOptions = json_decode(stripslashes($_POST['options'] ?? '[]'), true);
+        if (is_array($rawOptions) && !empty($rawOptions)) {
+            $translatedOptions = [];
+            foreach ($rawOptions as $opt) {
+                $opt = trim((string) $opt);
+                if ($opt === '') {
+                    $translatedOptions[] = '';
+                    continue;
+                }
+                $translated = $handler->translateText($opt, $targetLang, 'Một lựa chọn (option) của field checkbox/radio/select trong form liên hệ');
+                if (is_wp_error($translated)) {
+                    wp_send_json_error(['message' => $translated->get_error_message()]);
+                }
+                $translatedOptions[] = $translated;
+            }
+            $result['options'] = $translatedOptions;
+        }
+
+        wp_send_json_success($result);
     }
 
     public function handleDeleteSubmission(): void

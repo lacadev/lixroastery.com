@@ -115,7 +115,11 @@ const FIELD_TYPES = window.LacaContactFormVars.FIELD_TYPES;
                         </div>` : '';
 
                     return `<div class="lcf-i18n-lang-group">
-                        <div class="lcf-i18n-lang-title">${escHtml(lang.name)}</div>
+                        <div class="lcf-i18n-lang-title">
+                            <span>${escHtml(lang.name)}</span>
+                            <button type="button" class="lcf-i18n-ai-btn"
+                                onclick="lcfAiTranslateField('${escAttr(field.id)}','${escAttr(lang.slug)}',this)">✨ Dịch bằng AI</button>
+                        </div>
                         <div class="lcf-input-row">
                             <label class="lcf-label">Nhãn (Label)</label>
                             <input type="text" class="widefat" placeholder="${escAttr(field.label || '')}"
@@ -148,7 +152,11 @@ const FIELD_TYPES = window.LacaContactFormVars.FIELD_TYPES;
                 const groups = NON_DEFAULT_LANGS.map(function(lang) {
                     const i18n = (field.i18n && field.i18n[lang.slug]) || {};
                     return `<div class="lcf-i18n-lang-group">
-                        <div class="lcf-i18n-lang-title">${escHtml(lang.name)}</div>
+                        <div class="lcf-i18n-lang-title">
+                            <span>${escHtml(lang.name)}</span>
+                            <button type="button" class="lcf-i18n-ai-btn"
+                                onclick="lcfAiTranslateField('${escAttr(field.id)}','${escAttr(lang.slug)}',this)">✨ Dịch bằng AI</button>
+                        </div>
                         <textarea class="widefat lcf-content-textarea" rows="3"
                             oninput="lcfFieldI18nUpdate('${escAttr(field.id)}','${escAttr(lang.slug)}','content',this.value)"
                         >${escHtml(i18n.content || '')}</textarea>
@@ -526,6 +534,70 @@ const FIELD_TYPES = window.LacaContactFormVars.FIELD_TYPES;
                 field.i18n[langSlug] = field.i18n[langSlug] || {};
                 field.i18n[langSlug][key] = value;
                 updateJsonInput();
+            };
+
+            // ── Public: gợi ý dịch bằng AI cho 1 field → 1 ngôn ngữ ────────────
+            // Chỉ điền GỢI Ý (từ nội dung mặc định của field) vào field.i18n —
+            // admin bấm mới gọi, sửa tay lại được sau đó, không tự động chạy
+            // khi lưu form. Cần đã cấu hình API key ở Laca Admin > AI
+            // Translation (dùng chung AITranslationHandler với tính năng dịch
+            // bài viết), nếu chưa có key thì server trả lỗi rõ ràng.
+            window.lcfAiTranslateField = function(fieldId, langSlug, btnEl) {
+                const found = findField(fieldId);
+                if (!found) return;
+                const { field } = found;
+                const vars = window.LacaContactFormVars.aiTranslate;
+                if (!vars) return;
+
+                const body = new URLSearchParams();
+                body.set('action', 'laca_cf_ai_translate_field');
+                body.set('nonce', vars.nonce);
+                body.set('target_lang', langSlug);
+                if (field.type === 'content') {
+                    body.set('content', field.content || '');
+                } else {
+                    body.set('label', field.label || '');
+                    body.set('placeholder', field.placeholder || '');
+                    if (field.has_other) body.set('other_label', field.other_label || '');
+                    if ((field.options || []).length) body.set('options', JSON.stringify(field.options));
+                }
+
+                const originalText = btnEl.textContent;
+                btnEl.disabled = true;
+                btnEl.textContent = 'Đang dịch…';
+
+                fetch(vars.ajaxUrl, { method: 'POST', body: body })
+                    .then(function(r) { return r.json(); })
+                    .then(function(res) {
+                        if (!res.success) {
+                            Swal.fire({ title: 'Lỗi dịch AI', text: (res.data && res.data.message) || 'Không thể dịch.', icon: 'error' });
+                            return;
+                        }
+                        field.i18n = field.i18n || {};
+                        field.i18n[langSlug] = Object.assign({}, field.i18n[langSlug], res.data);
+                        updateJsonInput();
+
+                        // Vẽ lại card để hiện giá trị mới trong các ô — giữ
+                        // trạng thái mở của card lẫn khối "🌐 Dịch".
+                        const cardEl = document.querySelector('.laca-cf-field-card[data-field-id="' + fieldId + '"]');
+                        if (cardEl) {
+                            const wasOpen = cardEl.classList.contains('is-open');
+                            cardEl.outerHTML = buildFieldCard(field);
+                            const newCard = document.querySelector('.laca-cf-field-card[data-field-id="' + fieldId + '"]');
+                            if (newCard) {
+                                if (wasOpen) newCard.classList.add('is-open');
+                                const i18nWrap = newCard.querySelector('.lcf-i18n-wrap');
+                                if (i18nWrap) i18nWrap.classList.add('is-open');
+                            }
+                        }
+                    })
+                    .catch(function() {
+                        Swal.fire({ title: 'Lỗi', text: 'Không thể kết nối tới máy chủ.', icon: 'error' });
+                    })
+                    .finally(function() {
+                        btnEl.disabled = false;
+                        btnEl.textContent = originalText;
+                    });
             };
 
             // ── Public: duplicate field ────────────────────────────────────────
