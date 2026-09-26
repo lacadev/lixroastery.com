@@ -33,6 +33,26 @@
             "type": "string",
             "default": "_self"
         },
+        "headlineAlign": {
+            "type": "string",
+            "default": "center"
+        },
+        "descriptionAlign": {
+            "type": "string",
+            "default": "center"
+        },
+        "buttonAlign": {
+            "type": "string",
+            "default": "center"
+        },
+        "buttonCustomCss": {
+            "type": "string",
+            "default": ""
+        },
+        "blockId": {
+            "type": "string",
+            "default": ""
+        },
         "textColor": {
             "type": "string",
             "default": "#1c2b1f"
