@@ -6,7 +6,15 @@ import previewImage from './preview.png';
 
 export default function Edit( { attributes, setAttributes } ) {
 	const isPreview = useInserterPreview( attributes );
-	const blockProps = useBlockProps();
+	// containerType gắn thẳng vào className của section (KHÔNG bọc thêm 1 div
+	// riêng) — giống class Bootstrap thật (.container/.container-fluid tự là
+	// khung ngoài cùng), khớp với render.php.
+	const blockProps = useBlockProps( {
+		className:
+			attributes.containerType === 'container-fluid'
+				? 'container-fluid'
+				: 'container',
+	} );
 
 	const { containerType, title, description, items } = attributes;
 
@@ -77,47 +85,45 @@ export default function Edit( { attributes, setAttributes } ) {
 			</InspectorControls>
 
 			<section { ...blockProps }>
-				<div className={ containerType === 'container-fluid' ? 'container-fluid' : 'container' }>
-					<RichText
-						tagName="h2"
-						className="block-toggle__title"
-						value={ title }
-						onChange={ ( v ) => setAttributes( { title: v } ) }
-						placeholder={ __( 'Tiêu đề…', 'laca' ) }
-						allowedFormats={ [] }
-					/>
-					<RichText
-						tagName="p"
-						className="block-toggle__description"
-						value={ description }
-						onChange={ ( v ) => setAttributes( { description: v } ) }
-						placeholder={ __( 'Mô tả ngắn…', 'laca' ) }
-					/>
+				<RichText
+					tagName="h2"
+					className="block-toggle__title"
+					value={ title }
+					onChange={ ( v ) => setAttributes( { title: v } ) }
+					placeholder={ __( 'Tiêu đề…', 'laca' ) }
+					allowedFormats={ [] }
+				/>
+				<RichText
+					tagName="p"
+					className="block-toggle__description"
+					value={ description }
+					onChange={ ( v ) => setAttributes( { description: v } ) }
+					placeholder={ __( 'Mô tả ngắn…', 'laca' ) }
+				/>
 
-					<div className="block-toggle__list">
-						{ items.map( ( item, index ) => (
-							<div className="block-toggle__item" key={ index }>
-								<div className="block-toggle__question">
-									<RichText
-										tagName="span"
-										value={ item.question }
-										onChange={ ( v ) => updateItem( index, 'question', v ) }
-										placeholder={ __( 'Câu hỏi…', 'laca' ) }
-										allowedFormats={ [] }
-									/>
-									<span className="block-toggle__icon" />
-								</div>
-								<div className="block-toggle__answer">
-									<RichText
-										tagName="p"
-										value={ item.answer }
-										onChange={ ( v ) => updateItem( index, 'answer', v ) }
-										placeholder={ __( 'Câu trả lời…', 'laca' ) }
-									/>
-								</div>
+				<div className="block-toggle__list">
+					{ items.map( ( item, index ) => (
+						<div className="block-toggle__item" key={ index }>
+							<div className="block-toggle__question">
+								<RichText
+									tagName="span"
+									value={ item.question }
+									onChange={ ( v ) => updateItem( index, 'question', v ) }
+									placeholder={ __( 'Câu hỏi…', 'laca' ) }
+									allowedFormats={ [] }
+								/>
+								<span className="block-toggle__icon" />
 							</div>
-						) ) }
-					</div>
+							<div className="block-toggle__answer">
+								<RichText
+									tagName="p"
+									value={ item.answer }
+									onChange={ ( v ) => updateItem( index, 'answer', v ) }
+									placeholder={ __( 'Câu trả lời…', 'laca' ) }
+								/>
+							</div>
+						</div>
+					) ) }
 				</div>
 			</section>
 		</>

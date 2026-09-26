@@ -16,14 +16,15 @@ if (!$content) {
     return;
 }
 
+// containerType gắn thẳng vào section này (KHÔNG bọc thêm 1 div riêng) —
+// giống class Bootstrap thật (.container/.container-fluid tự là khung
+// ngoài cùng), tránh 1 lớp div thừa không cần thiết.
 $wrapper_attrs = get_block_wrapper_attributes([
-    'class' => 'block-content-text block-content-text--' . $variant,
+    'class' => 'block-content-text block-content-text--' . $variant . ' ' . $container_type,
 ]);
 ?>
 <section <?php echo $wrapper_attrs; ?>>
-    <div class="<?php echo esc_attr($container_type); ?>">
-        <div class="block-content-text__body block-content-text__body--<?php echo esc_attr($variant); ?>" style="text-align: <?php echo esc_attr($text_align); ?>;">
-            <?php echo $content; ?>
-        </div>
+    <div class="block-content-text__body block-content-text__body--<?php echo esc_attr($variant); ?>" style="text-align: <?php echo esc_attr($text_align); ?>;">
+        <?php echo $content; ?>
     </div>
 </section>

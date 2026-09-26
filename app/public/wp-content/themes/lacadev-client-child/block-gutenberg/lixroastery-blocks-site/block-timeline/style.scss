@@ -4,10 +4,17 @@
 @use "@parent/styles/theme/abstracts/mixin" as *;
 
 .block-timeline {
-    padding: 4rem 0;
+    // padding-top/bottom riêng (KHÔNG dùng shorthand "padding: Xrem 0") —
+    // containerType (container/container-fluid) gắn thẳng vào section này
+    // thay vì 1 div con riêng, shorthand sẽ zero-out padding-left/right và
+    // có thể đè lên padding ngang của container/container-fluid tùy thứ tự
+    // nạp CSS giữa 2 file style khác nhau.
+    padding-top: 4rem;
+    padding-bottom: 4rem;
 
     @include maxWidth($sm) {
-        padding: 2.5rem 0;
+        padding-top: 2.5rem;
+        padding-bottom: 2.5rem;
     }
 
     &__list {

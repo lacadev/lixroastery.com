@@ -5,7 +5,15 @@ import { useInserterPreview, BlockPreviewMock } from '../../utils/preview';
 
 export default function Edit( { attributes, setAttributes } ) {
 	const isPreview = useInserterPreview( attributes );
-	const blockProps = useBlockProps();
+	// containerType gắn thẳng vào className của section (KHÔNG bọc thêm 1 div
+	// riêng) — giống class Bootstrap thật (.container/.container-fluid tự là
+	// khung ngoài cùng), khớp với render.php.
+	const blockProps = useBlockProps( {
+		className:
+			attributes.containerType === 'container-fluid'
+				? 'container-fluid'
+				: 'container',
+	} );
 
 	const { containerType, variant, textAlign, content } = attributes;
 
@@ -59,19 +67,17 @@ export default function Edit( { attributes, setAttributes } ) {
 			</InspectorControls>
 
 			<section { ...blockProps }>
-				<div className={ containerType === 'container-fluid' ? 'container-fluid' : 'container' }>
-					<RichText
-						tagName="div"
-						className={
-							'block-content-text__body block-content-text__body--' + variant
-						}
-						style={ { textAlign } }
-						value={ content }
-						onChange={ ( v ) => setAttributes( { content: v } ) }
-						placeholder={ __( 'Nhập nội dung…', 'laca' ) }
-						allowedFormats={ [ 'core/bold', 'core/italic', 'core/link' ] }
-					/>
-				</div>
+				<RichText
+					tagName="div"
+					className={
+						'block-content-text__body block-content-text__body--' + variant
+					}
+					style={ { textAlign } }
+					value={ content }
+					onChange={ ( v ) => setAttributes( { content: v } ) }
+					placeholder={ __( 'Nhập nội dung…', 'laca' ) }
+					allowedFormats={ [ 'core/bold', 'core/italic', 'core/link' ] }
+				/>
 			</section>
 		</>
 	);

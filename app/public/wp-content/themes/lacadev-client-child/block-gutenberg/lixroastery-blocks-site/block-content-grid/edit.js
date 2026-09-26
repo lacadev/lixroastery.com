@@ -15,7 +15,15 @@ import previewImage from './preview.png';
 
 export default function Edit( { attributes, setAttributes } ) {
 	const isPreview = useInserterPreview( attributes );
-	const blockProps = useBlockProps();
+	// containerType gắn thẳng vào className của section (KHÔNG bọc thêm 1 div
+	// riêng) — giống class Bootstrap thật (.container/.container-fluid tự là
+	// khung ngoài cùng), khớp với render.php.
+	const blockProps = useBlockProps( {
+		className:
+			attributes.containerType === 'container'
+				? 'container'
+				: 'container-fluid',
+	} );
 
 	const { columns, containerType, items } = attributes;
 
@@ -115,44 +123,36 @@ export default function Edit( { attributes, setAttributes } ) {
 
 			<section { ...blockProps }>
 				<div
-					className={
-						containerType === 'container'
-							? 'container'
-							: 'container-fluid'
-					}
+					className="block-content-grid__grid"
+					style={ { '--ctg-columns': columns } }
 				>
-					<div
-						className="block-content-grid__grid"
-						style={ { '--ctg-columns': columns } }
-					>
-						{ items.map( ( item, index ) => (
-							<div
-								className="block-content-grid__item"
-								key={ index }
-							>
-								<hr className="block-content-grid__rule" />
-								<RichText
-									tagName="h3"
-									className="block-content-grid__title"
-									value={ item.title }
-									onChange={ ( v ) =>
-										updateItem( index, 'title', v )
-									}
-									placeholder={ __( 'Tiêu đề…', 'laca' ) }
-									allowedFormats={ [] }
-								/>
-								<RichText
-									tagName="p"
-									className="block-content-grid__desc"
-									value={ item.desc }
-									onChange={ ( v ) =>
-										updateItem( index, 'desc', v )
-									}
-									placeholder={ __( 'Mô tả…', 'laca' ) }
-								/>
-							</div>
-						) ) }
-					</div>
+					{ items.map( ( item, index ) => (
+						<div
+							className="block-content-grid__item"
+							key={ index }
+						>
+							<hr className="block-content-grid__rule" />
+							<RichText
+								tagName="h3"
+								className="block-content-grid__title"
+								value={ item.title }
+								onChange={ ( v ) =>
+									updateItem( index, 'title', v )
+								}
+								placeholder={ __( 'Tiêu đề…', 'laca' ) }
+								allowedFormats={ [] }
+							/>
+							<RichText
+								tagName="p"
+								className="block-content-grid__desc"
+								value={ item.desc }
+								onChange={ ( v ) =>
+									updateItem( index, 'desc', v )
+								}
+								placeholder={ __( 'Mô tả…', 'laca' ) }
+							/>
+						</div>
+					) ) }
 				</div>
 			</section>
 		</>

@@ -14,10 +14,12 @@ if (empty($rows) && !$main_title) {
     return;
 }
 
-$wrapper_attrs = get_block_wrapper_attributes(['class' => 'block-content-rows']);
+// containerType gắn thẳng vào section này (KHÔNG bọc thêm 1 div riêng) —
+// giống class Bootstrap thật (.container/.container-fluid tự là khung
+// ngoài cùng), tránh 1 lớp div thừa không cần thiết.
+$wrapper_attrs = get_block_wrapper_attributes(['class' => 'block-content-rows ' . $container_type]);
 ?>
 <section <?php echo $wrapper_attrs; ?>>
-    <div class="<?php echo esc_attr($container_type); ?>">
         <?php if ($main_title) : ?>
             <h2 class="block-content-rows__main-title"><?php echo $main_title; ?></h2>
         <?php endif; ?>
@@ -87,5 +89,4 @@ $wrapper_attrs = get_block_wrapper_attributes(['class' => 'block-content-rows'])
                 <?php endif; ?>
             </div>
         <?php endforeach; ?>
-    </div>
 </section>

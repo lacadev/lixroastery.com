@@ -57,59 +57,60 @@ $config = [
     'maxPages'       => $max_pages,
 ];
 
-$wrapper_attrs = get_block_wrapper_attributes(['class' => 'block-cpt-grid']);
+// containerType gắn thẳng vào section này (KHÔNG bọc thêm 1 div riêng) —
+// giống class Bootstrap thật (.container/.container-fluid tự là khung
+// ngoài cùng), tránh 1 lớp div thừa không cần thiết.
+$wrapper_attrs = get_block_wrapper_attributes(['class' => 'block-cpt-grid ' . $container_type]);
 ?>
 <section <?php echo $wrapper_attrs; ?>>
-    <div class="<?php echo esc_attr($container_type); ?>">
-        <div
-            class="block-cpt-grid__inner"
-            id="<?php echo esc_attr($unique_id); ?>"
-            data-cpt-grid-config='<?php echo esc_attr(wp_json_encode($config)); ?>'
-        >
-            <?php if ($taxonomy) :
-                // Chỉ hiện danh mục CẤP 1 làm tab (ẩn danh mục con khỏi tab) —
-                // bấm 1 tab cha sẽ tự động gộp cả bài viết của các danh mục
-                // con bên trong (WP_Query tax_query mặc định include_children).
-                $terms = laca_get_top_level_terms_with_content($taxonomy);
-                $tax_obj = get_taxonomy($taxonomy);
-            ?>
-                <?php if (!empty($terms) && !is_wp_error($terms)) : ?>
-                    <div class="block-cpt-grid__tabs-wrap">
-                        <div class="block-cpt-grid__tabs">
-                            <button type="button" class="block-cpt-grid__tab is-active" data-term-slug="">
-                                <?php echo esc_html($tax_obj->labels->all_items ?? __('All', 'laca')); ?>
+    <div
+        class="block-cpt-grid__inner"
+        id="<?php echo esc_attr($unique_id); ?>"
+        data-cpt-grid-config='<?php echo esc_attr(wp_json_encode($config)); ?>'
+    >
+        <?php if ($taxonomy) :
+            // Chỉ hiện danh mục CẤP 1 làm tab (ẩn danh mục con khỏi tab) —
+            // bấm 1 tab cha sẽ tự động gộp cả bài viết của các danh mục
+            // con bên trong (WP_Query tax_query mặc định include_children).
+            $terms = laca_get_top_level_terms_with_content($taxonomy);
+            $tax_obj = get_taxonomy($taxonomy);
+        ?>
+            <?php if (!empty($terms) && !is_wp_error($terms)) : ?>
+                <div class="block-cpt-grid__tabs-wrap">
+                    <div class="block-cpt-grid__tabs">
+                        <button type="button" class="block-cpt-grid__tab is-active" data-term-slug="">
+                            <?php echo esc_html($tax_obj->labels->all_items ?? __('All', 'laca')); ?>
+                        </button>
+                        <?php foreach ($terms as $term) : ?>
+                            <button type="button" class="block-cpt-grid__tab" data-term-slug="<?php echo esc_attr($term->slug); ?>">
+                                <?php echo esc_html($term->name); ?>
                             </button>
-                            <?php foreach ($terms as $term) : ?>
-                                <button type="button" class="block-cpt-grid__tab" data-term-slug="<?php echo esc_attr($term->slug); ?>">
-                                    <?php echo esc_html($term->name); ?>
-                                </button>
-                            <?php endforeach; ?>
-                        </div>
+                        <?php endforeach; ?>
                     </div>
-                <?php endif; ?>
-            <?php endif; ?>
-
-            <div class="block-cpt-grid__list block-cpt-grid__list--cols-<?php echo esc_attr((string) $columns); ?>">
-                <?php laca_cpt_grid_render_cards($query, $taxonomy); ?>
-            </div>
-
-            <?php if ('numbered' === $pagination_mode) : ?>
-                <div class="block-cpt-grid__pagination">
-                    <?php
-                    echo lacadev_child_pagination_markup([ // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-                        'base'    => '#cgpage-%#%',
-                        'format'  => '',
-                        'current' => 1,
-                        'total'   => $max_pages,
-                    ]);
-                    ?>
-                </div>
-            <?php else : ?>
-                <div class="block-cpt-grid__load-more">
-                    <div class="block-cpt-grid__sentinel" aria-hidden="true"></div>
-                    <p class="block-cpt-grid__loading-text"><?php esc_html_e('Đang tải thêm…', 'laca'); ?></p>
                 </div>
             <?php endif; ?>
+        <?php endif; ?>
+
+        <div class="block-cpt-grid__list block-cpt-grid__list--cols-<?php echo esc_attr((string) $columns); ?>">
+            <?php laca_cpt_grid_render_cards($query, $taxonomy); ?>
         </div>
+
+        <?php if ('numbered' === $pagination_mode) : ?>
+            <div class="block-cpt-grid__pagination">
+                <?php
+                echo lacadev_child_pagination_markup([ // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+                    'base'    => '#cgpage-%#%',
+                    'format'  => '',
+                    'current' => 1,
+                    'total'   => $max_pages,
+                ]);
+                ?>
+            </div>
+        <?php else : ?>
+            <div class="block-cpt-grid__load-more">
+                <div class="block-cpt-grid__sentinel" aria-hidden="true"></div>
+                <p class="block-cpt-grid__loading-text"><?php esc_html_e('Đang tải thêm…', 'laca'); ?></p>
+            </div>
+        <?php endif; ?>
     </div>
 </section>

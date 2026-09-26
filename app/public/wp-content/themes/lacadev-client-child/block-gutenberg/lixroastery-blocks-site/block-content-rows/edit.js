@@ -56,7 +56,15 @@ function ImagePicker( { imageUrl, imageId, onSelect } ) {
 
 export default function Edit( { attributes, setAttributes } ) {
 	const isPreview = useInserterPreview( attributes );
-	const blockProps = useBlockProps();
+	// containerType gắn thẳng vào className của section (KHÔNG bọc thêm 1 div
+	// riêng) — giống class Bootstrap thật (.container/.container-fluid tự là
+	// khung ngoài cùng), khớp với render.php.
+	const blockProps = useBlockProps( {
+		className:
+			attributes.containerType === 'container'
+				? 'container'
+				: 'container-fluid',
+	} );
 
 	const { mainTitle, containerType, rows } = attributes;
 
@@ -302,23 +310,16 @@ export default function Edit( { attributes, setAttributes } ) {
 			</InspectorControls>
 
 			<section { ...blockProps }>
-				<div
-					className={
-						containerType === 'container'
-							? 'container'
-							: 'container-fluid'
-					}
-				>
-					<RichText
-						tagName="h2"
-						className="block-content-rows__main-title"
-						value={ mainTitle }
-						onChange={ ( v ) => setAttributes( { mainTitle: v } ) }
-						placeholder={ __( 'Tiêu đề chính…', 'laca' ) }
-						allowedFormats={ [] }
-					/>
+				<RichText
+					tagName="h2"
+					className="block-content-rows__main-title"
+					value={ mainTitle }
+					onChange={ ( v ) => setAttributes( { mainTitle: v } ) }
+					placeholder={ __( 'Tiêu đề chính…', 'laca' ) }
+					allowedFormats={ [] }
+				/>
 
-					{ rows.map( ( row, index ) => (
+				{ rows.map( ( row, index ) => (
 						<div className="block-content-rows__row" key={ index }>
 							<div className="block-content-rows__content">
 								<RichText
@@ -453,7 +454,6 @@ export default function Edit( { attributes, setAttributes } ) {
 							</div>
 						</div>
 					) ) }
-				</div>
 			</section>
 		</>
 	);
