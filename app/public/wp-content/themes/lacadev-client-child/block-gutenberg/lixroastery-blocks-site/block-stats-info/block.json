@@ -22,6 +22,18 @@
                 { "number": "+03", "label": "Sensory reset experience", "description": "Absolute 'Sensory Reset' sanctuaries spanning Vietnam." }
             ]
         },
+        "columns": {
+            "type": "number",
+            "default": 4
+        },
+        "titleAlign": {
+            "type": "string",
+            "default": "left"
+        },
+        "descriptionAlign": {
+            "type": "string",
+            "default": "left"
+        },
         "numberColor": {
             "type": "string",
             "default": "#1c2b1f"

@@ -6,7 +6,10 @@
 
     &__grid {
         display: grid;
-        grid-template-columns: repeat(4, 1fr);
+        // Số lượng / hàng tuỳ chỉnh (edit.js RangeControl "columns", 1-4) — ở
+        // tablet/mobile vẫn ép về bước cố định (2 cột/1 cột) bất kể chọn mấy
+        // cột ở desktop, tránh quá chật khi màn hình nhỏ.
+        grid-template-columns: repeat(var(--stats-columns, 4), 1fr);
         gap: 0;
 
         @include maxWidth($md) {

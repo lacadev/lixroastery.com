@@ -5,6 +5,12 @@ if (!defined('ABSPATH')) {
 
 $items = is_array($attributes['items'] ?? null) ? $attributes['items'] : [];
 
+$columns = max(1, min(4, (int) ($attributes['columns'] ?? 4)));
+
+$allowed_aligns = ['left', 'center', 'right', 'justify'];
+$title_align = in_array($attributes['titleAlign'] ?? '', $allowed_aligns, true) ? $attributes['titleAlign'] : 'left';
+$description_align = in_array($attributes['descriptionAlign'] ?? '', $allowed_aligns, true) ? $attributes['descriptionAlign'] : 'left';
+
 $number_color = preg_match('/^#[0-9a-fA-F]{6}$/', $attributes['numberColor'] ?? '')
     ? $attributes['numberColor']
     : '#1c2b1f';
@@ -32,7 +38,7 @@ $wrapper_attrs = get_block_wrapper_attributes(['class' => 'block-stats-info']);
 ?>
 <section <?php echo $wrapper_attrs; ?> style="background:<?php echo esc_attr($bg_rgba); ?>;">
     <div class="container-fluid">
-        <div class="block-stats-info__grid">
+        <div class="block-stats-info__grid" style="--stats-columns: <?php echo esc_attr($columns); ?>;">
             <?php foreach ($items as $item):
                 $number = esc_html($item['number'] ?? '');
                 $label = esc_html($item['label'] ?? '');
@@ -43,16 +49,16 @@ $wrapper_attrs = get_block_wrapper_attributes(['class' => 'block-stats-info']);
                 }
                 ?>
                 <div class="block-stats-info__item">
-                    <div class="block-stats-info__number">
+                    <div class="block-stats-info__number" style="text-align: <?php echo esc_attr($title_align); ?>;">
                         <?php echo $number; ?>
                     </div>
                     <?php if ($label): ?>
-                        <div class="block-stats-info__label">
+                        <div class="block-stats-info__label" style="text-align: <?php echo esc_attr($title_align); ?>;">
                             <?php echo $label; ?>
                         </div>
                     <?php endif; ?>
                     <?php if ($description): ?>
-                        <p class="block-stats-info__desc">
+                        <p class="block-stats-info__desc" style="text-align: <?php echo esc_attr($description_align); ?>;">
                             <?php echo $description; ?>
                         </p>
                     <?php endif; ?>

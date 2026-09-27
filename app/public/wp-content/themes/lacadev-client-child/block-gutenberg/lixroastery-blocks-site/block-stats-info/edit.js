@@ -9,10 +9,18 @@ import {
 	Button,
 	ColorPicker,
 	RangeControl,
+	SelectControl,
 } from '@wordpress/components';
 import { useInserterPreview, BlockPreviewMock } from '../../utils/preview';
 import { hexToRgba } from '../../utils/style';
 import previewImage from './preview.png';
+
+const ALIGN_OPTIONS = [
+	{ label: __( 'Trái', 'laca' ), value: 'left' },
+	{ label: __( 'Giữa', 'laca' ), value: 'center' },
+	{ label: __( 'Phải', 'laca' ), value: 'right' },
+	{ label: __( 'Căn đều (Justify)', 'laca' ), value: 'justify' },
+];
 
 export default function Edit( { attributes, setAttributes } ) {
 	const isPreview = useInserterPreview( attributes );
@@ -31,6 +39,9 @@ export default function Edit( { attributes, setAttributes } ) {
 
 	const {
 		items,
+		columns,
+		titleAlign,
+		descriptionAlign,
 		numberColor,
 		labelColor,
 		descriptionColor,
@@ -57,6 +68,35 @@ export default function Edit( { attributes, setAttributes } ) {
 	return (
 		<>
 			<InspectorControls>
+				<PanelBody
+					title={ __( 'Bố cục', 'laca' ) }
+					initialOpen={ true }
+				>
+					<RangeControl
+						label={ __( 'Số lượng / hàng', 'laca' ) }
+						value={ columns }
+						min={ 1 }
+						max={ 4 }
+						onChange={ ( v ) => setAttributes( { columns: v } ) }
+					/>
+					<SelectControl
+						label={ __( 'Căn lề tiêu đề (số + nhãn)', 'laca' ) }
+						value={ titleAlign }
+						options={ ALIGN_OPTIONS }
+						onChange={ ( v ) =>
+							setAttributes( { titleAlign: v } )
+						}
+					/>
+					<SelectControl
+						label={ __( 'Căn lề mô tả', 'laca' ) }
+						value={ descriptionAlign }
+						options={ ALIGN_OPTIONS }
+						onChange={ ( v ) =>
+							setAttributes( { descriptionAlign: v } )
+						}
+					/>
+				</PanelBody>
+
 				<PanelBody
 					title={ __( 'Danh sách chỉ số', 'laca' ) }
 					initialOpen={ true }
@@ -168,7 +208,10 @@ export default function Edit( { attributes, setAttributes } ) {
 				} }
 			>
 				<div className="container">
-					<div className="block-stats-info__grid">
+					<div
+						className="block-stats-info__grid"
+						style={ { '--stats-columns': columns } }
+					>
 						{ items.map( ( item, index ) => (
 							<div
 								className="block-stats-info__item"
@@ -176,7 +219,10 @@ export default function Edit( { attributes, setAttributes } ) {
 							>
 								<div
 									className="block-stats-info__number"
-									style={ { color: numberColor } }
+									style={ {
+										color: numberColor,
+										textAlign: titleAlign,
+									} }
 								>
 									<RichText
 										tagName="span"
@@ -191,7 +237,10 @@ export default function Edit( { attributes, setAttributes } ) {
 								<RichText
 									tagName="div"
 									className="block-stats-info__label"
-									style={ { color: labelColor } }
+									style={ {
+										color: labelColor,
+										textAlign: titleAlign,
+									} }
 									value={ item.label }
 									onChange={ ( v ) =>
 										updateItem( index, 'label', v )
@@ -202,7 +251,10 @@ export default function Edit( { attributes, setAttributes } ) {
 								<RichText
 									tagName="p"
 									className="block-stats-info__desc"
-									style={ { color: descriptionColor } }
+									style={ {
+										color: descriptionColor,
+										textAlign: descriptionAlign,
+									} }
 									value={ item.description }
 									onChange={ ( v ) =>
 										updateItem( index, 'description', v )
