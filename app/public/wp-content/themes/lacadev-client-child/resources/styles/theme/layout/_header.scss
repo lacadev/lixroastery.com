@@ -10,6 +10,21 @@ body.menu-open {
     background: #fff;
     padding: 1.5rem 0;
 
+    // Cố định (sticky) khi cuộn xuống — để menu luôn thấy và bấm được, tham
+    // khảo hành vi của xliiicoffee (setupMenuFixedBehavior() trong
+    // resources/scripts/theme/index.js) nhưng dùng position: sticky thay vì
+    // fixed + JS bù khoảng trống, vì sticky tự nhiên không làm nội dung bên
+    // dưới bị nhảy vị trí. "is-scrolled" (components/sticky-header.js) chỉ
+    // thêm đổ bóng nhẹ để phân biệt rõ với trạng thái ở đầu trang.
+    position: sticky;
+    top: 0;
+    z-index: 999;
+    transition: box-shadow 0.25s ease;
+
+    &.is-scrolled {
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    }
+
     &__inner {
         display: flex;
         align-items: center;
