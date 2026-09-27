@@ -41,7 +41,9 @@ export default function Edit( { attributes, setAttributes } ) {
 		items,
 		columns,
 		titleAlign,
+		titleAlignMobile,
 		descriptionAlign,
+		descriptionAlignMobile,
 		numberColor,
 		labelColor,
 		descriptionColor,
@@ -76,11 +78,11 @@ export default function Edit( { attributes, setAttributes } ) {
 						label={ __( 'Số lượng / hàng', 'laca' ) }
 						value={ columns }
 						min={ 1 }
-						max={ 4 }
+						max={ 6 }
 						onChange={ ( v ) => setAttributes( { columns: v } ) }
 					/>
 					<SelectControl
-						label={ __( 'Căn lề tiêu đề (số + nhãn)', 'laca' ) }
+						label={ __( 'Căn lề tiêu đề (số + nhãn) — PC', 'laca' ) }
 						value={ titleAlign }
 						options={ ALIGN_OPTIONS }
 						onChange={ ( v ) =>
@@ -88,11 +90,27 @@ export default function Edit( { attributes, setAttributes } ) {
 						}
 					/>
 					<SelectControl
-						label={ __( 'Căn lề mô tả', 'laca' ) }
+						label={ __( 'Căn lề tiêu đề (số + nhãn) — Mobile', 'laca' ) }
+						value={ titleAlignMobile }
+						options={ ALIGN_OPTIONS }
+						onChange={ ( v ) =>
+							setAttributes( { titleAlignMobile: v } )
+						}
+					/>
+					<SelectControl
+						label={ __( 'Căn lề mô tả — PC', 'laca' ) }
 						value={ descriptionAlign }
 						options={ ALIGN_OPTIONS }
 						onChange={ ( v ) =>
 							setAttributes( { descriptionAlign: v } )
+						}
+					/>
+					<SelectControl
+						label={ __( 'Căn lề mô tả — Mobile', 'laca' ) }
+						value={ descriptionAlignMobile }
+						options={ ALIGN_OPTIONS }
+						onChange={ ( v ) =>
+							setAttributes( { descriptionAlignMobile: v } )
 						}
 					/>
 				</PanelBody>
@@ -210,7 +228,13 @@ export default function Edit( { attributes, setAttributes } ) {
 				<div className="container">
 					<div
 						className="block-stats-info__grid"
-						style={ { '--stats-columns': columns } }
+						style={ {
+							'--stats-columns': columns,
+							'--stats-title-align-pc': titleAlign,
+							'--stats-title-align-mobile': titleAlignMobile,
+							'--stats-desc-align-pc': descriptionAlign,
+							'--stats-desc-align-mobile': descriptionAlignMobile,
+						} }
 					>
 						{ items.map( ( item, index ) => (
 							<div
@@ -219,10 +243,7 @@ export default function Edit( { attributes, setAttributes } ) {
 							>
 								<div
 									className="block-stats-info__number"
-									style={ {
-										color: numberColor,
-										textAlign: titleAlign,
-									} }
+									style={ { color: numberColor } }
 								>
 									<RichText
 										tagName="span"
@@ -237,10 +258,7 @@ export default function Edit( { attributes, setAttributes } ) {
 								<RichText
 									tagName="div"
 									className="block-stats-info__label"
-									style={ {
-										color: labelColor,
-										textAlign: titleAlign,
-									} }
+									style={ { color: labelColor } }
 									value={ item.label }
 									onChange={ ( v ) =>
 										updateItem( index, 'label', v )
@@ -251,10 +269,7 @@ export default function Edit( { attributes, setAttributes } ) {
 								<RichText
 									tagName="p"
 									className="block-stats-info__desc"
-									style={ {
-										color: descriptionColor,
-										textAlign: descriptionAlign,
-									} }
+									style={ { color: descriptionColor } }
 									value={ item.description }
 									onChange={ ( v ) =>
 										updateItem( index, 'description', v )

@@ -6,11 +6,8 @@
 
     &__grid {
         display: grid;
-        // Số lượng / hàng tuỳ chỉnh (edit.js RangeControl "columns", 1-4) — ở
-        // tablet/mobile vẫn ép về bước cố định (2 cột/1 cột) bất kể chọn mấy
-        // cột ở desktop, tránh quá chật khi màn hình nhỏ.
         grid-template-columns: repeat(var(--stats-columns, 4), 1fr);
-        gap: 0;
+        column-gap: rem(20);
 
         @include maxWidth($md) {
             grid-template-columns: repeat(2, 1fr);
@@ -24,7 +21,6 @@
 
     &__item {
         position: relative;
-        padding: 0 2rem;
 
         @include maxWidth($md) {
             padding: 0 1rem;
@@ -36,8 +32,16 @@
         font-weight: $regular;
         line-height: 1;
         margin-bottom: rem(20);
+        // Căn lề riêng PC/Mobile (edit.js/render.php set 2 custom property
+        // qua --stats-title-align-pc/-mobile trên __grid) — dùng chung với
+        // __label vì cả 2 được xem là "tiêu đề" của 1 chỉ số.
+        text-align: var(--stats-title-align-pc, left);
 
         @include resFont(rem(30), rem(100));
+
+        @include maxWidth($md) {
+            text-align: var(--stats-title-align-mobile, left);
+        }
     }
 
     &__label {
@@ -45,15 +49,25 @@
         font-weight: $regular;
         text-transform: uppercase;
         margin-bottom: rem(20);
+        text-align: var(--stats-title-align-pc, left);
 
         @include resFont(rem(16), rem(20));
+
+        @include maxWidth($md) {
+            text-align: var(--stats-title-align-mobile, left);
+        }
     }
 
     &__desc {
         margin: 0;
         font-weight: $regular;
         line-height: 1.2;
+        text-align: var(--stats-desc-align-pc, left);
 
         @include resFont(rem(16), rem(20));
+
+        @include maxWidth($md) {
+            text-align: var(--stats-desc-align-mobile, left);
+        }
     }
 }
