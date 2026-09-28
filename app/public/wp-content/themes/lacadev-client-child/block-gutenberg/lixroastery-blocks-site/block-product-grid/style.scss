@@ -3,6 +3,14 @@
 @use "../../../resources/styles/theme/abstracts/variables" as *;
 
 .block-product-grid {
+    &__admin-notice {
+        padding: 1rem;
+        background: #fff8e1;
+        border: 1px solid #f0c14b;
+        color: #6b5900;
+        font-size: rem(13);
+    }
+
     &__header {
         display: flex;
         align-items: baseline;

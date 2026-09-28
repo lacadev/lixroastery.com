@@ -57,6 +57,11 @@ add_action('after_setup_theme', function () {
     // Carbon Fields cho post type "page" (ẩn/hiện breadcrumb riêng từng trang)
     require_once CHILD_THEME_SETUP_DIR . 'page_meta.php';
 
+    // Gắn taxonomy "Brands" của WooCommerce cho post type "journal" — để chọn
+    // Brand khi viết bài Journal, dùng cho block Product Grid (autoQuery
+    // "same_brand" — sản phẩm liên quan tự động theo brand của bài viết).
+    require_once CHILD_THEME_SETUP_DIR . 'journal_brand_taxonomy.php';
+
 }, 20); // priority 20 — sau parent (10)
 
 // =============================================================================

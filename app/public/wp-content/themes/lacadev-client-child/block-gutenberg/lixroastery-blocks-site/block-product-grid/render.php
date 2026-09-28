@@ -64,6 +64,35 @@ if ($mode === 'manual') {
             }
             $query_args['post__in'] = $on_sale_ids;
             break;
+
+        case 'same_brand':
+            // "Sản phẩm liên quan" tự động theo Brand (taxonomy product_brand
+            // của WooCommerce, gắn thêm cho post type "journal" — xem
+            // theme/setup/journal_brand_taxonomy.php) của CHÍNH bài viết
+            // đang xem, KHÔNG phải của block — lấy qua context "postId"
+            // (usesContext trong block.json) vì block này thường được chèn
+            // trực tiếp vào nội dung 1 bài Journal.
+            $current_post_id = $block->context['postId'] ?? get_the_ID();
+            $brand_terms = $current_post_id ? get_the_terms($current_post_id, 'product_brand') : [];
+            if (empty($brand_terms) || is_wp_error($brand_terms)) {
+                // Bài viết chưa gán Brand nào — không có gì để "liên quan",
+                // hiện gợi ý riêng cho admin, khách thường không thấy gì cả.
+                if (current_user_can('edit_posts')) {
+                    echo '<div class="block-product-grid__admin-notice">'
+                        . esc_html__('Product Grid (Cùng Brand): bài viết này chưa chọn Brand nào — vào Journal > Brands (bên phải khung soạn thảo) để chọn.', 'laca')
+                        . '</div>';
+                }
+                return;
+            }
+            $query_args['orderby'] = 'rand';
+            $query_args['tax_query'] = [
+                [
+                    'taxonomy' => 'product_brand',
+                    'field' => 'term_id',
+                    'terms' => wp_list_pluck($brand_terms, 'term_id'),
+                ],
+            ];
+            break;
     }
 }
 

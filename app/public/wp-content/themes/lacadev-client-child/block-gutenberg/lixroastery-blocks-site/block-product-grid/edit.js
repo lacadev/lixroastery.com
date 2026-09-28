@@ -149,6 +149,13 @@ export default function Edit( { attributes, setAttributes } ) {
 										label: __( 'Ngẫu nhiên', 'laca' ),
 										value: 'random',
 									},
+									{
+										label: __(
+											'Cùng Brand với bài viết đang xem',
+											'laca'
+										),
+										value: 'same_brand',
+									},
 								] }
 								onChange={ ( v ) =>
 									setAttributes( { autoQuery: v } )
