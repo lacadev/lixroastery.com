@@ -62,6 +62,10 @@ add_action('after_setup_theme', function () {
     // "same_brand" — sản phẩm liên quan tự động theo brand của bài viết).
     require_once CHILD_THEME_SETUP_DIR . 'journal_brand_taxonomy.php';
 
+    // Meta box "Sản phẩm liên quan" (tự động theo Brand / thủ công chọn tay)
+    // cho post type "journal" — xem app/helpers/journal-related-products-render.php.
+    require_once CHILD_THEME_SETUP_DIR . 'journal_related_products_meta.php';
+
 }, 20); // priority 20 — sau parent (10)
 
 // =============================================================================
