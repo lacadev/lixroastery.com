@@ -38,12 +38,13 @@ require_once CHILD_APP_DIR . 'src/Ajax/JournalCatDirectoryAjaxHandler.php';
 require_once CHILD_APP_DIR . 'helpers/product-grid-render.php';
 require_once CHILD_APP_DIR . 'helpers/journal-related-products-render.php';
 
-// Section "Sản phẩm liên quan" ở single.php tái dùng class CSS của block
-// Product Grid nhưng gọi thẳng hàm PHP (không qua render_block()) nên WP
-// không tự enqueue — phải enqueue tay, giống cách archive-journal.php đang
-// làm với block CPT Grid ở dưới.
+// Section "Sản phẩm liên quan" ở single.php (Journal) VÀ ở
+// woocommerce/single-product/related.php (single Product) đều tái dùng
+// class CSS của block Product Grid nhưng gọi thẳng hàm PHP (không qua
+// render_block()) nên WP không tự enqueue — phải enqueue tay, giống cách
+// archive-journal.php đang làm với block CPT Grid ở dưới.
 add_action('wp_enqueue_scripts', function () {
-    if (is_singular('journal')) {
+    if (is_singular('journal') || is_product()) {
         wp_enqueue_style('block-block-product-grid');
     }
 });

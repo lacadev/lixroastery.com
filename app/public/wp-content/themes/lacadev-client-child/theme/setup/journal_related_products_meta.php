@@ -28,7 +28,7 @@ add_action('carbon_fields_register_fields', function () {
     // chỉ là điều kiện lưu lại, được đánh giá SAU (lúc load màn hình admin),
     // không cần post type đã tồn tại tại thời điểm định nghĩa field.
     Container::make('post_meta', __('Sản phẩm liên quan', 'laca'))
-        ->set_context('side')
+        ->set_context('normal')
         ->set_priority('default')
         ->where('post_type', '=', 'journal')
         ->add_fields([
@@ -37,10 +37,12 @@ add_action('carbon_fields_register_fields', function () {
                     'auto' => __('Tự động (theo Brand)', 'laca'),
                     'manual' => __('Thủ công (chọn tay)', 'laca'),
                 ])
+                ->set_width(33.33)
                 ->set_default_value('auto'),
 
-            Field::make('number', 'related_products_count', __('Số lượng sản phẩm', 'laca'))
+            Field::make('text', 'related_products_count', __('Số lượng sản phẩm', 'laca'))
                 ->set_default_value(4)
+                ->set_width(33.33)
                 ->set_attribute('min', 1)
                 ->set_attribute('max', 20)
                 ->set_help_text(__('Bài viết cần chọn sẵn 1 Brand ở khung "Brands" để chế độ này có sản phẩm hiển thị.', 'laca'))
@@ -57,6 +59,7 @@ add_action('carbon_fields_register_fields', function () {
                     'on_sale' => __('Đang giảm giá', 'laca'),
                     'featured' => __('Nổi bật (Featured)', 'laca'),
                 ])
+                ->set_width(33.33)
                 ->set_default_value('newest')
                 ->set_conditional_logic([
                     ['field' => 'related_products_mode', 'value' => 'auto'],
@@ -67,6 +70,7 @@ add_action('carbon_fields_register_fields', function () {
                     ['type' => 'post', 'post_type' => 'product'],
                 ])
                 ->set_max(20)
+                ->set_width(60)
                 ->set_conditional_logic([
                     ['field' => 'related_products_mode', 'value' => 'manual'],
                 ]),
