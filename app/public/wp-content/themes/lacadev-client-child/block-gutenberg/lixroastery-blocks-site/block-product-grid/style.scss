@@ -88,9 +88,11 @@
     &__tags {
         display: flex;
         align-items: center;
+        font-weight: $medium;
         gap: 0.4em;
-        font-size: rem(13);
         text-transform: uppercase;
+
+        @include resFont(rem(14), rem(16));
     }
 
     &__card-title {
@@ -99,11 +101,13 @@
         text-transform: uppercase;
         margin: rem(10) 0;
 
-        @include resFont(rem(18), rem(25));
+        @include resFont(rem(16), rem(20));
     }
 
     &__card-subtitle {
         margin: 0;
-        font-size: rem(15);
+        font-weight: $regular;
+        
+        @include resFont(rem(14), rem(16));
     }
 }

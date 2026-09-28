@@ -76,7 +76,6 @@
         font-size: rem(11);
         letter-spacing: 0.05em;
         text-transform: uppercase;
-        color: rgba(0, 0, 0, 0.5);
         margin-bottom: 0.6rem;
 
         &-sep {
@@ -91,11 +90,10 @@
         margin: 0 0 0.8rem;
         line-height: 1.35;
 
-        @include resFont(rem(16), rem(20));
+        @include resFont(rem(14), rem(16));
     }
 
     &__card-excerpt {
-        color: rgba(0, 0, 0, 0.65);
         line-height: 1.8;
         margin: 0;
 
