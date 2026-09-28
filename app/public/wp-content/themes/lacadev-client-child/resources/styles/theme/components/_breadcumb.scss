@@ -3,4 +3,20 @@
 
 .breadcumb {
   padding: 4rem 0 1rem;
+
+  a {
+    text-decoration: none !important;
+    color: $darkColor;
+
+    &:hover {
+      color: $primaryColor;
+    }
+  }
+
+  a, .last {
+    padding: 0 1.5rem;
+    text-transform: uppercase;
+
+    @include resFont(rem(14), rem(16));
+  }
 }
