@@ -21,12 +21,6 @@ if (!defined('ABSPATH')) {
 }
 
 add_action('carbon_fields_register_fields', function () {
-    // Không check post_type_exists('journal')/class_exists('WooCommerce') ở
-    // đây — carbon_fields_register_fields chạy ở 'init' priority 0, TRƯỚC
-    // khi Dynamic CPT (priority 5) và WooCommerce đăng ký xong (đã gặp bug
-    // tương tự ở product_meta.php/glossary_meta.php) — ->where('post_type')
-    // chỉ là điều kiện lưu lại, được đánh giá SAU (lúc load màn hình admin),
-    // không cần post type đã tồn tại tại thời điểm định nghĩa field.
     Container::make('post_meta', __('Sản phẩm liên quan', 'laca'))
         ->set_context('normal')
         ->set_priority('default')

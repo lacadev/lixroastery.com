@@ -44,7 +44,7 @@ if (empty($related_posts)) {
     return;
 }
 
-$heading = apply_filters('woocommerce_product_related_products_heading', __('RELATED COFFEE BEANS', 'laca'));
+$heading = apply_filters('woocommerce_product_related_products_heading', __('Coffee Beans', 'laca'));
 $shop_url = function_exists('wc_get_page_permalink') ? esc_url(wc_get_page_permalink('shop')) : '';
 ?>
 <section class="block-product-grid">
@@ -54,7 +54,8 @@ $shop_url = function_exists('wc_get_page_permalink') ? esc_url(wc_get_page_perma
                 <h2 class="block-product-grid__title"><?php echo esc_html($heading); ?></h2>
             <?php endif; ?>
             <?php if ($shop_url): ?>
-                <a class="block-product-grid__view-all" href="<?php echo $shop_url; ?>"><?php esc_html_e('View all', 'laca'); ?></a>
+                <a class="block-product-grid__view-all"
+                    href="<?php echo $shop_url; ?>"><?php esc_html_e('View all', 'laca'); ?></a>
             <?php endif; ?>
         </div>
         <hr class="block-product-grid__rule" />
