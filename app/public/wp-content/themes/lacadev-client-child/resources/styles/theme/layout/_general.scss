@@ -3,7 +3,7 @@
 
 body:not(.wp-admin) {
   font-family: $mainFont !important;
-  line-height: 1.2 !important;
+  line-height: 1.7 !important;
 
   @include resFont(rem(14), rem(16));
 }
@@ -37,6 +37,33 @@ body:not(.home) main#main_content {
   @include maxWidth($sm) {
     padding-right: rem(15) !important;
     padding-left: rem(15) !important;
+  }
+}
+
+// Block mặc định của WordPress (paragraph/heading/list/table/image...) không
+// tự có khung như các block riêng của theme (mỗi block riêng đã tự set width
+// qua containerType hoặc chính __inner của nó, vd block-cta-section__inner:
+// 60%/80%/90% theo breakpoint) — trước đây rộng hơn hẳn khi đặt cạnh nhau
+// trong cùng 1 bài viết/trang, không đồng bộ. Áp lại ĐÚNG cùng 1 bộ giá trị
+// max-width cho mọi con trực tiếp KHÔNG PHẢI <section> (mọi block riêng của
+// theme đều render ra <section>, xem block-gutenberg/**/render.php) để không
+// áp max-width 2 lần lên chính các block đó. Chừa lại .alignwide/.alignfull
+// (chưa có tác dụng gì hiện tại — xem ghi chú ở block.json các block riêng —
+// nhưng nếu sau này wire lại native align thì vẫn không bị rule này chặn).
+.single-post__content,
+.wrapper-content {
+  > *:not(section):not(.alignwide):not(.alignfull) {
+    max-width: 60%;
+    margin-left: auto;
+    margin-right: auto;
+
+    @include maxWidth($xl) {
+      max-width: 80%;
+    }
+
+    @include maxWidth($md) {
+      max-width: 90%;
+    }
   }
 }
 
