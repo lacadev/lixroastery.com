@@ -8,13 +8,16 @@
     // luôn ép về full width bất kể chọn bao nhiêu (xem render.php/edit.js).
     &__maxwidth {
         max-width: var(--mw-pc, 50%);
+        margin: var(--align-margin-pc, 0 auto);
 
         @include maxWidth($md) {
             max-width: var(--mw-tablet, 100%);
+            margin: var(--align-margin-tablet, 0 auto);
         }
 
         @include maxWidth($sm) {
             max-width: var(--mw-mobile, 100%);
+            margin: var(--align-margin-mobile, 0 auto);
         }
     }
 

@@ -15,7 +15,10 @@ import {
 import { useEffect } from '@wordpress/element';
 import { useInserterPreview, BlockPreviewMock } from '../../utils/preview';
 import { hexToRgba } from '../../utils/style';
-import { ResponsiveRangeControl } from '../../utils/inspector-panels';
+import {
+	ResponsiveRangeControl,
+	ResponsiveSelectControl,
+} from '../../utils/inspector-panels';
 import previewImage from './preview.png';
 
 // Dùng chung cho cả tiêu đề/mô tả (text-align thật) lẫn nút bấm (vị trí
@@ -40,6 +43,12 @@ const MAX_WIDTH_KEYS = {
 	pc: 'maxWidth',
 	tablet: 'maxWidthTablet',
 	mobile: 'maxWidthMobile',
+};
+
+const CONTENT_ALIGN_KEYS = {
+	pc: 'contentAlign',
+	tablet: 'contentAlignTablet',
+	mobile: 'contentAlignMobile',
 };
 
 export default function Edit( { attributes, setAttributes, clientId } ) {
@@ -73,6 +82,8 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 		maxWidthTablet,
 		maxWidthMobile,
 		contentAlign,
+		contentAlignTablet,
+		contentAlignMobile,
 		headline,
 		description,
 		buttonText,
@@ -93,7 +104,11 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 		'--mw-pc': `${ maxWidth }%`,
 		'--mw-tablet': `${ maxWidthTablet }%`,
 		'--mw-mobile': `${ maxWidthMobile }%`,
-		margin: MARGIN_MAP[ contentAlign ] || MARGIN_MAP.center,
+		'--align-margin-pc': MARGIN_MAP[ contentAlign ] || MARGIN_MAP.center,
+		'--align-margin-tablet':
+			MARGIN_MAP[ contentAlignTablet ] || MARGIN_MAP.center,
+		'--align-margin-mobile':
+			MARGIN_MAP[ contentAlignMobile ] || MARGIN_MAP.center,
 	};
 
 	const scopedButtonCss =
@@ -160,16 +175,22 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 					title={ __( 'Căn lề', 'laca' ) }
 					initialOpen={ true }
 				>
-					<SelectControl
+					<ResponsiveSelectControl
 						label={ __( 'Vị trí khung', 'laca' ) }
-						value={ contentAlign }
 						options={ [
 							{ label: __( 'Trái', 'laca' ), value: 'left' },
 							{ label: __( 'Giữa', 'laca' ), value: 'center' },
 							{ label: __( 'Phải', 'laca' ), value: 'right' },
 						] }
-						onChange={ ( v ) =>
-							setAttributes( { contentAlign: v } )
+						valuesByDevice={ {
+							pc: contentAlign,
+							tablet: contentAlignTablet,
+							mobile: contentAlignMobile,
+						} }
+						onChange={ ( device, v ) =>
+							setAttributes( {
+								[ CONTENT_ALIGN_KEYS[ device ] ]: v,
+							} )
 						}
 					/>
 					<SelectControl

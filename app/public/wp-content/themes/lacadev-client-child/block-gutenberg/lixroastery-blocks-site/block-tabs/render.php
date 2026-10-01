@@ -12,6 +12,12 @@ $max_width_tablet = max(10, min(100, (int) ($attributes['maxWidthTablet'] ?? 100
 $max_width_mobile = max(10, min(100, (int) ($attributes['maxWidthMobile'] ?? 100)));
 $content_align = in_array($attributes['contentAlign'] ?? '', ['left', 'center', 'right'], true)
     ? $attributes['contentAlign'] : 'center';
+$content_align_tablet = in_array($attributes['contentAlignTablet'] ?? '', ['left', 'center', 'right'], true)
+    ? $attributes['contentAlignTablet']
+    : 'center';
+$content_align_mobile = in_array($attributes['contentAlignMobile'] ?? '', ['left', 'center', 'right'], true)
+    ? $attributes['contentAlignMobile']
+    : 'center';
 $margin_map = ['left' => '0 auto 0 0', 'center' => '0 auto', 'right' => '0 0 0 auto'];
 
 $wrapper_attrs = get_block_wrapper_attributes(['class' => 'tabs-block']);
@@ -27,7 +33,7 @@ $scoped_selector = '#' . $unique_id;
 </style>
 <section <?php echo $wrapper_attrs; ?>>
     <div class="container-fluid tabs-block__inner" id="<?php echo esc_attr($unique_id); ?>">
-        <div class="tabs-block__maxwidth" style="--mw-pc:<?php echo esc_attr($max_width); ?>%;--mw-tablet:<?php echo esc_attr($max_width_tablet); ?>%;--mw-mobile:<?php echo esc_attr($max_width_mobile); ?>%;margin:<?php echo esc_attr($margin_map[$content_align]); ?>;">
+        <div class="tabs-block__maxwidth" style="--mw-pc:<?php echo esc_attr($max_width); ?>%;--mw-tablet:<?php echo esc_attr($max_width_tablet); ?>%;--mw-mobile:<?php echo esc_attr($max_width_mobile); ?>%;--align-margin-pc:<?php echo esc_attr($margin_map[$content_align]); ?>;--align-margin-tablet:<?php echo esc_attr($margin_map[$content_align_tablet]); ?>;--align-margin-mobile:<?php echo esc_attr($margin_map[$content_align_mobile]); ?>;">
             <div class="tabs-block__panels">
                 <?php echo $content; ?>
             </div>

@@ -22,13 +22,16 @@
     // render.php/edit.js (--mw-pc/--mw-tablet/--mw-mobile). Mobile mặc định
     // 100% (full width) nhưng admin có thể tự chỉnh khác qua tab Mobile.
     max-width: var(--mw-pc, 50%);
+    margin: var(--align-margin-pc, 0 auto);
 
     @include maxWidth($md) {
         max-width: var(--mw-tablet, 100%);
+        margin: var(--align-margin-tablet, 0 auto);
     }
 
     @include maxWidth($sm) {
         max-width: var(--mw-mobile, 100%);
+        margin: var(--align-margin-mobile, 0 auto);
     }
 
     section .container {

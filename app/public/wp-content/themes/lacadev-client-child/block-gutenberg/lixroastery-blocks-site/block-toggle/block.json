@@ -29,6 +29,14 @@
             "type": "string",
             "default": "center"
         },
+        "contentAlignTablet": {
+            "type": "string",
+            "default": "center"
+        },
+        "contentAlignMobile": {
+            "type": "string",
+            "default": "center"
+        },
         "title": {
             "type": "string",
             "default": "Subject 1"

@@ -29,6 +29,14 @@
             "type": "string",
             "default": "center"
         },
+        "contentAlignTablet": {
+            "type": "string",
+            "default": "center"
+        },
+        "contentAlignMobile": {
+            "type": "string",
+            "default": "center"
+        },
         "__isPreview": {
             "type": "boolean",
             "default": false

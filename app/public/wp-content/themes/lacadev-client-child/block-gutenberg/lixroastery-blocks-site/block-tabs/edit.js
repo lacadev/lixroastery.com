@@ -6,10 +6,13 @@ import {
 } from '@wordpress/block-editor';
 import { useSelect, useDispatch } from '@wordpress/data';
 import { createBlock } from '@wordpress/blocks';
-import { PanelBody, SelectControl } from '@wordpress/components';
+import { PanelBody } from '@wordpress/components';
 import { useState, useEffect, useRef, Fragment } from '@wordpress/element';
 import { useInserterPreview, BlockPreviewMock } from '../../utils/preview';
-import { ResponsiveRangeControl } from '../../utils/inspector-panels';
+import {
+	ResponsiveRangeControl,
+	ResponsiveSelectControl,
+} from '../../utils/inspector-panels';
 import previewImage from './preview.png';
 
 const ALLOWED_BLOCKS = [ 'lacadev/tab-panel-block' ];
@@ -26,6 +29,12 @@ const MAX_WIDTH_KEYS = {
 	pc: 'maxWidth',
 	tablet: 'maxWidthTablet',
 	mobile: 'maxWidthMobile',
+};
+
+const CONTENT_ALIGN_KEYS = {
+	pc: 'contentAlign',
+	tablet: 'contentAlignTablet',
+	mobile: 'contentAlignMobile',
 };
 
 // Không đặt sẵn heading — nội dung tab thường dùng block đã có tiêu đề
@@ -50,13 +59,23 @@ const TEMPLATE = [
 
 export default function Edit( { attributes, setAttributes, clientId } ) {
 	const isPreview = useInserterPreview( attributes );
-	const { maxWidth, maxWidthTablet, maxWidthMobile, contentAlign } =
-		attributes;
+	const {
+		maxWidth,
+		maxWidthTablet,
+		maxWidthMobile,
+		contentAlign,
+		contentAlignTablet,
+		contentAlignMobile,
+	} = attributes;
 	const maxWidthStyle = {
 		'--mw-pc': `${ maxWidth }%`,
 		'--mw-tablet': `${ maxWidthTablet }%`,
 		'--mw-mobile': `${ maxWidthMobile }%`,
-		margin: MARGIN_MAP[ contentAlign ] || MARGIN_MAP.center,
+		'--align-margin-pc': MARGIN_MAP[ contentAlign ] || MARGIN_MAP.center,
+		'--align-margin-tablet':
+			MARGIN_MAP[ contentAlignTablet ] || MARGIN_MAP.center,
+		'--align-margin-mobile':
+			MARGIN_MAP[ contentAlignMobile ] || MARGIN_MAP.center,
 	};
 	// Không gộp class "container-fluid" vào cùng div này — ".tabs-block" đã có
 	// padding shorthand (padding: 3rem 0) trong style.scss, gộp chung sẽ zero-out
@@ -188,16 +207,22 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 					title={ __( 'Căn lề', 'laca' ) }
 					initialOpen={ true }
 				>
-					<SelectControl
+					<ResponsiveSelectControl
 						label={ __( 'Vị trí khung', 'laca' ) }
-						value={ contentAlign }
 						options={ [
 							{ label: __( 'Trái', 'laca' ), value: 'left' },
 							{ label: __( 'Giữa', 'laca' ), value: 'center' },
 							{ label: __( 'Phải', 'laca' ), value: 'right' },
 						] }
-						onChange={ ( v ) =>
-							setAttributes( { contentAlign: v } )
+						valuesByDevice={ {
+							pc: contentAlign,
+							tablet: contentAlignTablet,
+							mobile: contentAlignMobile,
+						} }
+						onChange={ ( device, v ) =>
+							setAttributes( {
+								[ CONTENT_ALIGN_KEYS[ device ] ]: v,
+							} )
 						}
 					/>
 				</PanelBody>

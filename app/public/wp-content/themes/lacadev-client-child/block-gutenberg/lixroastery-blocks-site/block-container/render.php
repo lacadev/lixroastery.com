@@ -14,6 +14,12 @@ $max_width_mobile = max(10, min(100, (int) ($attributes['maxWidthMobile'] ?? 100
 $align = in_array($attributes['contentAlign'] ?? '', ['left', 'center', 'right'], true)
     ? $attributes['contentAlign']
     : 'center';
+$align_tablet = in_array($attributes['contentAlignTablet'] ?? '', ['left', 'center', 'right'], true)
+    ? $attributes['contentAlignTablet']
+    : 'center';
+$align_mobile = in_array($attributes['contentAlignMobile'] ?? '', ['left', 'center', 'right'], true)
+    ? $attributes['contentAlignMobile']
+    : 'center';
 
 $margin_map = [
     'left' => '0 auto 0 0',
@@ -27,7 +33,8 @@ if (trim($content) === '') {
 
 $wrapper_attrs = get_block_wrapper_attributes([
     'class' => 'block-container',
-    'style' => '--mw-pc:' . $max_width . '%;--mw-tablet:' . $max_width_tablet . '%;--mw-mobile:' . $max_width_mobile . '%;margin:' . $margin_map[$align] . ';',
+    'style' => '--mw-pc:' . $max_width . '%;--mw-tablet:' . $max_width_tablet . '%;--mw-mobile:' . $max_width_mobile . '%;'
+        . '--align-margin-pc:' . $margin_map[$align] . ';--align-margin-tablet:' . $margin_map[$align_tablet] . ';--align-margin-mobile:' . $margin_map[$align_mobile] . ';',
 ]);
 ?>
 

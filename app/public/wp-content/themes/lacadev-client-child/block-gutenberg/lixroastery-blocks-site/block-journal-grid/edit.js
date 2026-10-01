@@ -12,13 +12,22 @@ import {
 import { useState, useEffect } from '@wordpress/element';
 import ServerSideRender from '@wordpress/server-side-render';
 import { useInserterPreview, BlockPreviewMock } from '../../utils/preview';
-import { ResponsiveRangeControl } from '../../utils/inspector-panels';
+import {
+	ResponsiveRangeControl,
+	ResponsiveSelectControl,
+} from '../../utils/inspector-panels';
 import previewImage from './preview.png';
 
 const MAX_WIDTH_KEYS = {
 	pc: 'maxWidth',
 	tablet: 'maxWidthTablet',
 	mobile: 'maxWidthMobile',
+};
+
+const CONTENT_ALIGN_KEYS = {
+	pc: 'contentAlign',
+	tablet: 'contentAlignTablet',
+	mobile: 'contentAlignMobile',
 };
 
 export default function Edit( { attributes, setAttributes } ) {
@@ -30,6 +39,8 @@ export default function Edit( { attributes, setAttributes } ) {
 		maxWidthTablet,
 		maxWidthMobile,
 		contentAlign,
+		contentAlignTablet,
+		contentAlignMobile,
 		sectionTitle,
 		viewAllText,
 		viewAllLink,
@@ -190,16 +201,22 @@ export default function Edit( { attributes, setAttributes } ) {
 					title={ __( 'Căn lề', 'laca' ) }
 					initialOpen={ true }
 				>
-					<SelectControl
+					<ResponsiveSelectControl
 						label={ __( 'Vị trí khung', 'laca' ) }
-						value={ contentAlign }
 						options={ [
 							{ label: __( 'Trái', 'laca' ), value: 'left' },
 							{ label: __( 'Giữa', 'laca' ), value: 'center' },
 							{ label: __( 'Phải', 'laca' ), value: 'right' },
 						] }
-						onChange={ ( v ) =>
-							setAttributes( { contentAlign: v } )
+						valuesByDevice={ {
+							pc: contentAlign,
+							tablet: contentAlignTablet,
+							mobile: contentAlignMobile,
+						} }
+						onChange={ ( device, v ) =>
+							setAttributes( {
+								[ CONTENT_ALIGN_KEYS[ device ] ]: v,
+							} )
 						}
 					/>
 				</PanelBody>

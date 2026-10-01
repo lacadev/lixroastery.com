@@ -29,6 +29,14 @@
             "type": "string",
             "default": "center"
         },
+        "contentAlignTablet": {
+            "type": "string",
+            "default": "center"
+        },
+        "contentAlignMobile": {
+            "type": "string",
+            "default": "center"
+        },
         "headline": {
             "type": "string",
             "default": "SUSTAINABILITY IS NOT A CHOICE<br>IT'S OUR FUNDAMENTAL RESPONSIBILITY"

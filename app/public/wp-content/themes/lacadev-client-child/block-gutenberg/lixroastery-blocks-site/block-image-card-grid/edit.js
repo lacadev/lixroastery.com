@@ -16,7 +16,10 @@ import {
 	ColorPicker,
 } from '@wordpress/components';
 import { useInserterPreview, BlockPreviewMock } from '../../utils/preview';
-import { ResponsiveRangeControl } from '../../utils/inspector-panels';
+import {
+	ResponsiveRangeControl,
+	ResponsiveSelectControl,
+} from '../../utils/inspector-panels';
 import previewImage from './preview.png';
 
 // Section ngoài LUÔN container-fluid — độ rộng lưới thẻ điều chỉnh riêng qua
@@ -31,6 +34,12 @@ const MAX_WIDTH_KEYS = {
 	pc: 'maxWidth',
 	tablet: 'maxWidthTablet',
 	mobile: 'maxWidthMobile',
+};
+
+const CONTENT_ALIGN_KEYS = {
+	pc: 'contentAlign',
+	tablet: 'contentAlignTablet',
+	mobile: 'contentAlignMobile',
 };
 
 function ImagePicker( { imageUrl, imageId, onSelect } ) {
@@ -80,6 +89,8 @@ export default function Edit( { attributes, setAttributes } ) {
 		maxWidthTablet,
 		maxWidthMobile,
 		contentAlign,
+		contentAlignTablet,
+		contentAlignMobile,
 		columns,
 		layoutMode,
 		aspectRatio,
@@ -91,7 +102,11 @@ export default function Edit( { attributes, setAttributes } ) {
 		'--mw-pc': `${ maxWidth }%`,
 		'--mw-tablet': `${ maxWidthTablet }%`,
 		'--mw-mobile': `${ maxWidthMobile }%`,
-		margin: MARGIN_MAP[ contentAlign ] || MARGIN_MAP.center,
+		'--align-margin-pc': MARGIN_MAP[ contentAlign ] || MARGIN_MAP.center,
+		'--align-margin-tablet':
+			MARGIN_MAP[ contentAlignTablet ] || MARGIN_MAP.center,
+		'--align-margin-mobile':
+			MARGIN_MAP[ contentAlignMobile ] || MARGIN_MAP.center,
 	};
 
 	if ( isPreview ) {
@@ -217,16 +232,22 @@ export default function Edit( { attributes, setAttributes } ) {
 					title={ __( 'Căn lề', 'laca' ) }
 					initialOpen={ true }
 				>
-					<SelectControl
+					<ResponsiveSelectControl
 						label={ __( 'Vị trí khung', 'laca' ) }
-						value={ contentAlign }
 						options={ [
 							{ label: __( 'Trái', 'laca' ), value: 'left' },
 							{ label: __( 'Giữa', 'laca' ), value: 'center' },
 							{ label: __( 'Phải', 'laca' ), value: 'right' },
 						] }
-						onChange={ ( v ) =>
-							setAttributes( { contentAlign: v } )
+						valuesByDevice={ {
+							pc: contentAlign,
+							tablet: contentAlignTablet,
+							mobile: contentAlignMobile,
+						} }
+						onChange={ ( device, v ) =>
+							setAttributes( {
+								[ CONTENT_ALIGN_KEYS[ device ] ]: v,
+							} )
 						}
 					/>
 				</PanelBody>
