@@ -24,7 +24,7 @@ else:
 	// (About/Terms/Privacy...) hầu như chỉ dùng block mặc định nên đóng khung
 	// theo .container y hệt phần còn lại của site.
 	?>
-	<div class="wrapper-content container">
+	<div class="wrapper-content">
 		<?php
 		the_content();
 		?>
