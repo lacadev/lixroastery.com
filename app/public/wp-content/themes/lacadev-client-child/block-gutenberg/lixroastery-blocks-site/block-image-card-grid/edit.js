@@ -18,6 +18,14 @@ import {
 import { useInserterPreview, BlockPreviewMock } from '../../utils/preview';
 import previewImage from './preview.png';
 
+// Section ngoài LUÔN container-fluid — độ rộng lưới thẻ điều chỉnh riêng qua
+// maxWidth (%) + contentAlign (giống hệt block Container).
+const MARGIN_MAP = {
+	left: '0 auto 0 0',
+	center: '0 auto',
+	right: '0 0 0 auto',
+};
+
 function ImagePicker( { imageUrl, imageId, onSelect } ) {
 	return (
 		<MediaUploadCheck>
@@ -60,8 +68,20 @@ export default function Edit( { attributes, setAttributes } ) {
 	const isPreview = useInserterPreview( attributes );
 	const blockProps = useBlockProps();
 
-	const { columns, layoutMode, aspectRatio, bgColor, items } = attributes;
+	const {
+		maxWidth,
+		contentAlign,
+		columns,
+		layoutMode,
+		aspectRatio,
+		bgColor,
+		items,
+	} = attributes;
 	const isCheckerboard = layoutMode === 'checkerboard';
+	const maxWidthStyle = {
+		maxWidth: `${ maxWidth }%`,
+		margin: MARGIN_MAP[ contentAlign ] || MARGIN_MAP.center,
+	};
 
 	if ( isPreview ) {
 		return (
@@ -108,6 +128,29 @@ export default function Edit( { attributes, setAttributes } ) {
 					title={ __( 'Bố cục', 'laca' ) }
 					initialOpen={ true }
 				>
+					<RangeControl
+						label={ __( 'Kích thước tối đa (%)', 'laca' ) }
+						help={ __(
+							'Áp dụng cho màn hình lớn — tự động full width trên mobile để không quá hẹp.',
+							'laca'
+						) }
+						value={ maxWidth }
+						min={ 10 }
+						max={ 100 }
+						onChange={ ( v ) => setAttributes( { maxWidth: v } ) }
+					/>
+					<SelectControl
+						label={ __( 'Căn lề khung', 'laca' ) }
+						value={ contentAlign }
+						options={ [
+							{ label: __( 'Trái', 'laca' ), value: 'left' },
+							{ label: __( 'Giữa', 'laca' ), value: 'center' },
+							{ label: __( 'Phải', 'laca' ), value: 'right' },
+						] }
+						onChange={ ( v ) =>
+							setAttributes( { contentAlign: v } )
+						}
+					/>
 					<RadioControl
 						label={ __( 'Kiểu bố cục', 'laca' ) }
 						selected={ layoutMode }
@@ -255,100 +298,108 @@ export default function Edit( { attributes, setAttributes } ) {
 			<section { ...blockProps }>
 				<div className="container-fluid">
 					<div
-						className={
-							'block-image-card-grid__grid' +
-							( isCheckerboard
-								? ' block-image-card-grid__grid--checkerboard'
-								: '' )
-						}
-						style={
-							isCheckerboard
-								? undefined
-								: {
-										'--icg-columns': columns,
-										'--icg-ratio': aspectRatio.replace(
-											':',
-											'/'
-										),
-								  }
-						}
+						className="block-image-card-grid__maxwidth"
+						style={ maxWidthStyle }
 					>
-						{ items.map( ( item, index ) => {
-							const isTall =
-								isCheckerboard &&
-								Boolean(
-									( Math.floor( index / 2 ) + index ) % 2
-								);
-							return (
-								<div
-									className="block-image-card-grid__card"
-									key={ index }
-									style={
-										isCheckerboard
-											? {
-													gridColumn: `span ${
-														isTall ? 6 : 4
-													}`,
-											  }
-											: undefined
-									}
-								>
+						<div
+							className={
+								'block-image-card-grid__grid' +
+								( isCheckerboard
+									? ' block-image-card-grid__grid--checkerboard'
+									: '' )
+							}
+							style={
+								isCheckerboard
+									? undefined
+									: {
+											'--icg-columns': columns,
+											'--icg-ratio': aspectRatio.replace(
+												':',
+												'/'
+											),
+									  }
+							}
+						>
+							{ items.map( ( item, index ) => {
+								const isTall =
+									isCheckerboard &&
+									Boolean(
+										( Math.floor( index / 2 ) + index ) % 2
+									);
+								return (
 									<div
-										className={
-											'block-image-card-grid__image' +
-											( isTall
-												? ' block-image-card-grid__image--tall'
-												: '' )
+										className="block-image-card-grid__card"
+										key={ index }
+										style={
+											isCheckerboard
+												? {
+														gridColumn: `span ${
+															isTall ? 6 : 4
+														}`,
+												  }
+												: undefined
 										}
-										style={ {
-											background: item.imageUrl
-												? undefined
-												: bgColor,
-										} }
 									>
-										{ item.imageUrl && (
-											<img src={ item.imageUrl } alt="" />
-										) }
-										<div className="block-image-card-grid__overlay" />
-										<div className="block-image-card-grid__content">
-											<RichText
-												tagName="h3"
-												className="block-image-card-grid__title"
-												value={ item.title }
-												onChange={ ( v ) =>
-													updateItem(
-														index,
-														'title',
-														v
-													)
-												}
-												placeholder={ __(
-													'Tiêu đề…',
-													'laca'
-												) }
-												allowedFormats={ [] }
-											/>
-											<RichText
-												tagName="p"
-												className="block-image-card-grid__desc"
-												value={ item.desc }
-												onChange={ ( v ) =>
-													updateItem(
-														index,
-														'desc',
-														v
-													)
-												}
-												placeholder={ __(
-													'Mô tả…',
-													'laca'
-												) }
-											/>
+										<div
+											className={
+												'block-image-card-grid__image' +
+												( isTall
+													? ' block-image-card-grid__image--tall'
+													: '' )
+											}
+											style={ {
+												background: item.imageUrl
+													? undefined
+													: bgColor,
+											} }
+										>
+											{ item.imageUrl && (
+												<img
+													src={ item.imageUrl }
+													alt=""
+												/>
+											) }
+											<div className="block-image-card-grid__overlay" />
+											<div className="block-image-card-grid__content">
+												<RichText
+													tagName="h3"
+													className="block-image-card-grid__title"
+													value={ item.title }
+													onChange={ ( v ) =>
+														updateItem(
+															index,
+															'title',
+															v
+														)
+													}
+													placeholder={ __(
+														'Tiêu đề…',
+														'laca'
+													) }
+													allowedFormats={ [] }
+												/>
+												<RichText
+													tagName="p"
+													className="block-image-card-grid__desc"
+													value={ item.desc }
+													onChange={ ( v ) =>
+														updateItem(
+															index,
+															'desc',
+															v
+														)
+													}
+													placeholder={ __(
+														'Mô tả…',
+														'laca'
+													) }
+												/>
+											</div>
 										</div>
 									</div>
-								</div>
-							);
-						} ) }
+								);
+							} ) }
+						</div>
 					</div>
 				</div>
 			</section>

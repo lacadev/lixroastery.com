@@ -13,6 +13,14 @@
         "align": ["wide", "full"]
     },
     "attributes": {
+        "maxWidth": {
+            "type": "number",
+            "default": 50
+        },
+        "contentAlign": {
+            "type": "string",
+            "default": "center"
+        },
         "sectionTitle": {
             "type": "string",
             "default": "PARTNERSHIP"

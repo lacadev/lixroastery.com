@@ -10,6 +10,13 @@
         padding: 2.5rem 0;
     }
 
+    &__maxwidth {
+        @include maxWidth($sm) {
+            max-width: 100% !important;
+            margin: 0 !important;
+        }
+    }
+
     // Header — đồng bộ layout với block-product-grid / block-journal-grid.
     &__header {
         display: flex;

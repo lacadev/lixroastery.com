@@ -1,6 +1,15 @@
 import { __ } from '@wordpress/i18n';
-import { useBlockProps, InspectorControls, RichText } from '@wordpress/block-editor';
-import { PanelBody, RangeControl, SelectControl, Button } from '@wordpress/components';
+import {
+	useBlockProps,
+	InspectorControls,
+	RichText,
+} from '@wordpress/block-editor';
+import {
+	PanelBody,
+	RangeControl,
+	SelectControl,
+	Button,
+} from '@wordpress/components';
 import { useInserterPreview, BlockPreviewMock } from '../../utils/preview';
 import previewImage from './preview.png';
 
@@ -46,17 +55,17 @@ export default function Edit( { attributes, setAttributes } ) {
 
 	const addItem = () => {
 		setAttributes( {
-			items: [
-				...items,
-				{ year: '', title: '', desc: '', content: '' },
-			],
+			items: [ ...items, { year: '', title: '', desc: '', content: '' } ],
 		} );
 	};
 
 	return (
 		<>
 			<InspectorControls>
-				<PanelBody title={ __( 'Bố cục', 'laca' ) } initialOpen={ true }>
+				<PanelBody
+					title={ __( 'Bố cục', 'laca' ) }
+					initialOpen={ true }
+				>
 					<RangeControl
 						label={ __( 'Kích thước tối đa (%)', 'laca' ) }
 						help={ __(
@@ -82,8 +91,17 @@ export default function Edit( { attributes, setAttributes } ) {
 					/>
 				</PanelBody>
 
-				<PanelBody title={ __( 'Các mốc thời gian', 'laca' ) } initialOpen={ true }>
-					<p style={ { fontSize: '11px', color: '#666', margin: '4px 0 8px' } }>
+				<PanelBody
+					title={ __( 'Các mốc thời gian', 'laca' ) }
+					initialOpen={ true }
+				>
+					<p
+						style={ {
+							fontSize: '11px',
+							color: '#666',
+							margin: '4px 0 8px',
+						} }
+					>
 						{ __(
 							'Nhập trực tiếp trong khung soạn thảo. Các mốc cùng năm liên tiếp sẽ tự động chỉ hiện năm ở mốc đầu tiên, không cần ẩn tay.',
 							'laca'
@@ -107,61 +125,95 @@ export default function Edit( { attributes, setAttributes } ) {
 			</InspectorControls>
 
 			<section { ...blockProps }>
-				<div className="block-timeline__maxwidth" style={ maxWidthStyle }>
-				<div className="block-timeline__list">
-					{ items.map( ( item, index ) => {
-						const prevYear = index > 0 ? items[ index - 1 ].year : null;
-						const isRepeatYear = item.year !== '' && item.year === prevYear;
-						return (
-							<div className="block-timeline__row" key={ index }>
+				<div
+					className="block-timeline__maxwidth"
+					style={ maxWidthStyle }
+				>
+					<div className="block-timeline__list">
+						{ items.map( ( item, index ) => {
+							const prevYear =
+								index > 0 ? items[ index - 1 ].year : null;
+							const isRepeatYear =
+								item.year !== '' && item.year === prevYear;
+							return (
 								<div
-									className={
-										'block-timeline__year' +
-										( isRepeatYear ? ' block-timeline__year--muted' : '' )
-									}
-									title={
-										isRepeatYear
-											? __( 'Trùng năm với mốc trước — sẽ tự ẩn ở frontend', 'laca' )
-											: ''
-									}
+									className="block-timeline__row"
+									key={ index }
 								>
-									<RichText
-										tagName="span"
-										value={ item.year }
-										onChange={ ( v ) => updateItem( index, 'year', v ) }
-										placeholder={ __( 'Năm…', 'laca' ) }
-										allowedFormats={ [] }
-									/>
+									<div
+										className={
+											'block-timeline__year' +
+											( isRepeatYear
+												? ' block-timeline__year--muted'
+												: '' )
+										}
+										title={
+											isRepeatYear
+												? __(
+														'Trùng năm với mốc trước — sẽ tự ẩn ở frontend',
+														'laca'
+												  )
+												: ''
+										}
+									>
+										<RichText
+											tagName="span"
+											value={ item.year }
+											onChange={ ( v ) =>
+												updateItem( index, 'year', v )
+											}
+											placeholder={ __( 'Năm…', 'laca' ) }
+											allowedFormats={ [] }
+										/>
+									</div>
+									<div className="block-timeline__meta">
+										<RichText
+											tagName="h3"
+											className="block-timeline__title"
+											value={ item.title }
+											onChange={ ( v ) =>
+												updateItem( index, 'title', v )
+											}
+											placeholder={ __(
+												'Tiêu đề…',
+												'laca'
+											) }
+											allowedFormats={ [] }
+										/>
+										<RichText
+											tagName="p"
+											className="block-timeline__desc"
+											value={ item.desc }
+											onChange={ ( v ) =>
+												updateItem( index, 'desc', v )
+											}
+											placeholder={ __(
+												'Mô tả ngắn…',
+												'laca'
+											) }
+										/>
+									</div>
+									<div className="block-timeline__content">
+										<RichText
+											tagName="p"
+											value={ item.content }
+											onChange={ ( v ) =>
+												updateItem(
+													index,
+													'content',
+													v
+												)
+											}
+											placeholder={ __(
+												'Nội dung chi tiết…',
+												'laca'
+											) }
+										/>
+									</div>
 								</div>
-								<div className="block-timeline__meta">
-									<RichText
-										tagName="h3"
-										className="block-timeline__title"
-										value={ item.title }
-										onChange={ ( v ) => updateItem( index, 'title', v ) }
-										placeholder={ __( 'Tiêu đề…', 'laca' ) }
-										allowedFormats={ [] }
-									/>
-									<RichText
-										tagName="p"
-										className="block-timeline__desc"
-										value={ item.desc }
-										onChange={ ( v ) => updateItem( index, 'desc', v ) }
-										placeholder={ __( 'Mô tả ngắn…', 'laca' ) }
-									/>
-								</div>
-								<div className="block-timeline__content">
-									<RichText
-										tagName="p"
-										value={ item.content }
-										onChange={ ( v ) => updateItem( index, 'content', v ) }
-										placeholder={ __( 'Nội dung chi tiết…', 'laca' ) }
-									/>
-								</div>
-							</div>
-						);
-					} ) }
-				</div>
+							);
+						} ) }
+					</div>
 				</div>
 			</section>
 		</>

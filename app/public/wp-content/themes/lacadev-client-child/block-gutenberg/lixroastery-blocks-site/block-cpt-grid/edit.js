@@ -1,6 +1,12 @@
 import { __ } from '@wordpress/i18n';
 import { useBlockProps, InspectorControls } from '@wordpress/block-editor';
-import { PanelBody, RadioControl, RangeControl, SelectControl, TextControl } from '@wordpress/components';
+import {
+	PanelBody,
+	RadioControl,
+	RangeControl,
+	SelectControl,
+	TextControl,
+} from '@wordpress/components';
 import { useSelect } from '@wordpress/data';
 import ServerSideRender from '@wordpress/server-side-render';
 import { useInserterPreview, BlockPreviewMock } from '../../utils/preview';
@@ -38,7 +44,8 @@ export default function Edit( { attributes, setAttributes } ) {
 			return [];
 		}
 		return types.filter(
-			( type ) => type.viewable && ! EXCLUDED_POST_TYPES.includes( type.slug )
+			( type ) =>
+				type.viewable && ! EXCLUDED_POST_TYPES.includes( type.slug )
 		);
 	}, [] );
 
@@ -47,7 +54,10 @@ export default function Edit( { attributes, setAttributes } ) {
 			if ( ! postType ) {
 				return [];
 			}
-			const taxes = select( 'core' ).getTaxonomies( { type: postType, per_page: -1 } );
+			const taxes = select( 'core' ).getTaxonomies( {
+				type: postType,
+				per_page: -1,
+			} );
 			return taxes || [];
 		},
 		[ postType ]
@@ -70,33 +80,52 @@ export default function Edit( { attributes, setAttributes } ) {
 
 	const taxonomyOptions = [
 		{ label: __( '— Không dùng tab lọc —', 'laca' ), value: '' },
-		...taxonomies.map( ( tax ) => ( { label: tax.name, value: tax.slug } ) ),
+		...taxonomies.map( ( tax ) => ( {
+			label: tax.name,
+			value: tax.slug,
+		} ) ),
 	];
 
 	return (
 		<>
 			<InspectorControls>
-				<PanelBody title={ __( 'Nguồn dữ liệu', 'laca' ) } initialOpen={ true }>
+				<PanelBody
+					title={ __( 'Nguồn dữ liệu', 'laca' ) }
+					initialOpen={ true }
+				>
 					<SelectControl
 						label={ __( 'Post Type', 'laca' ) }
 						value={ postType }
 						options={
 							postTypeOptions.length
 								? postTypeOptions
-								: [ { label: __( 'Đang tải…', 'laca' ), value: postType } ]
+								: [
+										{
+											label: __( 'Đang tải…', 'laca' ),
+											value: postType,
+										},
+								  ]
 						}
-						onChange={ ( v ) => setAttributes( { postType: v, taxonomy: '' } ) }
+						onChange={ ( v ) =>
+							setAttributes( { postType: v, taxonomy: '' } )
+						}
 					/>
 					<SelectControl
 						label={ __( 'Taxonomy hiện tab lọc', 'laca' ) }
-						help={ __( 'Sẽ hiện tất cả danh mục thuộc taxonomy này dạng tab (ALL + từng danh mục).', 'laca' ) }
+						help={ __(
+							'Sẽ hiện tất cả danh mục thuộc taxonomy này dạng tab (ALL + từng danh mục).',
+							'laca'
+						) }
 						value={ taxonomy }
 						options={ taxonomyOptions }
 						onChange={ ( v ) => setAttributes( { taxonomy: v } ) }
 					/>
 				</PanelBody>
 
-				<PanelBody title={ __( 'Bố cục', 'laca' ) } initialOpen={ true }>
+				<PanelBody
+					title={ __( 'Bố cục', 'laca' ) }
+					initialOpen={ true }
+				>
 					<RangeControl
 						label={ __( 'Kích thước tối đa (%)', 'laca' ) }
 						help={ __(
@@ -129,15 +158,29 @@ export default function Edit( { attributes, setAttributes } ) {
 					/>
 				</PanelBody>
 
-				<PanelBody title={ __( 'Phân trang', 'laca' ) } initialOpen={ true }>
+				<PanelBody
+					title={ __( 'Phân trang', 'laca' ) }
+					initialOpen={ true }
+				>
 					<RadioControl
 						label={ __( 'Kiểu phân trang', 'laca' ) }
 						selected={ paginationMode }
 						options={ [
-							{ label: __( 'Đánh số trang', 'laca' ), value: 'numbered' },
-							{ label: __( 'Tự tải thêm khi scroll (load more)', 'laca' ), value: 'load-more' },
+							{
+								label: __( 'Đánh số trang', 'laca' ),
+								value: 'numbered',
+							},
+							{
+								label: __(
+									'Tự tải thêm khi scroll (load more)',
+									'laca'
+								),
+								value: 'load-more',
+							},
 						] }
-						onChange={ ( v ) => setAttributes( { paginationMode: v } ) }
+						onChange={ ( v ) =>
+							setAttributes( { paginationMode: v } )
+						}
 					/>
 
 					{ paginationMode === 'numbered' && (
@@ -147,15 +190,29 @@ export default function Edit( { attributes, setAttributes } ) {
 								label={ __( 'Số bài / trang (PC)', 'laca' ) }
 								value={ perPagePC }
 								min={ 1 }
-								onChange={ ( v ) => setAttributes( { perPagePC: parseInt( v, 10 ) || 1 } ) }
+								onChange={ ( v ) =>
+									setAttributes( {
+										perPagePC: parseInt( v, 10 ) || 1,
+									} )
+								}
 							/>
 							<TextControl
 								type="number"
-								label={ __( 'Số bài / trang (Mobile)', 'laca' ) }
-								help={ __( 'Để trống hoặc 0 = dùng chung số của PC.', 'laca' ) }
+								label={ __(
+									'Số bài / trang (Mobile)',
+									'laca'
+								) }
+								help={ __(
+									'Để trống hoặc 0 = dùng chung số của PC.',
+									'laca'
+								) }
 								value={ perPageMobile || '' }
 								min={ 0 }
-								onChange={ ( v ) => setAttributes( { perPageMobile: parseInt( v, 10 ) || 0 } ) }
+								onChange={ ( v ) =>
+									setAttributes( {
+										perPageMobile: parseInt( v, 10 ) || 0,
+									} )
+								}
 							/>
 						</>
 					) }
@@ -163,10 +220,17 @@ export default function Edit( { attributes, setAttributes } ) {
 					{ paginationMode === 'load-more' && (
 						<TextControl
 							type="number"
-							label={ __( 'Số bài tối thiểu (ban đầu + mỗi lần tải thêm)', 'laca' ) }
+							label={ __(
+								'Số bài tối thiểu (ban đầu + mỗi lần tải thêm)',
+								'laca'
+							) }
 							value={ minCount }
 							min={ 1 }
-							onChange={ ( v ) => setAttributes( { minCount: parseInt( v, 10 ) || 1 } ) }
+							onChange={ ( v ) =>
+								setAttributes( {
+									minCount: parseInt( v, 10 ) || 1,
+								} )
+							}
 						/>
 					) }
 				</PanelBody>

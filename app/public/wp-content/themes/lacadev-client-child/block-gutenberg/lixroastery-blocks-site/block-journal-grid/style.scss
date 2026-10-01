@@ -9,6 +9,15 @@
         padding: 2.5rem 0;
     }
 
+    // maxWidth (%) do admin chọn áp dụng cho desktop/tablet — trên mobile
+    // luôn ép về full width bất kể chọn bao nhiêu (xem render.php/edit.js).
+    &__maxwidth {
+        @include maxWidth($sm) {
+            max-width: 100% !important;
+            margin: 0 !important;
+        }
+    }
+
     // Header — đồng bộ layout với block-product-grid.
     &__header {
         display: flex;

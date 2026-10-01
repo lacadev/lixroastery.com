@@ -44,13 +44,17 @@ function initJournalDirectory( root ) {
 			fetch( config.ajaxurl, {
 				method: 'POST',
 				credentials: 'same-origin',
-				headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+				headers: {
+					'Content-Type': 'application/x-www-form-urlencoded',
+				},
 				body,
 			} )
 				.then( ( res ) => res.json() )
 				.then( ( json ) => {
 					if ( json && json.success && json.data && json.data.html ) {
-						tabs.forEach( ( t ) => t.classList.remove( 'is-active' ) );
+						tabs.forEach( ( t ) =>
+							t.classList.remove( 'is-active' )
+						);
 						tab.classList.add( 'is-active' );
 						directoryEl.innerHTML = json.data.html;
 					}

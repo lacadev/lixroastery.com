@@ -7,10 +7,6 @@
 .journal-archive {
     padding: 4rem 0;
 
-    @include maxWidth($sm) {
-        padding: 2.5rem 0;
-    }
-
     &__title {
         font-family: $subFont;
         font-weight: $regular;
@@ -38,6 +34,10 @@
     &__empty {
         text-align: center;
         color: rgba(0, 0, 0, 0.5);
+    }
+
+    @include maxWidth($sm) {
+        padding: 2.5rem 0;
     }
 }
 

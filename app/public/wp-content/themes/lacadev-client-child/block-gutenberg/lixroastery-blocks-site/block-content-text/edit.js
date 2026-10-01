@@ -1,6 +1,15 @@
 import { __ } from '@wordpress/i18n';
-import { useBlockProps, InspectorControls, RichText } from '@wordpress/block-editor';
-import { PanelBody, RadioControl, RangeControl, SelectControl } from '@wordpress/components';
+import {
+	useBlockProps,
+	InspectorControls,
+	RichText,
+} from '@wordpress/block-editor';
+import {
+	PanelBody,
+	RadioControl,
+	RangeControl,
+	SelectControl,
+} from '@wordpress/components';
 import { useInserterPreview, BlockPreviewMock } from '../../utils/preview';
 
 // Section ngoài LUÔN container-fluid — độ rộng CỘT nội dung điều chỉnh riêng
@@ -36,7 +45,10 @@ export default function Edit( { attributes, setAttributes } ) {
 	return (
 		<>
 			<InspectorControls>
-				<PanelBody title={ __( 'Bố cục', 'laca' ) } initialOpen={ true }>
+				<PanelBody
+					title={ __( 'Bố cục', 'laca' ) }
+					initialOpen={ true }
+				>
 					<RangeControl
 						label={ __( 'Kích thước tối đa (%)', 'laca' ) }
 						help={ __(
@@ -62,13 +74,22 @@ export default function Edit( { attributes, setAttributes } ) {
 					/>
 				</PanelBody>
 
-				<PanelBody title={ __( 'Kiểu hiển thị', 'laca' ) } initialOpen={ true }>
+				<PanelBody
+					title={ __( 'Kiểu hiển thị', 'laca' ) }
+					initialOpen={ true }
+				>
 					<RadioControl
 						label={ __( 'Kiểu chữ', 'laca' ) }
 						selected={ variant }
 						options={ [
-							{ label: __( 'Nội dung thường', 'laca' ), value: 'normal' },
-							{ label: __( 'Trích dẫn lớn (quote)', 'laca' ), value: 'quote' },
+							{
+								label: __( 'Nội dung thường', 'laca' ),
+								value: 'normal',
+							},
+							{
+								label: __( 'Trích dẫn lớn (quote)', 'laca' ),
+								value: 'quote',
+							},
 						] }
 						onChange={ ( v ) => setAttributes( { variant: v } ) }
 					/>
@@ -79,7 +100,10 @@ export default function Edit( { attributes, setAttributes } ) {
 							{ label: __( 'Trái', 'laca' ), value: 'left' },
 							{ label: __( 'Giữa', 'laca' ), value: 'center' },
 							{ label: __( 'Phải', 'laca' ), value: 'right' },
-							{ label: __( 'Đều hai bên (justify)', 'laca' ), value: 'justify' },
+							{
+								label: __( 'Đều hai bên (justify)', 'laca' ),
+								value: 'justify',
+							},
 						] }
 						onChange={ ( v ) => setAttributes( { textAlign: v } ) }
 					/>
@@ -87,17 +111,25 @@ export default function Edit( { attributes, setAttributes } ) {
 			</InspectorControls>
 
 			<section { ...blockProps }>
-				<div className="block-content-text__maxwidth" style={ maxWidthStyle }>
+				<div
+					className="block-content-text__maxwidth"
+					style={ maxWidthStyle }
+				>
 					<RichText
 						tagName="div"
 						className={
-							'block-content-text__body block-content-text__body--' + variant
+							'block-content-text__body block-content-text__body--' +
+							variant
 						}
 						style={ { textAlign } }
 						value={ content }
 						onChange={ ( v ) => setAttributes( { content: v } ) }
 						placeholder={ __( 'Nhập nội dung…', 'laca' ) }
-						allowedFormats={ [ 'core/bold', 'core/italic', 'core/link' ] }
+						allowedFormats={ [
+							'core/bold',
+							'core/italic',
+							'core/link',
+						] }
 					/>
 				</div>
 			</section>

@@ -10,6 +10,13 @@
         padding: 2rem 0;
     }
 
+    &__maxwidth {
+        @include maxWidth($sm) {
+            max-width: 100% !important;
+            margin: 0 !important;
+        }
+    }
+
     &__nav {
         display: flex;
         justify-content: center;

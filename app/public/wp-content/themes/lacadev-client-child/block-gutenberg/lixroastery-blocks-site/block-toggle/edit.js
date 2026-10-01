@@ -1,6 +1,15 @@
 import { __ } from '@wordpress/i18n';
-import { useBlockProps, InspectorControls, RichText } from '@wordpress/block-editor';
-import { PanelBody, RangeControl, SelectControl, Button } from '@wordpress/components';
+import {
+	useBlockProps,
+	InspectorControls,
+	RichText,
+} from '@wordpress/block-editor';
+import {
+	PanelBody,
+	RangeControl,
+	SelectControl,
+	Button,
+} from '@wordpress/components';
 import { useInserterPreview, BlockPreviewMock } from '../../utils/preview';
 import previewImage from './preview.png';
 
@@ -53,7 +62,10 @@ export default function Edit( { attributes, setAttributes } ) {
 	return (
 		<>
 			<InspectorControls>
-				<PanelBody title={ __( 'Bố cục', 'laca' ) } initialOpen={ true }>
+				<PanelBody
+					title={ __( 'Bố cục', 'laca' ) }
+					initialOpen={ true }
+				>
 					<RangeControl
 						label={ __( 'Kích thước tối đa (%)', 'laca' ) }
 						help={ __(
@@ -79,8 +91,17 @@ export default function Edit( { attributes, setAttributes } ) {
 					/>
 				</PanelBody>
 
-				<PanelBody title={ __( 'Các mục hỏi đáp', 'laca' ) } initialOpen={ true }>
-					<p style={ { fontSize: '11px', color: '#666', margin: '4px 0 8px' } }>
+				<PanelBody
+					title={ __( 'Các mục hỏi đáp', 'laca' ) }
+					initialOpen={ true }
+				>
+					<p
+						style={ {
+							fontSize: '11px',
+							color: '#666',
+							margin: '4px 0 8px',
+						} }
+					>
 						{ __(
 							'Nhập trực tiếp trong khung soạn thảo. Ở frontend, mỗi lần chỉ 1 mục được mở — bấm vào câu hỏi để đóng/mở.',
 							'laca'
@@ -117,7 +138,9 @@ export default function Edit( { attributes, setAttributes } ) {
 						tagName="p"
 						className="block-toggle__description"
 						value={ description }
-						onChange={ ( v ) => setAttributes( { description: v } ) }
+						onChange={ ( v ) =>
+							setAttributes( { description: v } )
+						}
 						placeholder={ __( 'Mô tả ngắn…', 'laca' ) }
 					/>
 
@@ -128,7 +151,9 @@ export default function Edit( { attributes, setAttributes } ) {
 									<RichText
 										tagName="span"
 										value={ item.question }
-										onChange={ ( v ) => updateItem( index, 'question', v ) }
+										onChange={ ( v ) =>
+											updateItem( index, 'question', v )
+										}
 										placeholder={ __( 'Câu hỏi…', 'laca' ) }
 										allowedFormats={ [] }
 									/>
@@ -138,8 +163,13 @@ export default function Edit( { attributes, setAttributes } ) {
 									<RichText
 										tagName="p"
 										value={ item.answer }
-										onChange={ ( v ) => updateItem( index, 'answer', v ) }
-										placeholder={ __( 'Câu trả lời…', 'laca' ) }
+										onChange={ ( v ) =>
+											updateItem( index, 'answer', v )
+										}
+										placeholder={ __(
+											'Câu trả lời…',
+											'laca'
+										) }
 									/>
 								</div>
 							</div>

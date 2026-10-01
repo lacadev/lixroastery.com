@@ -3,6 +3,13 @@
 @use "../../../resources/styles/theme/abstracts/variables" as *;
 
 .block-product-grid {
+    &__maxwidth {
+        @include maxWidth($sm) {
+            max-width: 100% !important;
+            margin: 0 !important;
+        }
+    }
+
     &__admin-notice {
         padding: 1rem;
         background: #fff8e1;

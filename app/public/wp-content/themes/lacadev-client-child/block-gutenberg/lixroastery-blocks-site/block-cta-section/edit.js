@@ -26,9 +26,18 @@ const ALIGN_OPTIONS = [
 	{ label: __( 'Căn đều (Justify)', 'laca' ), value: 'justify' },
 ];
 
+// Section ngoài LUÔN container-fluid — độ rộng khối CTA điều chỉnh riêng qua
+// maxWidth (%) + contentAlign (giống hệt block Container), KHÁC với
+// headlineAlign/descriptionAlign/buttonAlign (chỉ canh chữ/nút bên trong).
+const MARGIN_MAP = {
+	left: '0 auto 0 0',
+	center: '0 auto',
+	right: '0 0 0 auto',
+};
+
 export default function Edit( { attributes, setAttributes, clientId } ) {
 	const isPreview = useInserterPreview( attributes );
-	const blockProps = useBlockProps();
+	const blockProps = useBlockProps( { className: 'container-fluid' } );
 
 	// Sinh 1 ID cố định cho block ngay khi tạo — dùng để scope "Custom CSS
 	// nút bấm" (mỗi block instance 1 ID riêng, tránh CSS đè lẫn nhau khi có
@@ -53,6 +62,8 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 	}
 
 	const {
+		maxWidth,
+		contentAlign,
 		headline,
 		description,
 		buttonText,
@@ -68,6 +79,11 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 		bgOpacity,
 		blockId,
 	} = attributes;
+
+	const maxWidthStyle = {
+		maxWidth: `${ maxWidth }%`,
+		margin: MARGIN_MAP[ contentAlign ] || MARGIN_MAP.center,
+	};
 
 	const scopedButtonCss =
 		blockId && buttonCustomCss
@@ -94,7 +110,10 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 	const btnWrapStyle =
 		buttonAlign === 'justify'
 			? { display: 'flex' }
-			: { display: 'flex', justifyContent: BUTTON_JUSTIFY[ buttonAlign ] || 'center' };
+			: {
+					display: 'flex',
+					justifyContent: BUTTON_JUSTIFY[ buttonAlign ] || 'center',
+			  };
 	const btnLinkStyle =
 		buttonAlign === 'justify'
 			? { display: 'block', width: '100%', textAlign: 'center' }
@@ -103,6 +122,35 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 	return (
 		<>
 			<InspectorControls>
+				<PanelBody
+					title={ __( 'Bố cục', 'laca' ) }
+					initialOpen={ true }
+				>
+					<RangeControl
+						label={ __( 'Kích thước tối đa (%)', 'laca' ) }
+						help={ __(
+							'Áp dụng cho màn hình lớn — tự động full width trên mobile để không quá hẹp.',
+							'laca'
+						) }
+						value={ maxWidth }
+						min={ 10 }
+						max={ 100 }
+						onChange={ ( v ) => setAttributes( { maxWidth: v } ) }
+					/>
+					<SelectControl
+						label={ __( 'Căn lề khung', 'laca' ) }
+						value={ contentAlign }
+						options={ [
+							{ label: __( 'Trái', 'laca' ), value: 'left' },
+							{ label: __( 'Giữa', 'laca' ), value: 'center' },
+							{ label: __( 'Phải', 'laca' ), value: 'right' },
+						] }
+						onChange={ ( v ) =>
+							setAttributes( { contentAlign: v } )
+						}
+					/>
+				</PanelBody>
+
 				<PanelBody
 					title={ __( 'Căn lề', 'laca' ) }
 					initialOpen={ true }
@@ -253,7 +301,10 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 					color: textColor,
 				} }
 			>
-				<div className="container block-cta-section__inner">
+				<div
+					className="block-cta-section__maxwidth block-cta-section__inner"
+					style={ maxWidthStyle }
+				>
 					<RichText
 						tagName="h2"
 						className="block-cta-section__headline"
@@ -274,22 +325,27 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 						placeholder={ __( 'Nhập mô tả…', 'laca' ) }
 					/>
 					{ showButton && (
-					<>
-					{ scopedButtonCss && <style>{ scopedButtonCss }</style> }
-					<div className="block-cta-section__btn" style={ btnWrapStyle }>
-						<RichText
-							tagName="span"
-							className="block-cta-section__link"
-							style={ btnLinkStyle }
-							value={ buttonText }
-							onChange={ ( v ) =>
-								setAttributes( { buttonText: v } )
-							}
-							placeholder={ __( 'Text nút…', 'laca' ) }
-							allowedFormats={ [] }
-						/>
-					</div>
-					</>
+						<>
+							{ scopedButtonCss && (
+								<style>{ scopedButtonCss }</style>
+							) }
+							<div
+								className="block-cta-section__btn"
+								style={ btnWrapStyle }
+							>
+								<RichText
+									tagName="span"
+									className="block-cta-section__link"
+									style={ btnLinkStyle }
+									value={ buttonText }
+									onChange={ ( v ) =>
+										setAttributes( { buttonText: v } )
+									}
+									placeholder={ __( 'Text nút…', 'laca' ) }
+									allowedFormats={ [] }
+								/>
+							</div>
+						</>
 					) }
 				</div>
 			</section>

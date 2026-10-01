@@ -4,7 +4,7 @@
 // Style cho form builder có sẵn (App\Features\ContactForm — shortcode
 // [laca_contact_form id="X"]), dùng ở trang Contact (Origin Partners /
 // Destination Partners / Career...).
-//
+
 // CSS mặc định của hệ thống được in INLINE ở wp_footer (không nằm trong
 // resources/styles nào — xem ContactFormAjaxHandler::printInlineCss()),
 // border/radius/padding của input dùng CSS custom property
@@ -41,11 +41,11 @@
     font-weight: $regular;
     color: $darkColor;
 
-    @include resFont(rem(13), rem(14));
-
     &::placeholder {
         color: rgba(0, 0, 0, 0.4);
     }
+
+    @include resFont(rem(13), rem(14));
 }
 
 // Ẩn label phía trên các field nhập 1 dòng — dùng placeholder bên trong ô
@@ -84,14 +84,14 @@
     font-weight: $regular;
     color: rgba(0, 0, 0, 0.75);
 
-    @include resFont(rem(13), rem(14));
-
     input {
         accent-color: $primaryColor;
         width: rem(18);
         height: rem(18);
         flex: 0 0 auto;
     }
+
+    @include resFont(rem(13), rem(14));
 }
 
 .laca-cf-submit-btn {
@@ -116,8 +116,6 @@
     color: rgba(0, 0, 0, 0.75);
     line-height: 1.6;
 
-    @include resFont(rem(13), rem(14));
-
     a {
         color: $primaryColor;
         text-decoration: underline;
@@ -126,6 +124,8 @@
     strong {
         font-weight: $semiBold;
     }
+
+    @include resFont(rem(13), rem(14));
 }
 
 // Khoá nút Submit khi checkbox đơn bắt buộc (vd "Đồng ý điều khoản") chưa

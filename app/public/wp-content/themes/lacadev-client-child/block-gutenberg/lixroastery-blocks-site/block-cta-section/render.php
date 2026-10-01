@@ -12,6 +12,13 @@ $button_text = wp_kses_post($attributes['buttonText'] ?? '');
 $button_link = esc_url($attributes['buttonLink'] ?? '');
 $button_target = ($attributes['buttonTarget'] ?? '_self') === '_blank' ? '_blank' : '_self';
 
+// Section ngoài LUÔN container-fluid — độ rộng khối CTA điều chỉnh riêng qua
+// maxWidth (%) + contentAlign (giống hệt block Container).
+$max_width = max(10, min(100, (int) ($attributes['maxWidth'] ?? 50)));
+$content_align = in_array($attributes['contentAlign'] ?? '', ['left', 'center', 'right'], true)
+    ? $attributes['contentAlign'] : 'center';
+$margin_map = ['left' => '0 auto 0 0', 'center' => '0 auto', 'right' => '0 0 0 auto'];
+
 $allowed_aligns = ['left', 'center', 'right', 'justify'];
 $headline_align = in_array($attributes['headlineAlign'] ?? '', $allowed_aligns, true) ? $attributes['headlineAlign'] : 'center';
 $description_align = in_array($attributes['descriptionAlign'] ?? '', $allowed_aligns, true) ? $attributes['descriptionAlign'] : 'center';
@@ -54,7 +61,7 @@ $g = hexdec(substr($bg_color, 3, 2));
 $b = hexdec(substr($bg_color, 5, 2));
 $bg_rgba = 'rgba(' . $r . ',' . $g . ',' . $b . ',' . ($bg_opacity / 100) . ')';
 
-$wrapper_extra = ['class' => 'block-cta-section'];
+$wrapper_extra = ['class' => 'block-cta-section container-fluid'];
 if ($block_id) {
     $wrapper_extra['id'] = $block_id;
 }
@@ -62,7 +69,8 @@ $wrapper_attrs = get_block_wrapper_attributes($wrapper_extra);
 ?>
 <section <?php echo $wrapper_attrs; ?>
     style="background:<?php echo esc_attr($bg_rgba); ?>;color:<?php echo esc_attr($text_color); ?>;">
-    <div class="container block-cta-section__inner">
+    <div class="block-cta-section__maxwidth block-cta-section__inner"
+        style="max-width:<?php echo esc_attr($max_width); ?>%;margin:<?php echo esc_attr($margin_map[$content_align]); ?>;">
         <?php if ($headline): ?>
             <h2 class="block-cta-section__headline" style="text-align:<?php echo esc_attr($headline_align); ?>"><?php echo $headline; ?></h2>
         <?php endif; ?>

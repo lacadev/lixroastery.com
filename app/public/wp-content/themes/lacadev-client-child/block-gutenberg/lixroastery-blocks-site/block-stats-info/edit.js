@@ -22,6 +22,12 @@ const ALIGN_OPTIONS = [
 	{ label: __( 'Căn đều (Justify)', 'laca' ), value: 'justify' },
 ];
 
+const MARGIN_MAP = {
+	left: '0 auto 0 0',
+	center: '0 auto',
+	right: '0 0 0 auto',
+};
+
 export default function Edit( { attributes, setAttributes } ) {
 	const isPreview = useInserterPreview( attributes );
 	const blockProps = useBlockProps();
@@ -38,6 +44,8 @@ export default function Edit( { attributes, setAttributes } ) {
 	}
 
 	const {
+		maxWidth,
+		contentAlign,
 		items,
 		columns,
 		titleAlign,
@@ -67,6 +75,11 @@ export default function Edit( { attributes, setAttributes } ) {
 		} );
 	};
 
+	const maxWidthStyle = {
+		maxWidth: `${ maxWidth }%`,
+		margin: MARGIN_MAP[ contentAlign ] || MARGIN_MAP.center,
+	};
+
 	return (
 		<>
 			<InspectorControls>
@@ -75,6 +88,29 @@ export default function Edit( { attributes, setAttributes } ) {
 					initialOpen={ true }
 				>
 					<RangeControl
+						label={ __( 'Kích thước tối đa (%)', 'laca' ) }
+						help={ __(
+							'Áp dụng cho màn hình lớn — tự động full width trên mobile để không quá hẹp.',
+							'laca'
+						) }
+						value={ maxWidth }
+						min={ 10 }
+						max={ 100 }
+						onChange={ ( v ) => setAttributes( { maxWidth: v } ) }
+					/>
+					<SelectControl
+						label={ __( 'Căn lề khung', 'laca' ) }
+						value={ contentAlign }
+						options={ [
+							{ label: __( 'Trái', 'laca' ), value: 'left' },
+							{ label: __( 'Giữa', 'laca' ), value: 'center' },
+							{ label: __( 'Phải', 'laca' ), value: 'right' },
+						] }
+						onChange={ ( v ) =>
+							setAttributes( { contentAlign: v } )
+						}
+					/>
+					<RangeControl
 						label={ __( 'Số lượng / hàng', 'laca' ) }
 						value={ columns }
 						min={ 1 }
@@ -82,15 +118,19 @@ export default function Edit( { attributes, setAttributes } ) {
 						onChange={ ( v ) => setAttributes( { columns: v } ) }
 					/>
 					<SelectControl
-						label={ __( 'Căn lề tiêu đề (số + nhãn) — PC', 'laca' ) }
+						label={ __(
+							'Căn lề tiêu đề (số + nhãn) — PC',
+							'laca'
+						) }
 						value={ titleAlign }
 						options={ ALIGN_OPTIONS }
-						onChange={ ( v ) =>
-							setAttributes( { titleAlign: v } )
-						}
+						onChange={ ( v ) => setAttributes( { titleAlign: v } ) }
 					/>
 					<SelectControl
-						label={ __( 'Căn lề tiêu đề (số + nhãn) — Mobile', 'laca' ) }
+						label={ __(
+							'Căn lề tiêu đề (số + nhãn) — Mobile',
+							'laca'
+						) }
 						value={ titleAlignMobile }
 						options={ ALIGN_OPTIONS }
 						onChange={ ( v ) =>
@@ -225,59 +265,69 @@ export default function Edit( { attributes, setAttributes } ) {
 					background: hexToRgba( bgColor, bgOpacity ),
 				} }
 			>
-				<div className="container">
+				<div className="container-fluid">
 					<div
-						className="block-stats-info__grid"
-						style={ {
-							'--stats-columns': columns,
-							'--stats-title-align-pc': titleAlign,
-							'--stats-title-align-mobile': titleAlignMobile,
-							'--stats-desc-align-pc': descriptionAlign,
-							'--stats-desc-align-mobile': descriptionAlignMobile,
-						} }
+						className="block-stats-info__maxwidth"
+						style={ maxWidthStyle }
 					>
-						{ items.map( ( item, index ) => (
-							<div
-								className="block-stats-info__item"
-								key={ index }
-							>
+						<div
+							className="block-stats-info__grid"
+							style={ {
+								'--stats-columns': columns,
+								'--stats-title-align-pc': titleAlign,
+								'--stats-title-align-mobile': titleAlignMobile,
+								'--stats-desc-align-pc': descriptionAlign,
+								'--stats-desc-align-mobile':
+									descriptionAlignMobile,
+							} }
+						>
+							{ items.map( ( item, index ) => (
 								<div
-									className="block-stats-info__number"
-									style={ { color: numberColor } }
+									className="block-stats-info__item"
+									key={ index }
 								>
+									<div
+										className="block-stats-info__number"
+										style={ { color: numberColor } }
+									>
+										<RichText
+											tagName="span"
+											value={ item.number }
+											onChange={ ( v ) =>
+												updateItem( index, 'number', v )
+											}
+											placeholder="+10"
+											allowedFormats={ [] }
+										/>
+									</div>
 									<RichText
-										tagName="span"
-										value={ item.number }
+										tagName="div"
+										className="block-stats-info__label"
+										style={ { color: labelColor } }
+										value={ item.label }
 										onChange={ ( v ) =>
-											updateItem( index, 'number', v )
+											updateItem( index, 'label', v )
 										}
-										placeholder="+10"
+										placeholder={ __( 'Nhãn…', 'laca' ) }
 										allowedFormats={ [] }
 									/>
+									<RichText
+										tagName="p"
+										className="block-stats-info__desc"
+										style={ { color: descriptionColor } }
+										value={ item.description }
+										onChange={ ( v ) =>
+											updateItem(
+												index,
+												'description',
+												v
+											)
+										}
+										placeholder={ __( 'Mô tả…', 'laca' ) }
+									/>
 								</div>
-								<RichText
-									tagName="div"
-									className="block-stats-info__label"
-									style={ { color: labelColor } }
-									value={ item.label }
-									onChange={ ( v ) =>
-										updateItem( index, 'label', v )
-									}
-									placeholder={ __( 'Nhãn…', 'laca' ) }
-									allowedFormats={ [] }
-								/>
-								<RichText
-									tagName="p"
-									className="block-stats-info__desc"
-									style={ { color: descriptionColor } }
-									value={ item.description }
-									onChange={ ( v ) =>
-										updateItem( index, 'description', v )
-									}
-									placeholder={ __( 'Mô tả…', 'laca' ) }
-								/>
-							</div>
-						) ) }
+							) ) }
+						</div>
 					</div>
 				</div>
 			</section>

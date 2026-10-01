@@ -1,5 +1,9 @@
 import { __ } from '@wordpress/i18n';
-import { useBlockProps, InspectorControls, InnerBlocks } from '@wordpress/block-editor';
+import {
+	useBlockProps,
+	InspectorControls,
+	InnerBlocks,
+} from '@wordpress/block-editor';
 import { PanelBody, RangeControl, SelectControl } from '@wordpress/components';
 import { useInserterPreview, BlockPreviewMock } from '../../utils/preview';
 
@@ -43,7 +47,10 @@ export default function Edit( { attributes, setAttributes } ) {
 	return (
 		<>
 			<InspectorControls>
-				<PanelBody title={ __( 'Bố cục', 'laca' ) } initialOpen={ true }>
+				<PanelBody
+					title={ __( 'Bố cục', 'laca' ) }
+					initialOpen={ true }
+				>
 					<RangeControl
 						label={ __( 'Kích thước tối đa (%)', 'laca' ) }
 						help={ __(

@@ -3,6 +3,10 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
+$max_width = max(10, min(100, (int) ($attributes['maxWidth'] ?? 50)));
+$content_align = in_array($attributes['contentAlign'] ?? '', ['left', 'center', 'right'], true)
+    ? $attributes['contentAlign'] : 'center';
+$margin_map = ['left' => '0 auto 0 0', 'center' => '0 auto', 'right' => '0 0 0 auto'];
 $section_title = esc_html($attributes['sectionTitle'] ?? '');
 $view_all_text = esc_html($attributes['viewAllText'] ?? '');
 $view_all_link = esc_url($attributes['viewAllLink'] ?? '');
@@ -164,52 +168,54 @@ $wrapper_attrs = get_block_wrapper_attributes(['class' => 'block-journal-grid'])
 ?>
 <section <?php echo $wrapper_attrs; ?>>
     <div class="container-fluid">
-        <div class="block-journal-grid__header">
-            <?php if ($section_title): ?>
-                <h2 class="block-journal-grid__title"><?php echo $section_title; ?></h2>
-            <?php endif; ?>
-            <?php if ($view_all_text): ?>
-                <a class="block-journal-grid__view-all"
-                    href="<?php echo $view_all_link ?: '#'; ?>"><?php echo $view_all_text; ?></a>
-            <?php endif; ?>
-        </div>
-        <hr class="block-journal-grid__rule" />
+        <div class="block-journal-grid__maxwidth" style="max-width:<?php echo esc_attr($max_width); ?>%;margin:<?php echo esc_attr($margin_map[$content_align]); ?>;">
+            <div class="block-journal-grid__header">
+                <?php if ($section_title): ?>
+                    <h2 class="block-journal-grid__title"><?php echo $section_title; ?></h2>
+                <?php endif; ?>
+                <?php if ($view_all_text): ?>
+                    <a class="block-journal-grid__view-all"
+                        href="<?php echo $view_all_link ?: '#'; ?>"><?php echo $view_all_text; ?></a>
+                <?php endif; ?>
+            </div>
+            <hr class="block-journal-grid__rule" />
 
-        <div class="block-journal-grid__grid" style="--bjg-columns: <?php echo esc_attr($columns); ?>;">
-            <?php foreach ($posts as $post):
-                // setup_postdata() để các block tuỳ chỉnh (nếu có dùng
-                // get_the_ID()/context bài viết hiện tại khi tự render) nhận
-                // đúng bài đang xử lý, không phải bài còn sót từ query khác.
-                setup_postdata($post);
+            <div class="block-journal-grid__grid" style="--bjg-columns: <?php echo esc_attr($columns); ?>;">
+                <?php foreach ($posts as $post):
+                    // setup_postdata() để các block tuỳ chỉnh (nếu có dùng
+                    // get_the_ID()/context bài viết hiện tại khi tự render) nhận
+                    // đúng bài đang xử lý, không phải bài còn sót từ query khác.
+                    setup_postdata($post);
 
-                $post_url = esc_url(get_permalink($post));
-                $cat_name = $get_cat($post, $taxonomy);
-                $date = esc_html(get_the_date($date_format, $post));
-                $title = esc_html(get_the_title($post));
+                    $post_url = esc_url(get_permalink($post));
+                    $cat_name = $get_cat($post, $taxonomy);
+                    $date = esc_html(get_the_date($date_format, $post));
+                    $title = esc_html(get_the_title($post));
 
-                $plain_content = $get_plain_text($post->post_content);
+                    $plain_content = $get_plain_text($post->post_content);
 
-                $raw_excerpt = $post->post_excerpt !== '' ? $post->post_excerpt : $plain_content;
-                $excerpt = esc_html(wp_trim_words(wp_strip_all_tags(strip_shortcodes($raw_excerpt)), 40));
-                $read_time = $get_read_time_from_text($plain_content);
-                ?>
-                <a href="<?php echo $post_url; ?>" class="block-journal-grid__card">
-                    <div class="block-journal-grid__meta">
-                        <div class="block-journal-grid__eyebrow">
-                            <?php if ($cat_name): ?><span><?php echo $cat_name; ?></span><span
-                                    class="block-journal-grid__eyebrow-sep">|</span><?php endif; ?>
-                            <span><?php echo $date; ?></span>
+                    $raw_excerpt = $post->post_excerpt !== '' ? $post->post_excerpt : $plain_content;
+                    $excerpt = esc_html(wp_trim_words(wp_strip_all_tags(strip_shortcodes($raw_excerpt)), 40));
+                    $read_time = $get_read_time_from_text($plain_content);
+                    ?>
+                    <a href="<?php echo $post_url; ?>" class="block-journal-grid__card">
+                        <div class="block-journal-grid__meta">
+                            <div class="block-journal-grid__eyebrow">
+                                <?php if ($cat_name): ?><span><?php echo $cat_name; ?></span><span
+                                        class="block-journal-grid__eyebrow-sep">|</span><?php endif; ?>
+                                <span><?php echo $date; ?></span>
+                            </div>
+                            <h3 class="block-journal-grid__card-title"><?php echo $title; ?></h3>
+                            <span class="block-journal-grid__read-time"><?php echo esc_html($read_time); ?> min read</span>
                         </div>
-                        <h3 class="block-journal-grid__card-title"><?php echo $title; ?></h3>
-                        <span class="block-journal-grid__read-time"><?php echo esc_html($read_time); ?> min read</span>
-                    </div>
-                    <?php if ($excerpt): ?>
-                        <p class="block-journal-grid__card-excerpt"><?php echo $excerpt; ?></p>
-                    <?php endif; ?>
-                </a>
-            <?php endforeach;
-            wp_reset_postdata(); // trả lại đúng post/query chính sau setup_postdata() ở trên
-            ?>
+                        <?php if ($excerpt): ?>
+                            <p class="block-journal-grid__card-excerpt"><?php echo $excerpt; ?></p>
+                        <?php endif; ?>
+                    </a>
+                <?php endforeach;
+                wp_reset_postdata(); // trả lại đúng post/query chính sau setup_postdata() ở trên
+                ?>
+            </div>
         </div>
     </div>
 </section>

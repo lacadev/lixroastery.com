@@ -7,6 +7,11 @@ if (!defined('ABSPATH')) {
 // giữa nhiều instance của cùng 1 block trên 1 trang (đã gặp ở block-projects-slider).
 $unique_id = wp_unique_id('lix-tabs-');
 
+$max_width = max(10, min(100, (int) ($attributes['maxWidth'] ?? 50)));
+$content_align = in_array($attributes['contentAlign'] ?? '', ['left', 'center', 'right'], true)
+    ? $attributes['contentAlign'] : 'center';
+$margin_map = ['left' => '0 auto 0 0', 'center' => '0 auto', 'right' => '0 0 0 auto'];
+
 $wrapper_attrs = get_block_wrapper_attributes(['class' => 'tabs-block']);
 
 // Ẩn/hiện theo tab CHỈ áp dụng ở đây (render.php chỉ chạy ở frontend, không
@@ -20,12 +25,14 @@ $scoped_selector = '#' . $unique_id;
 </style>
 <section <?php echo $wrapper_attrs; ?>>
     <div class="container-fluid tabs-block__inner" id="<?php echo esc_attr($unique_id); ?>">
-        <div class="tabs-block__panels">
-            <?php echo $content; ?>
-        </div>
-        <div class="tabs-block__footer">
-            <a href="#" class="tabs-block__prev"><?php esc_html_e('Prev', 'laca'); ?></a>
-            <a href="#" class="tabs-block__next"><?php esc_html_e('Next', 'laca'); ?></a>
+        <div class="tabs-block__maxwidth" style="max-width:<?php echo esc_attr($max_width); ?>%;margin:<?php echo esc_attr($margin_map[$content_align]); ?>;">
+            <div class="tabs-block__panels">
+                <?php echo $content; ?>
+            </div>
+            <div class="tabs-block__footer">
+                <a href="#" class="tabs-block__prev"><?php esc_html_e('Prev', 'laca'); ?></a>
+                <a href="#" class="tabs-block__next"><?php esc_html_e('Next', 'laca'); ?></a>
+            </div>
         </div>
     </div>
 </section>
@@ -60,7 +67,11 @@ $js = <<<JS
             nav.appendChild(sep);
         }
     });
-    root.insertBefore(nav, panelsWrap);
+    // dùng panelsWrap.parentNode thay vì root trực tiếp — panelsWrap không
+    // còn chắc là CON TRỰC TIẾP của root nữa (có thể còn 1 lớp
+    // .tabs-block__maxwidth lồng giữa chừng tuỳ cấu hình maxWidth), insertBefore
+    // bắt buộc referenceNode phải là con trực tiếp của node gọi insertBefore.
+    panelsWrap.parentNode.insertBefore(nav, panelsWrap);
 
     var navLinks = Array.prototype.slice.call(nav.querySelectorAll('.tabs-block__nav-link'));
     var activeIndex = 0;

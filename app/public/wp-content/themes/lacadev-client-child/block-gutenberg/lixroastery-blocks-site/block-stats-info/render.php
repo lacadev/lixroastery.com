@@ -3,6 +3,10 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
+$max_width = max(10, min(100, (int) ($attributes['maxWidth'] ?? 50)));
+$content_align = in_array($attributes['contentAlign'] ?? '', ['left', 'center', 'right'], true)
+    ? $attributes['contentAlign'] : 'center';
+$margin_map = ['left' => '0 auto 0 0', 'center' => '0 auto', 'right' => '0 0 0 auto'];
 $items = is_array($attributes['items'] ?? null) ? $attributes['items'] : [];
 
 $columns = max(1, min(6, (int) ($attributes['columns'] ?? 4)));
@@ -42,38 +46,40 @@ $wrapper_attrs = get_block_wrapper_attributes(['class' => 'block-stats-info']);
 ?>
 <section <?php echo $wrapper_attrs; ?> style="background:<?php echo esc_attr($bg_rgba); ?>;">
     <div class="container-fluid">
-        <div class="block-stats-info__grid" style="
-            --stats-columns: <?php echo esc_attr($columns); ?>;
-            --stats-title-align-pc: <?php echo esc_attr($title_align_pc); ?>;
-            --stats-title-align-mobile: <?php echo esc_attr($title_align_mobile); ?>;
-            --stats-desc-align-pc: <?php echo esc_attr($description_align_pc); ?>;
-            --stats-desc-align-mobile: <?php echo esc_attr($description_align_mobile); ?>;
-        ">
-            <?php foreach ($items as $item):
-                $number = esc_html($item['number'] ?? '');
-                $label = esc_html($item['label'] ?? '');
-                // description cho phép format cơ bản (in đậm/nghiêng…) qua RichText.
-                $description = wp_kses_post($item['description'] ?? '');
-                if (!$number && !$label) {
-                    continue;
-                }
-                ?>
-                <div class="block-stats-info__item">
-                    <div class="block-stats-info__number">
-                        <?php echo $number; ?>
-                    </div>
-                    <?php if ($label): ?>
-                        <div class="block-stats-info__label">
-                            <?php echo $label; ?>
+        <div class="block-stats-info__maxwidth" style="max-width:<?php echo esc_attr($max_width); ?>%;margin:<?php echo esc_attr($margin_map[$content_align]); ?>;">
+            <div class="block-stats-info__grid" style="
+                --stats-columns: <?php echo esc_attr($columns); ?>;
+                --stats-title-align-pc: <?php echo esc_attr($title_align_pc); ?>;
+                --stats-title-align-mobile: <?php echo esc_attr($title_align_mobile); ?>;
+                --stats-desc-align-pc: <?php echo esc_attr($description_align_pc); ?>;
+                --stats-desc-align-mobile: <?php echo esc_attr($description_align_mobile); ?>;
+            ">
+                <?php foreach ($items as $item):
+                    $number = esc_html($item['number'] ?? '');
+                    $label = esc_html($item['label'] ?? '');
+                    // description cho phép format cơ bản (in đậm/nghiêng…) qua RichText.
+                    $description = wp_kses_post($item['description'] ?? '');
+                    if (!$number && !$label) {
+                        continue;
+                    }
+                    ?>
+                    <div class="block-stats-info__item">
+                        <div class="block-stats-info__number">
+                            <?php echo $number; ?>
                         </div>
-                    <?php endif; ?>
-                    <?php if ($description): ?>
-                        <p class="block-stats-info__desc">
-                            <?php echo $description; ?>
-                        </p>
-                    <?php endif; ?>
-                </div>
-            <?php endforeach; ?>
+                        <?php if ($label): ?>
+                            <div class="block-stats-info__label">
+                                <?php echo $label; ?>
+                            </div>
+                        <?php endif; ?>
+                        <?php if ($description): ?>
+                            <p class="block-stats-info__desc">
+                                <?php echo $description; ?>
+                            </p>
+                        <?php endif; ?>
+                    </div>
+                <?php endforeach; ?>
+            </div>
         </div>
     </div>
 </section>

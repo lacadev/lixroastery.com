@@ -130,7 +130,10 @@ export default function Edit( { attributes, setAttributes } ) {
 			</InspectorControls>
 
 			<section { ...blockProps }>
-				<div className="block-content-grid__maxwidth" style={ maxWidthStyle }>
+				<div
+					className="block-content-grid__maxwidth"
+					style={ maxWidthStyle }
+				>
 					<div
 						className="block-content-grid__grid"
 						style={ { '--ctg-columns': columns } }

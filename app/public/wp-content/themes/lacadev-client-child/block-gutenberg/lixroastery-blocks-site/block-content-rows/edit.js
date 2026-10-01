@@ -319,17 +319,20 @@ export default function Edit( { attributes, setAttributes } ) {
 			</InspectorControls>
 
 			<section { ...blockProps }>
-				<div className="block-content-rows__maxwidth" style={ maxWidthStyle }>
-				<RichText
-					tagName="h2"
-					className="block-content-rows__main-title"
-					value={ mainTitle }
-					onChange={ ( v ) => setAttributes( { mainTitle: v } ) }
-					placeholder={ __( 'Tiêu đề chính…', 'laca' ) }
-					allowedFormats={ [] }
-				/>
+				<div
+					className="block-content-rows__maxwidth"
+					style={ maxWidthStyle }
+				>
+					<RichText
+						tagName="h2"
+						className="block-content-rows__main-title"
+						value={ mainTitle }
+						onChange={ ( v ) => setAttributes( { mainTitle: v } ) }
+						placeholder={ __( 'Tiêu đề chính…', 'laca' ) }
+						allowedFormats={ [] }
+					/>
 
-				{ rows.map( ( row, index ) => (
+					{ rows.map( ( row, index ) => (
 						<div className="block-content-rows__row" key={ index }>
 							<div className="block-content-rows__content">
 								<RichText

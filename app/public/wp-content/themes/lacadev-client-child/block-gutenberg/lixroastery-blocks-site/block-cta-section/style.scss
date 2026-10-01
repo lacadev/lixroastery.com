@@ -4,8 +4,16 @@
 
 .block-cta-section {
 
+    // maxWidth (%) do admin chọn áp dụng cho desktop/tablet — trên mobile
+    // luôn ép về full width bất kể chọn bao nhiêu (xem render.php/edit.js).
+    &__maxwidth {
+        @include maxWidth($sm) {
+            max-width: 100% !important;
+            margin: 0 !important;
+        }
+    }
+
     &__inner {
-        margin: 0 auto;
         color: $darkColor;
     }
 

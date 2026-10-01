@@ -25,7 +25,9 @@ function initCptGrid( root ) {
 	// là "ALL" (data-term-slug rỗng); với template taxonomy-journal-cat.php,
 	// tab đầu là 1 danh mục thật nên phải khớp đúng, không được hardcode rỗng.
 	let activeTermSlug = '';
-	const initialActiveTab = root.querySelector( '.block-cpt-grid__tab.is-active' );
+	const initialActiveTab = root.querySelector(
+		'.block-cpt-grid__tab.is-active'
+	);
 	if ( initialActiveTab ) {
 		activeTermSlug = initialActiveTab.dataset.termSlug || '';
 	}
@@ -123,7 +125,9 @@ function initCptGrid( root ) {
 			tab.classList.add( 'is-active' );
 			activeTermSlug = tab.dataset.termSlug || '';
 			currentPage = 1;
-			fetchGrid( 1, 'replace' ).then( ( data ) => replaceGrid( data, true ) );
+			fetchGrid( 1, 'replace' ).then( ( data ) =>
+				replaceGrid( data, true )
+			);
 		} );
 	} );
 
@@ -147,18 +151,26 @@ function initCptGrid( root ) {
 				return;
 			}
 			currentPage = page;
-			fetchGrid( page, 'replace' ).then( ( data ) => replaceGrid( data, true ) );
+			fetchGrid( page, 'replace' ).then( ( data ) =>
+				replaceGrid( data, true )
+			);
 		} );
 	}
 
 	// ── Load more / infinite scroll ───────────────────────────────────
 	if ( config.paginationMode === 'load-more' && loadMoreWrap ) {
-		const sentinel = loadMoreWrap.querySelector( '.block-cpt-grid__sentinel' );
+		const sentinel = loadMoreWrap.querySelector(
+			'.block-cpt-grid__sentinel'
+		);
 		if ( sentinel && 'IntersectionObserver' in window ) {
 			observer = new IntersectionObserver(
 				( entries ) => {
 					entries.forEach( ( entry ) => {
-						if ( entry.isIntersecting && ! isLoading && currentPage < maxPages ) {
+						if (
+							entry.isIntersecting &&
+							! isLoading &&
+							currentPage < maxPages
+						) {
 							const nextPage = currentPage + 1;
 							fetchGrid( nextPage, 'append' ).then( ( data ) => {
 								if ( data ) {
@@ -182,7 +194,9 @@ function initCptGrid( root ) {
 	if ( config.paginationMode === 'numbered' && config.perPageMobile ) {
 		const isMobile = window.innerWidth <= MOBILE_BREAKPOINT;
 		if ( isMobile && config.perPageMobile !== config.perPagePC ) {
-			fetchGrid( 1, 'replace' ).then( ( data ) => replaceGrid( data, false ) );
+			fetchGrid( 1, 'replace' ).then( ( data ) =>
+				replaceGrid( data, false )
+			);
 		}
 	}
 }

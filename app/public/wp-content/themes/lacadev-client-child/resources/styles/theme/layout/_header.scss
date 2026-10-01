@@ -62,11 +62,11 @@ body.menu-open {
             color: $darkColor;
             transition: color 0.2s ease;
 
-             @include resFont(rem(14), rem(16));
-
             &:hover {
                 color: $primaryColor;
             }
+
+             @include resFont(rem(14), rem(16));
         }
 
         .menu-item.actived-menu > a {
@@ -210,14 +210,14 @@ body.menu-open {
             color: $darkColor;
             transition: color 0.2s ease;
 
+            &:hover {
+                color: $primaryColor;
+            }
+
             // Khớp đúng font-size responsive của menu chính (.header__menu-list
             // .menu-item > a) — trước đây cố định 13px, nhỏ hơn hẳn 16px của
             // menu ở desktop.
             @include resFont(rem(14), rem(16));
-
-            &:hover {
-                color: $primaryColor;
-            }
         }
     }
 

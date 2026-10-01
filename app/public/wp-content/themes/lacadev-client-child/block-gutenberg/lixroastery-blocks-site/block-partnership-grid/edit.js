@@ -19,6 +19,8 @@ export default function Edit( { attributes, setAttributes } ) {
 	const blockProps = useBlockProps();
 
 	const {
+		maxWidth,
+		contentAlign,
 		sectionTitle,
 		viewAllText,
 		viewAllLink,
@@ -135,6 +137,35 @@ export default function Edit( { attributes, setAttributes } ) {
 	return (
 		<>
 			<InspectorControls>
+				<PanelBody
+					title={ __( 'Bố cục', 'laca' ) }
+					initialOpen={ true }
+				>
+					<RangeControl
+						label={ __( 'Kích thước tối đa (%)', 'laca' ) }
+						help={ __(
+							'Áp dụng cho màn hình lớn — tự động full width trên mobile để không quá hẹp.',
+							'laca'
+						) }
+						value={ maxWidth }
+						min={ 10 }
+						max={ 100 }
+						onChange={ ( v ) => setAttributes( { maxWidth: v } ) }
+					/>
+					<SelectControl
+						label={ __( 'Căn lề khung', 'laca' ) }
+						value={ contentAlign }
+						options={ [
+							{ label: __( 'Trái', 'laca' ), value: 'left' },
+							{ label: __( 'Giữa', 'laca' ), value: 'center' },
+							{ label: __( 'Phải', 'laca' ), value: 'right' },
+						] }
+						onChange={ ( v ) =>
+							setAttributes( { contentAlign: v } )
+						}
+					/>
+				</PanelBody>
+
 				<PanelBody
 					title={ __( 'Hiển thị', 'laca' ) }
 					initialOpen={ true }

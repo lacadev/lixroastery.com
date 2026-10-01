@@ -16,13 +16,19 @@ function initFloatingContact() {
 		toggleBtn.addEventListener( 'click', () => {
 			const isHidden = group.classList.toggle( 'is-hidden' );
 			toggleBtn.classList.toggle( 'is-active', ! isHidden );
-			toggleBtn.setAttribute( 'aria-expanded', isHidden ? 'false' : 'true' );
+			toggleBtn.setAttribute(
+				'aria-expanded',
+				isHidden ? 'false' : 'true'
+			);
 		} );
 	}
 
 	if ( backToTopBtn ) {
 		window.addEventListener( 'scroll', () => {
-			backToTopBtn.classList.toggle( 'is-visible', window.scrollY > SCROLL_SHOW_THRESHOLD );
+			backToTopBtn.classList.toggle(
+				'is-visible',
+				window.scrollY > SCROLL_SHOW_THRESHOLD
+			);
 		} );
 
 		backToTopBtn.addEventListener( 'click', ( e ) => {

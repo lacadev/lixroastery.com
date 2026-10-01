@@ -4,10 +4,6 @@
 .glossary-page {
     padding: 4rem 0 6rem;
 
-    @include maxWidth($sm) {
-        padding: 2.5rem 0 4rem;
-    }
-
     &__title {
         font-family: $subFont;
         font-weight: $regular;
@@ -103,8 +99,6 @@
         color: $darkColor;
         line-height: 1.4;
 
-        @include resFont(rem(16), rem(20));
-
         p {
             margin: 0 0 1em;
 
@@ -112,6 +106,8 @@
                 margin-bottom: 0;
             }
         }
+
+        @include resFont(rem(16), rem(20));
     }
 
     &__related {
@@ -151,5 +147,9 @@
     &__empty {
         text-align: center;
         color: rgba(0, 0, 0, 0.5);
+    }
+
+    @include maxWidth($sm) {
+        padding: 2.5rem 0 4rem;
     }
 }

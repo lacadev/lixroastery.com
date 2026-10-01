@@ -4,6 +4,13 @@
 
 .block-stats-info {
 
+    &__maxwidth {
+        @include maxWidth($sm) {
+            max-width: 100% !important;
+            margin: 0 !important;
+        }
+    }
+
     &__grid {
         display: grid;
         grid-template-columns: repeat(var(--stats-columns, 4), 1fr);

@@ -3,6 +3,10 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
+$max_width      = max(10, min(100, (int) ($attributes['maxWidth'] ?? 50)));
+$content_align  = in_array($attributes['contentAlign'] ?? '', ['left', 'center', 'right'], true)
+    ? $attributes['contentAlign'] : 'center';
+$margin_map     = ['left' => '0 auto 0 0', 'center' => '0 auto', 'right' => '0 0 0 auto'];
 $section_title  = esc_html($attributes['sectionTitle'] ?? '');
 $view_all_text  = esc_html($attributes['viewAllText'] ?? '');
 $view_all_link  = esc_url($attributes['viewAllLink'] ?? '');
@@ -82,44 +86,46 @@ $wrapper_attrs = get_block_wrapper_attributes(['class' => 'block-partnership-gri
 ?>
 <section <?php echo $wrapper_attrs; ?>>
     <div class="container-fluid">
-        <div class="block-partnership-grid__header">
-            <?php if ($section_title) : ?>
-                <h2 class="block-partnership-grid__title"><?php echo $section_title; ?></h2>
-            <?php endif; ?>
-            <?php if ($view_all_text) : ?>
-                <a class="block-partnership-grid__view-all" href="<?php echo $view_all_link ?: '#'; ?>"><?php echo $view_all_text; ?></a>
-            <?php endif; ?>
-        </div>
-        <hr class="block-partnership-grid__rule" />
+        <div class="block-partnership-grid__maxwidth" style="max-width:<?php echo esc_attr($max_width); ?>%;margin:<?php echo esc_attr($margin_map[$content_align]); ?>;">
+            <div class="block-partnership-grid__header">
+                <?php if ($section_title) : ?>
+                    <h2 class="block-partnership-grid__title"><?php echo $section_title; ?></h2>
+                <?php endif; ?>
+                <?php if ($view_all_text) : ?>
+                    <a class="block-partnership-grid__view-all" href="<?php echo $view_all_link ?: '#'; ?>"><?php echo $view_all_text; ?></a>
+                <?php endif; ?>
+            </div>
+            <hr class="block-partnership-grid__rule" />
 
-        <div class="block-partnership-grid__grid" style="--bpg-columns: <?php echo esc_attr($columns); ?>;">
-            <?php foreach ($posts as $post) :
-                $post_id  = $post->ID;
-                $post_url = esc_url(get_permalink($post));
-                $cat_name = $get_cat($post, $taxonomy);
-                $date     = esc_html(get_the_date('M d', $post));
-                $title    = esc_html(get_the_title($post));
-                $excerpt  = esc_html(wp_trim_words(get_the_excerpt($post), 20));
-            ?>
-                <a href="<?php echo $post_url; ?>" class="block-partnership-grid__card">
-                    <div class="block-partnership-grid__image">
-                        <img src="<?php echo esc_url(getPostThumbnailUrl($post_id)); ?>" alt="<?php echo $title; ?>" loading="lazy" />
-                    </div>
-                    <?php if ($cat_name || $date) : ?>
-                        <div class="block-partnership-grid__tags">
-                            <?php if ($cat_name) : ?><span><?php echo $cat_name; ?></span><?php endif; ?>
-                            <?php if ($cat_name && $date) : ?><span class="block-partnership-grid__tags-sep">|</span><?php endif; ?>
-                            <?php if ($date) : ?><span><?php echo $date; ?></span><?php endif; ?>
+            <div class="block-partnership-grid__grid" style="--bpg-columns: <?php echo esc_attr($columns); ?>;">
+                <?php foreach ($posts as $post) :
+                    $post_id  = $post->ID;
+                    $post_url = esc_url(get_permalink($post));
+                    $cat_name = $get_cat($post, $taxonomy);
+                    $date     = esc_html(get_the_date('M d', $post));
+                    $title    = esc_html(get_the_title($post));
+                    $excerpt  = esc_html(wp_trim_words(get_the_excerpt($post), 20));
+                ?>
+                    <a href="<?php echo $post_url; ?>" class="block-partnership-grid__card">
+                        <div class="block-partnership-grid__image">
+                            <img src="<?php echo esc_url(getPostThumbnailUrl($post_id)); ?>" alt="<?php echo $title; ?>" loading="lazy" />
                         </div>
-                    <?php endif; ?>
-                    <?php if ($title) : ?>
-                        <h3 class="block-partnership-grid__card-title"><?php echo $title; ?></h3>
-                    <?php endif; ?>
-                    <?php if ($excerpt) : ?>
-                        <p class="block-partnership-grid__card-excerpt"><?php echo $excerpt; ?></p>
-                    <?php endif; ?>
-                </a>
-            <?php endforeach; ?>
+                        <?php if ($cat_name || $date) : ?>
+                            <div class="block-partnership-grid__tags">
+                                <?php if ($cat_name) : ?><span><?php echo $cat_name; ?></span><?php endif; ?>
+                                <?php if ($cat_name && $date) : ?><span class="block-partnership-grid__tags-sep">|</span><?php endif; ?>
+                                <?php if ($date) : ?><span><?php echo $date; ?></span><?php endif; ?>
+                            </div>
+                        <?php endif; ?>
+                        <?php if ($title) : ?>
+                            <h3 class="block-partnership-grid__card-title"><?php echo $title; ?></h3>
+                        <?php endif; ?>
+                        <?php if ($excerpt) : ?>
+                            <p class="block-partnership-grid__card-excerpt"><?php echo $excerpt; ?></p>
+                        <?php endif; ?>
+                    </a>
+                <?php endforeach; ?>
+            </div>
         </div>
     </div>
 </section>
