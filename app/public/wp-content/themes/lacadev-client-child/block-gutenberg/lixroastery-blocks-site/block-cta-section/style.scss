@@ -5,37 +5,23 @@
 .block-cta-section {
 
     &__inner {
-        max-width: 60%;
         margin: 0 auto;
         color: $darkColor;
-
-        @include maxWidth($xl) {
-            max-width: 80%;
-        }
-
-        @include maxWidth($md) {
-            max-width: 90%;
-        }
     }
 
     &__headline {
         margin: 0 0 1.2rem;
         text-align: center;
         font-family: $subFont;
-        font-weight: $regular;
         text-transform: uppercase;
         letter-spacing: 0.02em;
         line-height: 1.3;
 
-        @include resFont(rem(18), rem(50));
+        @include resFont(rem(18), rem(34));
     }
 
     &__desc {
-        margin: rem(50) auto;
-        font-weight: $regular;
-        line-height: 1.7;
-
-        @include resFont(rem(16), rem(20));
+        margin: rem(48) auto;
     }
 
     &__btn {
@@ -56,8 +42,6 @@
         border: 1px solid transparent;
         transition: opacity 0.25s ease;
 
-        @include resFont(rem(16), rem(20));
-
         &:hover {
             background-color: $lightColor;
             color: $primaryColor;
@@ -66,9 +50,6 @@
     }
 }
 
-// Parent theme ép font h1-h6 trong editor về $themeFont (Quicksand) bằng
-// !important (editor/index.scss) — cần selector cụ thể hơn + !important để
-// tiêu đề block vẫn hiện đúng font riêng ($subFont) khi soạn thảo.
 .editor-styles-wrapper .block-cta-section__headline {
     font-family: $subFont !important;
 }

@@ -1,0 +1,36 @@
+<?php
+if (!defined('ABSPATH')) {
+    exit;
+}
+
+// Bọc các block mặc định (paragraph/heading/list...) vào 1 khung có thể tùy
+// chỉnh kích thước tối đa (%) + căn lề — để khớp độ rộng với các block riêng
+// của theme (mỗi block riêng đã tự set width qua containerType/__inner của
+// chính nó). $content là HTML đã render sẵn của các block con (InnerBlocks),
+// WordPress tự truyền vào khi block dùng render.php + InnerBlocks.
+$max_width = max(10, min(100, (int) ($attributes['maxWidth'] ?? 50)));
+$align = in_array($attributes['contentAlign'] ?? '', ['left', 'center', 'right'], true)
+    ? $attributes['contentAlign']
+    : 'center';
+
+$margin_map = [
+    'left' => '0 auto 0 0',
+    'center' => '0 auto',
+    'right' => '0 0 0 auto',
+];
+
+if (trim($content) === '') {
+    return;
+}
+
+$wrapper_attrs = get_block_wrapper_attributes([
+    'class' => 'block-container',
+    'style' => 'max-width:' . $max_width . '%;margin:' . $margin_map[$align] . ';',
+]);
+?>
+
+<section class="container">
+    <div <?php echo $wrapper_attrs; ?>>
+        <?php echo $content; ?>
+    </div>
+</section>

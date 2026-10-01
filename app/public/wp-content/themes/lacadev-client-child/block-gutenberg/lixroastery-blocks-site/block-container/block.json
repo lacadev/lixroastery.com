@@ -1,0 +1,35 @@
+{
+    "$schema": "https://schemas.wp.org/trunk/block.json",
+    "apiVersion": 3,
+    "name": "lacadev/container-block",
+    "title": "Khung nội dung (Container)",
+    "category": "lixroastery-blocks-site",
+    "icon": "align-wide",
+    "description": "Bọc các block mặc định (paragraph, heading, list...) vào 1 khung có thể tùy chỉnh kích thước tối đa và căn lề, để khớp độ rộng với các block riêng của theme.",
+    "editorScript": "block-block-container-editor",
+    "style": "block-block-container",
+    "textdomain": "laca",
+    "supports": {
+        "html": false
+    },
+    "attributes": {
+        "maxWidth": {
+            "type": "number",
+            "default": 50
+        },
+        "contentAlign": {
+            "type": "string",
+            "default": "center"
+        },
+        "__isPreview": {
+            "type": "boolean",
+            "default": false
+        }
+    },
+    "example": {
+        "viewportWidth": 800,
+        "attributes": {
+            "__isPreview": true
+        }
+    }
+}

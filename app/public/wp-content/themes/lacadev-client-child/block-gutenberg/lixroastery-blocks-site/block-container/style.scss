@@ -1,0 +1,34 @@
+@use "../../../resources/styles/theme/abstracts/variables" as *;
+@use "@parent/styles/theme/abstracts/mixin" as *;
+
+.block-container {
+    // Khối này render ra <div>, không phải <section> — nên KHÔNG tự có
+    // khoảng đệm dọc như mọi block riêng khác của theme (xem rule chung
+    // "section { padding: ... }" ở resources/styles/theme/layout/_common-
+    // blocks.scss). Đặt lại ĐÚNG cùng 1 bộ giá trị ở đây để block mặc định
+    // lồng bên trong (paragraph/heading/list...) có cùng nhịp khoảng cách
+    // trên/dưới với các block riêng.
+    padding: rem(60) 0 !important;
+
+    @include maxWidth($xl) {
+        padding: rem(40) 0 !important;
+    }
+
+    @include maxWidth($md) {
+        padding: rem(30) 0 !important;
+    }
+
+    // maxWidth (%) do admin chọn hợp lý cho desktop/tablet, nhưng trên
+    // mobile 1 giá trị % nhỏ (vd 50%) sẽ quá hẹp — luôn ép về full width bất
+    // kể admin chọn bao nhiêu, !important để thắng inline style set trực
+    // tiếp trên phần tử (xem render.php).
+    @include maxWidth($sm) {
+        max-width: 100% !important;
+        margin: 0 !important;
+    }
+
+    section .container {
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+    }
+}
