@@ -29,9 +29,33 @@
             "type": "string",
             "default": "center"
         },
+        "contentAlignTablet": {
+            "type": "string",
+            "default": "center"
+        },
+        "contentAlignMobile": {
+            "type": "string",
+            "default": "center"
+        },
         "variant": {
             "type": "string",
             "default": "normal"
+        },
+        "quoteFontFamily": {
+            "type": "string",
+            "default": ""
+        },
+        "quoteFontSize": {
+            "type": "number",
+            "default": 40
+        },
+        "quoteFontSizeTablet": {
+            "type": "number",
+            "default": 32
+        },
+        "quoteFontSizeMobile": {
+            "type": "number",
+            "default": 24
         },
         "textAlign": {
             "type": "string",

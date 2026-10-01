@@ -38,6 +38,11 @@ require_once CHILD_APP_DIR . 'src/Ajax/JournalCatDirectoryAjaxHandler.php';
 require_once CHILD_APP_DIR . 'helpers/product-grid-render.php';
 require_once CHILD_APP_DIR . 'helpers/journal-related-products-render.php';
 
+// ── Danh sách Google Font (subset tiếng Việt) + helper build URL, dùng cho
+// variant "quote" của block Content/Quote (render.php tự enqueue theo lựa
+// chọn admin) ─────────────────────────────────────────────────────────────
+require_once CHILD_APP_DIR . 'helpers/google-fonts-vi.php';
+
 // Section "Sản phẩm liên quan" ở single.php (Journal) VÀ ở
 // woocommerce/single-product/related.php (single Product) đều tái dùng
 // class CSS của block Product Grid nhưng gọi thẳng hàm PHP (không qua
