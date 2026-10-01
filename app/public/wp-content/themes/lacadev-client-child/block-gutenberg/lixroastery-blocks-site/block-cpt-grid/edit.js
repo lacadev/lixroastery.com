@@ -10,6 +10,13 @@ import {
 import { useSelect } from '@wordpress/data';
 import ServerSideRender from '@wordpress/server-side-render';
 import { useInserterPreview, BlockPreviewMock } from '../../utils/preview';
+import { ResponsiveRangeControl } from '../../utils/inspector-panels';
+
+const MAX_WIDTH_KEYS = {
+	pc: 'maxWidth',
+	tablet: 'maxWidthTablet',
+	mobile: 'maxWidthMobile',
+};
 
 const EXCLUDED_POST_TYPES = [
 	'attachment',
@@ -28,6 +35,8 @@ export default function Edit( { attributes, setAttributes } ) {
 
 	const {
 		maxWidth,
+		maxWidthTablet,
+		maxWidthMobile,
 		contentAlign,
 		postType,
 		taxonomy,
@@ -90,6 +99,54 @@ export default function Edit( { attributes, setAttributes } ) {
 		<>
 			<InspectorControls>
 				<PanelBody
+					title={ __( 'Bố cục', 'laca' ) }
+					initialOpen={ true }
+				>
+					<ResponsiveRangeControl
+						label={ __( 'Kích thước tối đa (%)', 'laca' ) }
+						help={ __(
+							'Mobile mặc định full width — chỉnh riêng nếu muốn khác.',
+							'laca'
+						) }
+						min={ 10 }
+						max={ 100 }
+						valuesByDevice={ {
+							pc: maxWidth,
+							tablet: maxWidthTablet,
+							mobile: maxWidthMobile,
+						} }
+						onChange={ ( device, v ) =>
+							setAttributes( { [ MAX_WIDTH_KEYS[ device ] ]: v } )
+						}
+					/>
+					<RangeControl
+						label={ __( 'Số cột', 'laca' ) }
+						value={ columns }
+						onChange={ ( v ) => setAttributes( { columns: v } ) }
+						min={ 1 }
+						max={ 4 }
+					/>
+				</PanelBody>
+
+				<PanelBody
+					title={ __( 'Vị trí khung', 'laca' ) }
+					initialOpen={ true }
+				>
+					<SelectControl
+						label={ __( 'Vị trí khung', 'laca' ) }
+						value={ contentAlign }
+						options={ [
+							{ label: __( 'Trái', 'laca' ), value: 'left' },
+							{ label: __( 'Giữa', 'laca' ), value: 'center' },
+							{ label: __( 'Phải', 'laca' ), value: 'right' },
+						] }
+						onChange={ ( v ) =>
+							setAttributes( { contentAlign: v } )
+						}
+					/>
+				</PanelBody>
+
+				<PanelBody
 					title={ __( 'Nguồn dữ liệu', 'laca' ) }
 					initialOpen={ true }
 				>
@@ -119,42 +176,6 @@ export default function Edit( { attributes, setAttributes } ) {
 						value={ taxonomy }
 						options={ taxonomyOptions }
 						onChange={ ( v ) => setAttributes( { taxonomy: v } ) }
-					/>
-				</PanelBody>
-
-				<PanelBody
-					title={ __( 'Bố cục', 'laca' ) }
-					initialOpen={ true }
-				>
-					<RangeControl
-						label={ __( 'Kích thước tối đa (%)', 'laca' ) }
-						help={ __(
-							'Áp dụng cho màn hình lớn — tự động full width trên mobile để không quá hẹp.',
-							'laca'
-						) }
-						value={ maxWidth }
-						min={ 10 }
-						max={ 100 }
-						onChange={ ( v ) => setAttributes( { maxWidth: v } ) }
-					/>
-					<SelectControl
-						label={ __( 'Căn lề', 'laca' ) }
-						value={ contentAlign }
-						options={ [
-							{ label: __( 'Trái', 'laca' ), value: 'left' },
-							{ label: __( 'Giữa', 'laca' ), value: 'center' },
-							{ label: __( 'Phải', 'laca' ), value: 'right' },
-						] }
-						onChange={ ( v ) =>
-							setAttributes( { contentAlign: v } )
-						}
-					/>
-					<RangeControl
-						label={ __( 'Số cột', 'laca' ) }
-						value={ columns }
-						onChange={ ( v ) => setAttributes( { columns: v } ) }
-						min={ 1 }
-						max={ 4 }
 					/>
 				</PanelBody>
 

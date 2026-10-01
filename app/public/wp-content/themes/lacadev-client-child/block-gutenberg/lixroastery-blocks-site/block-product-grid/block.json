@@ -18,6 +18,14 @@
             "type": "number",
             "default": 50
         },
+        "maxWidthTablet": {
+            "type": "number",
+            "default": 100
+        },
+        "maxWidthMobile": {
+            "type": "number",
+            "default": 100
+        },
         "contentAlign": {
             "type": "string",
             "default": "center"

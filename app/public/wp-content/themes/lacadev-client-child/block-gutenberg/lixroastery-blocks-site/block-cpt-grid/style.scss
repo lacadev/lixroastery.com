@@ -18,9 +18,14 @@
     // luôn ép về full width bất kể chọn bao nhiêu, !important để thắng
     // inline style set trực tiếp trên phần tử (xem render.php).
     &__maxwidth {
+        max-width: var(--mw-pc, 50%);
+
+        @include maxWidth($md) {
+            max-width: var(--mw-tablet, 100%);
+        }
+
         @include maxWidth($sm) {
-            max-width: 100% !important;
-            margin: 0 !important;
+            max-width: var(--mw-mobile, 100%);
         }
     }
 

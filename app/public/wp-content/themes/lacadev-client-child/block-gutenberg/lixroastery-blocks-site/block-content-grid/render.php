@@ -5,6 +5,8 @@ if (!defined('ABSPATH')) {
 
 $columns        = max(1, min(4, intval($attributes['columns'] ?? 2)));
 $max_width      = max(10, min(100, (int) ($attributes['maxWidth'] ?? 50)));
+$max_width_tablet = max(10, min(100, (int) ($attributes['maxWidthTablet'] ?? 100)));
+$max_width_mobile = max(10, min(100, (int) ($attributes['maxWidthMobile'] ?? 100)));
 $content_align  = in_array($attributes['contentAlign'] ?? '', ['left', 'center', 'right'], true)
     ? $attributes['contentAlign']
     : 'center';
@@ -20,7 +22,7 @@ if (empty($items)) {
 $wrapper_attrs = get_block_wrapper_attributes(['class' => 'block-content-grid container-fluid']);
 ?>
 <section <?php echo $wrapper_attrs; ?>>
-    <div class="block-content-grid__maxwidth" style="max-width: <?php echo esc_attr($max_width); ?>%; margin: <?php echo esc_attr($margin_map[$content_align]); ?>;">
+    <div class="block-content-grid__maxwidth" style="--mw-pc:<?php echo esc_attr($max_width); ?>%;--mw-tablet:<?php echo esc_attr($max_width_tablet); ?>%;--mw-mobile:<?php echo esc_attr($max_width_mobile); ?>%;margin:<?php echo esc_attr($margin_map[$content_align]); ?>;">
         <div class="block-content-grid__grid" style="--ctg-columns: <?php echo esc_attr($columns); ?>;">
             <?php foreach ($items as $item) :
                 $title = esc_html($item['title'] ?? '');

@@ -8,6 +8,8 @@ if (!defined('ABSPATH')) {
 // chỉ cần lọc qua wp_kses_post()/esc_html() trước khi in ra tương ứng.
 $main_title     = wp_kses_post($attributes['mainTitle'] ?? '');
 $max_width      = max(10, min(100, (int) ($attributes['maxWidth'] ?? 50)));
+$max_width_tablet = max(10, min(100, (int) ($attributes['maxWidthTablet'] ?? 100)));
+$max_width_mobile = max(10, min(100, (int) ($attributes['maxWidthMobile'] ?? 100)));
 $content_align  = in_array($attributes['contentAlign'] ?? '', ['left', 'center', 'right'], true)
     ? $attributes['contentAlign']
     : 'center';
@@ -23,7 +25,7 @@ if (empty($rows) && !$main_title) {
 $wrapper_attrs = get_block_wrapper_attributes(['class' => 'block-content-rows container-fluid']);
 ?>
 <section <?php echo $wrapper_attrs; ?>>
-    <div class="block-content-rows__maxwidth" style="max-width: <?php echo esc_attr($max_width); ?>%; margin: <?php echo esc_attr($margin_map[$content_align]); ?>;">
+    <div class="block-content-rows__maxwidth" style="--mw-pc:<?php echo esc_attr($max_width); ?>%;--mw-tablet:<?php echo esc_attr($max_width_tablet); ?>%;--mw-mobile:<?php echo esc_attr($max_width_mobile); ?>%;margin:<?php echo esc_attr($margin_map[$content_align]); ?>;">
         <?php if ($main_title) : ?>
             <h2 class="block-content-rows__main-title"><?php echo $main_title; ?></h2>
         <?php endif; ?>

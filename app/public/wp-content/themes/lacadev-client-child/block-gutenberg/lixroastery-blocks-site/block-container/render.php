@@ -9,6 +9,8 @@ if (!defined('ABSPATH')) {
 // chính nó). $content là HTML đã render sẵn của các block con (InnerBlocks),
 // WordPress tự truyền vào khi block dùng render.php + InnerBlocks.
 $max_width = max(10, min(100, (int) ($attributes['maxWidth'] ?? 50)));
+$max_width_tablet = max(10, min(100, (int) ($attributes['maxWidthTablet'] ?? 100)));
+$max_width_mobile = max(10, min(100, (int) ($attributes['maxWidthMobile'] ?? 100)));
 $align = in_array($attributes['contentAlign'] ?? '', ['left', 'center', 'right'], true)
     ? $attributes['contentAlign']
     : 'center';
@@ -25,7 +27,7 @@ if (trim($content) === '') {
 
 $wrapper_attrs = get_block_wrapper_attributes([
     'class' => 'block-container',
-    'style' => 'max-width:' . $max_width . '%;margin:' . $margin_map[$align] . ';',
+    'style' => '--mw-pc:' . $max_width . '%;--mw-tablet:' . $max_width_tablet . '%;--mw-mobile:' . $max_width_mobile . '%;margin:' . $margin_map[$align] . ';',
 ]);
 ?>
 

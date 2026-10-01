@@ -12,7 +12,14 @@ import {
 import { useState } from '@wordpress/element';
 import ServerSideRender from '@wordpress/server-side-render';
 import { useInserterPreview, BlockPreviewMock } from '../../utils/preview';
+import { ResponsiveRangeControl } from '../../utils/inspector-panels';
 import previewImage from './preview.png';
+
+const MAX_WIDTH_KEYS = {
+	pc: 'maxWidth',
+	tablet: 'maxWidthTablet',
+	mobile: 'maxWidthMobile',
+};
 
 export default function Edit( { attributes, setAttributes } ) {
 	const isPreview = useInserterPreview( attributes );
@@ -20,6 +27,8 @@ export default function Edit( { attributes, setAttributes } ) {
 
 	const {
 		maxWidth,
+		maxWidthTablet,
+		maxWidthMobile,
 		contentAlign,
 		sectionTitle,
 		viewAllText,
@@ -71,19 +80,31 @@ export default function Edit( { attributes, setAttributes } ) {
 					title={ __( 'Bố cục', 'laca' ) }
 					initialOpen={ true }
 				>
-					<RangeControl
+					<ResponsiveRangeControl
 						label={ __( 'Kích thước tối đa (%)', 'laca' ) }
 						help={ __(
-							'Áp dụng cho màn hình lớn — tự động full width trên mobile để không quá hẹp.',
+							'Mobile mặc định full width — chỉnh riêng nếu muốn khác.',
 							'laca'
 						) }
-						value={ maxWidth }
 						min={ 10 }
 						max={ 100 }
-						onChange={ ( v ) => setAttributes( { maxWidth: v } ) }
+						valuesByDevice={ {
+							pc: maxWidth,
+							tablet: maxWidthTablet,
+							mobile: maxWidthMobile,
+						} }
+						onChange={ ( device, v ) =>
+							setAttributes( { [ MAX_WIDTH_KEYS[ device ] ]: v } )
+						}
 					/>
+				</PanelBody>
+
+				<PanelBody
+					title={ __( 'Căn lề', 'laca' ) }
+					initialOpen={ true }
+				>
 					<SelectControl
-						label={ __( 'Căn lề khung', 'laca' ) }
+						label={ __( 'Vị trí khung', 'laca' ) }
 						value={ contentAlign }
 						options={ [
 							{ label: __( 'Trái', 'laca' ), value: 'left' },

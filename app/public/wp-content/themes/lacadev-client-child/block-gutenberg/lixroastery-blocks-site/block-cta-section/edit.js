@@ -15,6 +15,7 @@ import {
 import { useEffect } from '@wordpress/element';
 import { useInserterPreview, BlockPreviewMock } from '../../utils/preview';
 import { hexToRgba } from '../../utils/style';
+import { ResponsiveRangeControl } from '../../utils/inspector-panels';
 import previewImage from './preview.png';
 
 // Dùng chung cho cả tiêu đề/mô tả (text-align thật) lẫn nút bấm (vị trí
@@ -33,6 +34,12 @@ const MARGIN_MAP = {
 	left: '0 auto 0 0',
 	center: '0 auto',
 	right: '0 0 0 auto',
+};
+
+const MAX_WIDTH_KEYS = {
+	pc: 'maxWidth',
+	tablet: 'maxWidthTablet',
+	mobile: 'maxWidthMobile',
 };
 
 export default function Edit( { attributes, setAttributes, clientId } ) {
@@ -63,6 +70,8 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 
 	const {
 		maxWidth,
+		maxWidthTablet,
+		maxWidthMobile,
 		contentAlign,
 		headline,
 		description,
@@ -81,7 +90,9 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 	} = attributes;
 
 	const maxWidthStyle = {
-		maxWidth: `${ maxWidth }%`,
+		'--mw-pc': `${ maxWidth }%`,
+		'--mw-tablet': `${ maxWidthTablet }%`,
+		'--mw-mobile': `${ maxWidthMobile }%`,
 		margin: MARGIN_MAP[ contentAlign ] || MARGIN_MAP.center,
 	};
 
@@ -126,19 +137,31 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 					title={ __( 'Bố cục', 'laca' ) }
 					initialOpen={ true }
 				>
-					<RangeControl
+					<ResponsiveRangeControl
 						label={ __( 'Kích thước tối đa (%)', 'laca' ) }
 						help={ __(
-							'Áp dụng cho màn hình lớn — tự động full width trên mobile để không quá hẹp.',
+							'Mobile mặc định full width — chỉnh riêng nếu muốn khác.',
 							'laca'
 						) }
-						value={ maxWidth }
 						min={ 10 }
 						max={ 100 }
-						onChange={ ( v ) => setAttributes( { maxWidth: v } ) }
+						valuesByDevice={ {
+							pc: maxWidth,
+							tablet: maxWidthTablet,
+							mobile: maxWidthMobile,
+						} }
+						onChange={ ( device, v ) =>
+							setAttributes( { [ MAX_WIDTH_KEYS[ device ] ]: v } )
+						}
 					/>
+				</PanelBody>
+
+				<PanelBody
+					title={ __( 'Căn lề', 'laca' ) }
+					initialOpen={ true }
+				>
 					<SelectControl
-						label={ __( 'Căn lề khung', 'laca' ) }
+						label={ __( 'Vị trí khung', 'laca' ) }
 						value={ contentAlign }
 						options={ [
 							{ label: __( 'Trái', 'laca' ), value: 'left' },
@@ -149,12 +172,6 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 							setAttributes( { contentAlign: v } )
 						}
 					/>
-				</PanelBody>
-
-				<PanelBody
-					title={ __( 'Căn lề', 'laca' ) }
-					initialOpen={ true }
-				>
 					<SelectControl
 						label={ __( 'Căn tiêu đề', 'laca' ) }
 						value={ headlineAlign }

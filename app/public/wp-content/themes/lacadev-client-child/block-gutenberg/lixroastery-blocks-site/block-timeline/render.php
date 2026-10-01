@@ -11,6 +11,8 @@ if (!defined('ABSPATH')) {
 // độ rộng NỘI DUNG bên trong điều chỉnh riêng qua maxWidth (%) + contentAlign,
 // giống hệt block Container (xem block-container/render.php).
 $max_width = max(10, min(100, (int) ($attributes['maxWidth'] ?? 50)));
+$max_width_tablet = max(10, min(100, (int) ($attributes['maxWidthTablet'] ?? 100)));
+$max_width_mobile = max(10, min(100, (int) ($attributes['maxWidthMobile'] ?? 100)));
 $content_align = in_array($attributes['contentAlign'] ?? '', ['left', 'center', 'right'], true)
     ? $attributes['contentAlign']
     : 'center';
@@ -26,7 +28,7 @@ $wrapper_attrs = get_block_wrapper_attributes(['class' => 'block-timeline contai
 $prev_year     = null;
 ?>
 <section <?php echo $wrapper_attrs; ?>>
-    <div class="block-timeline__maxwidth" style="max-width: <?php echo esc_attr($max_width); ?>%; margin: <?php echo esc_attr($margin_map[$content_align]); ?>;">
+    <div class="block-timeline__maxwidth" style="--mw-pc:<?php echo esc_attr($max_width); ?>%;--mw-tablet:<?php echo esc_attr($max_width_tablet); ?>%;--mw-mobile:<?php echo esc_attr($max_width_mobile); ?>%;margin:<?php echo esc_attr($margin_map[$content_align]); ?>;">
     <div class="block-timeline__list">
         <?php foreach ($items as $item) :
             $year    = wp_kses_post($item['year'] ?? '');

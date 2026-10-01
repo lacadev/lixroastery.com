@@ -16,6 +16,7 @@ import {
 	ColorPicker,
 } from '@wordpress/components';
 import { useInserterPreview, BlockPreviewMock } from '../../utils/preview';
+import { ResponsiveRangeControl } from '../../utils/inspector-panels';
 import previewImage from './preview.png';
 
 // Section ngoài LUÔN container-fluid — độ rộng lưới thẻ điều chỉnh riêng qua
@@ -24,6 +25,12 @@ const MARGIN_MAP = {
 	left: '0 auto 0 0',
 	center: '0 auto',
 	right: '0 0 0 auto',
+};
+
+const MAX_WIDTH_KEYS = {
+	pc: 'maxWidth',
+	tablet: 'maxWidthTablet',
+	mobile: 'maxWidthMobile',
 };
 
 function ImagePicker( { imageUrl, imageId, onSelect } ) {
@@ -70,6 +77,8 @@ export default function Edit( { attributes, setAttributes } ) {
 
 	const {
 		maxWidth,
+		maxWidthTablet,
+		maxWidthMobile,
 		contentAlign,
 		columns,
 		layoutMode,
@@ -79,7 +88,9 @@ export default function Edit( { attributes, setAttributes } ) {
 	} = attributes;
 	const isCheckerboard = layoutMode === 'checkerboard';
 	const maxWidthStyle = {
-		maxWidth: `${ maxWidth }%`,
+		'--mw-pc': `${ maxWidth }%`,
+		'--mw-tablet': `${ maxWidthTablet }%`,
+		'--mw-mobile': `${ maxWidthMobile }%`,
 		margin: MARGIN_MAP[ contentAlign ] || MARGIN_MAP.center,
 	};
 
@@ -128,27 +139,21 @@ export default function Edit( { attributes, setAttributes } ) {
 					title={ __( 'Bố cục', 'laca' ) }
 					initialOpen={ true }
 				>
-					<RangeControl
+					<ResponsiveRangeControl
 						label={ __( 'Kích thước tối đa (%)', 'laca' ) }
 						help={ __(
-							'Áp dụng cho màn hình lớn — tự động full width trên mobile để không quá hẹp.',
+							'Mobile mặc định full width — chỉnh riêng nếu muốn khác.',
 							'laca'
 						) }
-						value={ maxWidth }
 						min={ 10 }
 						max={ 100 }
-						onChange={ ( v ) => setAttributes( { maxWidth: v } ) }
-					/>
-					<SelectControl
-						label={ __( 'Căn lề khung', 'laca' ) }
-						value={ contentAlign }
-						options={ [
-							{ label: __( 'Trái', 'laca' ), value: 'left' },
-							{ label: __( 'Giữa', 'laca' ), value: 'center' },
-							{ label: __( 'Phải', 'laca' ), value: 'right' },
-						] }
-						onChange={ ( v ) =>
-							setAttributes( { contentAlign: v } )
+						valuesByDevice={ {
+							pc: maxWidth,
+							tablet: maxWidthTablet,
+							mobile: maxWidthMobile,
+						} }
+						onChange={ ( device, v ) =>
+							setAttributes( { [ MAX_WIDTH_KEYS[ device ] ]: v } )
 						}
 					/>
 					<RadioControl
@@ -206,22 +211,23 @@ export default function Edit( { attributes, setAttributes } ) {
 							/>
 						</>
 					) }
-					<p
-						style={ {
-							fontSize: '0.8rem',
-							fontWeight: 600,
-							marginBottom: '0.5rem',
-						} }
-					>
-						{ __(
-							'Màu nền placeholder (khi thẻ chưa có ảnh)',
-							'laca'
-						) }
-					</p>
-					<ColorPicker
-						color={ bgColor }
-						onChange={ ( v ) => setAttributes( { bgColor: v } ) }
-						enableAlpha={ false }
+				</PanelBody>
+
+				<PanelBody
+					title={ __( 'Căn lề', 'laca' ) }
+					initialOpen={ true }
+				>
+					<SelectControl
+						label={ __( 'Vị trí khung', 'laca' ) }
+						value={ contentAlign }
+						options={ [
+							{ label: __( 'Trái', 'laca' ), value: 'left' },
+							{ label: __( 'Giữa', 'laca' ), value: 'center' },
+							{ label: __( 'Phải', 'laca' ), value: 'right' },
+						] }
+						onChange={ ( v ) =>
+							setAttributes( { contentAlign: v } )
+						}
 					/>
 				</PanelBody>
 
@@ -292,6 +298,29 @@ export default function Edit( { attributes, setAttributes } ) {
 					<Button variant="primary" onClick={ addItem }>
 						{ __( '+ Thêm thẻ', 'laca' ) }
 					</Button>
+				</PanelBody>
+
+				<PanelBody
+					title={ __( 'Giao diện', 'laca' ) }
+					initialOpen={ false }
+				>
+					<p
+						style={ {
+							fontSize: '0.8rem',
+							fontWeight: 600,
+							marginBottom: '0.5rem',
+						} }
+					>
+						{ __(
+							'Màu nền placeholder (khi thẻ chưa có ảnh)',
+							'laca'
+						) }
+					</p>
+					<ColorPicker
+						color={ bgColor }
+						onChange={ ( v ) => setAttributes( { bgColor: v } ) }
+						enableAlpha={ false }
+					/>
 				</PanelBody>
 			</InspectorControls>
 

@@ -5,9 +5,14 @@
 .block-stats-info {
 
     &__maxwidth {
+        max-width: var(--mw-pc, 50%);
+
+        @include maxWidth($md) {
+            max-width: var(--mw-tablet, 100%);
+        }
+
         @include maxWidth($sm) {
-            max-width: 100% !important;
-            margin: 0 !important;
+            max-width: var(--mw-mobile, 100%);
         }
     }
 
@@ -34,13 +39,25 @@
         }
     }
 
+    // Căn lề đọc biến CSS set theo PC/Tablet/Mobile ở render.php/edit.js
+    // (--stats-title-align-*) — Tablet = từ $md trở xuống, Mobile = từ $sm
+    // trở xuống, khớp đúng breakpoint mà __grid tự đổi số cột bên trên.
     &__number {
         font-family: $subFont;
         font-weight: $bold;
         line-height: 1;
         margin-bottom: rem(20);
+        text-align: var(--stats-title-align-pc, left);
 
         @include resFont(rem(30), rem(48));
+
+        @include maxWidth($md) {
+            text-align: var(--stats-title-align-tablet, left);
+        }
+
+        @include maxWidth($sm) {
+            text-align: var(--stats-title-align-mobile, left);
+        }
     }
 
     &__label {
@@ -48,15 +65,34 @@
         font-weight: $medium;
         text-transform: uppercase;
         margin-bottom: rem(20);
+        text-align: var(--stats-title-align-pc, left);
 
         @include resFont(rem(14), rem(16));
+
+        @include maxWidth($md) {
+            text-align: var(--stats-title-align-tablet, left);
+        }
+
+        @include maxWidth($sm) {
+            text-align: var(--stats-title-align-mobile, left);
+        }
     }
 
+    // Căn lề mô tả — biến riêng (--stats-desc-align-*), độc lập với tiêu đề.
     &__desc {
         margin: 0;
         font-weight: $regular;
         line-height: 1.2;
+        text-align: var(--stats-desc-align-pc, left);
 
         @include resFont(rem(14), rem(16));
+
+        @include maxWidth($md) {
+            text-align: var(--stats-desc-align-tablet, left);
+        }
+
+        @include maxWidth($sm) {
+            text-align: var(--stats-desc-align-mobile, left);
+        }
     }
 }

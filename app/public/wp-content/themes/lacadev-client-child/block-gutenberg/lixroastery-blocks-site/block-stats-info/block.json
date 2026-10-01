@@ -17,6 +17,14 @@
             "type": "number",
             "default": 50
         },
+        "maxWidthTablet": {
+            "type": "number",
+            "default": 100
+        },
+        "maxWidthMobile": {
+            "type": "number",
+            "default": 100
+        },
         "contentAlign": {
             "type": "string",
             "default": "center"
@@ -38,11 +46,19 @@
             "type": "string",
             "default": "left"
         },
+        "titleAlignTablet": {
+            "type": "string",
+            "default": "left"
+        },
         "titleAlignMobile": {
             "type": "string",
             "default": "left"
         },
         "descriptionAlign": {
+            "type": "string",
+            "default": "left"
+        },
+        "descriptionAlignTablet": {
             "type": "string",
             "default": "left"
         },

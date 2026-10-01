@@ -30,6 +30,122 @@ const DEVICE_LABELS = {
 	mobile: __( 'Mobile', 'laca' ),
 };
 
+// Tab PC/Tablet/Mobile cho các control phẳng kiểu "mỗi màn 1 attribute riêng"
+// (vd titleAlign/titleAlignTablet/titleAlignMobile, maxWidth/maxWidthTablet/
+// maxWidthMobile) — khác với ResponsiveSpacingControls ở trên (dùng 1 object
+// spacing lồng theo device). BẮT BUỘC dùng 1 trong 2 component bên dưới
+// (ResponsiveSelectControl/ResponsiveRangeControl) cho MỌI control có giá trị
+// khác nhau theo màn hình — không tự vẽ ButtonGroup riêng mỗi nơi, không tự
+// hiện nhiều control xếp dọc theo kiểu "— PC"/"— Mobile" (xem mục 2.8 skill
+// lacadev-theme).
+const RESPONSIVE_DEVICE_TABS = [
+	{ key: 'pc', label: __( 'PC', 'laca' ) },
+	{ key: 'tablet', label: __( 'Tablet', 'laca' ) },
+	{ key: 'mobile', label: __( 'Mobile', 'laca' ) },
+];
+
+/**
+ * SelectControl có tab chuyển PC/Tablet/Mobile — mỗi tab đọc/ghi 1 attribute
+ * phẳng riêng (truyền vào qua `valuesByDevice`), KHÔNG lồng object. Dùng cho
+ * mọi control "mỗi màn hình 1 giá trị khác nhau" dạng chọn (căn lề, kiểu
+ * hiển thị...) theo đúng quy ước mục 2.8 skill lacadev-theme.
+ *
+ * @param {Object}   props                Component props.
+ * @param {string}   props.label          Nhãn hiển thị phía trên tab.
+ * @param {string}   [props.help]         Help text — chỉ hiện ở tab PC để đỡ lặp.
+ * @param {Array}    props.options        Options cho SelectControl.
+ * @param {Object}   props.valuesByDevice Giá trị hiện tại { pc, tablet, mobile }.
+ * @param {Function} props.onChange       ( device, value ) => void.
+ * @return {JSX.Element} UI tab + SelectControl.
+ */
+export function ResponsiveSelectControl( {
+	label,
+	help,
+	options,
+	valuesByDevice,
+	onChange,
+} ) {
+	const [ activeDevice, setActiveDevice ] = useState( 'pc' );
+
+	return (
+		<div style={ { marginBottom: '16px' } }>
+			<p style={ { marginBottom: '6px', fontWeight: 600 } }>{ label }</p>
+			<ButtonGroup style={ { marginBottom: '8px' } }>
+				{ RESPONSIVE_DEVICE_TABS.map( ( tab ) => (
+					<Button
+						key={ tab.key }
+						isPrimary={ activeDevice === tab.key }
+						isSecondary={ activeDevice !== tab.key }
+						onClick={ () => setActiveDevice( tab.key ) }
+					>
+						{ tab.label }
+					</Button>
+				) ) }
+			</ButtonGroup>
+			<SelectControl
+				help={ activeDevice === 'pc' ? help : undefined }
+				value={ valuesByDevice[ activeDevice ] }
+				options={ options }
+				onChange={ ( value ) => onChange( activeDevice, value ) }
+			/>
+		</div>
+	);
+}
+
+/**
+ * RangeControl có tab chuyển PC/Tablet/Mobile — cùng nguyên tắc với
+ * `ResponsiveSelectControl` nhưng cho control dạng số (kích thước, khoảng
+ * cách, cỡ chữ...). Mỗi tab đọc/ghi 1 attribute phẳng riêng qua
+ * `valuesByDevice`.
+ *
+ * @param {Object}   props                Component props.
+ * @param {string}   props.label          Nhãn hiển thị phía trên tab.
+ * @param {string}   [props.help]         Help text — chỉ hiện ở tab PC để đỡ lặp.
+ * @param {number}   [props.min]          Giá trị nhỏ nhất.
+ * @param {number}   [props.max]          Giá trị lớn nhất.
+ * @param {number}   [props.step]         Bước nhảy.
+ * @param {Object}   props.valuesByDevice Giá trị hiện tại { pc, tablet, mobile }.
+ * @param {Function} props.onChange       ( device, value ) => void.
+ * @return {JSX.Element} UI tab + RangeControl.
+ */
+export function ResponsiveRangeControl( {
+	label,
+	help,
+	min = 0,
+	max = 100,
+	step = 1,
+	valuesByDevice,
+	onChange,
+} ) {
+	const [ activeDevice, setActiveDevice ] = useState( 'pc' );
+
+	return (
+		<div style={ { marginBottom: '16px' } }>
+			<p style={ { marginBottom: '6px', fontWeight: 600 } }>{ label }</p>
+			<ButtonGroup style={ { marginBottom: '8px' } }>
+				{ RESPONSIVE_DEVICE_TABS.map( ( tab ) => (
+					<Button
+						key={ tab.key }
+						isPrimary={ activeDevice === tab.key }
+						isSecondary={ activeDevice !== tab.key }
+						onClick={ () => setActiveDevice( tab.key ) }
+					>
+						{ tab.label }
+					</Button>
+				) ) }
+			</ButtonGroup>
+			<RangeControl
+				help={ activeDevice === 'pc' ? help : undefined }
+				value={ valuesByDevice[ activeDevice ] }
+				min={ min }
+				max={ max }
+				step={ step }
+				onChange={ ( value ) => onChange( activeDevice, value ) }
+			/>
+		</div>
+	);
+}
+
 function createEmptySpacing() {
 	return {
 		desktop: {

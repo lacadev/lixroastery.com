@@ -11,6 +11,8 @@ if (!defined('ABSPATH')) {
 // độ rộng NỘI DUNG bên trong điều chỉnh riêng qua maxWidth (%) + contentAlign,
 // giống hệt block Container (xem block-container/render.php).
 $max_width = max(10, min(100, (int) ($attributes['maxWidth'] ?? 50)));
+$max_width_tablet = max(10, min(100, (int) ($attributes['maxWidthTablet'] ?? 100)));
+$max_width_mobile = max(10, min(100, (int) ($attributes['maxWidthMobile'] ?? 100)));
 $content_align = in_array($attributes['contentAlign'] ?? '', ['left', 'center', 'right'], true)
     ? $attributes['contentAlign']
     : 'center';
@@ -42,7 +44,7 @@ $scoped_selector = '#' . $unique_id;
     <?php echo esc_html($scoped_selector); ?> .block-toggle__answer { max-height: 0; overflow: hidden; transition: max-height .35s ease; }
 </style>
 <section <?php echo $wrapper_attrs; ?>>
-    <div class="block-toggle__maxwidth" style="max-width: <?php echo esc_attr($max_width); ?>%; margin: <?php echo esc_attr($margin_map[$content_align]); ?>;">
+    <div class="block-toggle__maxwidth" style="--mw-pc:<?php echo esc_attr($max_width); ?>%;--mw-tablet:<?php echo esc_attr($max_width_tablet); ?>%;--mw-mobile:<?php echo esc_attr($max_width_mobile); ?>%;margin:<?php echo esc_attr($margin_map[$content_align]); ?>;">
         <?php if ($title) : ?>
             <h2 class="block-toggle__title"><?php echo $title; ?></h2>
         <?php endif; ?>

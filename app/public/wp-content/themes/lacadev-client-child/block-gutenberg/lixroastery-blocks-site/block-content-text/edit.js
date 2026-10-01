@@ -4,13 +4,9 @@ import {
 	InspectorControls,
 	RichText,
 } from '@wordpress/block-editor';
-import {
-	PanelBody,
-	RadioControl,
-	RangeControl,
-	SelectControl,
-} from '@wordpress/components';
+import { PanelBody, RadioControl, SelectControl } from '@wordpress/components';
 import { useInserterPreview, BlockPreviewMock } from '../../utils/preview';
+import { ResponsiveRangeControl } from '../../utils/inspector-panels';
 
 // Section ngoài LUÔN container-fluid — độ rộng CỘT nội dung điều chỉnh riêng
 // qua maxWidth (%) + contentAlign (giống hệt block Container), KHÁC với
@@ -21,14 +17,30 @@ const MARGIN_MAP = {
 	right: '0 0 0 auto',
 };
 
+const MAX_WIDTH_KEYS = {
+	pc: 'maxWidth',
+	tablet: 'maxWidthTablet',
+	mobile: 'maxWidthMobile',
+};
+
 export default function Edit( { attributes, setAttributes } ) {
 	const isPreview = useInserterPreview( attributes );
 	const blockProps = useBlockProps( { className: 'container-fluid' } );
 
-	const { maxWidth, contentAlign, variant, textAlign, content } = attributes;
+	const {
+		maxWidth,
+		maxWidthTablet,
+		maxWidthMobile,
+		contentAlign,
+		variant,
+		textAlign,
+		content,
+	} = attributes;
 
 	const maxWidthStyle = {
-		maxWidth: `${ maxWidth }%`,
+		'--mw-pc': `${ maxWidth }%`,
+		'--mw-tablet': `${ maxWidthTablet }%`,
+		'--mw-mobile': `${ maxWidthMobile }%`,
 		margin: MARGIN_MAP[ contentAlign ] || MARGIN_MAP.center,
 	};
 
@@ -49,19 +61,31 @@ export default function Edit( { attributes, setAttributes } ) {
 					title={ __( 'Bố cục', 'laca' ) }
 					initialOpen={ true }
 				>
-					<RangeControl
+					<ResponsiveRangeControl
 						label={ __( 'Kích thước tối đa (%)', 'laca' ) }
 						help={ __(
-							'Áp dụng cho màn hình lớn — tự động full width trên mobile để không quá hẹp.',
+							'Mobile mặc định full width — chỉnh riêng nếu muốn khác.',
 							'laca'
 						) }
-						value={ maxWidth }
 						min={ 10 }
 						max={ 100 }
-						onChange={ ( v ) => setAttributes( { maxWidth: v } ) }
+						valuesByDevice={ {
+							pc: maxWidth,
+							tablet: maxWidthTablet,
+							mobile: maxWidthMobile,
+						} }
+						onChange={ ( device, v ) =>
+							setAttributes( { [ MAX_WIDTH_KEYS[ device ] ]: v } )
+						}
 					/>
+				</PanelBody>
+
+				<PanelBody
+					title={ __( 'Căn lề', 'laca' ) }
+					initialOpen={ true }
+				>
 					<SelectControl
-						label={ __( 'Căn lề khung', 'laca' ) }
+						label={ __( 'Vị trí khung', 'laca' ) }
 						value={ contentAlign }
 						options={ [
 							{ label: __( 'Trái', 'laca' ), value: 'left' },
@@ -71,6 +95,20 @@ export default function Edit( { attributes, setAttributes } ) {
 						onChange={ ( v ) =>
 							setAttributes( { contentAlign: v } )
 						}
+					/>
+					<RadioControl
+						label={ __( 'Căn chữ bên trong', 'laca' ) }
+						selected={ textAlign }
+						options={ [
+							{ label: __( 'Trái', 'laca' ), value: 'left' },
+							{ label: __( 'Giữa', 'laca' ), value: 'center' },
+							{ label: __( 'Phải', 'laca' ), value: 'right' },
+							{
+								label: __( 'Đều hai bên (justify)', 'laca' ),
+								value: 'justify',
+							},
+						] }
+						onChange={ ( v ) => setAttributes( { textAlign: v } ) }
 					/>
 				</PanelBody>
 
@@ -92,20 +130,6 @@ export default function Edit( { attributes, setAttributes } ) {
 							},
 						] }
 						onChange={ ( v ) => setAttributes( { variant: v } ) }
-					/>
-					<RadioControl
-						label={ __( 'Căn lề', 'laca' ) }
-						selected={ textAlign }
-						options={ [
-							{ label: __( 'Trái', 'laca' ), value: 'left' },
-							{ label: __( 'Giữa', 'laca' ), value: 'center' },
-							{ label: __( 'Phải', 'laca' ), value: 'right' },
-							{
-								label: __( 'Đều hai bên (justify)', 'laca' ),
-								value: 'justify',
-							},
-						] }
-						onChange={ ( v ) => setAttributes( { textAlign: v } ) }
 					/>
 				</PanelBody>
 			</InspectorControls>
