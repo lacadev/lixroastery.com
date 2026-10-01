@@ -399,26 +399,51 @@ class AdminSettings
 	}
 
 	/**
-	 * Slug các trang Laca Admin mà Super User (extra, thêm qua UI) được phép
-	 * vào — lọc qua filter để dễ tuỳ biến riêng từng site mà không cần sửa
-	 * trực tiếp file này.
+	 * Slug các trang trong Laca Admin mà Super User (extra, thêm qua UI)
+	 * KHÔNG được vào — 2 nhóm "Bảo mật & đăng nhập" và "Kết nối LacaDev"
+	 * (xem LacaAdminMenuOrganizer::GROUPS). 'laca-security' chặn luôn TẤT
+	 * CẢ tab con của nó (Kiểm tra bảo mật/Giám sát file/Quét mã độc/User
+	 * ẩn/URL đăng nhập/2FA TOTP/Super User) vì các tab này chỉ là
+	 * admin.php?page=laca-security&tab=X, không phải slug riêng.
+	 *
+	 * Lọc qua filter để dễ tuỳ biến riêng từng site mà không cần sửa trực
+	 * tiếp file này.
 	 *
 	 * @return string[]
 	 */
-	public static function getExtraSuperUserAllowedSlugs()
+	public static function getExtraSuperUserDeniedLacaSlugs()
 	{
-		return apply_filters('lacadev_extra_super_user_allowed_slugs', [
-			'laca-admin',
-			'laca-management-settings',
-			'laca-email-log',
-			'laca-contact-forms',
+		return apply_filters('lacadev_extra_super_user_denied_laca_slugs', [
+			'laca-security',
+			'laca-recaptcha',
+			'laca-login-socials',
+			'laca-block-sync',
+			'lacadev-block-categories',
+			'laca-tracker',
 		]);
 	}
 
 	/**
-	 * Super User thêm qua UI chỉ được vào đúng các trang trong
-	 * getExtraSuperUserAllowedSlugs() (+ Dashboard/hồ sơ cá nhân) — không
-	 * phải mọi menu như administrator thật.
+	 * pagenow (WP core, không thuộc Laca Admin) mà Super User (extra) KHÔNG
+	 * được vào — Giao diện > Theme (themes.php) và Theme File Editor
+	 * (theme-editor.php). KHÔNG chặn cả menu "Giao diện" (Customize/
+	 * Widgets/Menus vẫn vào được bình thường).
+	 *
+	 * @return string[]
+	 */
+	public static function getExtraSuperUserDeniedPagenow()
+	{
+		return apply_filters('lacadev_extra_super_user_denied_pagenow', [
+			'themes.php',
+			'theme-editor.php',
+		]);
+	}
+
+	/**
+	 * Super User thêm qua UI được vào HẦU HẾT mọi menu như administrator
+	 * thật, CHỈ trừ: Giao diện > Theme, Theme File Editor, và trong Laca
+	 * Admin thì trừ nhóm "Bảo mật & đăng nhập" + "Kết nối LacaDev"
+	 * (getExtraSuperUserDeniedLacaSlugs()/getExtraSuperUserDeniedPagenow()).
 	 *
 	 * Đây là giới hạn ĐIỀU HƯỚNG (ẩn menu + chặn truy cập trực tiếp bằng URL
 	 * vào trang xem), KHÔNG đổi role/capability thật của tài khoản —
@@ -434,7 +459,10 @@ class AdminSettings
 		// add_menu_page()/add_submenu_page() xong (vd createAdminOptions()
 		// đăng ký 'laca-admin' qua carbon_fields_register_fields, bản thân
 		// hook đó cũng add_action('admin_menu') ở priority mặc định) — phải
-		// lọc SAU CÙNG mới chắc chắn còn giữ nguyên.
+		// lọc SAU CÙNG mới chắc chắn còn giữ nguyên. LacaAdminMenuOrganizer
+		// tự đọc lại $submenu['laca-admin'] ở priority PHP_INT_MAX (sau khi
+		// mình lọc xong) nên "navigation dock" đẹp cũng tự động ẩn đúng theo,
+		// không cần sửa thêm gì ở đó.
 		add_action('admin_menu', [$this, 'filterAdminMenuForExtraSuperUser'], 999);
 	}
 
@@ -452,25 +480,15 @@ class AdminSettings
 
 		global $pagenow;
 
-		$always_allowed_pagenow = [
-			'admin-ajax.php',
-			'admin-post.php',
-			'async-upload.php',
-			'options.php',
-			'index.php',
-			'profile.php',
-		];
-		if (in_array($pagenow, $always_allowed_pagenow, true)) {
-			return;
+		if (in_array($pagenow, self::getExtraSuperUserDeniedPagenow(), true)) {
+			wp_safe_redirect(admin_url('admin.php?page=laca-admin'));
+			exit;
 		}
 
-		$allowed_slugs = self::getExtraSuperUserAllowedSlugs();
-		if ($pagenow === 'admin.php' && isset($_GET['page']) && in_array($_GET['page'], $allowed_slugs, true)) {
-			return;
+		if ($pagenow === 'admin.php' && isset($_GET['page']) && in_array($_GET['page'], self::getExtraSuperUserDeniedLacaSlugs(), true)) {
+			wp_safe_redirect(admin_url('admin.php?page=laca-admin'));
+			exit;
 		}
-
-		wp_safe_redirect(admin_url('admin.php?page=laca-admin'));
-		exit;
 	}
 
 	/**
@@ -482,25 +500,30 @@ class AdminSettings
 			return;
 		}
 
-		global $menu, $submenu;
+		global $submenu;
 
-		$allowed_slugs = self::getExtraSuperUserAllowedSlugs();
+		$denied_laca_slugs = self::getExtraSuperUserDeniedLacaSlugs();
+		$denied_theme_slugs = self::getExtraSuperUserDeniedPagenow();
 
-		if (is_array($menu)) {
-			foreach ($menu as $key => $menuItem) {
-				$slug = $menuItem[2] ?? '';
-				if ($slug === 'index.php' || in_array($slug, $allowed_slugs, true)) {
-					continue;
-				}
-				unset($menu[$key]);
-			}
-		}
-
+		// Chỉ gỡ ĐÚNG mục con bị cấm — KHÔNG đụng vào $menu (top-level), vì
+		// Dashboard/Posts/Media/Pages/Woo/Users/Settings/Appearance/Journal/
+		// Partnership/Glossary... và cả "Laca Admin" đều phải giữ nguyên.
 		if (isset($submenu['laca-admin']) && is_array($submenu['laca-admin'])) {
 			foreach ($submenu['laca-admin'] as $key => $subItem) {
 				$slug = $subItem[2] ?? '';
-				if (!in_array($slug, $allowed_slugs, true)) {
+				if (in_array($slug, $denied_laca_slugs, true)) {
 					unset($submenu['laca-admin'][$key]);
+				}
+			}
+		}
+
+		// Giao diện > Theme + Theme File Editor — vẫn giữ Customize/Widgets/
+		// Menus (các mục khác trong $submenu['themes.php']).
+		if (isset($submenu['themes.php']) && is_array($submenu['themes.php'])) {
+			foreach ($submenu['themes.php'] as $key => $subItem) {
+				$slug = $subItem[2] ?? '';
+				if (in_array($slug, $denied_theme_slugs, true)) {
+					unset($submenu['themes.php'][$key]);
 				}
 			}
 		}

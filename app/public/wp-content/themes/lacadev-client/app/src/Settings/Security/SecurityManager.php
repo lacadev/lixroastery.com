@@ -301,17 +301,27 @@ class SecurityManager
         <p>Super User được ẩn khỏi danh sách Người dùng đối với người khác, và không bị áp các giới hạn quản trị (chế độ bảo trì, ẩn menu, khoá cập nhật...) mà site áp dụng cho user thường.
            Tài khoản mặc định <code><?php echo esc_html(SuperUserGuard::PROTECTED_LOGIN); ?></code> luôn là Super User —
            không Super User nào khác có thể xoá hoặc đổi quyền (role) của tài khoản này.</p>
-        <table class="wp-list-table widefat fixed striped" style="max-width:800px;">
-            <thead><tr><th>User</th><th>Email</th><th>Vai trò</th><th>Super User?</th><th>Hành động</th></tr></thead>
+        <table class="wp-list-table widefat fixed striped" style="max-width:900px;">
+            <thead><tr><th>User</th><th>Email</th><th>Vai trò</th>
+                <th title="Kiểm tra trực tiếp user_can($user, 'manage_options') — khác với cột Vai trò (chỉ đọc TÊN role, không chắc role đó còn thực sự giữ quyền manage_options hay đã bị tước bởi nguyên nhân khác).">manage_options?</th>
+                <th>Super User?</th><th>Hành động</th></tr></thead>
             <tbody>
             <?php foreach ($users as $u):
-                $isProtected = SuperUserGuard::isProtected($u->ID);
-                $isSuper     = in_array($u->user_login, $superLogins, true);
+                $isProtected    = SuperUserGuard::isProtected($u->ID);
+                $isSuper        = in_array($u->user_login, $superLogins, true);
+                $hasManageOptions = user_can($u, 'manage_options');
             ?>
                 <tr>
                     <td><strong><?php echo esc_html($u->user_login); ?></strong></td>
                     <td><?php echo esc_html($u->user_email); ?></td>
                     <td><span style="color:#666;"><?php echo esc_html(implode(', ', $u->roles)); ?></span></td>
+                    <td>
+                        <?php if ($hasManageOptions): ?>
+                            <span style="color:#16a34a;">✓ Có</span>
+                        <?php else: ?>
+                            <span style="color:#dc2626;font-weight:600;">✕ Không</span>
+                        <?php endif; ?>
+                    </td>
                     <td>
                         <?php if ($isSuper): ?>
                             <span style="color:#7c3aed;font-weight:600;">👑 Super User</span>
