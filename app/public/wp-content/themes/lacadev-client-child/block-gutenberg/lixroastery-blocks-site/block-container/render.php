@@ -29,7 +29,7 @@ $wrapper_attrs = get_block_wrapper_attributes([
 ]);
 ?>
 
-<section class="container">
+<section class="container-fluid">
     <div <?php echo $wrapper_attrs; ?>>
         <?php echo $content; ?>
     </div>
