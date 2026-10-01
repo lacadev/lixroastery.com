@@ -4,10 +4,10 @@
 
 
 body:not(.home) main#main_content .block-top-hero {
-    margin-top: -rem(90);
+    margin-top: rem(-90);
 
     @include maxWidth($md) {
-        margin-top: -rem(30);
+        margin-top: rem(-30);
     }
 }
 
