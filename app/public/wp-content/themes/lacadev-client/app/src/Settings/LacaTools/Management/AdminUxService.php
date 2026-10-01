@@ -129,11 +129,19 @@ class AdminUxService
 
     /**
      * Simplifies the admin for non-developer roles (hides dev-only menus).
+     *
+     * Super User (cả login cố định trong code lẫn thêm qua UI Bảo mật →
+     * Super User, xem App\Settings\AdminSettings::getSuperUserLogins())
+     * được BỎ QUA bước đơn giản hoá này — họ cần thấy Laca Admin/Settings/
+     * Tools/Plugins để làm việc (quyền truy cập chi tiết hơn nữa, vd Super
+     * User "extra" không vào được 1 số trang con, đã được giới hạn riêng ở
+     * App\Settings\AdminSettings::filterAdminMenuForExtraSuperUser()).
      */
     private function simplifyMerchantAdmin(): void
     {
         add_action('admin_head', function () {
-            if (current_user_can('manage_options') && !in_array(wp_get_current_user()->user_login, ['lacadev'])) {
+            $superLogins = \App\Settings\AdminSettings::getSuperUserLogins();
+            if (current_user_can('manage_options') && !in_array(wp_get_current_user()->user_login, $superLogins, true)) {
                 echo '<style>
                     #toplevel_page_laca-admin { display: none !important; }
                     #menu-settings, #menu-tools, #menu-plugins { display: none !important; }

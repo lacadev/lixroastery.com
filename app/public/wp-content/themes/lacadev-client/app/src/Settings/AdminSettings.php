@@ -16,11 +16,6 @@ class AdminSettings
 	{
 		$this->currentUser = wp_get_current_user();
 
-		// DEBUG TẠM THỜI — xoá sau khi điều tra xong lỗi Super User không
-		// thấy menu Laca Admin/Plugins/Tools/Settings. Chỉ hiện khi có
-		// ?laca_debug_su=1 trên URL, không ảnh hưởng ai khác.
-		add_action('admin_notices', [$this, 'renderSuperUserDiagnostic']);
-
 		// Luôn luôn đăng ký các options (Carbon Fields containers)
 		// để front-end có thể đọc được bằng carbon_get_theme_option(),
 		// sau đó mới áp dụng các giới hạn hiển thị cho non-super user.
@@ -359,56 +354,6 @@ class AdminSettings
 	 *
 	 * @return string[]
 	 */
-	/**
-	 * DEBUG TẠM THỜI — in ra ngay trên trang admin_notices (đúng request của
-	 * chính user đang xem, không phải bảng tổng hợp do lacadev xem) để biết
-	 * CHÍNH XÁC capability/super-user/menu thực tế trong phiên đăng nhập
-	 * thật của họ. Chỉ hiện khi có ?laca_debug_su=1. Xoá hàm này + dòng
-	 * add_action tương ứng trong __construct() sau khi điều tra xong.
-	 */
-	public function renderSuperUserDiagnostic()
-	{
-		if (!isset($_GET['laca_debug_su'])) {
-			return;
-		}
-
-		$user        = wp_get_current_user();
-		$superLogins = self::getSuperUserLogins();
-		$extraLogins = get_option('laca_extra_super_user_logins', []);
-
-		global $menu;
-		$topSlugs = [];
-		foreach ((array) $menu as $menuItem) {
-			$topSlugs[] = ($menuItem[0] ?? '') . ' => ' . ($menuItem[2] ?? '');
-		}
-
-		global $submenu;
-		$lacaAdminSub = [];
-		if (isset($submenu['laca-admin']) && is_array($submenu['laca-admin'])) {
-			foreach ($submenu['laca-admin'] as $subItem) {
-				$lacaAdminSub[] = ($subItem[0] ?? '') . ' => ' . ($subItem[2] ?? '');
-			}
-		}
-
-		echo '<div class="notice notice-info"><pre style="white-space:pre-wrap;font-size:12px;line-height:1.6;">';
-		echo esc_html('=== LACA SUPER USER DEBUG (xoá sau khi điều tra xong) ===') . "\n\n";
-		echo esc_html('user_id: ' . $user->ID) . "\n";
-		echo esc_html('user_login: ' . $user->user_login) . "\n";
-		echo esc_html('roles: ' . implode(', ', (array) $user->roles)) . "\n\n";
-		echo esc_html('manage_options: ' . (current_user_can('manage_options') ? 'YES' : 'NO')) . "\n";
-		echo esc_html('activate_plugins: ' . (current_user_can('activate_plugins') ? 'YES' : 'NO')) . "\n";
-		echo esc_html('edit_theme_options: ' . (current_user_can('edit_theme_options') ? 'YES' : 'NO')) . "\n";
-		echo esc_html('edit_themes: ' . (current_user_can('edit_themes') ? 'YES' : 'NO')) . "\n\n";
-		echo esc_html('super_logins (merged, apply_filters + option): ' . implode(', ', $superLogins)) . "\n";
-		echo esc_html('extra_logins (raw option laca_extra_super_user_logins): ' . implode(', ', (array) $extraLogins)) . "\n";
-		echo esc_html('is_in_super_logins (user_login so khớp): ' . (in_array($user->user_login, $superLogins, true) ? 'YES' : 'NO')) . "\n\n";
-		echo esc_html('--- $menu top-level (label => slug) ---') . "\n";
-		echo esc_html(implode("\n", $topSlugs)) . "\n\n";
-		echo esc_html('--- $submenu[laca-admin] (label => slug) ---') . "\n";
-		echo esc_html($lacaAdminSub !== [] ? implode("\n", $lacaAdminSub) : '(KHÔNG có / rỗng)') . "\n";
-		echo '</pre></div>';
-	}
-
 	public static function getSuperUserLogins()
 	{
 		$super_logins = apply_filters('lacadev_super_user_logins', ['lacadev']);
