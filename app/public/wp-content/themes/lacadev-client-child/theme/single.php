@@ -14,7 +14,7 @@ $post_id = get_the_ID();
 ?>
 
 <article class="single-post">
-	<div class="container">
+	<div class="container-fluid">
 		<div class="single-post__content">
 			<?php theContent(); ?>
 		</div>

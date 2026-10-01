@@ -31,6 +31,11 @@ class AdminSettings
 			$this->removeUnnecessaryMenus();
 		}
 
+		// Super User thêm qua UI (khác tài khoản dev gốc 'lacadev') chỉ được
+		// vào 1 số trang Laca Admin nhất định — tự kiểm tra isExtraSuperUser()
+		// bên trong nên gọi không điều kiện ở đây là an toàn.
+		$this->restrictExtraSuperUserAccess();
+
 		$this->applyAdminColorVariables();
 		$this->addDashboardContactWidget();
 		$this->removeDefaultWidgets();
@@ -371,6 +376,134 @@ class AdminSettings
 		$is_super = in_array($this->currentUser->user_login, self::getSuperUserLogins(), true);
 
 		return apply_filters('lacadev_is_super_user', $is_super, $this->currentUser);
+	}
+
+	/**
+	 * Super User được thêm qua UI (Bảo mật → Super User, option
+	 * laca_extra_super_user_logins) — KHÔNG tính login mặc định cố định
+	 * trong code (vd 'lacadev', filter lacadev_super_user_logins). Chỉ nhóm
+	 * "extra" này mới bị giới hạn chỉ vào được 1 số trang nhất định
+	 * (xem restrictExtraSuperUserAccess()) — tài khoản dev gốc vẫn full
+	 * quyền như cũ, không ảnh hưởng.
+	 *
+	 * @return bool
+	 */
+	protected function isExtraSuperUser()
+	{
+		$extra_logins = get_option('laca_extra_super_user_logins', []);
+		if (!is_array($extra_logins) || empty($extra_logins)) {
+			return false;
+		}
+
+		return in_array($this->currentUser->user_login, $extra_logins, true);
+	}
+
+	/**
+	 * Slug các trang Laca Admin mà Super User (extra, thêm qua UI) được phép
+	 * vào — lọc qua filter để dễ tuỳ biến riêng từng site mà không cần sửa
+	 * trực tiếp file này.
+	 *
+	 * @return string[]
+	 */
+	public static function getExtraSuperUserAllowedSlugs()
+	{
+		return apply_filters('lacadev_extra_super_user_allowed_slugs', [
+			'laca-admin',
+			'laca-management-settings',
+			'laca-email-log',
+			'laca-contact-forms',
+		]);
+	}
+
+	/**
+	 * Super User thêm qua UI chỉ được vào đúng các trang trong
+	 * getExtraSuperUserAllowedSlugs() (+ Dashboard/hồ sơ cá nhân) — không
+	 * phải mọi menu như administrator thật.
+	 *
+	 * Đây là giới hạn ĐIỀU HƯỚNG (ẩn menu + chặn truy cập trực tiếp bằng URL
+	 * vào trang xem), KHÔNG đổi role/capability thật của tài khoản —
+	 * admin-post.php/admin-ajax.php/options.php (nơi các trang này xử lý
+	 * submit form) vẫn luôn cho qua, vì bản thân handler nào cũng đã tự
+	 * check capability riêng và nhiều tính năng khác dùng chung các endpoint
+	 * này (chặn nhầm sẽ làm hỏng cả những tính năng không liên quan).
+	 */
+	public function restrictExtraSuperUserAccess()
+	{
+		add_action('admin_init', [$this, 'maybeBlockDisallowedAdminPage']);
+		// Priority 999 — chạy SAU khi Carbon Fields/các feature khác đã tự
+		// add_menu_page()/add_submenu_page() xong (vd createAdminOptions()
+		// đăng ký 'laca-admin' qua carbon_fields_register_fields, bản thân
+		// hook đó cũng add_action('admin_menu') ở priority mặc định) — phải
+		// lọc SAU CÙNG mới chắc chắn còn giữ nguyên.
+		add_action('admin_menu', [$this, 'filterAdminMenuForExtraSuperUser'], 999);
+	}
+
+	/**
+	 * Named method (không phải closure ẩn danh) để test được qua Reflection
+	 * mà không cần do_action('admin_init') thật — do_action('admin_init')
+	 * thật sẽ kéo theo toàn bộ hook của plugin khác (WooCommerce...), không
+	 * phù hợp để test cô lập riêng logic này.
+	 */
+	public function maybeBlockDisallowedAdminPage()
+	{
+		if (!$this->isExtraSuperUser()) {
+			return;
+		}
+
+		global $pagenow;
+
+		$always_allowed_pagenow = [
+			'admin-ajax.php',
+			'admin-post.php',
+			'async-upload.php',
+			'options.php',
+			'index.php',
+			'profile.php',
+		];
+		if (in_array($pagenow, $always_allowed_pagenow, true)) {
+			return;
+		}
+
+		$allowed_slugs = self::getExtraSuperUserAllowedSlugs();
+		if ($pagenow === 'admin.php' && isset($_GET['page']) && in_array($_GET['page'], $allowed_slugs, true)) {
+			return;
+		}
+
+		wp_safe_redirect(admin_url('admin.php?page=laca-admin'));
+		exit;
+	}
+
+	/**
+	 * Named method — lý do xem maybeBlockDisallowedAdminPage().
+	 */
+	public function filterAdminMenuForExtraSuperUser()
+	{
+		if (!$this->isExtraSuperUser()) {
+			return;
+		}
+
+		global $menu, $submenu;
+
+		$allowed_slugs = self::getExtraSuperUserAllowedSlugs();
+
+		if (is_array($menu)) {
+			foreach ($menu as $key => $menuItem) {
+				$slug = $menuItem[2] ?? '';
+				if ($slug === 'index.php' || in_array($slug, $allowed_slugs, true)) {
+					continue;
+				}
+				unset($menu[$key]);
+			}
+		}
+
+		if (isset($submenu['laca-admin']) && is_array($submenu['laca-admin'])) {
+			foreach ($submenu['laca-admin'] as $key => $subItem) {
+				$slug = $subItem[2] ?? '';
+				if (!in_array($slug, $allowed_slugs, true)) {
+					unset($submenu['laca-admin'][$key]);
+				}
+			}
+		}
 	}
 
 	public function setupErrorMessage()
