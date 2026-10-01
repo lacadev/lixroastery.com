@@ -13,9 +13,13 @@
         "align": ["wide", "full"]
     },
     "attributes": {
-        "containerType": {
+        "maxWidth": {
+            "type": "number",
+            "default": 50
+        },
+        "contentAlign": {
             "type": "string",
-            "default": "container-fluid"
+            "default": "center"
         },
         "items": {
             "type": "array",

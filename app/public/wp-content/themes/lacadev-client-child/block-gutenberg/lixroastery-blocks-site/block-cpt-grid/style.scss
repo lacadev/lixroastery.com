@@ -3,16 +3,25 @@
 
 .block-cpt-grid {
     // padding-top/bottom riêng (KHÔNG dùng shorthand "padding: Xrem 0") —
-    // containerType (container/container-fluid) gắn thẳng vào section này
-    // thay vì 1 div con riêng, shorthand sẽ zero-out padding-left/right và
-    // có thể đè lên padding ngang của container/container-fluid tùy thứ tự
-    // nạp CSS giữa 2 file style khác nhau.
+    // container-fluid gắn thẳng vào section này, shorthand sẽ zero-out
+    // padding-left/right và có thể đè lên padding ngang của container-fluid
+    // tùy thứ tự nạp CSS giữa 2 file style khác nhau.
     padding-top: 3rem;
     padding-bottom: 3rem;
 
     @include maxWidth($sm) {
         padding-top: 2rem;
         padding-bottom: 2rem;
+    }
+
+    // maxWidth (%) do admin chọn áp dụng cho desktop/tablet — trên mobile
+    // luôn ép về full width bất kể chọn bao nhiêu, !important để thắng
+    // inline style set trực tiếp trên phần tử (xem render.php).
+    &__maxwidth {
+        @include maxWidth($sm) {
+            max-width: 100% !important;
+            margin: 0 !important;
+        }
     }
 
     &__admin-notice {

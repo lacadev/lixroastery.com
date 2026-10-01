@@ -3,7 +3,11 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-$container_type  = ($attributes['containerType'] ?? 'container-fluid') === 'container' ? 'container' : 'container-fluid';
+$max_width       = max(10, min(100, (int) ($attributes['maxWidth'] ?? 50)));
+$content_align   = in_array($attributes['contentAlign'] ?? '', ['left', 'center', 'right'], true)
+    ? $attributes['contentAlign']
+    : 'center';
+$margin_map      = ['left' => '0 auto 0 0', 'center' => '0 auto', 'right' => '0 0 0 auto'];
 $post_type       = sanitize_key($attributes['postType'] ?? 'post');
 $taxonomy        = sanitize_key($attributes['taxonomy'] ?? '');
 $columns         = max(1, min(4, (int) ($attributes['columns'] ?? 3)));
@@ -57,12 +61,12 @@ $config = [
     'maxPages'       => $max_pages,
 ];
 
-// containerType gắn thẳng vào section này (KHÔNG bọc thêm 1 div riêng) —
-// giống class Bootstrap thật (.container/.container-fluid tự là khung
-// ngoài cùng), tránh 1 lớp div thừa không cần thiết.
-$wrapper_attrs = get_block_wrapper_attributes(['class' => 'block-cpt-grid ' . $container_type]);
+// Section ngoài LUÔN container-fluid — độ rộng NỘI DUNG điều chỉnh riêng qua
+// maxWidth (%) + contentAlign, giống hệt block Container.
+$wrapper_attrs = get_block_wrapper_attributes(['class' => 'block-cpt-grid container-fluid']);
 ?>
 <section <?php echo $wrapper_attrs; ?>>
+    <div class="block-cpt-grid__maxwidth" style="max-width: <?php echo esc_attr($max_width); ?>%; margin: <?php echo esc_attr($margin_map[$content_align]); ?>;">
     <div
         class="block-cpt-grid__inner"
         id="<?php echo esc_attr($unique_id); ?>"
@@ -112,5 +116,6 @@ $wrapper_attrs = get_block_wrapper_attributes(['class' => 'block-cpt-grid ' . $c
                 <p class="block-cpt-grid__loading-text"><?php esc_html_e('Đang tải thêm…', 'laca'); ?></p>
             </div>
         <?php endif; ?>
+    </div>
     </div>
 </section>

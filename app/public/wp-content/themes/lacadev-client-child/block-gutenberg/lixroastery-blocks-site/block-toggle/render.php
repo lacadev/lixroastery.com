@@ -6,7 +6,16 @@ if (!defined('ABSPATH')) {
 // title/description/question/answer được nhập trực tiếp trong canvas qua
 // RichText (edit.js) nên đã là HTML an toàn (RichText tự escape nội dung),
 // chỉ cần lọc qua wp_kses_post() trước khi in ra.
-$container_type = ($attributes['containerType'] ?? 'container') === 'container-fluid' ? 'container-fluid' : 'container';
+//
+// Section ngoài LUÔN container-fluid (nền/section full-bleed hết màn hình) —
+// độ rộng NỘI DUNG bên trong điều chỉnh riêng qua maxWidth (%) + contentAlign,
+// giống hệt block Container (xem block-container/render.php).
+$max_width = max(10, min(100, (int) ($attributes['maxWidth'] ?? 50)));
+$content_align = in_array($attributes['contentAlign'] ?? '', ['left', 'center', 'right'], true)
+    ? $attributes['contentAlign']
+    : 'center';
+$margin_map = ['left' => '0 auto 0 0', 'center' => '0 auto', 'right' => '0 0 0 auto'];
+
 $title          = wp_kses_post($attributes['title'] ?? '');
 $description    = wp_kses_post($attributes['description'] ?? '');
 $items          = is_array($attributes['items'] ?? null) ? $attributes['items'] : [];
@@ -19,13 +28,8 @@ if (empty($items)) {
 // giữa nhiều instance của cùng 1 block trên 1 trang (đã gặp ở block-projects-slider).
 $unique_id = wp_unique_id('lix-toggle-');
 
-// containerType gắn thẳng vào section này (KHÔNG bọc thêm 1 div riêng) —
-// giống class Bootstrap thật (.container/.container-fluid tự là khung
-// ngoài cùng), tránh 1 lớp div thừa không cần thiết. "id" (dùng để scope JS
-// + <style> thu gọn câu trả lời bên dưới) chuyển từ div con cũ sang thẳng
-// section này.
 $wrapper_attrs = get_block_wrapper_attributes([
-    'class' => 'block-toggle ' . $container_type,
+    'class' => 'block-toggle container-fluid',
     'id' => $unique_id,
 ]);
 
@@ -38,34 +42,36 @@ $scoped_selector = '#' . $unique_id;
     <?php echo esc_html($scoped_selector); ?> .block-toggle__answer { max-height: 0; overflow: hidden; transition: max-height .35s ease; }
 </style>
 <section <?php echo $wrapper_attrs; ?>>
-    <?php if ($title) : ?>
-        <h2 class="block-toggle__title"><?php echo $title; ?></h2>
-    <?php endif; ?>
-    <?php if ($description) : ?>
-        <p class="block-toggle__description"><?php echo $description; ?></p>
-    <?php endif; ?>
+    <div class="block-toggle__maxwidth" style="max-width: <?php echo esc_attr($max_width); ?>%; margin: <?php echo esc_attr($margin_map[$content_align]); ?>;">
+        <?php if ($title) : ?>
+            <h2 class="block-toggle__title"><?php echo $title; ?></h2>
+        <?php endif; ?>
+        <?php if ($description) : ?>
+            <p class="block-toggle__description"><?php echo $description; ?></p>
+        <?php endif; ?>
 
-    <div class="block-toggle__list">
-        <?php foreach ($items as $item) :
-            $question = wp_kses_post($item['question'] ?? '');
-            $answer   = wp_kses_post($item['answer'] ?? '');
+        <div class="block-toggle__list">
+            <?php foreach ($items as $item) :
+                $question = wp_kses_post($item['question'] ?? '');
+                $answer   = wp_kses_post($item['answer'] ?? '');
 
-            if (!$question && !$answer) {
-                continue;
-            }
-        ?>
-            <div class="block-toggle__item">
-                <button type="button" class="block-toggle__question" aria-expanded="false">
-                    <span><?php echo $question; ?></span>
-                    <span class="block-toggle__icon" aria-hidden="true"></span>
-                </button>
-                <div class="block-toggle__answer">
-                    <?php if ($answer) : ?>
-                        <p><?php echo $answer; ?></p>
-                    <?php endif; ?>
+                if (!$question && !$answer) {
+                    continue;
+                }
+            ?>
+                <div class="block-toggle__item">
+                    <button type="button" class="block-toggle__question" aria-expanded="false">
+                        <span><?php echo $question; ?></span>
+                        <span class="block-toggle__icon" aria-hidden="true"></span>
+                    </button>
+                    <div class="block-toggle__answer">
+                        <?php if ($answer) : ?>
+                            <p><?php echo $answer; ?></p>
+                        <?php endif; ?>
+                    </div>
                 </div>
-            </div>
-        <?php endforeach; ?>
+            <?php endforeach; ?>
+        </div>
     </div>
 </section>
 <?php

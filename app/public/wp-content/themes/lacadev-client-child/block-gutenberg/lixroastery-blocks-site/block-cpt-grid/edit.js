@@ -21,7 +21,8 @@ export default function Edit( { attributes, setAttributes } ) {
 	const blockProps = useBlockProps();
 
 	const {
-		containerType,
+		maxWidth,
+		contentAlign,
 		postType,
 		taxonomy,
 		columns,
@@ -96,14 +97,28 @@ export default function Edit( { attributes, setAttributes } ) {
 				</PanelBody>
 
 				<PanelBody title={ __( 'Bố cục', 'laca' ) } initialOpen={ true }>
-					<RadioControl
-						label={ __( 'Chiều rộng khung', 'laca' ) }
-						selected={ containerType }
+					<RangeControl
+						label={ __( 'Kích thước tối đa (%)', 'laca' ) }
+						help={ __(
+							'Áp dụng cho màn hình lớn — tự động full width trên mobile để không quá hẹp.',
+							'laca'
+						) }
+						value={ maxWidth }
+						min={ 10 }
+						max={ 100 }
+						onChange={ ( v ) => setAttributes( { maxWidth: v } ) }
+					/>
+					<SelectControl
+						label={ __( 'Căn lề', 'laca' ) }
+						value={ contentAlign }
 						options={ [
-							{ label: __( 'Full width (container-fluid)', 'laca' ), value: 'container-fluid' },
-							{ label: __( 'Giới hạn (container)', 'laca' ), value: 'container' },
+							{ label: __( 'Trái', 'laca' ), value: 'left' },
+							{ label: __( 'Giữa', 'laca' ), value: 'center' },
+							{ label: __( 'Phải', 'laca' ), value: 'right' },
 						] }
-						onChange={ ( v ) => setAttributes( { containerType: v } ) }
+						onChange={ ( v ) =>
+							setAttributes( { contentAlign: v } )
+						}
 					/>
 					<RangeControl
 						label={ __( 'Số cột', 'laca' ) }

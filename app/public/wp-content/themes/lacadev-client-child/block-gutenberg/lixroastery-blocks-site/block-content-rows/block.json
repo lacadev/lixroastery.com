@@ -17,9 +17,13 @@
             "type": "string",
             "default": "TITLE"
         },
-        "containerType": {
+        "maxWidth": {
+            "type": "number",
+            "default": 50
+        },
+        "contentAlign": {
             "type": "string",
-            "default": "container-fluid"
+            "default": "center"
         },
         "rows": {
             "type": "array",

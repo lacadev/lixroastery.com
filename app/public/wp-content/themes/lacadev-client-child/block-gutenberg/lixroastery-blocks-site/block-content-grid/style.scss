@@ -4,6 +4,16 @@
 @use "@parent/styles/theme/abstracts/mixin" as *;
 
 .block-content-grid {
+    // maxWidth (%) do admin chọn áp dụng cho desktop/tablet — trên mobile
+    // luôn ép về full width bất kể chọn bao nhiêu, !important để thắng
+    // inline style set trực tiếp trên phần tử (xem render.php).
+    &__maxwidth {
+        @include maxWidth($sm) {
+            max-width: 100% !important;
+            margin: 0 !important;
+        }
+    }
+
     &__grid {
         display: grid;
         grid-template-columns: repeat(var(--ctg-columns, 2), 1fr);

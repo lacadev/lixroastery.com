@@ -1,22 +1,27 @@
 import { __ } from '@wordpress/i18n';
 import { useBlockProps, InspectorControls, RichText } from '@wordpress/block-editor';
-import { PanelBody, RadioControl, Button } from '@wordpress/components';
+import { PanelBody, RangeControl, SelectControl, Button } from '@wordpress/components';
 import { useInserterPreview, BlockPreviewMock } from '../../utils/preview';
 import previewImage from './preview.png';
 
+// Section ngoài LUÔN container-fluid — độ rộng NỘI DUNG điều chỉnh riêng qua
+// maxWidth (%) + contentAlign, giống hệt block Container (block-container).
+const MARGIN_MAP = {
+	left: '0 auto 0 0',
+	center: '0 auto',
+	right: '0 0 0 auto',
+};
+
 export default function Edit( { attributes, setAttributes } ) {
 	const isPreview = useInserterPreview( attributes );
-	// containerType gắn thẳng vào className của section (KHÔNG bọc thêm 1 div
-	// riêng) — giống class Bootstrap thật (.container/.container-fluid tự là
-	// khung ngoài cùng), khớp với render.php.
-	const blockProps = useBlockProps( {
-		className:
-			attributes.containerType === 'container-fluid'
-				? 'container-fluid'
-				: 'container',
-	} );
+	const blockProps = useBlockProps( { className: 'container-fluid' } );
 
-	const { containerType, title, description, items } = attributes;
+	const { maxWidth, contentAlign, title, description, items } = attributes;
+
+	const maxWidthStyle = {
+		maxWidth: `${ maxWidth }%`,
+		margin: MARGIN_MAP[ contentAlign ] || MARGIN_MAP.center,
+	};
 
 	if ( isPreview ) {
 		return (
@@ -49,14 +54,28 @@ export default function Edit( { attributes, setAttributes } ) {
 		<>
 			<InspectorControls>
 				<PanelBody title={ __( 'Bố cục', 'laca' ) } initialOpen={ true }>
-					<RadioControl
-						label={ __( 'Chiều rộng khung', 'laca' ) }
-						selected={ containerType }
+					<RangeControl
+						label={ __( 'Kích thước tối đa (%)', 'laca' ) }
+						help={ __(
+							'Áp dụng cho màn hình lớn — tự động full width trên mobile để không quá hẹp.',
+							'laca'
+						) }
+						value={ maxWidth }
+						min={ 10 }
+						max={ 100 }
+						onChange={ ( v ) => setAttributes( { maxWidth: v } ) }
+					/>
+					<SelectControl
+						label={ __( 'Căn lề', 'laca' ) }
+						value={ contentAlign }
 						options={ [
-							{ label: __( 'Giới hạn (container)', 'laca' ), value: 'container' },
-							{ label: __( 'Full width (container-fluid)', 'laca' ), value: 'container-fluid' },
+							{ label: __( 'Trái', 'laca' ), value: 'left' },
+							{ label: __( 'Giữa', 'laca' ), value: 'center' },
+							{ label: __( 'Phải', 'laca' ), value: 'right' },
 						] }
-						onChange={ ( v ) => setAttributes( { containerType: v } ) }
+						onChange={ ( v ) =>
+							setAttributes( { contentAlign: v } )
+						}
 					/>
 				</PanelBody>
 
@@ -85,45 +104,47 @@ export default function Edit( { attributes, setAttributes } ) {
 			</InspectorControls>
 
 			<section { ...blockProps }>
-				<RichText
-					tagName="h2"
-					className="block-toggle__title"
-					value={ title }
-					onChange={ ( v ) => setAttributes( { title: v } ) }
-					placeholder={ __( 'Tiêu đề…', 'laca' ) }
-					allowedFormats={ [] }
-				/>
-				<RichText
-					tagName="p"
-					className="block-toggle__description"
-					value={ description }
-					onChange={ ( v ) => setAttributes( { description: v } ) }
-					placeholder={ __( 'Mô tả ngắn…', 'laca' ) }
-				/>
+				<div className="block-toggle__maxwidth" style={ maxWidthStyle }>
+					<RichText
+						tagName="h2"
+						className="block-toggle__title"
+						value={ title }
+						onChange={ ( v ) => setAttributes( { title: v } ) }
+						placeholder={ __( 'Tiêu đề…', 'laca' ) }
+						allowedFormats={ [] }
+					/>
+					<RichText
+						tagName="p"
+						className="block-toggle__description"
+						value={ description }
+						onChange={ ( v ) => setAttributes( { description: v } ) }
+						placeholder={ __( 'Mô tả ngắn…', 'laca' ) }
+					/>
 
-				<div className="block-toggle__list">
-					{ items.map( ( item, index ) => (
-						<div className="block-toggle__item" key={ index }>
-							<div className="block-toggle__question">
-								<RichText
-									tagName="span"
-									value={ item.question }
-									onChange={ ( v ) => updateItem( index, 'question', v ) }
-									placeholder={ __( 'Câu hỏi…', 'laca' ) }
-									allowedFormats={ [] }
-								/>
-								<span className="block-toggle__icon" />
+					<div className="block-toggle__list">
+						{ items.map( ( item, index ) => (
+							<div className="block-toggle__item" key={ index }>
+								<div className="block-toggle__question">
+									<RichText
+										tagName="span"
+										value={ item.question }
+										onChange={ ( v ) => updateItem( index, 'question', v ) }
+										placeholder={ __( 'Câu hỏi…', 'laca' ) }
+										allowedFormats={ [] }
+									/>
+									<span className="block-toggle__icon" />
+								</div>
+								<div className="block-toggle__answer">
+									<RichText
+										tagName="p"
+										value={ item.answer }
+										onChange={ ( v ) => updateItem( index, 'answer', v ) }
+										placeholder={ __( 'Câu trả lời…', 'laca' ) }
+									/>
+								</div>
 							</div>
-							<div className="block-toggle__answer">
-								<RichText
-									tagName="p"
-									value={ item.answer }
-									onChange={ ( v ) => updateItem( index, 'answer', v ) }
-									placeholder={ __( 'Câu trả lời…', 'laca' ) }
-								/>
-							</div>
-						</div>
-					) ) }
+						) ) }
+					</div>
 				</div>
 			</section>
 		</>

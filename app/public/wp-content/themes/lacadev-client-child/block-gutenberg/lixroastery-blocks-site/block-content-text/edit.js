@@ -1,21 +1,27 @@
 import { __ } from '@wordpress/i18n';
 import { useBlockProps, InspectorControls, RichText } from '@wordpress/block-editor';
-import { PanelBody, RadioControl } from '@wordpress/components';
+import { PanelBody, RadioControl, RangeControl, SelectControl } from '@wordpress/components';
 import { useInserterPreview, BlockPreviewMock } from '../../utils/preview';
+
+// Section ngoài LUÔN container-fluid — độ rộng CỘT nội dung điều chỉnh riêng
+// qua maxWidth (%) + contentAlign (giống hệt block Container), KHÁC với
+// textAlign (chỉ canh chữ bên trong cột, xem panel "Kiểu hiển thị" bên dưới).
+const MARGIN_MAP = {
+	left: '0 auto 0 0',
+	center: '0 auto',
+	right: '0 0 0 auto',
+};
 
 export default function Edit( { attributes, setAttributes } ) {
 	const isPreview = useInserterPreview( attributes );
-	// containerType gắn thẳng vào className của section (KHÔNG bọc thêm 1 div
-	// riêng) — giống class Bootstrap thật (.container/.container-fluid tự là
-	// khung ngoài cùng), khớp với render.php.
-	const blockProps = useBlockProps( {
-		className:
-			attributes.containerType === 'container-fluid'
-				? 'container-fluid'
-				: 'container',
-	} );
+	const blockProps = useBlockProps( { className: 'container-fluid' } );
 
-	const { containerType, variant, textAlign, content } = attributes;
+	const { maxWidth, contentAlign, variant, textAlign, content } = attributes;
+
+	const maxWidthStyle = {
+		maxWidth: `${ maxWidth }%`,
+		margin: MARGIN_MAP[ contentAlign ] || MARGIN_MAP.center,
+	};
 
 	if ( isPreview ) {
 		return (
@@ -31,14 +37,28 @@ export default function Edit( { attributes, setAttributes } ) {
 		<>
 			<InspectorControls>
 				<PanelBody title={ __( 'Bố cục', 'laca' ) } initialOpen={ true }>
-					<RadioControl
-						label={ __( 'Chiều rộng khung', 'laca' ) }
-						selected={ containerType }
+					<RangeControl
+						label={ __( 'Kích thước tối đa (%)', 'laca' ) }
+						help={ __(
+							'Áp dụng cho màn hình lớn — tự động full width trên mobile để không quá hẹp.',
+							'laca'
+						) }
+						value={ maxWidth }
+						min={ 10 }
+						max={ 100 }
+						onChange={ ( v ) => setAttributes( { maxWidth: v } ) }
+					/>
+					<SelectControl
+						label={ __( 'Căn lề khung', 'laca' ) }
+						value={ contentAlign }
 						options={ [
-							{ label: __( 'Giới hạn (container)', 'laca' ), value: 'container' },
-							{ label: __( 'Full width (container-fluid)', 'laca' ), value: 'container-fluid' },
+							{ label: __( 'Trái', 'laca' ), value: 'left' },
+							{ label: __( 'Giữa', 'laca' ), value: 'center' },
+							{ label: __( 'Phải', 'laca' ), value: 'right' },
 						] }
-						onChange={ ( v ) => setAttributes( { containerType: v } ) }
+						onChange={ ( v ) =>
+							setAttributes( { contentAlign: v } )
+						}
 					/>
 				</PanelBody>
 
@@ -67,17 +87,19 @@ export default function Edit( { attributes, setAttributes } ) {
 			</InspectorControls>
 
 			<section { ...blockProps }>
-				<RichText
-					tagName="div"
-					className={
-						'block-content-text__body block-content-text__body--' + variant
-					}
-					style={ { textAlign } }
-					value={ content }
-					onChange={ ( v ) => setAttributes( { content: v } ) }
-					placeholder={ __( 'Nhập nội dung…', 'laca' ) }
-					allowedFormats={ [ 'core/bold', 'core/italic', 'core/link' ] }
-				/>
+				<div className="block-content-text__maxwidth" style={ maxWidthStyle }>
+					<RichText
+						tagName="div"
+						className={
+							'block-content-text__body block-content-text__body--' + variant
+						}
+						style={ { textAlign } }
+						value={ content }
+						onChange={ ( v ) => setAttributes( { content: v } ) }
+						placeholder={ __( 'Nhập nội dung…', 'laca' ) }
+						allowedFormats={ [ 'core/bold', 'core/italic', 'core/link' ] }
+					/>
+				</div>
 			</section>
 		</>
 	);

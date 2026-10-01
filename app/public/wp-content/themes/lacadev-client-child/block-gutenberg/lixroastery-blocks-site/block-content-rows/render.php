@@ -7,19 +7,23 @@ if (!defined('ABSPATH')) {
 // RichText (edit.js) nên đã là HTML an toàn (RichText tự escape nội dung),
 // chỉ cần lọc qua wp_kses_post()/esc_html() trước khi in ra tương ứng.
 $main_title     = wp_kses_post($attributes['mainTitle'] ?? '');
-$container_type = ($attributes['containerType'] ?? 'container-fluid') === 'container' ? 'container' : 'container-fluid';
+$max_width      = max(10, min(100, (int) ($attributes['maxWidth'] ?? 50)));
+$content_align  = in_array($attributes['contentAlign'] ?? '', ['left', 'center', 'right'], true)
+    ? $attributes['contentAlign']
+    : 'center';
+$margin_map     = ['left' => '0 auto 0 0', 'center' => '0 auto', 'right' => '0 0 0 auto'];
 $rows           = is_array($attributes['rows'] ?? null) ? $attributes['rows'] : [];
 
 if (empty($rows) && !$main_title) {
     return;
 }
 
-// containerType gắn thẳng vào section này (KHÔNG bọc thêm 1 div riêng) —
-// giống class Bootstrap thật (.container/.container-fluid tự là khung
-// ngoài cùng), tránh 1 lớp div thừa không cần thiết.
-$wrapper_attrs = get_block_wrapper_attributes(['class' => 'block-content-rows ' . $container_type]);
+// Section ngoài LUÔN container-fluid — độ rộng NỘI DUNG điều chỉnh riêng qua
+// maxWidth (%) + contentAlign, giống hệt block Container.
+$wrapper_attrs = get_block_wrapper_attributes(['class' => 'block-content-rows container-fluid']);
 ?>
 <section <?php echo $wrapper_attrs; ?>>
+    <div class="block-content-rows__maxwidth" style="max-width: <?php echo esc_attr($max_width); ?>%; margin: <?php echo esc_attr($margin_map[$content_align]); ?>;">
         <?php if ($main_title) : ?>
             <h2 class="block-content-rows__main-title"><?php echo $main_title; ?></h2>
         <?php endif; ?>
@@ -89,4 +93,5 @@ $wrapper_attrs = get_block_wrapper_attributes(['class' => 'block-content-rows ' 
                 <?php endif; ?>
             </div>
         <?php endforeach; ?>
+    </div>
 </section>

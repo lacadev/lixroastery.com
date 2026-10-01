@@ -4,6 +4,15 @@
 @use "@parent/styles/theme/abstracts/mixin" as *;
 
 .block-content-rows {
+    // maxWidth (%) do admin chọn áp dụng cho desktop/tablet — trên mobile
+    // luôn ép về full width bất kể chọn bao nhiêu, !important để thắng
+    // inline style set trực tiếp trên phần tử (xem render.php).
+    &__maxwidth {
+        @include maxWidth($sm) {
+            max-width: 100% !important;
+            margin: 0 !important;
+        }
+    }
 
     &__main-title {
         font-family: $subFont;

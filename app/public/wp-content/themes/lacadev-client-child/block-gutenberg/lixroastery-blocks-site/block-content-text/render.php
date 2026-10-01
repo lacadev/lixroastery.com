@@ -5,7 +5,16 @@ if (!defined('ABSPATH')) {
 
 // content được nhập trực tiếp trong canvas qua RichText (edit.js) nên đã là
 // HTML an toàn (RichText tự escape nội dung), chỉ cần lọc qua wp_kses_post().
-$container_type = ($attributes['containerType'] ?? 'container') === 'container-fluid' ? 'container-fluid' : 'container';
+//
+// Section ngoài LUÔN container-fluid — độ rộng CỘT nội dung điều chỉnh riêng
+// qua maxWidth (%) + contentAlign (giống hệt block Container), KHÁC với
+// textAlign (chỉ canh chữ BÊN TRONG cột đó, không phải vị trí/độ rộng cột).
+$max_width = max(10, min(100, (int) ($attributes['maxWidth'] ?? 50)));
+$content_align = in_array($attributes['contentAlign'] ?? '', ['left', 'center', 'right'], true)
+    ? $attributes['contentAlign']
+    : 'center';
+$margin_map = ['left' => '0 auto 0 0', 'center' => '0 auto', 'right' => '0 0 0 auto'];
+
 $variant        = ($attributes['variant'] ?? 'normal') === 'quote' ? 'quote' : 'normal';
 $text_align     = in_array($attributes['textAlign'] ?? 'left', ['left', 'center', 'right', 'justify'], true)
     ? $attributes['textAlign']
@@ -16,15 +25,14 @@ if (!$content) {
     return;
 }
 
-// containerType gắn thẳng vào section này (KHÔNG bọc thêm 1 div riêng) —
-// giống class Bootstrap thật (.container/.container-fluid tự là khung
-// ngoài cùng), tránh 1 lớp div thừa không cần thiết.
 $wrapper_attrs = get_block_wrapper_attributes([
-    'class' => 'block-content-text block-content-text--' . $variant . ' ' . $container_type,
+    'class' => 'block-content-text block-content-text--' . $variant . ' container-fluid',
 ]);
 ?>
 <section <?php echo $wrapper_attrs; ?>>
-    <div class="block-content-text__body block-content-text__body--<?php echo esc_attr($variant); ?>" style="text-align: <?php echo esc_attr($text_align); ?>;">
-        <?php echo $content; ?>
+    <div class="block-content-text__maxwidth" style="max-width: <?php echo esc_attr($max_width); ?>%; margin: <?php echo esc_attr($margin_map[$content_align]); ?>;">
+        <div class="block-content-text__body block-content-text__body--<?php echo esc_attr($variant); ?>" style="text-align: <?php echo esc_attr($text_align); ?>;">
+            <?php echo $content; ?>
+        </div>
     </div>
 </section>

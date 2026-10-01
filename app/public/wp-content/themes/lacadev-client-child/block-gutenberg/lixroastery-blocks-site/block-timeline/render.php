@@ -6,20 +6,27 @@ if (!defined('ABSPATH')) {
 // year/title/desc/content được nhập trực tiếp trong canvas qua RichText
 // (edit.js) nên đã là HTML an toàn (RichText tự escape nội dung), chỉ cần
 // lọc qua wp_kses_post()/esc_html() trước khi in ra tương ứng.
-$container_type = ($attributes['containerType'] ?? 'container-fluid') === 'container' ? 'container' : 'container-fluid';
-$items          = is_array($attributes['items'] ?? null) ? $attributes['items'] : [];
+//
+// Section ngoài LUÔN container-fluid (nền/section full-bleed hết màn hình) —
+// độ rộng NỘI DUNG bên trong điều chỉnh riêng qua maxWidth (%) + contentAlign,
+// giống hệt block Container (xem block-container/render.php).
+$max_width = max(10, min(100, (int) ($attributes['maxWidth'] ?? 50)));
+$content_align = in_array($attributes['contentAlign'] ?? '', ['left', 'center', 'right'], true)
+    ? $attributes['contentAlign']
+    : 'center';
+$margin_map = ['left' => '0 auto 0 0', 'center' => '0 auto', 'right' => '0 0 0 auto'];
+
+$items = is_array($attributes['items'] ?? null) ? $attributes['items'] : [];
 
 if (empty($items)) {
     return;
 }
 
-// containerType gắn thẳng vào section này (KHÔNG bọc thêm 1 div riêng) —
-// giống class Bootstrap thật (.container/.container-fluid tự là khung
-// ngoài cùng), tránh 1 lớp div thừa không cần thiết.
-$wrapper_attrs = get_block_wrapper_attributes(['class' => 'block-timeline ' . $container_type]);
+$wrapper_attrs = get_block_wrapper_attributes(['class' => 'block-timeline container-fluid']);
 $prev_year     = null;
 ?>
 <section <?php echo $wrapper_attrs; ?>>
+    <div class="block-timeline__maxwidth" style="max-width: <?php echo esc_attr($max_width); ?>%; margin: <?php echo esc_attr($margin_map[$content_align]); ?>;">
     <div class="block-timeline__list">
         <?php foreach ($items as $item) :
             $year    = wp_kses_post($item['year'] ?? '');
@@ -56,5 +63,6 @@ $prev_year     = null;
                 </div>
             </div>
         <?php endforeach; ?>
+    </div>
     </div>
 </section>
