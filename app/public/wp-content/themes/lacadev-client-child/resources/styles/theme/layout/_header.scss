@@ -172,9 +172,16 @@ body.menu-open {
         margin: 0;
         padding: 0;
         min-width: rem(70);
-        // Tăng theo font-size mới (13px→16px ở desktop) để không bị cắt chữ —
-        // khớp line-height thật của 16px (~19px, body line-height: 1.2).
-        height: rem(19);
+        // height dùng đơn vị em + line-height thật của body (1.7, xem
+        // _general.scss) để khớp line-box thật của thẻ <a> bên trong — bài
+        // học thật: trước đây hardcode "rem(19)" theo nhầm line-height 1.2,
+        // lệch hẳn so với 1.7 thật, làm "VN" thấp hơn vài px so với các mục
+        // menu khác khi .header__right canh giữa 2 phần tử theo chiều cao
+        // khác nhau (align-items: center). font-size đặt THÊM ở chính UL
+        // này (giống hệt resFont của thẻ <a> bên dưới) để 1em ở đây luôn
+        // bằng đúng cỡ chữ thật đang hiển thị, height tự co giãn theo
+        // breakpoint mà không cần lặp lại cặp số px riêng.
+        height: 1.7em;
 
         li {
             position: absolute;
@@ -219,6 +226,10 @@ body.menu-open {
             // menu ở desktop.
             @include resFont(rem(14), rem(16));
         }
+
+        // Font-size đặt lại ở chính UL (giống hệt thẻ <a> phía trên) để
+        // height: 1.7em ở trên luôn bằng đúng cỡ chữ thật đang hiển thị.
+        @include resFont(rem(14), rem(16));
     }
 
     &__hamburger {
