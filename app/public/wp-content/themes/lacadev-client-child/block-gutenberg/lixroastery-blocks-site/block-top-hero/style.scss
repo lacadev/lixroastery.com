@@ -2,6 +2,15 @@
 @use "@parent/styles/theme/abstracts/mixin" as *;
 @use "../../../resources/styles/theme/abstracts/variables" as *;
 
+
+body:not(.home) main#main_content .block-top-hero {
+    margin-top: -rem(90);
+
+    @include maxWidth($md) {
+        margin-top: -rem(30);
+    }
+}
+
 .block-top-hero {
     padding-top: 0 !important;
     position: relative;
