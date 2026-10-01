@@ -58,23 +58,36 @@
         color: rgba(0, 0, 0, 0.25);
     }
 
-    // Editor: hiển thị tất cả tab-panel xếp chồng để dễ soạn nội dung —
-    // hành vi ẩn/hiện theo tab chỉ áp dụng ở frontend (JS trong render.php).
-    &__editor-note {
-        font-size: 12px;
-        color: #666;
-        background: #f0f9ff;
-        border: 1px solid #bae6fd;
-        border-radius: 6px;
-        padding: 10px 14px;
-        margin: 0 0 16px;
+    // Editor: tái dùng nguyên class __nav/__nav-link/__nav-sep của frontend để
+    // thanh tab trong khung soạn thảo nhìn giống hệt ngoài trang thật — chỉ
+    // thêm margin nhỏ hơn vì nằm sẵn trong canvas đã có khoảng đệm riêng.
+    &__nav--editor {
+        margin-bottom: 1.5rem;
     }
 
-    &__editor-panels {
-        display: flex;
-        flex-direction: column;
-        gap: 1.5rem;
+    &__editor-add-tab {
+        font-family: $subFont;
+        font-size: rem(20);
+        line-height: 1;
+        color: $darkColor;
+        opacity: 0.3;
+        background: none;
+        border: 1px dashed rgba(0, 0, 0, 0.25);
+        border-radius: 4px;
+        width: 1.6em;
+        height: 1.6em;
+        cursor: pointer;
+        transition: opacity 0.2s ease;
 
+        &:hover {
+            opacity: 1;
+        }
+    }
+
+    // Chỉ panel của tab đang chọn mới hiện (toggle qua inline style ở edit.js),
+    // các panel còn lại nhận display:none — viền chấm chỉ để khoanh vùng panel
+    // đang soạn cho rõ, không còn ý nghĩa "so sánh các panel cạnh nhau" như cũ.
+    &__editor-panels {
         > .tab-panel {
             border: 1px dashed rgba(0, 0, 0, 0.15);
             border-radius: 6px;

@@ -4,7 +4,10 @@ import {
 	useInnerBlocksProps,
 	InspectorControls,
 } from '@wordpress/block-editor';
+import { useSelect, useDispatch } from '@wordpress/data';
+import { createBlock } from '@wordpress/blocks';
 import { PanelBody, SelectControl } from '@wordpress/components';
+import { useState, useEffect, useRef, Fragment } from '@wordpress/element';
 import { useInserterPreview, BlockPreviewMock } from '../../utils/preview';
 import { ResponsiveRangeControl } from '../../utils/inspector-panels';
 import previewImage from './preview.png';
@@ -45,7 +48,7 @@ const TEMPLATE = [
 	],
 ];
 
-export default function Edit( { attributes, setAttributes } ) {
+export default function Edit( { attributes, setAttributes, clientId } ) {
 	const isPreview = useInserterPreview( attributes );
 	const { maxWidth, maxWidthTablet, maxWidthMobile, contentAlign } =
 		attributes;
@@ -61,15 +64,88 @@ export default function Edit( { attributes, setAttributes } ) {
 	// mục 2.3). Ngoài trang thật, "container-fluid" nằm ở div con
 	// ".tabs-block__inner" riêng (xem render.php) nên không bị lỗi này.
 	const blockProps = useBlockProps( { className: 'tabs-block' } );
+
+	// ── Hiển thị như frontend: 1 thanh tab bấm được + chỉ panel đang chọn mới
+	// hiện, thay vì xếp chồng hết tất cả để soạn (cách làm cũ) ─────────────────
+	const [ activeTab, setActiveTab ] = useState( 0 );
+	const panelsRef = useRef( null );
+
+	const { innerBlocks, selectedClientId } = useSelect(
+		( select ) => {
+			const editor = select( 'core/block-editor' );
+			return {
+				innerBlocks: editor.getBlocks( clientId ),
+				selectedClientId: editor.getSelectedBlockClientId(),
+			};
+		},
+		[ clientId ]
+	);
+	const { selectBlock, insertBlock } = useDispatch( 'core/block-editor' );
+
+	// Xoá bớt tab mà đang đứng ở tab cuối cùng (giờ không còn tồn tại) thì lùi
+	// về tab cuối cùng còn lại — không được để activeTab trỏ ra ngoài mảng.
+	useEffect( () => {
+		if ( activeTab > innerBlocks.length - 1 ) {
+			setActiveTab( Math.max( 0, innerBlocks.length - 1 ) );
+		}
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [ innerBlocks.length ] );
+
+	// Chọn 1 Tab Panel (hay 1 block cháu bên trong nó, vd bấm vào đoạn văn
+	// trong tab) qua List View hoặc click trực tiếp thì thanh tab tự chuyển
+	// theo cho khớp, không cần bấm lại nút tab.
+	useEffect( () => {
+		if ( ! selectedClientId ) {
+			return;
+		}
+		const idx = innerBlocks.findIndex(
+			( block ) => block.clientId === selectedClientId
+		);
+		if ( idx !== -1 && idx !== activeTab ) {
+			setActiveTab( idx );
+		}
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [ selectedClientId ] );
+
+	// Ẩn/hiện panel con theo tab đang chọn, giống hệt hành vi ngoài frontend —
+	// InnerBlocks tự render children, không có prop để set style riêng từng
+	// con nên phải thao tác DOM trực tiếp qua ref (chỉ ảnh hưởng editor, xem
+	// ghi chú "KHÔNG đặt display:none mặc định" ở style.scss).
+	useEffect( () => {
+		const wrap = panelsRef.current;
+		if ( ! wrap ) {
+			return;
+		}
+		Array.from( wrap.children ).forEach( ( child, index ) => {
+			// Bỏ qua nút "+" thêm block mặc định của InnerBlocks nếu còn sót —
+			// đã tắt qua renderAppender: false nên thường không có, phòng hờ.
+			if ( ! child.classList.contains( 'tab-panel' ) ) {
+				return;
+			}
+			child.style.display = index === activeTab ? '' : 'none';
+		} );
+	}, [ activeTab, innerBlocks.length ] );
+
 	const innerBlocksProps = useInnerBlocksProps(
-		{ className: 'tabs-block__editor-panels' },
+		{ className: 'tabs-block__editor-panels', ref: panelsRef },
 		{
 			allowedBlocks: ALLOWED_BLOCKS,
 			template: TEMPLATE,
 			templateLock: false,
 			orientation: 'horizontal',
+			renderAppender: false,
 		}
 	);
+
+	const handleAddTab = () => {
+		const newBlock = createBlock( 'lacadev/tab-panel-block', {
+			tabTitle:
+				__( 'Tab mới', 'laca' ) + ' ' + ( innerBlocks.length + 1 ),
+		} );
+		insertBlock( newBlock, innerBlocks.length, clientId );
+		setActiveTab( innerBlocks.length );
+		selectBlock( newBlock.clientId );
+	};
 
 	if ( isPreview ) {
 		return (
@@ -129,12 +205,45 @@ export default function Edit( { attributes, setAttributes } ) {
 
 			<div { ...blockProps }>
 				<div className="tabs-block__maxwidth" style={ maxWidthStyle }>
-					<p className="tabs-block__editor-note">
-						{ __(
-							'Mỗi khối bên dưới là 1 tab — đặt tên tab và thêm nội dung (có thể chèn block khác như CTA Section, Image Card Grid…). Khi xem ngoài trang, khách sẽ thấy thanh chuyển tab + nút Prev/Next.',
+					<nav
+						className="tabs-block__nav tabs-block__nav--editor"
+						aria-label={ __(
+							'Chuyển tab (chế độ soạn thảo)',
 							'laca'
 						) }
-					</p>
+					>
+						{ innerBlocks.map( ( block, index ) => (
+							<Fragment key={ block.clientId }>
+								<button
+									type="button"
+									className={
+										'tabs-block__nav-link' +
+										( index === activeTab
+											? ' is-active'
+											: '' )
+									}
+									onClick={ () => {
+										setActiveTab( index );
+										selectBlock( block.clientId );
+									} }
+								>
+									{ block.attributes.tabTitle ||
+										__( 'Tab', 'laca' ) +
+											' ' +
+											( index + 1 ) }
+								</button>
+								<span className="tabs-block__nav-sep">|</span>
+							</Fragment>
+						) ) }
+						<button
+							type="button"
+							className="tabs-block__editor-add-tab"
+							onClick={ handleAddTab }
+							aria-label={ __( 'Thêm tab mới', 'laca' ) }
+						>
+							+
+						</button>
+					</nav>
 					<div { ...innerBlocksProps } />
 				</div>
 			</div>
