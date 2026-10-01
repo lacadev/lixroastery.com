@@ -12,8 +12,16 @@ import {
 	SelectControl,
 	Button,
 } from '@wordpress/components';
+import { useState, useMemo, useRef, useEffect } from '@wordpress/element';
 import { useInserterPreview, BlockPreviewMock } from '../../utils/preview';
-import { ResponsiveRangeControl } from '../../utils/inspector-panels';
+import {
+	ResponsiveRangeControl,
+	ResponsiveSelectControl,
+} from '../../utils/inspector-panels';
+import {
+	GOOGLE_FONT_OPTIONS,
+	googleFontCssUrl,
+} from '../../utils/google-fonts-vi';
 import previewImage from './preview.png';
 
 // Section ngoài LUÔN container-fluid — độ rộng NỘI DUNG điều chỉnh riêng qua
@@ -29,6 +37,28 @@ const MAX_WIDTH_KEYS = {
 	tablet: 'maxWidthTablet',
 	mobile: 'maxWidthMobile',
 };
+
+const CONTENT_ALIGN_KEYS = {
+	pc: 'contentAlign',
+	tablet: 'contentAlignTablet',
+	mobile: 'contentAlignMobile',
+};
+
+const QUOTE_FONT_SIZE_ROW_KEYS = {
+	pc: 'quoteFontSize',
+	tablet: 'quoteFontSizeTablet',
+	mobile: 'quoteFontSizeMobile',
+};
+
+const ASIDE_TYPE_LABELS = {
+	none: __( 'Không có', 'laca' ),
+	image: __( 'Ảnh thẻ', 'laca' ),
+	quote: __( 'Trích dẫn', 'laca' ),
+};
+
+// prefix id cho <link> font chèn vào iframe editor — mỗi font family active
+// (không trùng) có đúng 1 thẻ, xem useEffect nạp font bên dưới.
+const QUOTE_FONT_LINK_PREFIX = 'block-content-rows-quote-font-';
 
 function ImagePicker( { imageUrl, imageId, onSelect } ) {
 	return (
@@ -78,6 +108,8 @@ export default function Edit( { attributes, setAttributes } ) {
 		maxWidthTablet,
 		maxWidthMobile,
 		contentAlign,
+		contentAlignTablet,
+		contentAlignMobile,
 		rows,
 	} = attributes;
 
@@ -85,8 +117,64 @@ export default function Edit( { attributes, setAttributes } ) {
 		'--mw-pc': `${ maxWidth }%`,
 		'--mw-tablet': `${ maxWidthTablet }%`,
 		'--mw-mobile': `${ maxWidthMobile }%`,
-		margin: MARGIN_MAP[ contentAlign ] || MARGIN_MAP.center,
+		'--align-margin-pc': MARGIN_MAP[ contentAlign ] || MARGIN_MAP.center,
+		'--align-margin-tablet':
+			MARGIN_MAP[ contentAlignTablet ] || MARGIN_MAP.center,
+		'--align-margin-mobile':
+			MARGIN_MAP[ contentAlignMobile ] || MARGIN_MAP.center,
 	};
+
+	// Thu gọn/mở rộng từng "Đoạn" trong panel Inspector — nhiều đoạn xếp dài
+	// rất khó quản lý, mặc định mở (false = đang mở) để không đổi hành vi
+	// cũ khi mới có 1-2 đoạn.
+	const [ collapsedRows, setCollapsedRows ] = useState( {} );
+	const toggleRowCollapse = ( index ) =>
+		setCollapsedRows( ( prev ) => ( {
+			...prev,
+			[ index ]: ! prev[ index ],
+		} ) );
+
+	// Nạp Google Font đã chọn (có thể khác nhau giữa từng đoạn quote) vào
+	// ĐÚNG document của iframe editor — xem lý do kỹ thuật ở
+	// block-content-text/edit.js (cùng pattern, nhân rộng cho nhiều font).
+	const quoteFontFamilies = useMemo( () => {
+		const set = new Set();
+		rows.forEach( ( row ) => {
+			if ( row.asideType === 'quote' && row.quoteFontFamily ) {
+				set.add( row.quoteFontFamily );
+			}
+		} );
+		return [ ...set ];
+	}, [ rows ] );
+
+	const sectionRef = useRef( null );
+	useEffect( () => {
+		const ownerDocument = sectionRef.current?.ownerDocument;
+		if ( ! ownerDocument ) {
+			return;
+		}
+		ownerDocument
+			.querySelectorAll( `link[id^="${ QUOTE_FONT_LINK_PREFIX }"]` )
+			.forEach( ( link ) => {
+				if ( ! quoteFontFamilies.includes( link.dataset.family ) ) {
+					link.remove();
+				}
+			} );
+		quoteFontFamilies.forEach( ( family ) => {
+			const id =
+				QUOTE_FONT_LINK_PREFIX +
+				family.replace( /\s+/g, '-' ).toLowerCase();
+			if ( ownerDocument.getElementById( id ) ) {
+				return;
+			}
+			const link = ownerDocument.createElement( 'link' );
+			link.id = id;
+			link.rel = 'stylesheet';
+			link.dataset.family = family;
+			link.href = googleFontCssUrl( family );
+			ownerDocument.head.appendChild( link );
+		} );
+	}, [ quoteFontFamilies ] );
 
 	if ( isPreview ) {
 		return (
@@ -121,6 +209,11 @@ export default function Edit( { attributes, setAttributes } ) {
 					quoteText: '',
 					quoteAuthor: '',
 					quoteSource: '',
+					quoteAlign: 'left',
+					quoteFontFamily: '',
+					quoteFontSize: 40,
+					quoteFontSizeTablet: 32,
+					quoteFontSizeMobile: 24,
 				},
 			],
 		} );
@@ -183,16 +276,22 @@ export default function Edit( { attributes, setAttributes } ) {
 					title={ __( 'Vị trí khung', 'laca' ) }
 					initialOpen={ true }
 				>
-					<SelectControl
+					<ResponsiveSelectControl
 						label={ __( 'Vị trí khung', 'laca' ) }
-						value={ contentAlign }
 						options={ [
 							{ label: __( 'Trái', 'laca' ), value: 'left' },
 							{ label: __( 'Giữa', 'laca' ), value: 'center' },
 							{ label: __( 'Phải', 'laca' ), value: 'right' },
 						] }
-						onChange={ ( v ) =>
-							setAttributes( { contentAlign: v } )
+						valuesByDevice={ {
+							pc: contentAlign,
+							tablet: contentAlignTablet,
+							mobile: contentAlignMobile,
+						} }
+						onChange={ ( device, v ) =>
+							setAttributes( {
+								[ CONTENT_ALIGN_KEYS[ device ] ]: v,
+							} )
 						}
 					/>
 				</PanelBody>
@@ -201,150 +300,306 @@ export default function Edit( { attributes, setAttributes } ) {
 					title={ __( 'Các đoạn nội dung', 'laca' ) }
 					initialOpen={ true }
 				>
-					{ rows.map( ( row, index ) => (
-						<div
-							key={ index }
-							style={ {
-								border: '1px solid #ddd',
-								borderRadius: 4,
-								padding: 10,
-								marginBottom: 12,
-							} }
-						>
-							<p
+					{ rows.map( ( row, index ) => {
+						const isCollapsed = !! collapsedRows[ index ];
+						return (
+							<div
+								key={ index }
 								style={ {
-									fontSize: '11px',
-									fontWeight: 600,
-									marginBottom: 6,
+									border: '1px solid #ddd',
+									borderRadius: 4,
+									padding: 10,
+									marginBottom: 12,
 								} }
 							>
-								{ __( 'Đoạn', 'laca' ) } { index + 1 }
-							</p>
-							<SelectControl
-								label={ __( 'Đối diện bên phải', 'laca' ) }
-								value={ row.asideType }
-								options={ [
-									{
-										label: __( 'Không có', 'laca' ),
-										value: 'none',
-									},
-									{
-										label: __( 'Ảnh thẻ', 'laca' ),
-										value: 'image',
-									},
-									{
-										label: __( 'Trích dẫn', 'laca' ),
-										value: 'quote',
-									},
-								] }
-								onChange={ ( v ) =>
-									updateRow( index, 'asideType', v )
-								}
-							/>
+								<Button
+									onClick={ () => toggleRowCollapse( index ) }
+									style={ {
+										width: '100%',
+										display: 'flex',
+										justifyContent: 'space-between',
+										alignItems: 'center',
+										padding: 0,
+										fontSize: '11px',
+										fontWeight: 600,
+										marginBottom: isCollapsed ? 0 : 6,
+									} }
+									aria-expanded={ ! isCollapsed }
+								>
+									<span>
+										{ __( 'Đoạn', 'laca' ) } { index + 1 }
+										{ ' — ' }
+										{ ASIDE_TYPE_LABELS[ row.asideType ] }
+									</span>
+									<span aria-hidden="true">
+										{ isCollapsed ? '▸' : '▾' }
+									</span>
+								</Button>
 
-							{ row.asideType === 'image' && (
-								<>
-									<p
-										style={ {
-											fontSize: '11px',
-											color: '#666',
-											margin: '8px 0 4px',
-										} }
-									>
-										{ __(
-											'Ảnh thẻ (có thể thêm nhiều, xếp chồng) — tiêu đề/mô tả sửa trực tiếp trong khung soạn thảo.',
-											'laca'
-										) }
-									</p>
-									{ row.asideImages.map(
-										( img, imgIndex ) => (
-											<div
-												key={ imgIndex }
-												style={ {
-													border: '1px solid #eee',
-													borderRadius: 4,
-													padding: 8,
-													marginBottom: 8,
-												} }
-											>
-												<ImagePicker
-													imageUrl={ img.imageUrl }
-													imageId={ img.imageId }
-													onSelect={ ( media ) => {
-														updateAsideImage(
-															index,
-															imgIndex,
-															'imageId',
-															media.id
-														);
-														updateAsideImage(
-															index,
-															imgIndex,
-															'imageUrl',
-															media.url
-														);
+								{ ! isCollapsed && (
+									<>
+										<SelectControl
+											label={ __(
+												'Đối diện bên phải',
+												'laca'
+											) }
+											value={ row.asideType }
+											options={ [
+												{
+													label: __(
+														'Không có',
+														'laca'
+													),
+													value: 'none',
+												},
+												{
+													label: __(
+														'Ảnh thẻ',
+														'laca'
+													),
+													value: 'image',
+												},
+												{
+													label: __(
+														'Trích dẫn',
+														'laca'
+													),
+													value: 'quote',
+												},
+											] }
+											onChange={ ( v ) =>
+												updateRow(
+													index,
+													'asideType',
+													v
+												)
+											}
+										/>
+
+										{ row.asideType === 'image' && (
+											<>
+												<p
+													style={ {
+														fontSize: '11px',
+														color: '#666',
+														margin: '8px 0 4px',
 													} }
-												/>
-												<TextControl
-													label={ __(
-														'Đường dẫn',
+												>
+													{ __(
+														'Ảnh thẻ (có thể thêm nhiều, xếp chồng) — tiêu đề/mô tả sửa trực tiếp trong khung soạn thảo.',
 														'laca'
 													) }
-													value={ img.link }
-													onChange={ ( v ) =>
-														updateAsideImage(
-															index,
-															imgIndex,
-															'link',
-															v
-														)
-													}
-													placeholder="https://…"
-												/>
+												</p>
+												{ row.asideImages.map(
+													( img, imgIndex ) => (
+														<div
+															key={ imgIndex }
+															style={ {
+																border: '1px solid #eee',
+																borderRadius: 4,
+																padding: 8,
+																marginBottom: 8,
+															} }
+														>
+															<ImagePicker
+																imageUrl={
+																	img.imageUrl
+																}
+																imageId={
+																	img.imageId
+																}
+																onSelect={ (
+																	media
+																) => {
+																	updateAsideImage(
+																		index,
+																		imgIndex,
+																		'imageId',
+																		media.id
+																	);
+																	updateAsideImage(
+																		index,
+																		imgIndex,
+																		'imageUrl',
+																		media.url
+																	);
+																} }
+															/>
+															<TextControl
+																label={ __(
+																	'Đường dẫn',
+																	'laca'
+																) }
+																value={
+																	img.link
+																}
+																onChange={ (
+																	v
+																) =>
+																	updateAsideImage(
+																		index,
+																		imgIndex,
+																		'link',
+																		v
+																	)
+																}
+																placeholder="https://…"
+															/>
+															<Button
+																variant="secondary"
+																isDestructive
+																onClick={ () =>
+																	removeAsideImage(
+																		index,
+																		imgIndex
+																	)
+																}
+															>
+																{ __(
+																	'Xóa ảnh này',
+																	'laca'
+																) }
+															</Button>
+														</div>
+													)
+												) }
 												<Button
 													variant="secondary"
-													isDestructive
 													onClick={ () =>
-														removeAsideImage(
-															index,
-															imgIndex
-														)
+														addAsideImage( index )
 													}
 												>
 													{ __(
-														'Xóa ảnh này',
+														'+ Thêm ảnh',
 														'laca'
 													) }
 												</Button>
-											</div>
-										)
-									) }
-									<Button
-										variant="secondary"
-										onClick={ () => addAsideImage( index ) }
-									>
-										{ __( '+ Thêm ảnh', 'laca' ) }
-									</Button>
-								</>
-							) }
+											</>
+										) }
 
-							<Button
-								variant="secondary"
-								isDestructive
-								style={ { marginTop: 10 } }
-								onClick={ () => removeRow( index ) }
-							>
-								{ __( 'Xóa đoạn này', 'laca' ) }
-							</Button>
-						</div>
-					) ) }
+										{ row.asideType === 'quote' && (
+											<>
+												<SelectControl
+													label={ __(
+														'Căn lề trích dẫn',
+														'laca'
+													) }
+													value={
+														row.quoteAlign || 'left'
+													}
+													options={ [
+														{
+															label: __(
+																'Trái',
+																'laca'
+															),
+															value: 'left',
+														},
+														{
+															label: __(
+																'Giữa',
+																'laca'
+															),
+															value: 'center',
+														},
+														{
+															label: __(
+																'Phải',
+																'laca'
+															),
+															value: 'right',
+														},
+														{
+															label: __(
+																'Đều hai bên (justify)',
+																'laca'
+															),
+															value: 'justify',
+														},
+													] }
+													onChange={ ( v ) =>
+														updateRow(
+															index,
+															'quoteAlign',
+															v
+														)
+													}
+												/>
+												<SelectControl
+													label={ __(
+														'Font chữ trích dẫn (Google Fonts)',
+														'laca'
+													) }
+													help={ __(
+														'Chọn khác mặc định sẽ tải thêm 1 font từ Google Fonts CDN (ảnh hưởng nhẹ tốc độ tải trang).',
+														'laca'
+													) }
+													value={
+														row.quoteFontFamily ||
+														''
+													}
+													options={
+														GOOGLE_FONT_OPTIONS
+													}
+													onChange={ ( v ) =>
+														updateRow(
+															index,
+															'quoteFontFamily',
+															v || ''
+														)
+													}
+												/>
+												<ResponsiveRangeControl
+													label={ __(
+														'Cỡ chữ trích dẫn (px)',
+														'laca'
+													) }
+													min={ 16 }
+													max={ 64 }
+													valuesByDevice={ {
+														pc:
+															row.quoteFontSize ??
+															40,
+														tablet:
+															row.quoteFontSizeTablet ??
+															32,
+														mobile:
+															row.quoteFontSizeMobile ??
+															24,
+													} }
+													onChange={ ( device, v ) =>
+														updateRow(
+															index,
+															QUOTE_FONT_SIZE_ROW_KEYS[
+																device
+															],
+															v
+														)
+													}
+												/>
+											</>
+										) }
+
+										<Button
+											variant="secondary"
+											isDestructive
+											style={ { marginTop: 10 } }
+											onClick={ () => removeRow( index ) }
+										>
+											{ __( 'Xóa đoạn này', 'laca' ) }
+										</Button>
+									</>
+								) }
+							</div>
+						);
+					} ) }
 					<Button variant="primary" onClick={ addRow }>
 						{ __( '+ Thêm đoạn', 'laca' ) }
 					</Button>
 				</PanelBody>
 			</InspectorControls>
 
-			<section { ...blockProps }>
+			<section { ...blockProps } ref={ sectionRef }>
 				<div
 					className="block-content-rows__maxwidth"
 					style={ maxWidthStyle }
@@ -442,6 +697,24 @@ export default function Edit( { attributes, setAttributes } ) {
 										<RichText
 											tagName="p"
 											className="block-content-rows__quote-text"
+											style={ {
+												textAlign:
+													row.quoteAlign || 'left',
+												'--quote-font-family':
+													row.quoteFontFamily ||
+													undefined,
+												'--quote-fs-pc': `${
+													row.quoteFontSize ?? 40
+												}px`,
+												'--quote-fs-tablet': `${
+													row.quoteFontSizeTablet ??
+													32
+												}px`,
+												'--quote-fs-mobile': `${
+													row.quoteFontSizeMobile ??
+													24
+												}px`,
+											} }
 											value={ row.quoteText }
 											onChange={ ( v ) =>
 												updateRow(

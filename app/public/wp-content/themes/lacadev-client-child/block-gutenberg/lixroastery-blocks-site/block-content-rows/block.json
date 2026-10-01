@@ -33,6 +33,14 @@
             "type": "string",
             "default": "center"
         },
+        "contentAlignTablet": {
+            "type": "string",
+            "default": "center"
+        },
+        "contentAlignMobile": {
+            "type": "string",
+            "default": "center"
+        },
         "rows": {
             "type": "array",
             "default": [
@@ -43,7 +51,12 @@
                     "asideImages": [],
                     "quoteText": "",
                     "quoteAuthor": "",
-                    "quoteSource": ""
+                    "quoteSource": "",
+                    "quoteAlign": "left",
+                    "quoteFontFamily": "",
+                    "quoteFontSize": 40,
+                    "quoteFontSizeTablet": 32,
+                    "quoteFontSizeMobile": 24
                 }
             ]
         },

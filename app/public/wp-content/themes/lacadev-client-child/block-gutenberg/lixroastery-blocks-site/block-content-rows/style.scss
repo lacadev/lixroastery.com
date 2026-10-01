@@ -9,13 +9,16 @@
     // inline style set trực tiếp trên phần tử (xem render.php).
     &__maxwidth {
         max-width: var(--mw-pc, 50%);
+        margin: var(--align-margin-pc, 0 auto);
 
         @include maxWidth($md) {
             max-width: var(--mw-tablet, 100%);
+            margin: var(--align-margin-tablet, 0 auto);
         }
 
         @include maxWidth($sm) {
             max-width: var(--mw-mobile, 100%);
+            margin: var(--align-margin-mobile, 0 auto);
         }
     }
 
@@ -114,14 +117,25 @@
         padding-top: 0.5rem;
     }
 
+    // Mặc định dùng $subFont, admin có thể đổi sang 1 Google Font khác riêng
+    // cho TỪNG đoạn quote qua --quote-font-family (xem edit.js/render.php).
+    // Cỡ chữ theo 3 tier PC/Tablet/Mobile (--quote-fs-*) thay vì nội suy
+    // fluid như trước — đúng pattern Responsive 3 màn hình (mục 2.8 skill).
     &__quote-text {
-        font-family: $subFont;
+        font-family: var(--quote-font-family, #{$subFont});
         font-weight: $regular;
         color: $darkColor;
         line-height: 1.5;
         margin: 0 0 1.5rem;
+        font-size: var(--quote-fs-pc, #{rem(40)});
 
-        @include resFont(rem(20), rem(40));
+        @include maxWidth($md) {
+            font-size: var(--quote-fs-tablet, #{rem(32)});
+        }
+
+        @include maxWidth($sm) {
+            font-size: var(--quote-fs-mobile, #{rem(24)});
+        }
     }
 
     &__quote-author {
