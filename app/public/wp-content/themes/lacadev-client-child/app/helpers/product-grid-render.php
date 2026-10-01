@@ -41,10 +41,8 @@ if (!function_exists('laca_render_product_grid_cards')) {
                 </div>
                 <?php if ($tag_left || $tag_right): ?>
                     <div class="block-product-grid__tags">
-                        <?php if ($tag_left): ?><span><?php echo $tag_left; ?></span><?php endif; ?>
-                        <?php if ($tag_left && $tag_right): ?><span
-                                class="block-product-grid__tags-sep">|</span><?php endif; ?>
-                        <?php if ($tag_right): ?><span><?php echo $tag_right; ?></span><?php endif; ?>
+                        <?php if ($tag_left): ?><span class="block-product-grid__tag"><?php echo $tag_left; ?></span><?php endif; ?>
+                        <?php if ($tag_right): ?><span class="block-product-grid__tag"><?php echo $tag_right; ?></span><?php endif; ?>
                     </div>
                 <?php endif; ?>
                 <?php if ($title): ?>

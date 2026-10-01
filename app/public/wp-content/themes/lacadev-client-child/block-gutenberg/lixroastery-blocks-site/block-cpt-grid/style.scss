@@ -53,6 +53,7 @@
 
     &__tabs {
         display: flex;
+        align-items: center;
         gap: rem(24);
         max-width: 100%;
         overflow-x: auto;
@@ -64,6 +65,7 @@
     }
 
     &__tab {
+        position: relative;
         flex: 0 0 auto;
         background: none;
         border: 0;
@@ -86,6 +88,22 @@
         &.is-active {
             color: $darkColor;
             font-weight: $semiBold;
+        }
+
+        // Dấu phân cách giữa các tab — vẽ bằng ::after (1 thanh dọc canh
+        // giữa theo chiều cao chữ), KHÔNG dùng ký tự "|" thật vì baseline
+        // font khiến ký tự lệch trên/dưới không đều (đã gặp thật, xem ảnh
+        // tham khảo từ xliiicoffee.com dùng đúng kỹ thuật này). Đặt ở nửa
+        // khoảng gap (rem(24)/2) để nằm giữa 2 tab, không cần thêm markup.
+        &:not(:last-child)::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            right: rem(-12);
+            width: 1px;
+            height: 55%;
+            background-color: rgba(0, 0, 0, 0.25);
+            transform: translateY(-50%);
         }
     }
 

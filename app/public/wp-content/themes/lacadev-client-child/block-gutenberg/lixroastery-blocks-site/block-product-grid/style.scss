@@ -118,6 +118,26 @@
         @include resFont(rem(14), rem(16));
     }
 
+    // Dấu phân cách giữa 2 tag (vd "Cà Phê Specialty | Aramosa") — vẽ bằng
+    // ::after (1 thanh dọc canh giữa theo chiều cao chữ), KHÔNG dùng ký tự
+    // "|" thật vì baseline font khiến ký tự lệch trên/dưới không đều (cùng
+    // kỹ thuật đã áp dụng ở block-cpt-grid__tab, xem style.scss block đó).
+    &__tag {
+        position: relative;
+
+        &:not(:last-child)::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            right: -0.2em;
+            width: 1px;
+            height: 55%;
+            background-color: currentColor;
+            opacity: 0.4;
+            transform: translateY(-50%);
+        }
+    }
+
     &__card-title {
         font-family: $subFont;
         font-weight: $regular;
