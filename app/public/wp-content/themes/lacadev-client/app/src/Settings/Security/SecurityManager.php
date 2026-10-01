@@ -310,11 +310,20 @@ class SecurityManager
                 $isProtected    = SuperUserGuard::isProtected($u->ID);
                 $isSuper        = in_array($u->user_login, $superLogins, true);
                 $hasManageOptions = user_can($u, 'manage_options');
+                // Dump thô wp_capabilities — "Vai trò" chỉ đọc TÊN role lấy
+                // từ đây, nhưng không kiểm tra value có thực sự "true" hay
+                // record có bị rỗng/lỗi/lẫn role khác hay không. Hiện trực
+                // tiếp để đối chiếu khi cột manage_options? báo "Không"
+                // nhưng Vai trò vẫn ghi "administrator".
+                $rawCaps = get_user_meta($u->ID, $GLOBALS['wpdb']->prefix . 'capabilities', true);
             ?>
                 <tr>
                     <td><strong><?php echo esc_html($u->user_login); ?></strong></td>
                     <td><?php echo esc_html($u->user_email); ?></td>
-                    <td><span style="color:#666;"><?php echo esc_html(implode(', ', $u->roles)); ?></span></td>
+                    <td>
+                        <span style="color:#666;"><?php echo esc_html(implode(', ', $u->roles)); ?></span>
+                        <br><code style="font-size:10px;color:#999;" title="Giá trị thô usermeta wp_capabilities — đối chiếu khi cột manage_options? không khớp với Vai trò hiển thị."><?php echo esc_html(wp_json_encode($rawCaps)); ?></code>
+                    </td>
                     <td>
                         <?php if ($hasManageOptions): ?>
                             <span style="color:#16a34a;">✓ Có</span>
