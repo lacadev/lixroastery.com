@@ -61,7 +61,6 @@
         color: $darkColor;
         max-width: 70%;
         margin: 0 auto;
-        line-height: 1.5;
 
         @include resFont(rem(16), rem(20));
     }

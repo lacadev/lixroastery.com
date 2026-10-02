@@ -85,7 +85,6 @@
     &__desc {
         margin: 0;
         font-weight: $regular;
-        line-height: 1.2;
         text-align: var(--stats-desc-align-pc, left);
 
         @include resFont(rem(14), rem(16));

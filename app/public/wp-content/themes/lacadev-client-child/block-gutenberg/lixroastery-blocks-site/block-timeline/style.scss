@@ -92,7 +92,6 @@
         font-family: $mainFont;
         font-weight: $regular;
         color: $darkColor;
-        line-height: 1.5;
         margin: 0;
 
         @include resFont(rem(16), rem(20));
@@ -102,7 +101,6 @@
         font-family: $mainFont;
         font-weight: $regular;
         color: $darkColor;
-        line-height: 1.7;
         margin: 0;
 
         @include resFont(rem(16), rem(20));

@@ -156,7 +156,6 @@
     &__answer p {
         font-family: $mainFont;
         color: $darkColor;
-        line-height: 1.7;
         margin: 0 0 rem(24);
 
         @include resFont(rem(16), rem(20));

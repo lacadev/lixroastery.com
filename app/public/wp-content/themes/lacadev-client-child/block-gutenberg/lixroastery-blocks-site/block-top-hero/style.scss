@@ -80,7 +80,6 @@ body:not(.home) main#main_content .block-top-hero {
         margin: rem(50) auto 0;
         font-family: $mainFont;
         font-weight: $regular;
-        line-height: 1.7;
         color: $lightColor;
 
         @include resFont(rem(16), rem(20));
