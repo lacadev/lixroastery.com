@@ -15,17 +15,10 @@
 // không có khoảng trắng breadcrumb chen giữa làm lệch "móc nối" margin-top
 // âm của .block-top-hero với main#main_content (xem block-top-hero/style.scss
 // + resources/styles/theme/layout/_general.scss, cả 2 cùng giả định
-// .block-top-hero là con đầu tiên của #main_content).
-$laca_first_block_name = null;
-foreach (parse_blocks(get_the_content()) as $laca_block) {
-	if (!empty($laca_block['blockName'])) {
-		$laca_first_block_name = $laca_block['blockName'];
-		break;
-	}
-}
-$laca_page_starts_with_top_hero = $laca_first_block_name === 'lacadev/top-hero-block';
-
-if (!is_front_page() && is_page() && !$laca_page_starts_with_top_hero):
+// .block-top-hero là con đầu tiên của #main_content). Cùng điều kiện này
+// cũng được theme/header.php dùng để gắn class overlay trong suốt lên
+// header — xem app/helpers/top-hero-helpers.php.
+if (!is_front_page() && is_page() && !laca_page_starts_with_top_hero()):
 	echo get_template_part('template-parts/breadcrumb');
 endif;
 

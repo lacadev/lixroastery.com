@@ -65,7 +65,9 @@ if (!defined('ABSPATH')) {
 
 	<div class="wrapper">
 		<?php if (!is_404()): ?>
-			<header class="header" id="header">
+			<header
+				class="header<?php echo laca_page_starts_with_top_hero() ? ' header--hero-overlay' : ''; ?>"
+				id="header">
 				<div class="container-fluid">
 					<div class="header__inner">
 

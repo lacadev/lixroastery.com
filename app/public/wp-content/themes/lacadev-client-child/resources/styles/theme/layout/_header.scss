@@ -25,6 +25,52 @@ body.menu-open {
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
     }
 
+    // Trang bắt đầu bằng block Top Hero (header.php tự gắn class qua
+    // laca_page_starts_with_top_hero(), app/helpers/top-hero-helpers.php) —
+    // header trong suốt, chữ trắng, đè lên ảnh hero (margin-top âm của
+    // .block-top-hero + padding-top của #main_content đã "nhường" đúng
+    // khoảng không gian của header, xem block-top-hero/style.scss +
+    // _general.scss). Cuộn xuống quá hero (.is-scrolled, sticky-header.js)
+    // thì trở lại nền trắng/chữ tối bình thường — nếu không, header sẽ
+    // trong suốt mãi trên nền trắng của phần nội dung bên dưới, chữ trắng
+    // không đọc được.
+    &--hero-overlay {
+        background: transparent;
+        transition: background 0.25s ease, box-shadow 0.25s ease;
+
+        .header__menu-list .menu-item > a,
+        .header__menu-list .menu-item.actived-menu > a,
+        .header__logo-text,
+        .language-switcher a {
+            color: #fff;
+        }
+
+        .header__hamburger span {
+            background: #fff;
+        }
+
+        &.is-scrolled {
+            background: #fff;
+
+            .header__menu-list .menu-item > a {
+                color: $darkColor;
+            }
+
+            .header__menu-list .menu-item.actived-menu > a {
+                color: $primaryColor;
+            }
+
+            .header__logo-text,
+            .language-switcher a {
+                color: $darkColor;
+            }
+
+            .header__hamburger span {
+                background: $darkColor;
+            }
+        }
+    }
+
     &__inner {
         display: flex;
         align-items: center;
