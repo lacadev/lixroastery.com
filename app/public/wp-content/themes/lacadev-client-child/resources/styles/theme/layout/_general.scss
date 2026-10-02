@@ -21,6 +21,7 @@ body:not(.home) main#main_content {
 }
 
 .container-fluid {
+  max-width: 100% !important;
   padding-right: rem(100) !important;
   padding-left: rem(100) !important;
 
