@@ -1,0 +1,375 @@
+@use "../abstracts/variables" as *;
+@use "../abstracts/mixin" as *;
+
+/**
+ * Restyle trang Checkout (theme/woocommerce/checkout/*.php) — CHỈ đổi giao
+ * diện, mọi field/phương thức vận chuyển/cổng thanh toán vẫn là dữ liệu
+ * THẬT do WooCommerce in ra (field loop get_checkout_fields(), gateway
+ * list $available_gateways, shipping rate $available_methods) — không có
+ * field/carrier/gateway nào bị thêm hay đổi tên ở đây.
+ *
+ * Bố cục 2 cột lấy từ chính cấu trúc có sẵn của form-checkout.php, KHÔNG
+ * phải markup mới: #customer_details (billing+shipping) nằm cột trái,
+ * #order_review (bọc review-order.php + payment.php, cùng 1 hook
+ * woocommerce_checkout_order_review) tự chia lại thành lưới 2 cột con
+ * giống hệt lưới ngoài — nhờ vậy bảng giỏ hàng (review-order.php) rơi vào
+ * cột phải, khối thanh toán (payment.php, đứng sau bảng trong cùng div)
+ * rơi vào cột trái, tiếp nối ngay dưới billing/shipping mà không cần sửa
+ * PHP.
+ */
+body.woocommerce-checkout {
+    #main_content {
+        background: #fff;
+    }
+}
+
+// "Có mã giảm giá?" (form-coupon.php) — hook ở TRƯỚC <form> checkout
+// (woocommerce_before_checkout_form) nên nằm full-width ngay phía trên,
+// không thuộc lưới 2 cột bên dưới — style thành 1 thanh gọn thay vì để mặc định.
+.woocommerce-form-coupon-toggle {
+    max-width: rem(1240);
+    margin: 0 auto rem(16);
+    padding: 0 rem(20);
+    font-family: $mainFont;
+    color: rgba(0, 0, 0, 0.6);
+
+    a.showcoupon {
+        color: $primaryColor;
+        text-decoration: underline;
+    }
+
+    @include resFont(rem(13), rem(14));
+}
+
+.woocommerce-form-coupon {
+    max-width: rem(1240);
+    margin: 0 auto rem(16);
+    padding: 0 rem(20);
+
+    // .form-row-first/.form-row-last đã được WC core CSS (vẫn đang enqueue,
+    // chưa dequeue) float 2 bên cạnh nhau sẵn — không cần display:flex
+    // riêng (nếu tự thêm flex sẽ xung đột với inline style "display:block"
+    // mà jQuery slideToggle() của WC tự gán khi mở/đóng khối này).
+    .input-text {
+        width: 100%;
+        background: $lightColor;
+        border: 1px solid rgba(0, 0, 0, 0.1);
+        border-radius: rem(4);
+        padding: rem(12) rem(14);
+        font-family: $mainFont;
+
+        @include resFont(rem(14), rem(15));
+    }
+
+    button {
+        background: $primaryColor;
+        border: 0;
+        border-radius: rem(4);
+        color: #fff;
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+        padding: 0 rem(24);
+        cursor: pointer;
+        font-family: $subFont;
+
+        @include resFont(rem(13), rem(14));
+    }
+}
+
+.woocommerce-checkout {
+    max-width: rem(1240);
+    margin: 0 auto;
+    padding: rem(48) rem(20) rem(96);
+    display: grid;
+    grid-template-columns: 1fr minmax(rem(300), rem(360));
+    column-gap: rem(64);
+    align-items: start;
+
+    h3 {
+        font-family: $subFont;
+        font-weight: $medium;
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+        color: $darkColor;
+        margin: 0 0 rem(24);
+
+        @include resFont(rem(16), rem(18));
+    }
+
+    #customer_details {
+        grid-column: 1;
+        display: block;
+
+        .col-1,
+        .col-2 {
+            width: 100%;
+            float: none;
+        }
+    }
+
+    #order_review_heading {
+        grid-column: 2;
+    }
+
+    #order_review {
+        grid-column: 1 / -1;
+        display: grid;
+        grid-template-columns: 1fr minmax(rem(300), rem(360));
+        column-gap: rem(64);
+
+        .woocommerce-checkout-review-order-table {
+            grid-column: 2;
+        }
+
+        #payment {
+            grid-column: 1;
+            margin-top: rem(40);
+        }
+    }
+
+    @include maxWidth($md) {
+        grid-template-columns: 1fr;
+
+        #order_review {
+            grid-template-columns: 1fr;
+            margin-top: rem(40);
+
+            .woocommerce-checkout-review-order-table {
+                grid-column: 1;
+            }
+
+            #payment {
+                grid-column: 1;
+            }
+        }
+    }
+}
+
+// === Form field (billing/shipping/order notes) ===
+.woocommerce-billing-fields,
+.woocommerce-shipping-fields,
+.woocommerce-additional-fields {
+    margin-bottom: rem(40);
+}
+
+.woocommerce form {
+    .form-row {
+        margin-bottom: rem(16);
+    }
+
+    label {
+        display: block;
+        margin-bottom: rem(6);
+        color: rgba(0, 0, 0, 0.6);
+        font-family: $mainFont;
+
+        @include resFont(rem(12), rem(13));
+    }
+
+    .input-text,
+    select {
+        width: 100%;
+        background: $lightColor;
+        border: 1px solid rgba(0, 0, 0, 0.1);
+        border-radius: rem(4);
+        padding: rem(12) rem(14);
+        color: $darkColor;
+        font-family: $mainFont;
+
+        @include resFont(rem(14), rem(15));
+    }
+}
+
+// === Shipping method (cart-shipping.php, nằm trong hàng "shipping" của
+// bảng totals bên cột phải) — style thành 1 danh sách radio dọc.
+.woocommerce-shipping-methods {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+
+    li {
+        display: flex;
+        align-items: center;
+        gap: rem(10);
+        padding: rem(8) 0;
+    }
+
+    input[type="radio"] {
+        accent-color: $primaryColor;
+    }
+
+    label {
+        margin: 0;
+        color: $darkColor;
+
+        @include resFont(rem(13), rem(14));
+    }
+}
+
+// === Payment methods (payment.php/payment-method.php) ===
+.checkout-section-heading {
+    font-family: $subFont;
+    font-weight: $medium;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: $darkColor;
+    margin: 0 0 rem(20);
+
+    @include resFont(rem(16), rem(18));
+}
+
+.wc_payment_methods {
+    list-style: none;
+    margin: 0 0 rem(24);
+    padding: 0;
+
+    .wc_payment_method {
+        border: 1px solid rgba(0, 0, 0, 0.1);
+        border-radius: rem(6);
+        padding: rem(14) rem(16);
+        margin-bottom: rem(12);
+    }
+
+    input[type="radio"] {
+        accent-color: $primaryColor;
+        margin-right: rem(8);
+    }
+
+    label {
+        font-family: $mainFont;
+        font-weight: $medium;
+        color: $darkColor;
+        margin: 0;
+
+        @include resFont(rem(14), rem(15));
+    }
+
+    .payment_box {
+        margin-top: rem(12);
+        padding-top: rem(12);
+        border-top: 1px solid rgba(0, 0, 0, 0.08);
+        font-family: $mainFont;
+        color: rgba(0, 0, 0, 0.6);
+
+        @include resFont(rem(13), rem(14));
+    }
+}
+
+.woocommerce-terms-and-conditions-wrapper {
+    margin: rem(8) 0 rem(24);
+
+    label {
+        display: flex;
+        align-items: flex-start;
+        gap: rem(8);
+        color: rgba(0, 0, 0, 0.6);
+
+        @include resFont(rem(12), rem(13));
+    }
+
+    input[type="checkbox"] {
+        accent-color: $primaryColor;
+        margin-top: rem(3);
+    }
+}
+
+#place_order {
+    display: block;
+    width: 100%;
+    background: $primaryColor;
+    border: 0;
+    border-radius: rem(4);
+    color: #fff;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    padding: rem(16);
+    cursor: pointer;
+    font-family: $subFont;
+
+    &:hover {
+        opacity: 0.9;
+    }
+
+    @include resFont(rem(14), rem(16));
+}
+
+// === Bảng giỏ hàng (review-order.php) — cột phải, dạng "card" nền nhạt ===
+.woocommerce-checkout-review-order-table {
+    width: 100%;
+    background: $lightColor;
+    border-radius: rem(8);
+    padding: rem(24);
+    border-collapse: collapse;
+    display: block;
+
+    thead {
+        display: none;
+    }
+
+    tbody,
+    tfoot,
+    tr {
+        display: block;
+    }
+
+    th,
+    td {
+        display: block;
+        border: 0;
+        padding: 0;
+    }
+
+    tr {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: rem(12);
+        padding: rem(12) 0;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+
+        &:last-child {
+            border-bottom: 0;
+        }
+    }
+
+    .product-name {
+        font-family: $mainFont;
+        color: $darkColor;
+
+        @include resFont(rem(13), rem(14));
+    }
+
+    .product-total,
+    td {
+        font-family: $mainFont;
+        color: $darkColor;
+        text-align: right;
+        white-space: nowrap;
+
+        @include resFont(rem(13), rem(14));
+    }
+
+    .cart-subtotal,
+    .cart-discount,
+    .shipping,
+    .tax-total {
+        th,
+        td {
+            color: rgba(0, 0, 0, 0.6);
+
+            @include resFont(rem(13), rem(14));
+        }
+    }
+
+    .order-total {
+        th,
+        td {
+            font-family: $subFont;
+            font-weight: $medium;
+            text-transform: uppercase;
+            color: $darkColor;
+
+            @include resFont(rem(15), rem(17));
+        }
+    }
+}

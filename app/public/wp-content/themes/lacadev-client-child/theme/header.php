@@ -117,6 +117,25 @@ if (!defined('ABSPATH')) {
 								?>
 							</nav>
 							<?php laca_language_switcher_hover(); ?>
+
+							<button type="button" class="header__icon-btn" id="btn-search-open"
+								aria-label="<?php esc_attr_e('Tìm kiếm', 'laca'); ?>">
+								<svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+									<circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2" />
+									<path d="M21 21L16.65 16.65" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+								</svg>
+							</button>
+
+							<?php if (function_exists('WC')) : ?>
+								<button type="button" class="header__icon-btn" id="btn-cart-open"
+									aria-label="<?php esc_attr_e('Giỏ hàng', 'laca'); ?>">
+									<svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+										<rect x="5" y="9" width="14" height="11" rx="1" stroke="currentColor" stroke-width="2" />
+										<path d="M9 9V7a3 3 0 016 0v2" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+									</svg>
+									<span class="header__cart-count"><?php echo (int) WC()->cart->get_cart_contents_count(); ?></span>
+								</button>
+							<?php endif; ?>
 						</div>
 
 						<!-- Hamburger (mobile) -->
@@ -163,5 +182,53 @@ if (!defined('ABSPATH')) {
 						<?php laca_language_switcher_hover(); ?>
 					</div>
 				</div>
+
+				<!-- Popup tìm kiếm — trượt toàn màn hình từ phải -->
+				<div class="header__popup" id="header-search" aria-hidden="true">
+					<div class="header__popup-backdrop"></div>
+					<div class="header__popup-panel">
+						<div class="header__popup-head">
+							<h2 class="header__popup-title"><?php esc_html_e('Tìm kiếm', 'laca'); ?></h2>
+							<button type="button" class="header__popup-close" id="btn-search-close">
+								<?php esc_html_e('Đóng', 'laca'); ?>
+							</button>
+						</div>
+						<form role="search" method="get" action="<?php echo esc_url(home_url('/')); ?>"
+							class="header__search-form">
+							<input type="search" name="s" id="header-search-input"
+								placeholder="<?php esc_attr_e('Bạn đang tìm gì…', 'laca'); ?>"
+								value="<?php echo esc_attr(get_search_query()); ?>">
+							<button type="submit" aria-label="<?php esc_attr_e('Tìm kiếm', 'laca'); ?>">
+								<svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+									<circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2" />
+									<path d="M21 21L16.65 16.65" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+								</svg>
+							</button>
+						</form>
+						<div class="header__search-results" id="header-search-results"></div>
+					</div>
+				</div>
+
+				<?php if (function_exists('WC')) : ?>
+					<!-- Popup giỏ hàng — trượt toàn màn hình từ phải -->
+					<div class="header__popup header__popup--cart" id="header-cart" aria-hidden="true"
+						data-ajax-config='<?php echo esc_attr(wp_json_encode([
+							'ajaxurl' => admin_url('admin-ajax.php'),
+							'nonce'   => wp_create_nonce('theme_nonce'),
+						])); ?>'>
+						<div class="header__popup-backdrop"></div>
+						<div class="header__popup-panel">
+							<div class="header__popup-head">
+								<h2 class="header__popup-title"><?php esc_html_e('Giỏ hàng', 'laca'); ?></h2>
+								<button type="button" class="header__popup-close" id="btn-cart-close">
+									<?php esc_html_e('Đóng', 'laca'); ?>
+								</button>
+							</div>
+							<div class="header__cart-body">
+								<?php laca_render_mini_cart(); ?>
+							</div>
+						</div>
+					</div>
+				<?php endif; ?>
 			</header>
 		<?php endif; ?>

@@ -9,9 +9,17 @@ import './components/cpt-grid.js';
 import './components/journal-directory.js';
 import './components/floating-contact.js';
 import { initMobileMenu } from './components/mobile-menu.js';
+import { initSearchPopup } from './components/search-popup.js';
+import { initCartPopup } from './components/cart-popup.js';
+
+const initHeaderInteractions = () => {
+	initMobileMenu();
+	initSearchPopup();
+	initCartPopup();
+};
 
 if ( document.readyState === 'loading' ) {
-	document.addEventListener( 'DOMContentLoaded', initMobileMenu );
+	document.addEventListener( 'DOMContentLoaded', initHeaderInteractions );
 } else {
-	initMobileMenu();
+	initHeaderInteractions();
 }

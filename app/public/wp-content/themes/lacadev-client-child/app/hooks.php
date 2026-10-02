@@ -28,6 +28,11 @@ require_once CHILD_APP_DIR . 'src/Ajax/GalleryAjaxHandler.php';
 require_once CHILD_APP_DIR . 'src/Ajax/PdnTvAjaxHandler.php';
 require_once CHILD_APP_DIR . 'src/Ajax/ProjectAjaxHandler.php';
 
+// ── Popup giỏ hàng ở header (xóa/đổi số lượng qua AJAX, badge tự đồng bộ
+// qua woocommerce_add_to_cart_fragments) — xem theme/header.php ────────────
+require_once CHILD_APP_DIR . 'helpers/mini-cart-render.php';
+require_once CHILD_APP_DIR . 'src/Ajax/CartAjaxHandler.php';
+
 // ── CPT Grid block AJAX Handler (dùng chung cho MỌI post type, khác các handler cố định CPT ở trên) ──
 require_once CHILD_APP_DIR . 'helpers/taxonomy-helpers.php';
 require_once CHILD_APP_DIR . 'helpers/cpt-grid-render.php';

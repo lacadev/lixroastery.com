@@ -1,0 +1,287 @@
+@use "../abstracts/variables" as *;
+@use "../abstracts/mixin" as *;
+
+// theme/search.php (child override của parent) — trang kết quả tìm kiếm.
+.search-results-page {
+    padding: 4rem 0;
+
+    &__heading {
+        font-family: $subFont;
+        font-weight: $regular;
+        text-transform: uppercase;
+        letter-spacing: 0.02em;
+        text-align: center;
+        color: $darkColor;
+        margin: 1.5rem 0 0.5rem;
+
+        @include resFont(rem(32), rem(56));
+    }
+
+    &__subtitle {
+        font-family: $mainFont;
+        text-align: center;
+        color: rgba(0, 0, 0, 0.5);
+        margin: 0 0 rem(32);
+
+        @include resFont(rem(14), rem(16));
+    }
+
+    &__tabs {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: rem(24);
+        margin: 0 0 rem(56);
+        padding-bottom: rem(20);
+        border-bottom: 1px solid rgba(0, 0, 0, 0.15);
+    }
+
+    &__tab {
+        font-family: $subFont;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        color: rgba(0, 0, 0, 0.45);
+        text-decoration: none;
+        padding-bottom: rem(4);
+        border-bottom: 2px solid transparent;
+
+        &:hover,
+        &.is-active {
+            color: $primaryColor;
+            border-color: $primaryColor;
+        }
+
+        @include resFont(rem(12), rem(13));
+    }
+
+    &__empty {
+        text-align: center;
+        color: rgba(0, 0, 0, 0.5);
+    }
+
+    @include maxWidth($sm) {
+        padding: 2.5rem 0;
+    }
+}
+
+// Mỗi nhóm post type (sản phẩm/bài viết/trang/CPT khác) — markup/class
+// "search-section"/"list-post"/"load-more-btn" GIỮ NGUYÊN từ bản gốc parent
+// (xem theme/search.php) để JS load-more AJAX hoạt động đúng, CHỈ style
+// thêm ở đây.
+.search-section {
+    margin-bottom: rem(64);
+    scroll-margin-top: rem(100);
+
+    &__title {
+        font-family: $subFont;
+        font-weight: $regular;
+        text-transform: uppercase;
+        color: $darkColor;
+        margin: 0 0 rem(24);
+
+        @include resFont(rem(18), rem(22));
+    }
+
+    &__count {
+        font-weight: $regular;
+        color: rgba(0, 0, 0, 0.4);
+        text-transform: none;
+
+        @include resFont(rem(12), rem(13));
+    }
+
+    .list-post {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: rem(32);
+
+        @include maxWidth($md) {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        @include maxWidth($sm) {
+            grid-template-columns: repeat(1, 1fr);
+            gap: rem(24);
+        }
+    }
+
+    // Section "Sản phẩm" dùng lại NGUYÊN lưới của block Product Grid (copy
+    // từ block-gutenberg/.../block-product-grid/style.scss để card sản
+    // phẩm đồng bộ với các nơi khác trên site) thay vì lưới 3 cột chung ở
+    // trên.
+    &--product .list-post {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 1.8rem;
+
+        @include maxWidth($md) {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        @include maxWidth($xs) {
+            grid-template-columns: repeat(1, 1fr);
+        }
+    }
+
+    .load-more-container {
+        text-align: center;
+        margin-top: rem(32);
+    }
+
+    .load-more-btn {
+        display: inline-block;
+        background: none;
+        border: 1px solid $primaryColor;
+        color: $primaryColor;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        padding: rem(12) rem(32);
+        border-radius: rem(999);
+        cursor: pointer;
+        font-family: $subFont;
+
+        &:hover {
+            background: $primaryColor;
+            color: #fff;
+        }
+
+        @include resFont(rem(12), rem(13));
+    }
+}
+
+// Card kết quả (template-parts/loop-post.php, loop-product.php...) — class
+// gốc ".loop-service" bị DÙNG CHUNG với tính năng Service CPT riêng
+// (template-parts/loop-service.php, class chính thật là
+// ".block-service__item") nên style ở đây CHỈ áp trong phạm vi trang search
+// (".search-results-page .loop-service"), không ảnh hưởng trang Service.
+.search-results-page .loop-service {
+    > a {
+        display: block;
+        text-decoration: none;
+        color: inherit;
+    }
+
+    figure {
+        margin: 0 0 rem(16);
+        aspect-ratio: 4 / 3;
+        overflow: hidden;
+        background: $lightColor;
+        border-radius: rem(4);
+
+        img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+    }
+
+    // Dòng chuyên mục + ngày đăng — CHỈ loop-journal.php có (journal-cat +
+    // get_the_date()), các loop-*.php khác không in ra .meta nên khối này
+    // tự ẩn khi không có nội dung.
+    .meta {
+        display: flex;
+        align-items: center;
+        gap: rem(8);
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        color: rgba(0, 0, 0, 0.45);
+        margin: 0 0 rem(8);
+
+        @include resFont(rem(11), rem(12));
+    }
+
+    .heading {
+        font-family: $subFont;
+        font-weight: $medium;
+        color: $darkColor;
+        margin: 0 0 rem(8);
+
+        @include resFont(rem(16), rem(18));
+    }
+
+    .desc {
+        font-family: $mainFont;
+        color: rgba(0, 0, 0, 0.6);
+        line-height: 1.6;
+        margin: 0;
+
+        @include resFont(rem(13), rem(14));
+    }
+
+    // Card sản phẩm (loop-product.php gọi laca_render_product_grid_card())
+    // — copy nguyên style từ block-product-grid/style.scss để đồng bộ giao
+    // diện, scope trong .loop-service vì file đó chỉ load CSS khi block
+    // thật sự xuất hiện trên trang (không tự có ở trang search này).
+    .block-product-grid__card {
+        display: block;
+        color: inherit;
+        text-decoration: none;
+
+        &:hover {
+            .block-product-grid__image img {
+                transform: scale(1.04);
+            }
+
+            .block-product-grid__card-title {
+                color: $primaryColor;
+            }
+        }
+    }
+
+    .block-product-grid__image {
+        width: 100%;
+        aspect-ratio: 1 / 1;
+        overflow: hidden;
+        margin-bottom: rem(20);
+
+        img {
+            display: block;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.4s ease;
+        }
+    }
+
+    .block-product-grid__tags {
+        display: flex;
+        align-items: center;
+        font-weight: $medium;
+        gap: 0.8em;
+        text-transform: uppercase;
+
+        @include resFont(rem(14), rem(16));
+    }
+
+    .block-product-grid__tag {
+        position: relative;
+
+        &:not(:last-child)::after {
+            content: "";
+            position: absolute;
+            top: 50%;
+            right: -0.4em;
+            width: 1px;
+            height: 55%;
+            background-color: currentColor;
+            opacity: 0.4;
+            transform: translateY(-50%);
+        }
+    }
+
+    .block-product-grid__card-title {
+        font-family: $subFont;
+        font-weight: $regular;
+        text-transform: uppercase;
+        margin: rem(10) 0;
+
+        @include resFont(rem(16), rem(20));
+    }
+
+    .block-product-grid__card-subtitle {
+        margin: 0;
+        font-weight: $regular;
+
+        @include resFont(rem(14), rem(16));
+    }
+}

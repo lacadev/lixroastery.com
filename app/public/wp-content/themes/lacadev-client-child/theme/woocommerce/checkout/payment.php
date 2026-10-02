@@ -21,6 +21,7 @@ if ( ! wp_doing_ajax() ) {
 	do_action( 'woocommerce_review_order_before_payment' );
 }
 ?>
+<h3 class="checkout-section-heading"><?php esc_html_e( 'Thanh toán', 'laca' ); ?></h3>
 <div id="payment" class="woocommerce-checkout-payment">
 	<?php if ( WC()->cart && WC()->cart->needs_payment() ) : ?>
 		<ul class="wc_payment_methods payment_methods methods" aria-label="<?php esc_attr_e( 'Payment methods', 'woocommerce' ); ?>">
