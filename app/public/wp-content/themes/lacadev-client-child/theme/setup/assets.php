@@ -18,17 +18,25 @@ if (!defined('ABSPATH')) {
  */
 function child_enqueue_frontend_assets()
 {
-    $child_version = wp_get_theme()->get('Version');
     $child_dir_uri = dirname(get_stylesheet_directory_uri());
 
     // ------------------------------------------------------------------
     // Theme style.css (cho phép viết CSS trực tiếp vào theme/style.css)
     // ------------------------------------------------------------------
+    $child_style_file = get_stylesheet_directory() . '/style.css';
     wp_enqueue_style(
         'child-style',
         get_stylesheet_uri(),
         ['theme-css-bundle'], // load sau parent CSS
-        $child_version
+        // filemtime() thay vì wp_get_theme()->get('Version') — "Version"
+        // trong theme/style.css là chuỗi TĨNH (1.0, chưa từng tăng), nên
+        // dùng làm ?ver= thì trình duyệt coi URL không đổi MÃI MÃI dù nội
+        // dung CSS đã thay đổi, cache cũ không tự invalidate — lỗi thật đã
+        // gặp: sửa CSS xong, tải lại trang thường (cache bật) vẫn thấy bản
+        // cũ, chỉ đúng khi mở DevTools (thường tự tắt cache). filemtime()
+        // tự đổi theo đúng lúc file thực sự thay đổi, không cần nhớ tăng
+        // version tay (giống cách child.js bên dưới đã làm đúng từ đầu).
+        file_exists($child_style_file) ? filemtime($child_style_file) : false
     );
 
     // ------------------------------------------------------------------
@@ -40,7 +48,7 @@ function child_enqueue_frontend_assets()
             'child-theme-css',
             $child_dir_uri . '/resources/styles/child.css',
             ['theme-css-bundle'], // load sau parent CSS
-            $child_version
+            filemtime($child_css_file)
         );
     }
 
@@ -53,7 +61,7 @@ function child_enqueue_frontend_assets()
             'child-dist-css',
             $child_dir_uri . '/dist/styles/child.css',
             ['theme-css-bundle'],
-            $child_version
+            filemtime($child_dist_css)
         );
     }
 

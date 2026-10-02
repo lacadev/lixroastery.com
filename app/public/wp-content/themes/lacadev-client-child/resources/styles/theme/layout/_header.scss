@@ -40,8 +40,18 @@ body.menu-open {
 
         .header__menu-list .menu-item > a,
         .header__menu-list .menu-item.actived-menu > a,
-        .header__logo-text,
-        .language-switcher a {
+        .header__logo-text {
+            color: #fff;
+        }
+
+        // Viết riêng, ghép thêm ".header" vào trước (".header.header--hero-
+        // overlay") để tăng độ đặc thù — lỗi thật đã gặp: ".language-
+        // switcher a" ở định nghĩa gốc bên dưới (mục "Danh sách ngôn ngữ")
+        // cũng ra đúng 2 class + 1 thẻ (".header .language-switcher a"),
+        // HOÀ độ đặc thù với rule này (cũng 2 class + 1 thẻ) — hoà thì luật
+        // viết SAU trong file thắng, mà rule gốc nằm sau nên luôn đè mất
+        // màu trắng, "VN" vẫn hiện màu tối dù nền đã trong suốt đúng.
+        &.header .language-switcher a {
             color: #fff;
         }
 
