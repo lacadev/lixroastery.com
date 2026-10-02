@@ -27,14 +27,21 @@ body.menu-open {
 
     // Trang bắt đầu bằng block Top Hero (header.php tự gắn class qua
     // laca_page_starts_with_top_hero(), app/helpers/top-hero-helpers.php) —
-    // header trong suốt, chữ trắng, đè lên ảnh hero (margin-top âm của
-    // .block-top-hero + padding-top của #main_content đã "nhường" đúng
-    // khoảng không gian của header, xem block-top-hero/style.scss +
-    // _general.scss). Cuộn xuống quá hero (.is-scrolled, sticky-header.js)
-    // thì trở lại nền trắng/chữ tối bình thường — nếu không, header sẽ
-    // trong suốt mãi trên nền trắng của phần nội dung bên dưới, chữ trắng
-    // không đọc được.
+    // header TRÔI (position: fixed, không chiếm chỗ trong luồng) + trong
+    // suốt + chữ trắng, đè thẳng lên ảnh hero. Dùng fixed (không phải
+    // sticky) ở trạng thái này vì sticky vẫn chiếm chỗ trong luồng — trang
+    // chủ (".home") không áp phép bù margin-top âm/padding-top (xem
+    // block-top-hero/style.scss + _general.scss, cả 2 đều loại trừ ".home"),
+    // nên nếu vẫn sticky thì hero trang chủ sẽ nằm NGAY DƯỚI header (có
+    // khoảng trắng), không đè lên được. Fixed giải quyết luôn cho cả 2
+    // trường hợp home/non-home cùng lúc, không cần phân biệt. Cuộn xuống
+    // (.is-scrolled, sticky-header.js) thì quay lại sticky + nền trắng/chữ
+    // tối bình thường như mọi trang khác.
     &--hero-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
         background: transparent;
         transition: background 0.25s ease, box-shadow 0.25s ease;
 
@@ -60,6 +67,7 @@ body.menu-open {
         }
 
         &.is-scrolled {
+            position: sticky;
             background: #fff;
 
             .header__menu-list .menu-item > a {
