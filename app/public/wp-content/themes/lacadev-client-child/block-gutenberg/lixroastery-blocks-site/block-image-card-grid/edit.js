@@ -15,6 +15,7 @@ import {
 	Button,
 	ColorPicker,
 } from '@wordpress/components';
+import { useState } from '@wordpress/element';
 import { useInserterPreview, BlockPreviewMock } from '../../utils/preview';
 import {
 	ResponsiveRangeControl,
@@ -108,6 +109,18 @@ export default function Edit( { attributes, setAttributes } ) {
 		'--align-margin-mobile':
 			MARGIN_MAP[ contentAlignMobile ] || MARGIN_MAP.center,
 	};
+
+	// Thu gọn/mở rộng từng thẻ trong panel Inspector — nhiều thẻ xếp dài rất
+	// khó quản lý, mặc định mở (false = đang mở) để không đổi hành vi cũ khi
+	// mới có 1-2 thẻ (cùng pattern đã dùng ở block-content-rows). Phải đặt
+	// TRƯỚC early return isPreview bên dưới — hook không được gọi có điều
+	// kiện (react-hooks/rules-of-hooks).
+	const [ collapsedItems, setCollapsedItems ] = useState( {} );
+	const toggleItemCollapse = ( index ) =>
+		setCollapsedItems( ( prev ) => ( {
+			...prev,
+			[ index ]: ! prev[ index ],
+		} ) );
 
 	if ( isPreview ) {
 		return (
@@ -256,66 +269,118 @@ export default function Edit( { attributes, setAttributes } ) {
 					title={ __( 'Danh sách thẻ', 'laca' ) }
 					initialOpen={ true }
 				>
-					{ items.map( ( item, index ) => (
-						<div
-							key={ index }
-							style={ {
-								border: '1px solid #ddd',
-								borderRadius: 4,
-								padding: 10,
-								marginBottom: 10,
-							} }
-						>
-							<ImagePicker
-								imageUrl={ item.imageUrl }
-								imageId={ item.imageId }
-								onSelect={ ( media ) => {
-									const next = [ ...items ];
-									next[ index ] = {
-										...next[ index ],
-										imageId: media.id,
-										imageUrl: media.url,
-									};
-									setAttributes( { items: next } );
+					{ items.map( ( item, index ) => {
+						const isCollapsed = !! collapsedItems[ index ];
+						const plainTitle = ( item.title || '' ).replace(
+							/<[^>]*>/g,
+							''
+						);
+						return (
+							<div
+								key={ index }
+								style={ {
+									border: '1px solid #ddd',
+									borderRadius: 4,
+									padding: 10,
+									marginBottom: 10,
 								} }
-							/>
-							<TextControl
-								label={ __( 'Đường dẫn', 'laca' ) }
-								value={ item.link }
-								onChange={ ( v ) =>
-									updateItem( index, 'link', v )
-								}
-								placeholder="https://…"
-							/>
-							<SelectControl
-								label={ __( 'Mở liên kết', 'laca' ) }
-								value={ item.linkTarget || '_self' }
-								options={ [
-									{
-										label: __(
-											'Cùng tab (mặc định)',
-											'laca'
-										),
-										value: '_self',
-									},
-									{
-										label: __( 'Tab mới', 'laca' ),
-										value: '_blank',
-									},
-								] }
-								onChange={ ( v ) =>
-									updateItem( index, 'linkTarget', v )
-								}
-							/>
-							<Button
-								variant="secondary"
-								isDestructive
-								onClick={ () => removeItem( index ) }
 							>
-								{ __( 'Xóa thẻ này', 'laca' ) }
-							</Button>
-						</div>
-					) ) }
+								<Button
+									onClick={ () =>
+										toggleItemCollapse( index )
+									}
+									style={ {
+										width: '100%',
+										display: 'flex',
+										justifyContent: 'space-between',
+										alignItems: 'center',
+										padding: 0,
+										fontSize: '11px',
+										fontWeight: 600,
+										marginBottom: isCollapsed ? 0 : 6,
+									} }
+									aria-expanded={ ! isCollapsed }
+								>
+									<span>
+										{ __( 'Thẻ', 'laca' ) } { index + 1 }
+										{ plainTitle
+											? ` — ${ plainTitle }`
+											: '' }
+									</span>
+									<span aria-hidden="true">
+										{ isCollapsed ? '▸' : '▾' }
+									</span>
+								</Button>
+
+								{ ! isCollapsed && (
+									<>
+										<ImagePicker
+											imageUrl={ item.imageUrl }
+											imageId={ item.imageId }
+											onSelect={ ( media ) => {
+												const next = [ ...items ];
+												next[ index ] = {
+													...next[ index ],
+													imageId: media.id,
+													imageUrl: media.url,
+												};
+												setAttributes( {
+													items: next,
+												} );
+											} }
+										/>
+										<TextControl
+											label={ __( 'Đường dẫn', 'laca' ) }
+											value={ item.link }
+											onChange={ ( v ) =>
+												updateItem( index, 'link', v )
+											}
+											placeholder="https://…"
+										/>
+										<SelectControl
+											label={ __(
+												'Mở liên kết',
+												'laca'
+											) }
+											value={ item.linkTarget || '_self' }
+											options={ [
+												{
+													label: __(
+														'Cùng tab (mặc định)',
+														'laca'
+													),
+													value: '_self',
+												},
+												{
+													label: __(
+														'Tab mới',
+														'laca'
+													),
+													value: '_blank',
+												},
+											] }
+											onChange={ ( v ) =>
+												updateItem(
+													index,
+													'linkTarget',
+													v
+												)
+											}
+										/>
+										<Button
+											variant="secondary"
+											isDestructive
+											onClick={ () =>
+												removeItem( index )
+											}
+										>
+											{ __( 'Xóa thẻ này', 'laca' ) }
+										</Button>
+									</>
+								) }
+							</div>
+						);
+					} ) }
 					<Button variant="primary" onClick={ addItem }>
 						{ __( '+ Thêm thẻ', 'laca' ) }
 					</Button>
