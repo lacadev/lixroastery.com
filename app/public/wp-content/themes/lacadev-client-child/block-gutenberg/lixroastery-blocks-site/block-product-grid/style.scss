@@ -1,6 +1,10 @@
 @use "@parent/styles/theme/abstracts/variables" as *;
 @use "@parent/styles/theme/abstracts/mixin" as *;
 @use "../../../resources/styles/theme/abstracts/variables" as *;
+// Card ".block-product-grid__card/__image/__tags/__tag/__card-title/__card-subtitle"
+// tách sang partial dùng chung (trang kết quả tìm kiếm + archive /shop cũng
+// cần đúng card này) — xem resources/styles/theme/components/_product-card.scss.
+@use "../../../resources/styles/theme/components/product-card";
 
 .block-product-grid {
     &__maxwidth {
@@ -75,83 +79,5 @@
         @include maxWidth($xs) {
             grid-template-columns: 1fr;
         }
-    }
-
-    &__card {
-        display: block;
-        color: inherit;
-        text-decoration: none;
-    }
-
-    &__image {
-        width: 100%;
-        aspect-ratio: 1 / 1;
-        overflow: hidden;
-        margin-bottom: rem(20);
-
-        img {
-            display: block;
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            transition: transform 0.4s ease;
-        }
-    }
-
-    &__card:hover {
-        .block-product-grid__image img {
-            transform: scale(1.04);
-        }
-
-        .block-product-grid__card-title {
-            color: $primaryColor;
-        }
-    }
-
-    &__tags {
-        display: flex;
-        align-items: center;
-        font-weight: $medium;
-        gap: 0.8em;
-        text-transform: uppercase;
-
-        @include resFont(rem(14), rem(16));
-    }
-
-    // Dấu phân cách giữa 2 tag (vd "Cà Phê Specialty | Aramosa") — vẽ bằng
-    // ::after (1 thanh dọc canh giữa theo chiều cao chữ), KHÔNG dùng ký tự
-    // "|" thật vì baseline font khiến ký tự lệch trên/dưới không đều (cùng
-    // kỹ thuật đã áp dụng ở block-cpt-grid__tab, xem style.scss block đó).
-    // right = -nửa gap để thanh luôn nằm đúng giữa khoảng cách 2 tag.
-    &__tag {
-        position: relative;
-
-        &:not(:last-child)::after {
-            content: '';
-            position: absolute;
-            top: 50%;
-            right: -0.4em;
-            width: 1px;
-            height: 55%;
-            background-color: currentColor;
-            opacity: 0.4;
-            transform: translateY(-50%);
-        }
-    }
-
-    &__card-title {
-        font-family: $subFont;
-        font-weight: $regular;
-        text-transform: uppercase;
-        margin: rem(10) 0;
-
-        @include resFont(rem(16), rem(20));
-    }
-
-    &__card-subtitle {
-        margin: 0;
-        font-weight: $regular;
-        
-        @include resFont(rem(14), rem(16));
     }
 }

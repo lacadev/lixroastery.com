@@ -1,97 +1,150 @@
 <?php
-/**
- * The Template for displaying product archives, including the main shop page which is a post type archive
- *
- * This template can be overridden by copying it to yourtheme/woocommerce/archive-product.php.
- *
- * HOWEVER, on occasion WooCommerce will need to update template files and you
- * (the theme developer) will need to copy the new files to your theme to
- * maintain compatibility. We try to do this as little as possible, but it does
- * happen. When this occurs the version of the template file will be bumped and
- * the readme will list any important changes.
- *
- * @see https://woocommerce.com/document/template-structure/
- * @package WooCommerce\Templates
- * @version 8.6.0
- */
-
-defined( 'ABSPATH' ) || exit;
-
-get_header( 'shop' );
-
-/**
- * Hook: woocommerce_before_main_content.
- *
- * @hooked woocommerce_output_content_wrapper - 10 (outputs opening divs for the content)
- * @hooked woocommerce_breadcrumb - 20
- * @hooked WC_Structured_Data::generate_website_data() - 30
- */
-do_action( 'woocommerce_before_main_content' );
-
-/**
- * Hook: woocommerce_shop_loop_header.
- *
- * @since 8.6.0
- *
- * @hooked woocommerce_product_taxonomy_archive_header - 10
- */
-do_action( 'woocommerce_shop_loop_header' );
-
-if ( woocommerce_product_loop() ) {
-
-	/**
-	 * Hook: woocommerce_before_shop_loop.
-	 *
-	 * @hooked woocommerce_output_all_notices - 10
-	 * @hooked woocommerce_result_count - 20
-	 * @hooked woocommerce_catalog_ordering - 30
-	 */
-	do_action( 'woocommerce_before_shop_loop' );
-
-	woocommerce_product_loop_start();
-
-	if ( wc_get_loop_prop( 'total' ) ) {
-		while ( have_posts() ) {
-			the_post();
-
-			/**
-			 * Hook: woocommerce_shop_loop.
-			 */
-			do_action( 'woocommerce_shop_loop' );
-
-			wc_get_template_part( 'content', 'product' );
-		}
-	}
-
-	woocommerce_product_loop_end();
-
-	/**
-	 * Hook: woocommerce_after_shop_loop.
-	 *
-	 * @hooked woocommerce_pagination - 10
-	 */
-	do_action( 'woocommerce_after_shop_loop' );
-} else {
-	/**
-	 * Hook: woocommerce_no_products_found.
-	 *
-	 * @hooked wc_no_products_found - 10
-	 */
-	do_action( 'woocommerce_no_products_found' );
+if (!defined('ABSPATH')) {
+    exit;
 }
 
 /**
- * Hook: woocommerce_after_main_content.
+ * Trang archive sản phẩm (/shop VÀ /product-category/{slug} — WooCommerce
+ * tự route taxonomy-product-cat.php về đúng file này qua
+ * wc_get_template('archive-product.php'), xem file đó) — THAY 100% bản
+ * mặc định của WooCommerce (loop + pagination riêng của WC) bằng cùng cơ
+ * chế "CPT Grid" (tab lọc theo taxonomy + AJAX, xem
+ * block-gutenberg/.../block-cpt-grid/render.php +
+ * resources/scripts/theme/components/cpt-grid.js +
+ * app/src/Ajax/CptGridAjaxHandler.php) đã dùng cho /journal-cat, để:
+ * - Heading + mô tả: ở /shop lấy từ CHÍNH trang "Shop" thật (WooCommerce →
+ *   Settings → Products → Shop page) — admin tự soạn nội dung qua Block
+ *   Editor như soạn 1 Page bình thường, không cần sửa code mỗi khi đổi mô
+ *   tả (cùng mô hình với laca_render_dynamic_cpt_archive_intro() dùng cho
+ *   Dynamic CPT, nhưng "product" là CPT của WooCommerce nên không nằm
+ *   trong danh sách Dynamic CPT — tự lấy qua wc_get_page_id('shop') thay vì
+ *   gọi hàm đó). Ở /product-category/{slug} thì lấy tên + mô tả của CHÍNH
+ *   danh mục đang xem (giống hệt cách taxonomy-journal-cat.php làm).
+ * - Tab lọc = danh mục sản phẩm THẬT (product_cat, đã có dữ liệu sẵn),
+ *   không bịa taxonomy "xuất xứ" mới. Tab tương ứng danh mục đang xem (nếu
+ *   có) được đánh dấu active + lưới chỉ lọc đúng danh mục đó ngay từ đầu.
+ * - Card sản phẩm = laca_render_product_grid_card() (qua
+ *   laca_cpt_grid_render_card() tự delegate khi post type "product") để
+ *   đồng bộ với Product Grid block và trang kết quả tìm kiếm.
  *
- * @hooked woocommerce_output_content_wrapper_end - 10 (outputs closing divs for the content)
+ * @package LacaDevClientChild
  */
-do_action( 'woocommerce_after_main_content' );
 
-/**
- * Hook: woocommerce_sidebar.
- *
- * @hooked woocommerce_get_sidebar - 10
- */
-do_action( 'woocommerce_sidebar' );
+get_header('shop');
 
-get_footer( 'shop' );
+$taxonomy  = 'product_cat';
+$post_type = 'product';
+
+$current_term = null;
+if (is_tax($taxonomy)) {
+    $queried = get_queried_object();
+    if ($queried instanceof WP_Term && $taxonomy === $queried->taxonomy) {
+        $current_term = $queried;
+    }
+}
+
+$terms   = taxonomy_exists($taxonomy) ? laca_get_top_level_terms_with_content($taxonomy) : [];
+$tax_obj = get_taxonomy($taxonomy);
+$active_term_slug = $current_term ? $current_term->slug : '';
+
+$per_page   = 8;
+$query_args = [
+    'post_type'      => $post_type,
+    'post_status'    => 'publish',
+    'posts_per_page' => $per_page,
+    'paged'          => 1,
+    'no_found_rows'  => false,
+];
+if ($current_term) {
+    $query_args['tax_query'] = [ // phpcs:ignore WordPress.DB.SlowDBQuery
+        [
+            'taxonomy'         => $taxonomy,
+            'field'            => 'slug',
+            'terms'            => $active_term_slug,
+            'include_children' => true,
+        ],
+    ];
+}
+$query     = new WP_Query($query_args);
+$max_pages = (int) $query->max_num_pages;
+
+$unique_id = wp_unique_id('lix-shop-archive-');
+$config = [
+    'action'         => 'laca_cpt_grid_load',
+    'nonce'          => wp_create_nonce('theme_nonce'),
+    'ajaxurl'        => admin_url('admin-ajax.php'),
+    'postType'       => $post_type,
+    'taxonomy'       => $taxonomy,
+    'paginationMode' => 'numbered',
+    'perPagePC'      => $per_page,
+    'perPageMobile'  => 0,
+    'minCount'       => $per_page,
+    'currentPage'    => 1,
+    'maxPages'       => $max_pages,
+];
+
+// ── Heading + mô tả: danh mục đang xem (nếu có), ngược lại dùng trang Shop ──
+$shop_page = null;
+if (!$current_term) {
+    $shop_page_id = function_exists('wc_get_page_id') ? wc_get_page_id('shop') : 0;
+    $shop_page    = $shop_page_id > 0 ? get_post($shop_page_id) : null;
+    if ($shop_page && ('publish' !== $shop_page->post_status || 'page' !== $shop_page->post_type)) {
+        $shop_page = null;
+    }
+}
+?>
+
+<section class="journal-archive shop-archive">
+    <div class="container-fluid">
+        <?php if ($current_term) : ?>
+            <h1 class="journal-archive__title"><?php echo esc_html($current_term->name); ?></h1>
+            <?php if ($current_term->description) : ?>
+                <div class="journal-archive__desc"><?php echo wp_kses_post(wpautop($current_term->description)); ?></div>
+            <?php endif; ?>
+        <?php elseif ($shop_page) : ?>
+            <h1 class="journal-archive__title"><?php echo esc_html(get_the_title($shop_page)); ?></h1>
+            <div class="journal-archive__desc dynamic-cpt-archive-intro">
+                <?php echo apply_filters('the_content', $shop_page->post_content); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+            </div>
+        <?php else : ?>
+            <h1 class="journal-archive__title"><?php post_type_archive_title(); ?></h1>
+        <?php endif; ?>
+
+        <div class="block-cpt-grid__inner" id="<?php echo esc_attr($unique_id); ?>"
+            data-cpt-grid-config='<?php echo esc_attr(wp_json_encode($config)); ?>'>
+
+            <?php if (!empty($terms) && !is_wp_error($terms)) : ?>
+                <div class="block-cpt-grid__tabs-wrap">
+                    <div class="block-cpt-grid__tabs">
+                        <button type="button" class="block-cpt-grid__tab<?php echo $current_term ? '' : ' is-active'; ?>" data-term-slug="">
+                            <?php echo esc_html($tax_obj->labels->all_items ?? __('Tất cả', 'laca')); ?>
+                        </button>
+                        <?php foreach ($terms as $term) : ?>
+                            <button type="button" class="block-cpt-grid__tab<?php echo $term->slug === $active_term_slug ? ' is-active' : ''; ?>" data-term-slug="<?php echo esc_attr($term->slug); ?>">
+                                <?php echo esc_html($term->name); ?>
+                            </button>
+                        <?php endforeach; ?>
+                    </div>
+                </div>
+            <?php endif; ?>
+
+            <div class="block-cpt-grid__list block-cpt-grid__list--cols-4">
+                <?php laca_cpt_grid_render_cards($query, $taxonomy); ?>
+            </div>
+
+            <div class="block-cpt-grid__pagination">
+                <?php
+                echo lacadev_child_pagination_markup([ // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+                    'base'    => '#cgpage-%#%',
+                    'format'  => '',
+                    'current' => 1,
+                    'total'   => $max_pages,
+                ]);
+                ?>
+            </div>
+        </div>
+    </div>
+</section>
+
+<?php
+get_footer('shop');

@@ -160,6 +160,14 @@
         margin-left: auto;
         margin-right: auto;
 
+        // Trong hero (cạnh ảnh sản phẩm) — danh sách nằm sát theo chiều
+        // rộng cột tóm tắt, canh trái, KHÔNG center/giới hạn max-width như
+        // bản hiện trong section Producer.
+        &--hero {
+            max-width: none;
+            margin: 1.5rem 0 2rem;
+        }
+
         li {
             display: flex;
             justify-content: space-between;

@@ -19,6 +19,15 @@ if (!defined('ABSPATH')) {
  */
 function laca_cpt_grid_render_card(int $post_id, string $taxonomy = ''): void
 {
+    // Post type "product" dùng đúng card của block Product Grid (đồng bộ
+    // giao diện sản phẩm toàn site) thay vì card chung kiểu bài viết
+    // (ngày đăng + excerpt) bên dưới — xem archive-product.php (shop)
+    // đang dùng lại cơ chế CPT Grid này cho trang /shop.
+    if ('product' === get_post_type($post_id) && function_exists('laca_render_product_grid_card')) {
+        laca_render_product_grid_card($post_id);
+        return;
+    }
+
     $title   = get_the_title($post_id);
     $url     = get_permalink($post_id);
     $excerpt = has_excerpt($post_id)

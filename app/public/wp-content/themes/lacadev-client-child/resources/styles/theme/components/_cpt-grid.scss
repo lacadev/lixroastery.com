@@ -1,0 +1,253 @@
+@use "../abstracts/variables" as *;
+@use "../abstracts/mixin" as *;
+
+/**
+ * Style cho cơ chế "CPT Grid" (tab lọc theo taxonomy + AJAX + phân trang) —
+ * tách ra partial dùng chung vì NHIỀU nơi cần: block CPT Grid gốc
+ * (block-gutenberg/.../block-cpt-grid/style.scss tự @use lại đúng file
+ * này), theme/taxonomy-journal-cat.php, và theme/woocommerce/archive-product.php
+ * (trang /shop) — cả 2 template đều tái dùng class ".block-cpt-grid__*"
+ * ngoài ngữ cảnh block nên cần CSS này load GLOBAL, không phụ thuộc việc
+ * block có thật sự được chèn vào nội dung trang hay không.
+ */
+.block-cpt-grid {
+    // ── Tabs (lọc theo taxonomy) ────────────────────────────────────────────
+    // Không có nút Prev/Next — danh sách tab canh giữa, tự cuộn ngang bằng
+    // vuốt/scroll khi tràn (overflow-x: auto), không cần nút điều khiển riêng.
+    &__tabs-wrap {
+        display: flex;
+        justify-content: center;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.15);
+        margin-bottom: rem(96);
+        padding-bottom: rem(14);
+    }
+
+    &__tabs {
+        display: flex;
+        align-items: center;
+        gap: rem(24);
+        max-width: 100%;
+        overflow-x: auto;
+        scrollbar-width: none;
+
+        &::-webkit-scrollbar {
+            display: none;
+        }
+    }
+
+    &__tab {
+        position: relative;
+        flex: 0 0 auto;
+        background: none;
+        border: 0;
+        padding: 0;
+        cursor: pointer;
+        white-space: nowrap;
+        font-family: $mainFont;
+        font-weight: $regular;
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+        color: rgba(0, 0, 0, 0.45);
+        transition: color 0.2s ease;
+
+        &:hover {
+            color: $darkColor;
+        }
+
+        &.is-active {
+            color: $darkColor;
+            font-weight: $semiBold;
+        }
+
+        // Dấu phân cách giữa các tab — vẽ bằng ::after (1 thanh dọc canh
+        // giữa theo chiều cao chữ), KHÔNG dùng ký tự "|" thật vì baseline
+        // font khiến ký tự lệch trên/dưới không đều. Đặt ở nửa khoảng gap
+        // (rem(24)/2) để nằm giữa 2 tab, không cần thêm markup.
+        &:not(:last-child)::after {
+            content: "";
+            position: absolute;
+            top: 50%;
+            right: rem(-12);
+            width: 1px;
+            height: 55%;
+            background-color: rgba(0, 0, 0, 0.25);
+            transform: translateY(-50%);
+        }
+
+        @include resFont(rem(12), rem(13));
+    }
+
+    // ── Grid ─────────────────────────────────────────────────────────────
+    &__list {
+        display: grid;
+        gap: rem(32);
+        grid-template-columns: repeat(3, 1fr);
+
+        &--cols-1 {
+            grid-template-columns: repeat(1, 1fr);
+        }
+
+        &--cols-2 {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        &--cols-3 {
+            grid-template-columns: repeat(3, 1fr);
+        }
+
+        &--cols-4 {
+            grid-template-columns: repeat(4, 1fr);
+        }
+
+        @include maxWidth($md) {
+            grid-template-columns: repeat(2, 1fr) !important;
+        }
+
+        @include maxWidth($xs) {
+            grid-template-columns: repeat(1, 1fr) !important;
+        }
+    }
+
+    &__empty {
+        grid-column: 1 / -1;
+        text-align: center;
+        color: rgba(0, 0, 0, 0.5);
+        padding: rem(40) 0;
+    }
+
+    // ── Card (chỉ áp cho card chung kiểu bài viết — post type "product" tự
+    // dùng ".block-product-grid__*" qua laca_cpt_grid_render_card(), xem
+    // app/helpers/cpt-grid-render.php) ───────────────────────────────────
+    &__card-link {
+        display: block;
+        text-decoration: none;
+        color: inherit;
+    }
+
+    &__card-thumb {
+        aspect-ratio: 4 / 3;
+        overflow: hidden;
+        margin-bottom: rem(16);
+
+        img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            transition: transform 0.4s ease;
+        }
+    }
+
+    &__card-thumb-placeholder {
+        width: 100%;
+        height: 100%;
+        background: $primaryColor;
+    }
+
+    &__card-link:hover &__card-thumb img {
+        transform: scale(1.05);
+    }
+
+    &__card-meta {
+        font-family: $mainFont;
+        font-weight: $regular;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: rgba(0, 0, 0, 0.45);
+        margin: 0 0 rem(8);
+
+        @include resFont(rem(11), rem(12));
+    }
+
+    &__card-meta-sep {
+        margin: 0 rem(6);
+    }
+
+    &__card-title {
+        font-family: $subFont;
+        font-weight: $regular;
+        text-transform: uppercase;
+        color: $darkColor;
+        margin: 0 0 rem(8);
+
+        @include resFont(rem(16), rem(18));
+    }
+
+    &__card-excerpt {
+        font-family: $mainFont;
+        font-weight: $regular;
+        color: rgba(0, 0, 0, 0.7);
+        margin: 0;
+
+        @include resFont(rem(13), rem(14));
+    }
+
+    // ── Pagination (đánh số) ─────────────────────────────────────────────
+    &__pagination {
+        margin-top: rem(48);
+
+        .pagination-container {
+            display: flex;
+            justify-content: center;
+        }
+
+        .pagination-list {
+            display: flex;
+            align-items: center;
+            gap: rem(10);
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        .pagination-item {
+            a,
+            span {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                min-width: rem(32);
+                height: rem(32);
+                font-family: $mainFont;
+                font-size: rem(13);
+                color: $darkColor;
+                text-decoration: none;
+            }
+
+            &.is-active a,
+            &.is-active span {
+                font-weight: $semiBold;
+                text-decoration: underline;
+            }
+        }
+    }
+
+    // ── Load more / infinite scroll ─────────────────────────────────────
+    &__load-more {
+        margin-top: rem(32);
+        text-align: center;
+    }
+
+    &__sentinel {
+        height: 1px;
+    }
+
+    &__loading-text {
+        font-family: $mainFont;
+        font-size: rem(13);
+        color: rgba(0, 0, 0, 0.5);
+        opacity: 0;
+        transition: opacity 0.2s ease;
+        margin: 0;
+    }
+
+    &__inner.is-loading &__loading-text {
+        opacity: 1;
+    }
+
+    &__inner.is-loading &__list {
+        opacity: 0.5;
+        pointer-events: none;
+        transition: opacity 0.2s ease;
+    }
+}

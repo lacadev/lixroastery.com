@@ -27,28 +27,40 @@ $cooperation_model      = getPostMeta('cooperation_model');
 $annual_volume          = getPostMeta('annual_volume');
 $google_maps_embed      = getPostMeta('google_maps_embed');
 
+// ── Flavor profile (khai báo TRƯỚC traceability vì hero__spec-list cần
+// chèn flavor_profile xen giữa các field truy xuất nguồn gốc, đúng thứ tự
+// thiết kế: .../Net weight/Flavor Profile/Sourcing/...) ──────────────────
+$flavor_profile   = getPostMeta('flavor_profile');
+$sca_coffee_score = getPostMeta('sca_coffee_score');
+
+// Danh sách spec hiện NGAY TRONG HERO (cạnh ảnh sản phẩm) — đúng thứ tự
+// thiết kế, lấy 1 phần field truy xuất nguồn gốc + flavor_profile (field
+// nằm ở tab "Flavor Profile" trong Carbon Fields nhưng hiện ở đây theo
+// mockup, KHÔNG lặp lại dưới mục Flavor Profile).
+$hero_spec_fields = [
+    'origin'            => __('Origin', 'laca'),
+    'region'            => __('Region', 'laca'),
+    'farm'              => __('Farm', 'laca'),
+    'variety'           => __('Variety', 'laca'),
+    'crop_year'         => __('Crop Year', 'laca'),
+    'altitude'          => __('Altitude', 'laca'),
+    'process'           => __('Process', 'laca'),
+    'net_weight'        => __('Net Weight', 'laca'),
+    'flavor_profile'    => __('Flavor Profile', 'laca'),
+    'sourcing'          => __('Sourcing', 'laca'),
+    'paid_for_producer' => __('Paid for Producer', 'laca'),
+];
+
+// Các field truy xuất nguồn gốc CÒN LẠI (không nằm trong hero__spec-list ở
+// trên) — vẫn hiện trong mục "Producer" như trước, không mất dữ liệu nào.
 $traceability_fields = [
-    'origin'             => __('Origin', 'laca'),
-    'region'             => __('Region', 'laca'),
-    'farm'               => __('Farm', 'laca'),
     'cooperative'        => __('Cooperative', 'laca'),
     'wet_mill'           => __('Wet Mill', 'laca'),
     'factory'            => __('Factory', 'laca'),
-    'variety'            => __('Variety', 'laca'),
-    'crop_year'          => __('Crop year', 'laca'),
-    'altitude'           => __('Altitude', 'laca'),
-    'process'            => __('Process', 'laca'),
-    'net_weight'         => __('Net weight', 'laca'),
-    'sourcing'           => __('Sourcing', 'laca'),
-    'paid_for_producer'  => __('Paid for producer', 'laca'),
     'paid_for_exporter'  => __('Paid for exporter', 'laca'),
     'fob_price'          => __('FOB price', 'laca'),
     'ddp_price'          => __('DDP price', 'laca'),
 ];
-
-// ── Flavor profile ───────────────────────────────────────────────────────
-$flavor_profile   = getPostMeta('flavor_profile');
-$sca_coffee_score = getPostMeta('sca_coffee_score');
 $flavor_grid = [
     'flavor_aroma'      => __('Aroma', 'laca'),
     'flavor_hot'        => __('Hot', 'laca'),
@@ -130,6 +142,29 @@ $reviews_list = is_array($reviews_list) ? $reviews_list : [];
             <?php woocommerce_template_single_title(); ?>
             <?php woocommerce_template_single_price(); ?>
             <?php woocommerce_template_single_excerpt(); ?>
+
+            <?php
+            $has_hero_spec = false;
+            foreach ($hero_spec_fields as $key => $label) {
+                if (getPostMeta($key)) {
+                    $has_hero_spec = true;
+                    break;
+                }
+            }
+            ?>
+            <?php if ($has_hero_spec) : ?>
+                <ul class="single-product-page__info-list single-product-page__info-list--hero">
+                    <?php foreach ($hero_spec_fields as $key => $label) :
+                        $value = getPostMeta($key);
+                        if (!$value) {
+                            continue;
+                        }
+                    ?>
+                        <li><span><?php echo esc_html($label); ?></span><span><?php echo esc_html($value); ?></span></li>
+                    <?php endforeach; ?>
+                </ul>
+            <?php endif; ?>
+
             <?php woocommerce_template_single_add_to_cart(); ?>
         </div>
     </div>
