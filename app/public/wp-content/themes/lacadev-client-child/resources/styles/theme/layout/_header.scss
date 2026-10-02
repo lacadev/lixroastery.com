@@ -45,8 +45,15 @@ body.menu-open {
         background: transparent;
         transition: background 0.25s ease, box-shadow 0.25s ease;
 
-        .header__menu-list .menu-item > a,
-        .header__menu-list .menu-item.actived-menu > a,
+        // Dùng combinator "> .menu-item" (CHỈ con trực tiếp của
+        // .header__menu-list) — lỗi thật đã gặp: viết ".header__menu-list
+        // .menu-item > a" (descendant, không giới hạn độ sâu) vô tình khớp
+        // LUÔN cả "> a" bên trong .sub-menu (submenu cấp 2, cũng có class
+        // .menu-item), làm chữ submenu bị trắng trên nền trắng (.sub-menu
+        // background: #fff) — hover vào menu cha nhìn như 1 khối trắng
+        // trống, không đọc được chữ.
+        .header__menu-list > .menu-item > a,
+        .header__menu-list > .menu-item.actived-menu > a,
         .header__logo-text {
             color: #fff;
         }
@@ -70,11 +77,11 @@ body.menu-open {
             position: sticky;
             background: #fff;
 
-            .header__menu-list .menu-item > a {
+            .header__menu-list > .menu-item > a {
                 color: $darkColor;
             }
 
-            .header__menu-list .menu-item.actived-menu > a {
+            .header__menu-list > .menu-item.actived-menu > a {
                 color: $primaryColor;
             }
 
