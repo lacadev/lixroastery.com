@@ -148,10 +148,11 @@ foreach ($sections as $section) {
 $active_key = array_key_first($sections);
 ?>
 
-<div class="search-results-page">
-    <div class="container-fluid">
-        <?php theBreadcrumb(); ?>
 
+<div class="search-results-page">
+    <?php theBreadcrumb(); ?>
+
+    <div class="container-fluid">
         <h1 class="search-results-page__heading">
             <?php echo esc_html($search_query); ?>
         </h1>

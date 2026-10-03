@@ -279,7 +279,16 @@ body.menu-open {
         list-style: none;
         margin: 0;
         padding: 0;
-        min-width: rem(70);
+        // display: grid + li dùng grid-area (thay vì min-width cố định +
+        // li position:absolute;left:0) — lỗi thật đã gặp: min-width đoán
+        // cứng (70px) luôn RỘNG HƠN chữ "VN" thật, để lại 1 khoảng trống vô
+        // hình bên phải trước khi "gap" của .header__right bắt đầu, làm
+        // khoảng cách "VN" → icon tìm kiếm nhìn RỘNG HƠN hẳn khoảng cách
+        // "LIÊN HỆ" → "VN". Grid-area tự co khít đúng bề ngang của <li>
+        // RỘNG NHẤT trong 2 ngôn ngữ (không cần đoán số px), 2 <li> vẫn
+        // chồng đúng 1 ô để crossfade bằng opacity như cũ.
+        display: inline-grid;
+        align-items: center;
         // height dùng đơn vị em + line-height thật của body (1.7, xem
         // _general.scss) để khớp line-box thật của thẻ <a> bên trong — bài
         // học thật: trước đây hardcode "rem(19)" theo nhầm line-height 1.2,
@@ -292,9 +301,7 @@ body.menu-open {
         height: 1.7em;
 
         li {
-            position: absolute;
-            top: 0;
-            left: 0;
+            grid-area: 1 / 1;
             white-space: nowrap;
             opacity: 0;
             z-index: 1;
