@@ -146,6 +146,16 @@ class ContactFormEmailService
      */
     private static function interpolate(string $template, array $vars, bool $isHtml = true): string
     {
+        // Sắp xếp theo ĐỘ DÀI TÊN BIẾN giảm dần trước khi thay thế — bug
+        // thật đã gặp: str_replace('$' . $key, ...) lặp không theo thứ tự
+        // độ dài nên nếu form có cả field "phone" và "phone_number" (rất dễ
+        // xảy ra, template mặc định dùng đúng $phone_number), xử lý "phone"
+        // trước sẽ thay luôn phần "$phone" nằm BÊN TRONG "$phone_number",
+        // làm sai nội dung email (vd thành "<giá trị phone>_number" thay vì
+        // giá trị thật của phone_number). Xử lý tên dài nhất trước loại bỏ
+        // hoàn toàn khả năng 1 tên biến là tiền tố của tên biến khác.
+        uksort($vars, static fn($a, $b) => strlen((string) $b) <=> strlen((string) $a));
+
         foreach ($vars as $key => $value) {
             $key = preg_replace('/[^a-z0-9_]/i', '', (string) $key);
             if ($key === '') {
