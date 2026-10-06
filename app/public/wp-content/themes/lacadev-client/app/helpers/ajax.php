@@ -831,12 +831,16 @@ function lacadev_load_more_search() {
     }
     
     // Map post_type to template part
-    // Pages use 'post' template since loop-page.php doesn't exist
+    // Pages use 'post' template since loop-page.php doesn't exist. Cùng lý
+    // do, Dynamic CPT tạo qua DynamicCptManager chỉ tự sinh archive/single,
+    // KHÔNG sinh template-parts/loop-{slug}.php — fallback về 'post' cho
+    // MỌI post type thiếu file loop riêng, để "Xem thêm" không âm thầm trả
+    // về rỗng với các CPT mới tạo sau này.
     $template_slug = $post_type;
-    if ($post_type === 'page') {
+    if (!locate_template("template-parts/loop-{$template_slug}.php")) {
         $template_slug = 'post';
     }
-    
+
     // Generate HTML
     ob_start();
     while ($query->have_posts()) {

@@ -241,9 +241,17 @@ $search_query = get_search_query();
                         </h2>
                         <div class="list-post">
                             <?php
+                            // Dynamic CPT tạo qua DynamicCptManager chỉ tự
+                            // sinh archive-{slug}.php/single-{slug}.php, KHÔNG
+                            // sinh template-parts/loop-{slug}.php — nếu thiếu
+                            // file này, get_template_part() render ra rỗng
+                            // (badge "hiển thị x/y" vẫn đúng, chỉ lưới trống)
+                            // cho MỌI CPT mới tạo sau này. Dùng loop-post.php
+                            // (card chung: tiêu đề/ảnh/excerpt) làm fallback.
+                            $hasOwnLoop = (bool) locate_template("template-parts/loop-{$custom_type}.php");
                             while ($custom_posts->have_posts()) {
                                 $custom_posts->the_post();
-                                get_template_part('template-parts/loop', $custom_type);
+                                get_template_part('template-parts/loop', $hasOwnLoop ? $custom_type : 'post');
                             }
                             wp_reset_postdata();
                             ?>

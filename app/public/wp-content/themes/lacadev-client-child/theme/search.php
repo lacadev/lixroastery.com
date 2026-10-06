@@ -193,9 +193,19 @@ $active_key = array_key_first($sections);
                 </h2>
                 <div class="list-post">
                     <?php
+                    // Dynamic CPT tạo qua DynamicCptManager chỉ tự sinh
+                    // archive-{slug}.php/single-{slug}.php, KHÔNG sinh
+                    // template-parts/loop-{slug}.php — nếu thiếu file này,
+                    // get_template_part() render ra rỗng (badge "hiển thị
+                    // x/y" vẫn đúng, chỉ lưới trống) cho MỌI CPT mới tạo sau
+                    // này. Dùng loop-post.php (card chung) làm fallback.
+                    $templateSlug = $section['template_slug'];
+                    if (!locate_template("template-parts/loop-{$templateSlug}.php")) {
+                        $templateSlug = 'post';
+                    }
                     while ($query->have_posts()) {
                         $query->the_post();
-                        get_template_part('template-parts/loop', $section['template_slug']);
+                        get_template_part('template-parts/loop', $templateSlug);
                     }
                     wp_reset_postdata();
                     ?>
