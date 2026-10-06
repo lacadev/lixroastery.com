@@ -244,7 +244,14 @@ class ExitIntentPopup
         .laca-exit-popup__content { font-size: 14px; }
         </style>
 
-        <script>
+        <?php
+        // CSP (theme/setup/security.php) chặn mọi inline <script> không có
+        // đúng nonce của request — script này echo trực tiếp qua ob_start()
+        // nên không tự động được gắn nonce như wp_enqueue_script()/
+        // wp_add_inline_script() đã xử lý sẵn.
+        $cspNonceAttr = \defined('LACA_CSP_NONCE') ? ' nonce="' . esc_attr(LACA_CSP_NONCE) . '"' : '';
+        ?>
+        <script<?php echo $cspNonceAttr; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>
         (function() {
             const COOKIE_KEY  = 'laca_popup_closed';
             const COOKIE_HOURS = <?php echo (int) $cookieHours; ?>;
