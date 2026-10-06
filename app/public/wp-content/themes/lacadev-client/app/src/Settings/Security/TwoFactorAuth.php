@@ -404,6 +404,11 @@ class TwoFactorAuth
             $qrSrc = 'https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js';
         }
         wp_enqueue_script('laca-qrcode', $qrSrc, [], '1.0.0', true);
-        wp_enqueue_script('laca-2fa-profile', get_template_directory_uri() . '/resources/scripts/admin/laca-2fa.js', ['laca-qrcode', 'jquery'], '1.0.0', true);
+        // get_template_directory_uri() trỏ vào .../theme (style.css nằm
+        // trong subfolder "theme/") — thiếu dirname() nên URL trước đây trỏ
+        // sai thư mục (.../theme/resources/... thay vì .../resources/...),
+        // giống quy ước dirname(get_template_directory_uri()) đã dùng đúng
+        // ở DashboardWidgets.php/FrontendChatbotHandler.php.
+        wp_enqueue_script('laca-2fa-profile', dirname(get_template_directory_uri()) . '/resources/scripts/admin/laca-2fa.js', ['laca-qrcode', 'jquery'], '1.0.0', true);
     }
 }
