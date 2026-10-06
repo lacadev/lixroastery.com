@@ -30,11 +30,6 @@ gsap.registerPlugin( ScrollTrigger );
 // ─── Device check ────────────────────────────────────────────────────────────
 const isMobile = window.matchMedia && window.matchMedia( '(max-width: 768px)' ).matches;
 
-// Show loader ngay trước DOMContentLoaded để tránh flash of content
-if ( ! isMobile && shouldShowLoader() ) {
-	document.documentElement.classList.add( 'loading' );
-}
-
 // ─── GSAP context — reverted on each navigation ───────────────────────────────
 let gsapCtx;
 
@@ -50,10 +45,7 @@ function initPageFeatures() {
 	gsapCtx = gsap.context( () => {
 		if ( ! isMobile ) {
 			setupGsap404();
-			initAnimations();
-			animateText();
 		}
-		initAboutLacaHero();
 	} );
 
 	// Scroll-reveal and counters observe current DOM nodes.
@@ -75,7 +67,6 @@ document.addEventListener( 'DOMContentLoaded', () => {
 	initRippleEffect(); // document-level delegation — must only run once
 
 	initPageFeatures();
-	initPageLoader( isMobile );
 	resetHeaderState();
 	closeMobileMenu();
 } );

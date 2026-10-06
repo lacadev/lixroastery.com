@@ -254,7 +254,19 @@ class ContactFormAjaxHandler
             </form>
         </div>
 
-        <script>
+        <?php
+        // CSP (theme/setup/security.php) chặn MỌI inline <script> không có
+        // đúng nonce của request — script này echo trực tiếp qua ob_start()
+        // nên KHÔNG tự động được gắn nonce như wp_enqueue_script()
+        // (script_loader_tag) hay wp_add_inline_script() (wp_inline_script_
+        // attributes) đã xử lý sẵn. Thiếu dòng này, trình duyệt câm lặng
+        // chặn toàn bộ script (console báo "violates Content Security
+        // Policy"), JS không bao giờ gắn được submit handler, nên form rơi
+        // về submit thường của trình duyệt (tải lại trang) — đúng lỗi thật
+        // đã gặp trên production.
+        $cspNonceAttr = defined('LACA_CSP_NONCE') ? ' nonce="' . esc_attr(LACA_CSP_NONCE) . '"' : '';
+        ?>
+        <script<?php echo $cspNonceAttr; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>
         (function() {
             const FORM_ID  = '<?php echo esc_js($formElId); ?>';
             const AJAX_URL = '<?php echo esc_js($ajaxUrl); ?>';
