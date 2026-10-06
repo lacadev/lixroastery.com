@@ -23,10 +23,19 @@ require_once CHILD_APP_DIR . 'helpers/top-hero-helpers.php';
 // ── AJAX pagination markup (matches parent thePagination() BEM) ──────────────
 require_once CHILD_APP_DIR . 'helpers/ajax-pagination-markup.php';
 
-// ── Gallery Archive AJAX Handler ─────────────────────────────────────────────
-require_once CHILD_APP_DIR . 'src/Ajax/GalleryAjaxHandler.php';
-require_once CHILD_APP_DIR . 'src/Ajax/PdnTvAjaxHandler.php';
-require_once CHILD_APP_DIR . 'src/Ajax/ProjectAjaxHandler.php';
+// ── Gallery/PdnTv/Project Archive AJAX Handler — TẠM TẮT (audit) ─────────────
+// Cả 3 handler đăng ký đúng action (lacadev_gallery_archive_load,
+// lacadev_pdn_tv_archive_load, lacadev_project_archive_load) và render card
+// đầy đủ, nhưng không có template archive-{cpt}.php hay JS nào trong theme
+// này gọi tới cả 3 action trên — hoàn toàn mồ côi. Meta field của 3 CPT này
+// (investor/floors/location/total_area...) mang đặc trưng site bất động
+// sản, không khớp LixRoastery (coffee roastery) — nhiều khả năng bị copy
+// nhầm từ 1 site khác trong cùng family lacadev-client-child. Tắt require
+// (không xoá file) để dừng đăng ký AJAX action không dùng tới; bật lại nếu
+// xác nhận 3 CPT này thực sự cần dùng trên site này.
+// require_once CHILD_APP_DIR . 'src/Ajax/GalleryAjaxHandler.php';
+// require_once CHILD_APP_DIR . 'src/Ajax/PdnTvAjaxHandler.php';
+// require_once CHILD_APP_DIR . 'src/Ajax/ProjectAjaxHandler.php';
 
 // ── Popup giỏ hàng ở header (xóa/đổi số lượng qua AJAX, badge tự đồng bộ
 // qua woocommerce_add_to_cart_fragments) — xem theme/header.php ────────────
