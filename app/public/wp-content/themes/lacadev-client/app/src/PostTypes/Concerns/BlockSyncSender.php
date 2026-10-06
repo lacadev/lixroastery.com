@@ -264,7 +264,14 @@ trait BlockSyncSender
                 'Accept'     => 'application/json',
             ],
             'timeout' => 15,
-            'sslverify' => false, // Cho phép self-signed cert môi trường staging
+            // Trước đây tắt cứng sslverify=false (comment: "cho phép
+            // self-signed cert môi trường staging") nhưng áp dụng vô điều
+            // kiện cho MỌI client, kể cả production — request này gửi kèm
+            // X-Laca-Key (bí mật) nên dễ bị lộ qua tấn công trung gian nếu
+            // endpoint chạy qua mạng không tin cậy. Chỉ tắt xác thực TLS khi
+            // WP_DEBUG bật (môi trường dev/staging thường bật cờ này), mặc
+            // định luôn verify thật ở production.
+            'sslverify' => !(\defined('WP_DEBUG') && WP_DEBUG),
         ]);
 
         if (is_wp_error($response)) {
