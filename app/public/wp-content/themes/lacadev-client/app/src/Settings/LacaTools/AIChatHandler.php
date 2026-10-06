@@ -95,14 +95,6 @@ class AIChatHandler
         // Gọi AI handler với message làm "text" và system prompt riêng
         $reply = $this->getHandler()->chat($message, $system_prompt);
 
-        // DEBUG: log để xác định lỗi (xoá sau khi fix)
-        error_log('[AIChatHandler] reply type: ' . gettype($reply));
-        if (is_wp_error($reply)) {
-            error_log('[AIChatHandler] WP_Error: ' . $reply->get_error_message());
-        } else {
-            error_log('[AIChatHandler] reply length: ' . strlen((string)$reply));
-        }
-
         if (is_wp_error($reply)) {
             return new \WP_Error(
                 'ai_chat_error',
