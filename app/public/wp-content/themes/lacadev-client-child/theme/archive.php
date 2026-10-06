@@ -50,9 +50,15 @@ if ( ! empty( $wp_query->posts ) ) {
 					$post_title = get_the_title();
 					$thumb_id   = get_post_thumbnail_id();
 
+					// $cat_url khai báo nhưng không bao giờ dùng — biến thật
+					// sự dùng để in link danh mục là $cat_link, trước đây
+					// chỉ được gán BÊN TRONG điều kiện chứ không khởi tạo
+					// mặc định ở ngoài (an toàn nhờ "?? '#'" ở nơi dùng,
+					// nhưng dễ gây nhầm lẫn/PHP notice nếu logic bọc ngoài
+					// bị sửa sau này).
 					$cats     = get_the_terms( $post_id, 'category' );
 					$cat_name = '';
-					$cat_url  = '';
+					$cat_link = '';
 					if ( ! empty( $cats ) && ! is_wp_error( $cats ) ) {
 						$cat_name = esc_html( $cats[0]->name );
 						$cat_link = esc_url( get_term_link( $cats[0] ) );
