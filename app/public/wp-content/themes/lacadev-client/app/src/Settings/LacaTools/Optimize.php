@@ -85,15 +85,20 @@ class Optimize
 
 	public function enableInstantPage()
 	{
+		// get_template_directory_uri() luôn trỏ vào theme PARENT (không có
+		// dist/instantpage.js) — file thật chỉ nằm ở theme CHILD, nên admin
+		// bật switch này trong Laca Tools tưởng đã tối ưu nhưng script 404
+		// im lặng, prefetch-on-hover không bao giờ hoạt động.
 		add_action('wp_enqueue_scripts', function () {
-			wp_enqueue_script('instantpage', get_template_directory_uri() . '/dist/instantpage.js', array(), '5.7.0', true);
+			wp_enqueue_script('instantpage', get_stylesheet_directory_uri() . '/dist/instantpage.js', array(), '5.7.0', true);
 		});
 	}
 
 	public function enableSmoothScroll()
 	{
+		// Cùng lỗi path như enableInstantPage() ở trên.
 		add_action('wp_enqueue_scripts', function () {
-			wp_enqueue_script('smooth-scroll', get_template_directory_uri() . '/dist/smooth-scroll.min.js', array(), '1.4.16', true);
+			wp_enqueue_script('smooth-scroll', get_stylesheet_directory_uri() . '/dist/smooth-scroll.min.js', array(), '1.4.16', true);
 		});
 	}
 }
