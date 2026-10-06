@@ -230,142 +230,118 @@ class AITranslationHandler
         return trim($result);
     }
 
-    private function callGroq($text, $system_prompt)
+    /**
+     * Thử lần lượt từng model trong $models (cùng 1 provider/key) cho tới
+     * khi có model trả về HTTP 200 — vì model free hay bị đổi tên/ngừng
+     * (deprecate) hoặc quá tải tạm thời, 1 model lỗi không có nghĩa cả
+     * provider đó không dùng được. Chỉ dừng hẳn (không thử model khác) khi
+     * HTTP 401/403 — tức bản thân API Key sai/không có quyền, đổi model
+     * cũng vô ích.
+     */
+    private function tryModelsSequentially(string $url, array $headers, array $baseBody, array $models, string $errorCode, string $providerLabel)
     {
-        $url = 'https://api.groq.com/openai/v1/chat/completions';
-
-        // Groq models: llama-3.1-8b-instant (cực nhanh, luôn khả dụng trên mọi tài khoản free),
-        // fallback sang llama-3.3-70b-versatile nếu tài khoản có quyền.
-        $models = ['llama-3.1-8b-instant', 'llama-3.3-70b-versatile'];
         $last_error = null;
 
         foreach ($models as $model) {
-            $body = [
-                'model' => $model,
+            $body = array_merge($baseBody, ['model' => $model]);
+
+            $response = wp_remote_post($url, [
+                'headers' => $headers,
+                'body'    => json_encode($body, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
+                'timeout' => 30,
+            ]);
+
+            if (is_wp_error($response)) {
+                $last_error = $response;
+                continue;
+            }
+
+            $http_code = wp_remote_retrieve_response_code($response);
+            $data      = json_decode(wp_remote_retrieve_body($response), true);
+
+            if ($http_code === 200 && !empty($data['choices'][0]['message']['content'])) {
+                return trim($data['choices'][0]['message']['content']);
+            }
+
+            $err_msg = $data['error']['message'] ?? ($providerLabel . ' API error: HTTP ' . $http_code);
+            $last_error = new \WP_Error($errorCode, "[{$model}] {$err_msg}");
+
+            if (in_array($http_code, [401, 403], true)) {
+                break;
+            }
+        }
+
+        return $last_error ?: new \WP_Error($errorCode, "Không thể kết nối tới {$providerLabel} API.");
+    }
+
+    private function callGroq($text, $system_prompt)
+    {
+        // Groq thường xuyên deprecate model Llama (llama-3.1-8b-instant,
+        // llama-3.3-70b-versatile... đã lần lượt bị gỡ) — dùng dòng
+        // gpt-oss hiện tại còn khả dụng trên mọi tài khoản free. Danh sách
+        // model free mới nhất: console.groq.com/docs/models.
+        $models = ['openai/gpt-oss-120b', 'openai/gpt-oss-20b'];
+
+        return $this->tryModelsSequentially(
+            'https://api.groq.com/openai/v1/chat/completions',
+            [
+                'Content-Type'  => 'application/json',
+                'Authorization' => 'Bearer ' . $this->groq_key,
+            ],
+            [
                 'messages' => [
                     ['role' => 'system', 'content' => $system_prompt],
-                    ['role' => 'user', 'content' => $text]
+                    ['role' => 'user', 'content' => $text],
                 ],
                 'temperature' => 0.3,
                 'max_tokens'  => 1024,
-            ];
-
-            $response = wp_remote_post($url, [
-                'headers' => [
-                    'Content-Type'  => 'application/json',
-                    'Authorization' => 'Bearer ' . $this->groq_key
-                ],
-                'body'    => json_encode($body, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
-                'timeout' => 30
-            ]);
-
-            if (is_wp_error($response)) {
-                $last_error = $response;
-                continue;
-            }
-
-            $http_code = wp_remote_retrieve_response_code($response);
-            $raw_body  = wp_remote_retrieve_body($response);
-            $data      = json_decode($raw_body, true);
-
-            if ($http_code === 200 && !empty($data['choices'][0]['message']['content'])) {
-                return trim($data['choices'][0]['message']['content']);
-            }
-
-            $err_msg = $data['error']['message'] ?? ('Groq API error: HTTP ' . $http_code);
-            $last_error = new \WP_Error('groq_api_error', $err_msg);
-
-            // Nếu lỗi do model không tồn tại hoặc tài khoản không có quyền truy cập model đó
-            if (stripos($err_msg, 'does not exist') !== false || stripos($err_msg, 'not have access') !== false || stripos($err_msg, 'decommissioned') !== false) {
-                continue;
-            }
-
-            // Lỗi khác (ví dụ: invalid API key) thì dừng luôn
-            break;
-        }
-
-        return $last_error ?: new \WP_Error('groq_api_error', 'Không thể kết nối tới Groq API.');
+            ],
+            $models,
+            'groq_api_error',
+            'Groq'
+        );
     }
 
     /**
-     * OpenRouter — API tương thích chuẩn OpenAI chat/completions, cho phép
-     * gọi nhiều model khác nhau qua cùng 1 key, trong đó các model có hậu tố
-     * ":free" không tốn phí. Model có thể bị thay đổi/ngừng theo thời gian —
-     * xem danh sách free mới nhất tại openrouter.ai/models?max_price=0.
+     * OpenRouter — API tương thích chuẩn OpenAI chat/completions. CHỈ dùng
+     * model có hậu tố ":free" (không tốn phí/credit) — cố ý KHÔNG đưa model
+     * trả phí vào đây dù cùng 1 key gọi được, để tránh âm thầm trừ tiền
+     * ngoài ý muốn khi người dùng chỉ cấu hình key cho mục đích miễn phí.
+     * Model free hay đổi/hết hạn — xem danh sách mới nhất tại
+     * openrouter.ai/models?max_price=0.
      */
     private function callOpenRouter($text, $system_prompt)
     {
-        $url = 'https://openrouter.ai/api/v1/chat/completions';
-
-        // Danh sách model ưu tiên:
-        // 1. deepseek/deepseek-chat (siêu rẻ, dịch chuẩn xác cao nhất)
-        // 2. deepseek/deepseek-chat-v3.1
-        // 3. google/gemma-4-31b-it:free (free)
-        // 4. google/gemma-4-26b-a4b-it:free (free)
-        // 5. meta-llama/llama-3.3-70b-instruct:free
         $models = [
-            'deepseek/deepseek-chat',
-            'deepseek/deepseek-chat-v3.1',
-            'google/gemma-4-31b-it:free',
-            'google/gemma-4-26b-a4b-it:free',
-            'meta-llama/llama-3.3-70b-instruct:free'
+            'deepseek/deepseek-chat-v3.1:free',
+            'meta-llama/llama-3.3-70b-instruct:free',
+            'qwen/qwen-2.5-72b-instruct:free',
+            'google/gemma-2-9b-it:free',
         ];
 
-        $last_error = null;
-
-        foreach ($models as $model) {
-            $body = [
-                'model' => $model,
+        return $this->tryModelsSequentially(
+            'https://openrouter.ai/api/v1/chat/completions',
+            [
+                'Content-Type'  => 'application/json',
+                'Authorization' => 'Bearer ' . $this->openrouter_key,
+                // Khuyến nghị của OpenRouter cho mọi request — thiếu 2 header
+                // này, request free-tier dễ bị xếp hạng thấp hơn lúc có
+                // nhiều người cùng dùng chung 1 model free, dẫn tới lỗi
+                // "Provider returned error" dù model/key đều ổn.
+                'HTTP-Referer'  => home_url('/'),
+                'X-Title'       => get_bloginfo('name'),
+            ],
+            [
                 'messages' => [
                     ['role' => 'system', 'content' => $system_prompt],
-                    ['role' => 'user', 'content' => $text]
+                    ['role' => 'user', 'content' => $text],
                 ],
                 'temperature' => 0.1,
-            ];
-
-            $response = wp_remote_post($url, [
-                'headers' => [
-                    'Content-Type'  => 'application/json',
-                    'Authorization' => 'Bearer ' . $this->openrouter_key,
-                ],
-                'body'    => json_encode($body, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
-                'timeout' => 30
-            ]);
-
-            if (is_wp_error($response)) {
-                $last_error = $response;
-                continue;
-            }
-
-            $http_code = wp_remote_retrieve_response_code($response);
-            $raw_body  = wp_remote_retrieve_body($response);
-            $data      = json_decode($raw_body, true);
-
-            if ($http_code === 200 && !empty($data['choices'][0]['message']['content'])) {
-                return trim($data['choices'][0]['message']['content']);
-            }
-
-            $err_msg = $data['error']['message'] ?? ('OpenRouter API error: HTTP ' . $http_code);
-            $last_error = new \WP_Error('openrouter_api_error', $err_msg);
-
-            // Nếu lỗi do model không khả dụng, không free, hoặc yêu cầu slug khác thì thử model tiếp theo
-            if (
-                $http_code === 404 ||
-                stripos($err_msg, 'unavailable') !== false ||
-                stripos($err_msg, 'not exist') !== false ||
-                stripos($err_msg, 'not found') !== false ||
-                stripos($err_msg, 'rate') !== false ||
-                stripos($err_msg, 'free') !== false ||
-                stripos($err_msg, 'slug') !== false
-            ) {
-                continue;
-            }
-
-            // Lỗi invalid API key thì dừng
-            break;
-        }
-
-        return $last_error ?: new \WP_Error('openrouter_api_error', 'Không thể kết nối tới OpenRouter API.');
+            ],
+            $models,
+            'openrouter_api_error',
+            'OpenRouter'
+        );
     }
 
     /**
