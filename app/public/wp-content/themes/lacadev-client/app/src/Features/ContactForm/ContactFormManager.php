@@ -619,6 +619,14 @@ class ContactFormManager
                                         <span class="lcf-row-preview lcf-rp-2-1"></span>2/3 + 1/3
                                     </button>
                                 </div>
+
+                                <div class="laca-cf-field-group" style="margin-top:20px">
+                                    <label class="lcf-form-label">Chữ nút Submit</label>
+                                    <input type="text" class="widefat" id="s-btn-text"
+                                           oninput="lcfStyleUpdate('btn_text',this.value)"
+                                           placeholder="Gửi thông tin">
+                                    <div id="btn-text-i18n-container"></div>
+                                </div>
                             </div>
                         </div>
 
@@ -691,12 +699,6 @@ class ContactFormManager
                                             <option value="center">Giữa</option>
                                             <option value="right">Phải</option>
                                         </select>
-                                    </div>
-                                    <div class="laca-cf-field-group" style="grid-column:1/-1">
-                                        <label class="lcf-form-label">Chữ nút Submit</label>
-                                        <input type="text" class="widefat" id="s-btn-text"
-                                               oninput="lcfStyleUpdate('btn_text',this.value)"
-                                               placeholder="Gửi thông tin">
                                     </div>
                                     <div class="laca-cf-field-group" style="grid-column:1/-1">
                                         <label class="lcf-form-label">Custom CSS</label>
@@ -1125,7 +1127,7 @@ class ContactFormManager
         $handler = new AITranslationHandler();
         $result = [];
 
-        foreach (['label', 'placeholder', 'other_label', 'content'] as $key) {
+        foreach (['label', 'placeholder', 'other_label', 'content', 'btn_text'] as $key) {
             $text = trim((string) ($_POST[$key] ?? ''));
             if ($text === '') {
                 continue;

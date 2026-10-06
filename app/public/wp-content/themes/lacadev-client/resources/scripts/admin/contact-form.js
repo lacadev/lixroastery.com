@@ -152,6 +152,51 @@ const FIELD_TYPES = window.LacaContactFormVars.FIELD_TYPES;
                 </div>`;
             }
 
+            // ── Khối "Dịch sang ngôn ngữ khác" cho Chữ nút Submit (tab Trường)─
+            // Không phải field thật (không nằm trong rows), nên lưu riêng ở
+            // styles.btn_text_i18n[lang] (object phẳng lang → text) thay vì
+            // field.i18n[lang][key] như field thường (chỉ có 1 giá trị cần
+            // dịch, không cần lồng thêm 1 cấp key).
+            function buildBtnTextI18nBlock() {
+                if (!NON_DEFAULT_LANGS.length) return '';
+
+                const groups = NON_DEFAULT_LANGS.map(function(lang) {
+                    const val = (styles.btn_text_i18n && styles.btn_text_i18n[lang.slug]) || '';
+                    return `<div class="lcf-i18n-lang-group">
+                        <div class="lcf-i18n-lang-title">
+                            <span>${escHtml(lang.name)}</span>
+                            <button type="button" class="lcf-i18n-ai-btn"
+                                onclick="lcfAiTranslateBtnText('${escAttr(lang.slug)}',this)">✨ Dịch bằng AI</button>
+                        </div>
+                        <div class="lcf-input-row">
+                            <input type="text" class="widefat" placeholder="${escAttr(styles.btn_text || DEFAULT_STYLES.btn_text)}"
+                                value="${escAttr(val)}"
+                                oninput="lcfBtnTextI18nUpdate('${escAttr(lang.slug)}',this.value)">
+                        </div>
+                    </div>`;
+                }).join('');
+
+                return `<div class="lcf-i18n-wrap">
+                    <button type="button" class="lcf-i18n-toggle" onclick="this.closest('.lcf-i18n-wrap').classList.toggle('is-open')">
+                        🌐 Dịch sang ngôn ngữ khác (${NON_DEFAULT_LANGS.length})
+                    </button>
+                    <div class="lcf-i18n-block">${groups}</div>
+                </div>`;
+            }
+
+            // Vẽ lại khối dịch Chữ nút Submit — giữ trạng thái đóng/mở hiện
+            // tại (keepOpen ép mở, dùng ngay sau khi dịch AI xong).
+            function renderBtnTextI18n(keepOpen) {
+                const container = document.getElementById('btn-text-i18n-container');
+                if (!container) return;
+                const wasOpen = keepOpen || !!container.querySelector('.lcf-i18n-wrap.is-open');
+                container.innerHTML = buildBtnTextI18nBlock();
+                if (wasOpen) {
+                    const wrap = container.querySelector('.lcf-i18n-wrap');
+                    if (wrap) wrap.classList.add('is-open');
+                }
+            }
+
             // ── Khối dịch riêng cho field "content" (chỉ có 1 ô nội dung) ──────
             function buildContentI18nBlock(field) {
                 if (!NON_DEFAULT_LANGS.length) return '';
@@ -607,6 +652,51 @@ const FIELD_TYPES = window.LacaContactFormVars.FIELD_TYPES;
                     });
             };
 
+            // ── Public: cập nhật bản dịch Chữ nút Submit theo 1 ngôn ngữ ───────
+            window.lcfBtnTextI18nUpdate = function(langSlug, value) {
+                styles.btn_text_i18n = styles.btn_text_i18n || {};
+                styles.btn_text_i18n[langSlug] = value;
+                updateStyleInput();
+            };
+
+            // ── Public: gợi ý dịch AI cho Chữ nút Submit → 1 ngôn ngữ ──────────
+            window.lcfAiTranslateBtnText = function(langSlug, btnEl) {
+                const vars = window.LacaContactFormVars.aiTranslate;
+                if (!vars) return;
+
+                const body = new URLSearchParams();
+                body.set('action', 'laca_cf_ai_translate_field');
+                body.set('nonce', vars.nonce);
+                body.set('target_lang', langSlug);
+                body.set('btn_text', styles.btn_text || DEFAULT_STYLES.btn_text);
+
+                const originalText = btnEl.textContent;
+                btnEl.disabled = true;
+                btnEl.textContent = 'Đang dịch…';
+
+                fetch(vars.ajaxUrl, { method: 'POST', body: body })
+                    .then(function(r) { return r.json(); })
+                    .then(function(res) {
+                        if (!res.success) {
+                            Swal.fire({ title: 'Lỗi dịch AI', text: (res.data && res.data.message) || 'Không thể dịch.', icon: 'error' });
+                            return;
+                        }
+                        if (res.data && res.data.btn_text) {
+                            styles.btn_text_i18n = styles.btn_text_i18n || {};
+                            styles.btn_text_i18n[langSlug] = res.data.btn_text;
+                            updateStyleInput();
+                            renderBtnTextI18n(true);
+                        }
+                    })
+                    .catch(function() {
+                        Swal.fire({ title: 'Lỗi', text: 'Không thể kết nối tới máy chủ.', icon: 'error' });
+                    })
+                    .finally(function() {
+                        btnEl.disabled = false;
+                        btnEl.textContent = originalText;
+                    });
+            };
+
             // ── Public: duplicate field ────────────────────────────────────────
             window.lcfDuplicateField = function(event, fieldId) {
                 event.stopPropagation(); // prevent accordion toggle
@@ -1038,6 +1128,7 @@ const FIELD_TYPES = window.LacaContactFormVars.FIELD_TYPES;
 
             // ── Init ──────────────────────────────────────────────────────────
             initStyleControls();
+            renderBtnTextI18n();
             renderRows();
             lcfUpdateEmailPreview('admin');
             lcfUpdateEmailPreview('customer');

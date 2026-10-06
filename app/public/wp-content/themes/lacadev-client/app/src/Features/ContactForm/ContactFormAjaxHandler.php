@@ -239,9 +239,30 @@ class ContactFormAjaxHandler
                     <?php endforeach; ?>
                 <?php endif; ?>
 
+                <?php
+                // Chữ nút Submit: ưu tiên bản dịch theo ngôn ngữ Polylang
+                // hiện tại (style_settings.btn_text_i18n[lang], nhập ở tab
+                // "Trường" — xem contact-form.js buildBtnTextI18nBlock()),
+                // sau đó tới giá trị admin đã nhập (style_settings.btn_text —
+                // TRƯỚC ĐÂY bị bỏ qua, luôn hiện cứng "Gửi thông tin" dù
+                // admin đã đổi), cuối cùng mới tới chữ mặc định.
+                $btnText = '';
+                if (function_exists('pll_current_language')) {
+                    $lang = pll_current_language();
+                    if ($lang) {
+                        $btnText = (string) ($styleSettings['btn_text_i18n'][$lang] ?? '');
+                    }
+                }
+                if ($btnText === '') {
+                    $btnText = (string) ($styleSettings['btn_text'] ?? '');
+                }
+                if ($btnText === '') {
+                    $btnText = __('Gửi thông tin', 'laca');
+                }
+                ?>
                 <div class="laca-cf-form-row laca-cf-submit-row">
                     <button type="submit" class="laca-cf-submit-btn" aria-busy="false">
-                        <span class="laca-cf-btn-text">Gửi thông tin</span>
+                        <span class="laca-cf-btn-text"><?php echo esc_html($btnText); ?></span>
                         <span class="laca-cf-btn-loading" hidden aria-hidden="true">
                             <svg class="laca-cf-spinner" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
                                 <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="3" stroke-dasharray="31.4" stroke-dashoffset="31.4"/>
