@@ -35,7 +35,11 @@ class Security
 
             // Check if the user is logged in
             if ( ! is_user_logged_in() ) {
-                return new WP_Error( 'rest_not_logged_in',  __('You are not logged in', 'laca'), array( 'status' => 401 ) );
+                // "\WP_Error" (có dấu \) — thiếu dấu \ sẽ khiến PHP tìm class
+                // "App\Settings\LacaTools\WP_Error" (không tồn tại, vì file
+                // này nằm trong namespace App\Settings\LacaTools) thay vì
+                // class gốc, gây Fatal Error ngay khi filter này chạy.
+                return new \WP_Error( 'rest_not_logged_in',  __('You are not logged in', 'laca'), array( 'status' => 401 ) );
             }
 
             return $result;
