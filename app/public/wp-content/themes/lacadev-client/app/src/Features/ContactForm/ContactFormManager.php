@@ -969,6 +969,7 @@ class ContactFormManager
                         'label' => sanitize_text_field($field['label'] ?? ''),
                         'placeholder' => sanitize_text_field($field['placeholder'] ?? ''),
                         'required' => !empty($field['required']),
+                        'show_label' => !empty($field['show_label']),
                         'options' => array_map('sanitize_text_field', (array) ($field['options'] ?? [])),
                         'has_other' => !empty($field['has_other']),
                         'other_label' => sanitize_text_field($field['other_label'] ?? ''),

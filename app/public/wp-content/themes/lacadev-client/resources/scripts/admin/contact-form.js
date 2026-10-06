@@ -304,7 +304,7 @@ const FIELD_TYPES = window.LacaContactFormVars.FIELD_TYPES;
                 const reqMark    = field.required ? ' <span style="color:#d9534f">*</span>' : '';
                 const labelPrev  = field.label
                     ? escHtml(field.label)
-                    : '<em style="color:#aaa;font-weight:400">Chưa đặt nhãn</em>';
+                    : (field.placeholder ? escHtml(field.placeholder) : '<em style="color:#aaa;font-weight:400">Chưa đặt nhãn</em>');
 
                 const optHtml = hasOptions ? `
                     <div class="lcf-input-row" style="margin-top:8px">
@@ -328,6 +328,10 @@ const FIELD_TYPES = window.LacaContactFormVars.FIELD_TYPES;
                             oninput="lcfFieldUpdate('${escAttr(field.id)}','other_label',this.value)">` : ''}
                     </div>` : '';
 
+                const visibilityBadge = field.show_label
+                    ? '<span class="lcf-badge-vis is-shown" title="Nhãn hiển thị trên form">Hiện nhãn</span>'
+                    : '<span class="lcf-badge-vis is-hidden" title="Nhãn bị ẩn trên form, chỉ dùng trong Email">Ẩn nhãn</span>';
+
                 return `<div class="laca-cf-field-card is-open" data-field-id="${escAttr(field.id)}">
                     <div class="laca-cf-field-card-header" onclick="lcfToggleCard(this.closest('.laca-cf-field-card'))">
                         <span class="lcf-field-drag-handle" title="Kéo để di chuyển field">
@@ -338,7 +342,7 @@ const FIELD_TYPES = window.LacaContactFormVars.FIELD_TYPES;
                             </svg>
                         </span>
                         <span class="lcf-type-badge">${escHtml(typeLabel)}</span>
-                        <span class="lcf-label-preview">${labelPrev}${reqMark}</span>
+                        <span class="lcf-label-preview">${labelPrev}${reqMark}${visibilityBadge}</span>
                         <span class="lcf-toggle-icon">
                             <svg width="10" height="6" viewBox="0 0 10 6" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M1 1l4 4 4-4"/></svg>
                         </span>
@@ -351,15 +355,20 @@ const FIELD_TYPES = window.LacaContactFormVars.FIELD_TYPES;
                     </div>
                     <div class="laca-cf-field-card-body">
                         <div class="lcf-field-inputs">
-                            <!-- Row 1: Nhãn (70%) + Checkbox Bắt buộc (30%) -->
+                            <!-- Row 1: Nhãn (dùng cho Email / Form) + Checkboxes (Hiện nhãn ở form + Bắt buộc) -->
                             <div class="lcf-input-grid lcf-input-grid--70-30">
                                 <div class="lcf-input-row">
-                                    <label class="lcf-label">Nhãn (Label) <small style="font-weight:400">(không bắt buộc)</small></label>
+                                    <label class="lcf-label">Nhãn (Label) <small style="font-weight:400">(dùng cho Email / Bảng dữ liệu)</small></label>
                                     <input type="text" class="widefat" data-key="label" placeholder="VD: Họ và tên"
                                         value="${escAttr(field.label)}"
                                         oninput="lcfFieldUpdate('${escAttr(field.id)}','label',this.value)">
                                 </div>
-                                <div class="lcf-input-row lcf-checkbox-wrap">
+                                <div class="lcf-input-row lcf-checkbox-wrap lcf-checkboxes-col">
+                                    <label class="lcf-checkbox-label" title="Tích chọn nếu muốn nhãn này hiển thị trực tiếp trên form. Mặc định tắt để form gọn gàng.">
+                                        <input type="checkbox" data-key="show_label" ${field.show_label ? 'checked' : ''}
+                                            onchange="lcfFieldUpdate('${escAttr(field.id)}','show_label',this.checked)">
+                                        <span>Hiện nhãn ở form</span>
+                                    </label>
                                     <label class="lcf-checkbox-label">
                                         <input type="checkbox" data-key="required" ${field.required ? 'checked' : ''}
                                             onchange="lcfFieldUpdate('${escAttr(field.id)}','required',this.checked)">
@@ -594,42 +603,38 @@ const FIELD_TYPES = window.LacaContactFormVars.FIELD_TYPES;
 
                 const cardEl = document.querySelector('.laca-cf-field-card[data-field-id="' + fieldId + '"]');
 
-                if (key === 'label') {
-                    const prev      = cardEl ? cardEl.querySelector('.lcf-label-preview') : null;
-                    const nameInput = cardEl ? cardEl.querySelector('.lcf-name-input')    : null;
+                if (key === 'label' || key === 'required' || key === 'show_label') {
+                    const prev = cardEl ? cardEl.querySelector('.lcf-label-preview') : null;
                     if (prev) {
                         const reqMark = field.required ? ' <span style="color:#d9534f">*</span>' : '';
-                        prev.innerHTML = (value
-                            ? escHtml(value)
-                            : '<em style="color:#aaa;font-weight:400">Chưa đặt nhãn</em>') + reqMark;
-                    }
-                    // Auto-slugify name
-                    if (nameInput && (!field.name || field.name === field._autoName)) {
-                        const slug = value.toLowerCase()
-                            .replace(/[àáạảãâầấậẩẫăằắặẳẵ]/g,'a')
-                            .replace(/[èéẹẻẽêềếệểễ]/g,'e')
-                            .replace(/[ìíịỉĩ]/g,'i')
-                            .replace(/[òóọỏõôồốộổỗơờớợởỡ]/g,'o')
-                            .replace(/[ùúụủũưừứựửữ]/g,'u')
-                            .replace(/[ỳýỵỷỹ]/g,'y')
-                            .replace(/đ/g,'d')
-                            .replace(/[^a-z0-9]+/g,'_')
-                            .replace(/^_+|_+$/g,'');
-                        field.name = slug;
-                        field._autoName = slug;
-                        nameInput.value = slug;
-                        const strong = cardEl ? cardEl.querySelector('.lcf-name-strong') : null;
-                        if (strong) strong.textContent = slug || 'ten_bien';
-                    }
-                }
-
-                if (key === 'required') {
-                    const prev  = cardEl ? cardEl.querySelector('.lcf-label-preview') : null;
-                    if (prev) {
-                        const reqMark = value ? ' <span style="color:#d9534f">*</span>' : '';
-                        prev.innerHTML = (field.label
+                        const visBadge = field.show_label
+                            ? '<span class="lcf-badge-vis is-shown" title="Nhãn hiển thị trên form">Hiện nhãn</span>'
+                            : '<span class="lcf-badge-vis is-hidden" title="Nhãn bị ẩn trên form, chỉ dùng trong Email">Ẩn nhãn</span>';
+                        const labelText = field.label
                             ? escHtml(field.label)
-                            : '<em style="color:#aaa;font-weight:400">Chưa đặt nhãn</em>') + reqMark;
+                            : (field.placeholder ? escHtml(field.placeholder) : '<em style="color:#aaa;font-weight:400">Chưa đặt nhãn</em>');
+                        prev.innerHTML = labelText + reqMark + visBadge;
+                    }
+                    if (key === 'label') {
+                        const nameInput = cardEl ? cardEl.querySelector('.lcf-name-input') : null;
+                        // Auto-slugify name
+                        if (nameInput && (!field.name || field.name === field._autoName)) {
+                            const slug = value.toLowerCase()
+                                .replace(/[àáạảãâầấậẩẫăằắặẳẵ]/g,'a')
+                                .replace(/[èéẹẻẽêềếệểễ]/g,'e')
+                                .replace(/[ìíịỉĩ]/g,'i')
+                                .replace(/[òóọỏõôồốộổỗơờớợởỡ]/g,'o')
+                                .replace(/[ùúụủũưừứựửữ]/g,'u')
+                                .replace(/[ỳýỵỷỹ]/g,'y')
+                                .replace(/đ/g,'d')
+                                .replace(/[^a-z0-9]+/g,'_')
+                                .replace(/^_+|_+$/g,'');
+                            field.name = slug;
+                            field._autoName = slug;
+                            nameInput.value = slug;
+                            const strong = cardEl ? cardEl.querySelector('.lcf-name-strong') : null;
+                            if (strong) strong.textContent = slug || 'ten_bien';
+                        }
                     }
                 }
 
@@ -1030,7 +1035,7 @@ const FIELD_TYPES = window.LacaContactFormVars.FIELD_TYPES;
 
                 const newField = {
                     id: uid(), type: type, name: '', label: '',
-                    placeholder: '', required: false, options: [], _autoName: '',
+                    placeholder: '', required: false, show_label: false, options: [], _autoName: '',
                     has_other: false, other_label: '', content: '', i18n: {},
                 };
                 col.fields.push(newField);
@@ -1337,10 +1342,8 @@ const FIELD_TYPES = window.LacaContactFormVars.FIELD_TYPES;
                 var placeholder = field.placeholder || '';
                 var req         = field.required;
                 var html        = '<div class="lcf-pv-field-row">';
-                // Không nhập Label thì để trống hẳn (không hiện gợi ý
-                // "(chưa đặt nhãn)") — khớp đúng hành vi frontend thật, nơi
-                // nhiều field chỉ dùng placeholder, không cần label.
-                if (type !== 'hidden' && label) {
+                // Chỉ hiển thị nhãn trên form nếu field.show_label được tích chọn
+                if (type !== 'hidden' && label && field.show_label) {
                     html += '<label class="lcf-pv-label">' + escHtml(label);
                     if (req) html += ' <span style="color:#e53e3e">*</span>';
                     html += '</label>';
@@ -1353,7 +1356,7 @@ const FIELD_TYPES = window.LacaContactFormVars.FIELD_TYPES;
                         html += '<textarea class="lcf-pv-input" placeholder="' + escAttr(placeholder) + '" rows="3" disabled></textarea>';
                         break;
                     case 'select':
-                        html += '<select class="lcf-pv-input" disabled><option>— Chọn ' + escHtml(label) + ' —</option>';
+                        html += '<select class="lcf-pv-input" disabled><option>— Chọn ' + escHtml(label || placeholder || '—') + ' —</option>';
                         (field.options || []).forEach(function(opt) { html += '<option>' + escHtml(opt) + '</option>'; });
                         html += '</select>';
                         break;
@@ -1479,10 +1482,10 @@ const FIELD_TYPES = window.LacaContactFormVars.FIELD_TYPES;
                     row.cols.forEach(function(col) {
                         col.fields.forEach(function(f) {
                             if (f.type !== 'content') {
-                                const defaultLabel = f.type === 'email' ? 'Email' : (f.type === 'phone' ? 'Số điện thoại' : (f.type === 'textarea' ? 'Nội dung' : f.type));
+                                const defaultLabel = f.label || f.placeholder || (f.type === 'email' ? 'Email' : (f.type === 'phone' ? 'Số điện thoại' : (f.type === 'textarea' ? 'Nội dung' : f.type)));
                                 formVars.push({
                                     name: f.name ? f.name.trim() : '',
-                                    label: f.label ? f.label.trim() : defaultLabel,
+                                    label: defaultLabel.trim(),
                                     type: f.type,
                                 });
                             }
@@ -1606,7 +1609,7 @@ const FIELD_TYPES = window.LacaContactFormVars.FIELD_TYPES;
                                 dummy[f.name] = val;
                                 flat.push({
                                     name: f.name,
-                                    label: f.label || f.name,
+                                    label: f.label || f.placeholder || (f.type === 'email' ? 'Email' : (f.type === 'phone' ? 'Số điện thoại' : f.name)),
                                     val: val
                                 });
                             }

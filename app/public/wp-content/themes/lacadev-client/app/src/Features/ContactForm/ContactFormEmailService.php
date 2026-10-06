@@ -140,8 +140,8 @@ class ContactFormEmailService
 
         $mode = $styleSettings['email_customer_mode'] ?? (self::isHtmlDocument($bodyTemplate) ? 'html' : 'template');
 
-        $subject = self::interpolate($subjectTemplate, $vars, false, $form);
-        $body    = self::interpolate($bodyTemplate, $vars, true, $form);
+        $subject = self::interpolate($subjectTemplate, $vars, false, $form, $lang);
+        $body    = self::interpolate($bodyTemplate, $vars, true, $form, $lang);
 
         if (!$subject || !$body) {
             return true;
@@ -224,7 +224,7 @@ class ContactFormEmailService
     /**
      * Tạo bảng HTML hiển thị toàn bộ các trường trong form ($all_fields)
      */
-    public static function buildAllFieldsTable(array $form, array $vars, bool $isHtml = true): string
+    public static function buildAllFieldsTable(array $form, array $vars, bool $isHtml = true, string $lang = ''): string
     {
         $rawFields = json_decode($form['fields'] ?? '[]', true) ?: [];
         $flatFields = [];
@@ -255,8 +255,11 @@ class ContactFormEmailService
         if (!$isHtml) {
             $lines = [];
             foreach ($flatFields as $f) {
+                if ($lang !== '' && class_exists(ContactFormAjaxHandler::class)) {
+                    $f = ContactFormAjaxHandler::applyFieldTranslation($f, $lang);
+                }
                 $name = $f['name'];
-                $label = !empty($f['label']) ? $f['label'] : $name;
+                $label = !empty($f['label']) ? $f['label'] : (!empty($f['placeholder']) ? $f['placeholder'] : $name);
                 $val = $vars[$name] ?? '';
                 if (is_array($val)) {
                     $val = implode(', ', $val);
@@ -268,8 +271,11 @@ class ContactFormEmailService
 
         $rowsHtml = '';
         foreach ($flatFields as $f) {
+            if ($lang !== '' && class_exists(ContactFormAjaxHandler::class)) {
+                $f = ContactFormAjaxHandler::applyFieldTranslation($f, $lang);
+            }
             $name = $f['name'];
-            $label = !empty($f['label']) ? $f['label'] : $name;
+            $label = !empty($f['label']) ? $f['label'] : (!empty($f['placeholder']) ? $f['placeholder'] : $name);
             $val = $vars[$name] ?? '';
 
             if (is_array($val)) {
@@ -302,13 +308,14 @@ class ContactFormEmailService
      * @param array      $vars     Array ['variable_name' => 'value']
      * @param bool       $isHtml   Xử lý định dạng cho HTML email hay plain text (subject)
      * @param array|null $form     Form row để sinh bảng $all_fields
+     * @param string     $lang     Mã ngôn ngữ hiện tại của form
      * @return string
      */
-    private static function interpolate(string $template, array $vars, bool $isHtml = true, ?array $form = null): string
+    private static function interpolate(string $template, array $vars, bool $isHtml = true, ?array $form = null, string $lang = ''): string
     {
         // Xử lý biến thông minh $all_fields
         if (str_contains($template, '$all_fields') && $form !== null) {
-            $allFieldsHtml = self::buildAllFieldsTable($form, $vars, $isHtml);
+            $allFieldsHtml = self::buildAllFieldsTable($form, $vars, $isHtml, $lang);
             $template = str_replace('$all_fields', $allFieldsHtml, $template);
         }
 

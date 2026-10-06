@@ -605,21 +605,24 @@ class ContactFormAjaxHandler
             return;
         }
 
-        $name        = esc_attr($field['name']);
-        $label       = esc_html($field['label']);
-        $placeholder = esc_attr($field['placeholder'] ?? '');
-        $required    = !empty($field['required']);
-        $type        = $field['type'];
-        $rawCol      = $field['col_width'] ?? '12';
-        $colWidth    = in_array($rawCol, ['12','6','4','3'], true) ? $rawCol : '12';
-        $reqAttr     = $required ? 'required data-required="true"' : 'data-required="false"';
-        $reqMark     = $required ? ' <span class="laca-cf-required" aria-hidden="true">*</span>' : '';
-        $fieldId     = 'laca-cf-field-' . esc_attr($name) . '-' . uniqid('', true);
+        $name         = esc_attr($field['name']);
+        $label        = esc_html($field['label'] ?? '');
+        $placeholder  = esc_attr($field['placeholder'] ?? '');
+        $required     = !empty($field['required']);
+        $showLabel    = !empty($field['show_label']);
+        $displayLabel = $label !== '' ? $label : esc_html($field['placeholder'] ?? '');
+        $labelClass   = 'laca-cf-label' . (!$showLabel ? ' screen-reader-text' : '');
+        $type         = $field['type'];
+        $rawCol       = $field['col_width'] ?? '12';
+        $colWidth     = in_array($rawCol, ['12','6','4','3'], true) ? $rawCol : '12';
+        $reqAttr      = $required ? 'required data-required="true"' : 'data-required="false"';
+        $reqMark      = $required ? ' <span class="laca-cf-required" aria-hidden="true">*</span>' : '';
+        $fieldId      = 'laca-cf-field-' . esc_attr($name) . '-' . uniqid('', true);
         ?>
         <div class="laca-cf-form-row laca-cf-type-<?php echo esc_attr($type); ?> laca-cf-col-<?php echo esc_attr($colWidth); ?>">
             <?php if ($type !== 'hidden'): ?>
-                <label for="<?php echo esc_attr($fieldId); ?>" class="laca-cf-label">
-                    <?php echo $label . $reqMark; ?>
+                <label for="<?php echo esc_attr($fieldId); ?>" class="<?php echo esc_attr($labelClass); ?>">
+                    <?php echo $displayLabel . $reqMark; ?>
                 </label>
             <?php endif; ?>
 
