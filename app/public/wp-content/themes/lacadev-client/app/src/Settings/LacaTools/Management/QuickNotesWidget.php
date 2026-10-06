@@ -47,6 +47,7 @@ class QuickNotesWidget
             <div id="laca-notes-list" style="display:flex;flex-direction:column;gap:10px">
                 <?php foreach ($notes as $note): ?>
                 <div class="laca-note" data-id="<?php echo esc_attr($note['id']); ?>"
+                     data-color="<?php echo esc_attr($note['color']); ?>"
                      style="background:<?php echo esc_attr($note['color']); ?>;padding:10px;border-radius:6px;position:relative">
                     <textarea class="laca-note-text" rows="3"
                         style="width:100%;border:none;background:transparent;resize:vertical;font-size:13px;font-family:inherit;box-sizing:border-box;outline:none"
@@ -92,10 +93,16 @@ class QuickNotesWidget
             }
 
             function gatherNotes() {
+                // n.style.background bị trình duyệt CHUẨN HOÁ về dạng
+                // "rgb(r, g, b)" (không giữ nguyên chuỗi hex đã set) — server
+                // (sanitize_hex_color()) chỉ chấp nhận đúng "#rrggbb" nên
+                // luôn trả null, rơi về mặc định vàng. Đọc lại từ
+                // data-color (set riêng, giữ nguyên chuỗi hex) thay vì suy
+                // ngược từ style.background.
                 return Array.from(document.querySelectorAll('#laca-notes-list .laca-note')).map(n => ({
                     id:    n.dataset.id,
                     text:  n.querySelector('.laca-note-text').value,
-                    color: n.style.background,
+                    color: n.dataset.color,
                     date:  n.querySelector('small').textContent.trim(),
                 }));
             }
@@ -145,6 +152,7 @@ class QuickNotesWidget
                 const div  = document.createElement('div');
                 div.className   = 'laca-note';
                 div.dataset.id  = id;
+                div.dataset.color = activeColor;
                 div.style.background = activeColor;
                 div.style.cssText += 'padding:10px;border-radius:6px;position:relative';
                 div.innerHTML = `
