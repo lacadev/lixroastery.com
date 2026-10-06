@@ -19,6 +19,12 @@ class AITranslationManager
         // Processing action (full post)
         add_action('admin_post_lacadev_ai_translate', [$this, 'handleAITranslateRequest']);
 
+        // Nút "Dịch cả bài bằng AI" trong khung Publish — trước đây action
+        // này được đăng ký nhưng KHÔNG có nút/link nào ở bất kỳ đâu gọi tới
+        // (chỉ tính năng "dịch từng block" còn dùng được), tính năng chết
+        // hoàn toàn dù code xử lý đã viết xong.
+        add_action('post_submitbox_misc_actions', [$this, 'renderTranslateWholePostButton']);
+
         // AJAX: translate single block from Gutenberg Editor
         add_action('wp_ajax_lacadev_ai_translate_block', [$this, 'handleAjaxTranslateBlock']);
 
@@ -46,17 +52,48 @@ class AITranslationManager
 
 
     /**
+     * In nút "Dịch cả bài bằng AI" trong khung Publish của màn hình edit
+     * post — link thật kèm nonce, trước đây hoàn toàn không tồn tại.
+     */
+    public function renderTranslateWholePostButton()
+    {
+        global $post;
+        if (!$post || !current_user_can('edit_post', $post->ID)) {
+            return;
+        }
+
+        $url = wp_nonce_url(
+            admin_url('admin-post.php?action=lacadev_ai_translate&post=' . $post->ID),
+            'lacadev_ai_translate_nonce'
+        );
+        ?>
+        <div class="misc-pub-section">
+            <a href="<?php echo esc_url($url); ?>"
+                class="button button-secondary"
+                style="width:100%;text-align:center;box-sizing:border-box;"
+                onclick="return confirm('<?php echo esc_js(__('Dịch toàn bộ tiêu đề/nội dung/SEO của bài viết này bằng AI? Nội dung hiện tại sẽ bị GHI ĐÈ.', 'laca')); ?>');">
+                ✨ <?php esc_html_e('Dịch cả bài bằng AI', 'laca'); ?>
+            </a>
+        </div>
+        <?php
+    }
+
+    /**
      * Handles the AJAX/POST request to translate a post.
      */
     public function handleAITranslateRequest()
     {
-        if (!isset($_GET['post']) || !current_user_can('edit_posts')) {
+        $post_id = absint($_GET['post'] ?? 0);
+        // "edit_post" (kiểm tra ĐÚNG bài viết này) thay vì "edit_posts"
+        // (quyền chung chung) — bug thật đã gặp: 1 Author chỉ được sửa bài
+        // của chính mình vẫn gọi được action này với ?post=<id bất kỳ> để
+        // ghi đè nội dung bài viết của NGƯỜI KHÁC, vì "edit_posts" chỉ kiểm
+        // tra "có được sửa bài NÀO ĐÓ không", không kiểm tra bài CỤ THỂ này.
+        if (!$post_id || !current_user_can('edit_post', $post_id)) {
             wp_die('Lỗi quyền truy cập!');
         }
 
         check_admin_referer('lacadev_ai_translate_nonce');
-
-        $post_id = absint($_GET['post']);
         
         // Detect target language from query or Polylang
         $target_lang = $this->detectTargetLanguage($post_id);
