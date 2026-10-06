@@ -28,7 +28,7 @@ class ContactFormEmailService
      *                      — lỗi riêng email đó không nên báo "thất bại" cho
      *                      người gửi trong khi tin nhắn của họ đã tới nơi.
      */
-    public static function sendAll(array $form, array $data, string $ip): bool
+    public static function sendAll(array $form, array $data, string $ip, string $lang = ''): bool
     {
         $systemVars = [
             'ip'   => $ip,
@@ -39,7 +39,7 @@ class ContactFormEmailService
         $vars = array_merge($systemVars, $data);
 
         $adminSent = self::sendAdminEmail($form, $vars);
-        self::sendCustomerEmail($form, $vars);
+        self::sendCustomerEmail($form, $vars, $lang);
 
         return $adminSent;
     }
@@ -94,10 +94,28 @@ class ContactFormEmailService
     // Email tới Khách hàng
     // -------------------------------------------------------------------------
 
-    private static function sendCustomerEmail(array $form, array $vars): bool
+    private static function sendCustomerEmail(array $form, array $vars, string $lang = ''): bool
     {
+        $styleSettings = is_array($form['style_settings'] ?? null)
+            ? $form['style_settings']
+            : (json_decode($form['style_settings'] ?? '{}', true) ?: []);
+
+        $subjectTemplate = $form['email_customer_subject'] ?? '';
+        $bodyTemplate    = $form['email_customer_body'] ?? '';
+
+        // Ưu tiên bản dịch email khách hàng theo ngôn ngữ hiện tại của form
+        if ($lang !== '' && !empty($styleSettings['email_customer_i18n'][$lang])) {
+            $i18n = $styleSettings['email_customer_i18n'][$lang];
+            if (!empty($i18n['subject'])) {
+                $subjectTemplate = $i18n['subject'];
+            }
+            if (!empty($i18n['body'])) {
+                $bodyTemplate = $i18n['body'];
+            }
+        }
+
         // Không gửi nếu subject rỗng (admin disable)
-        if (empty($form['email_customer_subject'])) {
+        if (empty($subjectTemplate)) {
             return true;
         }
 
@@ -107,8 +125,8 @@ class ContactFormEmailService
             return true;
         }
 
-        $subject = self::interpolate($form['email_customer_subject'] ?? '', $vars, false);
-        $body    = self::interpolate($form['email_customer_body'] ?? '', $vars, true);
+        $subject = self::interpolate($subjectTemplate, $vars, false);
+        $body    = self::interpolate($bodyTemplate, $vars, true);
 
         if (!$subject || !$body) {
             return true;

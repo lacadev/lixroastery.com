@@ -59,6 +59,8 @@ class ContactFormAjaxHandler
 
         $fields = self::extractFlatFields($form);
 
+        $lang = sanitize_key($_POST['_lang'] ?? (function_exists('pll_current_language') ? (pll_current_language() ?: '') : ''));
+
         // 3. Validate & Sanitize từng field
         $data   = [];
         $errors = [];
@@ -68,7 +70,7 @@ class ContactFormAjaxHandler
             // thông báo lỗi ("$label là bắt buộc.") và fallback nhãn "Khác"
             // hiện đúng ngôn ngữ khách nhìn thấy trên form, không phải luôn
             // luôn ngôn ngữ mặc định.
-            $field    = self::applyFieldTranslation($field);
+            $field    = self::applyFieldTranslation($field, $lang);
             $name     = $field['name'];
             $label    = $field['label'];
             $required = !empty($field['required']);
@@ -154,7 +156,7 @@ class ContactFormAjaxHandler
         // tới nơi hay không). Dữ liệu đã lưu DB nên dù email lỗi, admin vẫn
         // xem được submission trong màn hình quản trị — chỉ cảnh báo người
         // gửi để họ có thể liên hệ lại qua kênh khác nếu cần.
-        $emailSent = ContactFormEmailService::sendAll($form, $data, $ip);
+        $emailSent = ContactFormEmailService::sendAll($form, $data, $ip, $lang);
 
         if ($emailSent) {
             wp_send_json_success(['message' => 'Gửi thành công! Chúng tôi sẽ liên hệ lại sớm.']);
@@ -210,6 +212,7 @@ class ContactFormAjaxHandler
                 <input type="hidden" name="_nonce" value="<?php echo esc_attr($nonce); ?>">
                 <input type="hidden" name="form_id" value="<?php echo esc_attr($formId); ?>">
                 <input type="hidden" name="action" value="laca_cf_submit">
+                <input type="hidden" name="_lang" value="<?php echo esc_attr(function_exists('pll_current_language') ? (pll_current_language() ?: '') : ''); ?>">
                 <?php if (function_exists('getOption') && getOption('enable_recaptcha_contact')): ?>
                     <input type="hidden" name="laca_recaptcha_response" class="laca-recaptcha-response" value="">
                 <?php endif; ?>
@@ -549,13 +552,15 @@ class ContactFormAjaxHandler
      * renderField() case 'hidden') nên KHÔNG dịch, tránh đổi data theo ngôn
      * ngữ hiển thị.
      */
-    private static function applyFieldTranslation(array $field): array
+    private static function applyFieldTranslation(array $field, string $lang = ''): array
     {
-        if (empty($field['i18n']) || !is_array($field['i18n']) || !function_exists('pll_current_language')) {
+        if (empty($field['i18n']) || !is_array($field['i18n'])) {
             return $field;
         }
-        $lang = pll_current_language();
-        $override = $lang ? ($field['i18n'][$lang] ?? null) : null;
+        if ($lang === '' && function_exists('pll_current_language')) {
+            $lang = (string) (pll_current_language() ?: '');
+        }
+        $override = $lang !== '' ? ($field['i18n'][$lang] ?? null) : null;
         if (!$override || !is_array($override)) {
             return $field;
         }

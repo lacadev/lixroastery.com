@@ -751,6 +751,7 @@ class ContactFormManager
                                         <textarea name="email_customer_body" id="email-customer-body" class="widefat laca-cf-email-body laca-cf-email-input" rows="6"
                                                   oninput="lcfUpdateEmailPreview('customer')"><?php echo esc_textarea($form['email_customer_body'] ?? $defaultCustomerBody); ?></textarea>
                                     </div>
+                                    <div id="email-customer-i18n-container"></div>
                                 </div>
                             </div>
                         </div>
@@ -1021,6 +1022,41 @@ class ContactFormManager
         if (!empty($rawStyle['btn_text'])) {
             $cleanStyle['btn_text'] = sanitize_text_field($rawStyle['btn_text']);
         }
+        if (!empty($rawStyle['btn_text_i18n']) && is_array($rawStyle['btn_text_i18n'])) {
+            $cleanBtnI18n = [];
+            foreach ($rawStyle['btn_text_i18n'] as $langSlug => $btnVal) {
+                $langSlug = sanitize_key((string) $langSlug);
+                $btnVal = sanitize_text_field((string) $btnVal);
+                if ($langSlug && $btnVal !== '') {
+                    $cleanBtnI18n[$langSlug] = $btnVal;
+                }
+            }
+            if (!empty($cleanBtnI18n)) {
+                $cleanStyle['btn_text_i18n'] = $cleanBtnI18n;
+            }
+        }
+        if (!empty($rawStyle['email_customer_i18n']) && is_array($rawStyle['email_customer_i18n'])) {
+            $cleanEmailI18n = [];
+            foreach ($rawStyle['email_customer_i18n'] as $langSlug => $emailData) {
+                $langSlug = sanitize_key((string) $langSlug);
+                if (!$langSlug || !is_array($emailData)) {
+                    continue;
+                }
+                $entry = [];
+                if (isset($emailData['subject']) && trim((string) $emailData['subject']) !== '') {
+                    $entry['subject'] = sanitize_text_field($emailData['subject']);
+                }
+                if (isset($emailData['body']) && trim((string) $emailData['body']) !== '') {
+                    $entry['body'] = wp_kses_post(stripslashes($emailData['body']));
+                }
+                if (!empty($entry)) {
+                    $cleanEmailI18n[$langSlug] = $entry;
+                }
+            }
+            if (!empty($cleanEmailI18n)) {
+                $cleanStyle['email_customer_i18n'] = $cleanEmailI18n;
+            }
+        }
         if (!empty($rawStyle['input_spacing'])) {
             $cleanStyle['input_spacing'] = sanitize_text_field($rawStyle['input_spacing']);
         }
@@ -1132,12 +1168,18 @@ class ContactFormManager
         $handler = new AITranslationHandler();
         $result = [];
 
-        foreach (['label', 'placeholder', 'other_label', 'content', 'btn_text'] as $key) {
+        foreach (['label', 'placeholder', 'other_label', 'content', 'btn_text', 'email_customer_subject', 'email_customer_body'] as $key) {
             $text = trim((string) ($_POST[$key] ?? ''));
             if ($text === '') {
                 continue;
             }
-            $translated = $handler->translateText($text, $targetLang, 'Nhãn/nội dung 1 field trong form liên hệ trên website');
+            $context = match($key) {
+                'email_customer_subject' => 'Tiêu đề email xác nhận gửi tới khách hàng sau khi điền form liên hệ',
+                'email_customer_body' => 'Nội dung email HTML xác nhận gửi tới khách hàng sau khi điền form liên hệ. Giữ nguyên toàn bộ cấu trúc HTML, thẻ style và các tên biến bắt đầu bằng dấu $ như $name, $phone_number, $date, $time, $ip',
+                'btn_text' => 'Chữ trên nút gửi (Submit button) của form liên hệ',
+                default => 'Nhãn/nội dung 1 field trong form liên hệ trên website',
+            };
+            $translated = $handler->translateText($text, $targetLang, $context);
             if (is_wp_error($translated)) {
                 wp_send_json_error(['message' => $translated->get_error_message()]);
             }

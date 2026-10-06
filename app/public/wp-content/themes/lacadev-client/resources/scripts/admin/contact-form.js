@@ -97,6 +97,9 @@ const FIELD_TYPES = window.LacaContactFormVars.FIELD_TYPES;
             // ── Khối "Dịch sang ngôn ngữ khác" cho field thường (không áp
             // dụng cho "hidden" — placeholder của hidden là giá trị submit
             // thật, dịch sẽ đổi luôn data, xem applyFieldTranslation() phía
+            // ── Khối "Dịch sang ngôn ngữ khác" cho field thường (không áp
+            // dụng cho "hidden" — placeholder của hidden là giá trị submit
+            // thật, dịch sẽ đổi luôn data, xem applyFieldTranslation() phía
             // PHP) — mỗi ngôn ngữ show lại đúng các input đang có ở field.
             function buildI18nBlock(field) {
                 if (!NON_DEFAULT_LANGS.length || field.type === 'hidden') return '';
@@ -109,35 +112,37 @@ const FIELD_TYPES = window.LacaContactFormVars.FIELD_TYPES;
                     const optHtml = hasOptions ? `
                         <div class="lcf-input-row" style="margin-top:8px">
                             <label class="lcf-label">Các lựa chọn <small style="font-weight:400">(đúng thứ tự bản gốc, để trống dòng nào giữ nguyên dòng đó)</small></label>
-                            <textarea class="widefat" rows="3"
-                                oninput="lcfFieldI18nUpdate('${escAttr(field.id)}','${escAttr(lang.slug)}','options',this.value.split('\\n').map(function(s){return s.trim();}))"
+                            <textarea class="widefat" rows="3" data-i18n-key="options"
+                                oninput="lcfFieldI18nUpdate('${escAttr(field.id)}','${escAttr(lang.slug)}','options',this.value)"
                             >${escHtml((i18n.options || []).join('\n'))}</textarea>
                         </div>` : '';
                     const otherHtml = (canHaveOther && field.has_other) ? `
                         <div class="lcf-input-row" style="margin-top:8px">
                             <label class="lcf-label">Nhãn "Khác"</label>
-                            <input type="text" class="widefat" placeholder="${escAttr(field.other_label || 'Khác')}"
+                            <input type="text" class="widefat" data-i18n-key="other_label" placeholder="${escAttr(field.other_label || 'Khác')}"
                                 value="${escAttr(i18n.other_label || '')}"
                                 oninput="lcfFieldI18nUpdate('${escAttr(field.id)}','${escAttr(lang.slug)}','other_label',this.value)">
                         </div>` : '';
 
-                    return `<div class="lcf-i18n-lang-group">
+                    return `<div class="lcf-i18n-lang-group" data-lang="${escAttr(lang.slug)}">
                         <div class="lcf-i18n-lang-title">
                             <span>${escHtml(lang.name)}</span>
                             <button type="button" class="lcf-i18n-ai-btn"
                                 onclick="lcfAiTranslateField('${escAttr(field.id)}','${escAttr(lang.slug)}',this)">✨ Dịch bằng AI</button>
                         </div>
-                        <div class="lcf-input-row">
-                            <label class="lcf-label">Nhãn (Label)</label>
-                            <input type="text" class="widefat" placeholder="${escAttr(field.label || '')}"
-                                value="${escAttr(i18n.label || '')}"
-                                oninput="lcfFieldI18nUpdate('${escAttr(field.id)}','${escAttr(lang.slug)}','label',this.value)">
-                        </div>
-                        <div class="lcf-input-row" style="margin-top:8px">
-                            <label class="lcf-label">Placeholder</label>
-                            <input type="text" class="widefat" placeholder="${escAttr(field.placeholder || '')}"
-                                value="${escAttr(i18n.placeholder || '')}"
-                                oninput="lcfFieldI18nUpdate('${escAttr(field.id)}','${escAttr(lang.slug)}','placeholder',this.value)">
+                        <div class="lcf-input-grid lcf-input-grid--50-50">
+                            <div class="lcf-input-row">
+                                <label class="lcf-label">Nhãn (Label)</label>
+                                <input type="text" class="widefat" data-i18n-key="label" placeholder="${escAttr(field.label || '')}"
+                                    value="${escAttr(i18n.label || '')}"
+                                    oninput="lcfFieldI18nUpdate('${escAttr(field.id)}','${escAttr(lang.slug)}','label',this.value)">
+                            </div>
+                            <div class="lcf-input-row">
+                                <label class="lcf-label">Placeholder</label>
+                                <input type="text" class="widefat" data-i18n-key="placeholder" placeholder="${escAttr(field.placeholder || '')}"
+                                    value="${escAttr(i18n.placeholder || '')}"
+                                    oninput="lcfFieldI18nUpdate('${escAttr(field.id)}','${escAttr(lang.slug)}','placeholder',this.value)">
+                            </div>
                         </div>
                         ${optHtml}
                         ${otherHtml}
@@ -162,14 +167,14 @@ const FIELD_TYPES = window.LacaContactFormVars.FIELD_TYPES;
 
                 const groups = NON_DEFAULT_LANGS.map(function(lang) {
                     const val = (styles.btn_text_i18n && styles.btn_text_i18n[lang.slug]) || '';
-                    return `<div class="lcf-i18n-lang-group">
+                    return `<div class="lcf-i18n-lang-group" data-lang="${escAttr(lang.slug)}">
                         <div class="lcf-i18n-lang-title">
                             <span>${escHtml(lang.name)}</span>
                             <button type="button" class="lcf-i18n-ai-btn"
                                 onclick="lcfAiTranslateBtnText('${escAttr(lang.slug)}',this)">✨ Dịch bằng AI</button>
                         </div>
                         <div class="lcf-input-row">
-                            <input type="text" class="widefat" placeholder="${escAttr(styles.btn_text || DEFAULT_STYLES.btn_text)}"
+                            <input type="text" class="widefat" data-i18n-key="btn_text" placeholder="${escAttr(styles.btn_text || DEFAULT_STYLES.btn_text)}"
                                 value="${escAttr(val)}"
                                 oninput="lcfBtnTextI18nUpdate('${escAttr(lang.slug)}',this.value)">
                         </div>
@@ -197,19 +202,74 @@ const FIELD_TYPES = window.LacaContactFormVars.FIELD_TYPES;
                 }
             }
 
+            // ── Khối "Dịch sang ngôn ngữ khác" cho Email Khách hàng (tab Email)─
+            function buildCustomerEmailI18nBlock() {
+                if (!NON_DEFAULT_LANGS.length) return '';
+
+                const defaultSub = document.getElementById('email-customer-subject') ? document.getElementById('email-customer-subject').value : '';
+                const defaultBody = document.getElementById('email-customer-body') ? document.getElementById('email-customer-body').value : '';
+
+                const groups = NON_DEFAULT_LANGS.map(function(lang) {
+                    const i18n = (styles.email_customer_i18n && styles.email_customer_i18n[lang.slug]) || {};
+                    const subVal = i18n.subject || '';
+                    const bodyVal = i18n.body || '';
+
+                    return `<div class="lcf-i18n-lang-group" data-lang="${escAttr(lang.slug)}">
+                        <div class="lcf-i18n-lang-title">
+                            <span>${escHtml(lang.name)}</span>
+                            <button type="button" class="lcf-i18n-ai-btn"
+                                onclick="lcfAiTranslateCustomerEmail('${escAttr(lang.slug)}',this)">✨ Dịch bằng AI</button>
+                        </div>
+                        <div class="lcf-input-row">
+                            <label class="lcf-label">Tiêu đề (Subject)</label>
+                            <input type="text" class="widefat laca-cf-email-input" data-i18n-key="subject"
+                                placeholder="${escAttr(defaultSub || 'Tiêu đề email xác nhận')}"
+                                value="${escAttr(subVal)}"
+                                oninput="lcfCustomerEmailI18nUpdate('${escAttr(lang.slug)}','subject',this.value)">
+                        </div>
+                        <div class="lcf-input-row" style="margin-top:8px">
+                            <label class="lcf-label">Nội dung (Body — hỗ trợ HTML)</label>
+                            <textarea class="widefat laca-cf-email-body laca-cf-email-input" rows="6" data-i18n-key="body"
+                                placeholder="${escAttr(defaultBody || 'Nội dung email...')}"
+                                oninput="lcfCustomerEmailI18nUpdate('${escAttr(lang.slug)}','body',this.value)"
+                            >${escHtml(bodyVal)}</textarea>
+                        </div>
+                    </div>`;
+                }).join('');
+
+                return `<div class="lcf-i18n-wrap" style="margin-top:14px">
+                    <button type="button" class="lcf-i18n-toggle" onclick="this.closest('.lcf-i18n-wrap').classList.toggle('is-open'); setTimeout(initEmailInputTracking, 50);">
+                        🌐 Dịch email sang ngôn ngữ khác (${NON_DEFAULT_LANGS.length})
+                    </button>
+                    <div class="lcf-i18n-block">${groups}</div>
+                </div>`;
+            }
+
+            function renderCustomerEmailI18n(keepOpen) {
+                const container = document.getElementById('email-customer-i18n-container');
+                if (!container) return;
+                const wasOpen = keepOpen || !!container.querySelector('.lcf-i18n-wrap.is-open');
+                container.innerHTML = buildCustomerEmailI18nBlock();
+                if (wasOpen) {
+                    const wrap = container.querySelector('.lcf-i18n-wrap');
+                    if (wrap) wrap.classList.add('is-open');
+                }
+                initEmailInputTracking();
+            }
+
             // ── Khối dịch riêng cho field "content" (chỉ có 1 ô nội dung) ──────
             function buildContentI18nBlock(field) {
                 if (!NON_DEFAULT_LANGS.length) return '';
 
                 const groups = NON_DEFAULT_LANGS.map(function(lang) {
                     const i18n = (field.i18n && field.i18n[lang.slug]) || {};
-                    return `<div class="lcf-i18n-lang-group">
+                    return `<div class="lcf-i18n-lang-group" data-lang="${escAttr(lang.slug)}">
                         <div class="lcf-i18n-lang-title">
                             <span>${escHtml(lang.name)}</span>
                             <button type="button" class="lcf-i18n-ai-btn"
                                 onclick="lcfAiTranslateField('${escAttr(field.id)}','${escAttr(lang.slug)}',this)">✨ Dịch bằng AI</button>
                         </div>
-                        <textarea class="widefat lcf-content-textarea" rows="3"
+                        <textarea class="widefat lcf-content-textarea" rows="3" data-i18n-key="content"
                             oninput="lcfFieldI18nUpdate('${escAttr(field.id)}','${escAttr(lang.slug)}','content',this.value)"
                         >${escHtml(i18n.content || '')}</textarea>
                     </div>`;
@@ -241,28 +301,28 @@ const FIELD_TYPES = window.LacaContactFormVars.FIELD_TYPES;
                     : '<em style="color:#aaa;font-weight:400">Chưa đặt nhãn</em>';
 
                 const optHtml = hasOptions ? `
-                    <div class="lcf-input-row" style="margin-top:10px">
+                    <div class="lcf-input-row" style="margin-top:8px">
                         <label class="lcf-label">Các lựa chọn <small style="font-weight:400">(mỗi dòng 1 option)</small></label>
-                        <textarea class="widefat" rows="3"
+                        <textarea class="widefat" rows="3" data-key="options"
                             placeholder="Lựa chọn 1&#10;Lựa chọn 2"
-                            oninput="lcfFieldUpdate('${escAttr(field.id)}','options',this.value.split('\\n').map(function(s){return s.trim();}).filter(Boolean))"
+                            oninput="lcfFieldUpdate('${escAttr(field.id)}','options',this.value)"
                         >${escHtml((field.options || []).join('\n'))}</textarea>
                     </div>` : '';
 
                 const otherHtml = canHaveOther ? `
-                    <div class="lcf-input-row" style="margin-top:10px">
-                        <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px">
-                            <input type="checkbox" ${field.has_other ? 'checked' : ''}
+                    <div class="lcf-input-row" style="margin-top:8px">
+                        <label class="lcf-checkbox-label">
+                            <input type="checkbox" data-key="has_other" ${field.has_other ? 'checked' : ''}
                                 onchange="lcfFieldUpdate('${escAttr(field.id)}','has_other',this.checked)">
-                            Tự động thêm lựa chọn "Khác" kèm ô nhập chi tiết
+                            <span>Tự động thêm lựa chọn "Khác" kèm ô nhập chi tiết</span>
                         </label>
                         ${field.has_other ? `
-                        <input type="text" class="widefat" style="margin-top:6px" placeholder="Nhãn cho lựa chọn Khác (mặc định: Khác)"
+                        <input type="text" class="widefat" data-key="other_label" style="margin-top:4px" placeholder="Nhãn cho lựa chọn Khác (mặc định: Khác)"
                             value="${escAttr(field.other_label || '')}"
                             oninput="lcfFieldUpdate('${escAttr(field.id)}','other_label',this.value)">` : ''}
                     </div>` : '';
 
-                return `<div class="laca-cf-field-card" data-field-id="${escAttr(field.id)}">
+                return `<div class="laca-cf-field-card is-open" data-field-id="${escAttr(field.id)}">
                     <div class="laca-cf-field-card-header" onclick="lcfToggleCard(this.closest('.laca-cf-field-card'))">
                         <span class="lcf-field-drag-handle" title="Kéo để di chuyển field">
                             <svg width="10" height="16" viewBox="0 0 10 16" fill="currentColor">
@@ -285,33 +345,41 @@ const FIELD_TYPES = window.LacaContactFormVars.FIELD_TYPES;
                     </div>
                     <div class="laca-cf-field-card-body">
                         <div class="lcf-field-inputs">
-                            <div class="lcf-input-row">
-                                <label class="lcf-label">Nhãn (Label) <small style="font-weight:400">(không bắt buộc)</small></label>
-                                <input type="text" class="widefat" placeholder="VD: Họ và tên"
-                                    value="${escAttr(field.label)}"
-                                    oninput="lcfFieldUpdate('${escAttr(field.id)}','label',this.value)">
+                            <!-- Row 1: Nhãn (70%) + Checkbox Bắt buộc (30%) -->
+                            <div class="lcf-input-grid lcf-input-grid--70-30">
+                                <div class="lcf-input-row">
+                                    <label class="lcf-label">Nhãn (Label) <small style="font-weight:400">(không bắt buộc)</small></label>
+                                    <input type="text" class="widefat" data-key="label" placeholder="VD: Họ và tên"
+                                        value="${escAttr(field.label)}"
+                                        oninput="lcfFieldUpdate('${escAttr(field.id)}','label',this.value)">
+                                </div>
+                                <div class="lcf-input-row lcf-checkbox-wrap">
+                                    <label class="lcf-checkbox-label">
+                                        <input type="checkbox" data-key="required" ${field.required ? 'checked' : ''}
+                                            onchange="lcfFieldUpdate('${escAttr(field.id)}','required',this.checked)">
+                                        <span>Bắt buộc nhập</span>
+                                    </label>
+                                </div>
                             </div>
-                            <div class="lcf-input-row">
-                                <label class="lcf-label">Tên biến (name) <span class="required">*</span></label>
-                                <input type="text" class="widefat lcf-name-input" placeholder="VD: ho_ten"
-                                    value="${escAttr(field.name)}"
-                                    oninput="lcfFieldUpdate('${escAttr(field.id)}','name',this.value)"
-                                    pattern="[a-z0-9_]+" title="Chỉ dùng chữ thường, số, dấu gạch dưới">
-                                <p class="lcf-name-hint">Dùng trong email: $<strong class="lcf-name-strong">${escHtml(field.name || 'ten_bien')}</strong></p>
+
+                            <!-- Row 2: Tên biến (50%) + Placeholder (50%) -->
+                            <div class="lcf-input-grid lcf-input-grid--50-50">
+                                <div class="lcf-input-row">
+                                    <label class="lcf-label">Tên biến (name) <span class="required">*</span></label>
+                                    <input type="text" class="widefat lcf-name-input" data-key="name" placeholder="VD: ho_ten"
+                                        value="${escAttr(field.name)}"
+                                        oninput="lcfFieldUpdate('${escAttr(field.id)}','name',this.value)"
+                                        pattern="[a-z0-9_]+" title="Chỉ dùng chữ thường, số, dấu gạch dưới">
+                                    <p class="lcf-name-hint">Dùng trong email: $<strong class="lcf-name-strong">${escHtml(field.name || 'ten_bien')}</strong></p>
+                                </div>
+                                <div class="lcf-input-row">
+                                    <label class="lcf-label">Placeholder</label>
+                                    <input type="text" class="widefat" data-key="placeholder" placeholder="VD: Nhập họ và tên..."
+                                        value="${escAttr(field.placeholder || '')}"
+                                        oninput="lcfFieldUpdate('${escAttr(field.id)}','placeholder',this.value)">
+                                </div>
                             </div>
-                            <div class="lcf-input-row">
-                                <label class="lcf-label">Placeholder</label>
-                                <input type="text" class="widefat"
-                                    value="${escAttr(field.placeholder || '')}"
-                                    oninput="lcfFieldUpdate('${escAttr(field.id)}','placeholder',this.value)">
-                            </div>
-                            <div class="lcf-input-row" style="margin-top:4px">
-                                <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px">
-                                    <input type="checkbox" ${field.required ? 'checked' : ''}
-                                        onchange="lcfFieldUpdate('${escAttr(field.id)}','required',this.checked)">
-                                    Bắt buộc nhập
-                                </label>
-                            </div>
+
                             ${optHtml}
                             ${otherHtml}
                             ${buildI18nBlock(field)}
@@ -327,7 +395,7 @@ const FIELD_TYPES = window.LacaContactFormVars.FIELD_TYPES;
                     ? escHtml(plainPreview.slice(0, 50)) + (plainPreview.length > 50 ? '…' : '')
                     : '<em style="color:#aaa;font-weight:400">Nội dung trống</em>';
 
-                return `<div class="laca-cf-field-card" data-field-id="${escAttr(field.id)}">
+                return `<div class="laca-cf-field-card is-open" data-field-id="${escAttr(field.id)}">
                     <div class="laca-cf-field-card-header" onclick="lcfToggleCard(this.closest('.laca-cf-field-card'))">
                         <span class="lcf-field-drag-handle" title="Kéo để di chuyển field">
                             <svg width="10" height="16" viewBox="0 0 10 16" fill="currentColor">
@@ -357,7 +425,7 @@ const FIELD_TYPES = window.LacaContactFormVars.FIELD_TYPES;
                                     <button type="button" onclick="lcfContentWrap('${escAttr(field.id)}','em')" title="In nghiêng"><em>I</em></button>
                                     <button type="button" onclick="lcfContentInsertLink('${escAttr(field.id)}')" title="Chèn link">🔗 Link</button>
                                 </div>
-                                <textarea class="widefat lcf-content-textarea" rows="4"
+                                <textarea class="widefat lcf-content-textarea" data-key="content" rows="4"
                                     oninput="lcfFieldUpdate('${escAttr(field.id)}','content',this.value)"
                                 >${escHtml(field.content || '')}</textarea>
                             </div>
@@ -511,7 +579,12 @@ const FIELD_TYPES = window.LacaContactFormVars.FIELD_TYPES;
                 const found = findField(fieldId);
                 if (!found) return;
                 const { field } = found;
-                field[key] = value;
+
+                if (key === 'options' && typeof value === 'string') {
+                    field.options = value.split('\n').map(function(s){ return s.trim(); }).filter(Boolean);
+                } else {
+                    field[key] = value;
+                }
 
                 const cardEl = document.querySelector('.laca-cf-field-card[data-field-id="' + fieldId + '"]');
 
@@ -589,7 +662,11 @@ const FIELD_TYPES = window.LacaContactFormVars.FIELD_TYPES;
                 const { field } = found;
                 field.i18n = field.i18n || {};
                 field.i18n[langSlug] = field.i18n[langSlug] || {};
-                field.i18n[langSlug][key] = value;
+                if (key === 'options' && typeof value === 'string') {
+                    field.i18n[langSlug].options = value.split('\n').map(function(s){ return s.trim(); });
+                } else {
+                    field.i18n[langSlug][key] = value;
+                }
                 updateJsonInput();
             };
 
@@ -692,6 +769,62 @@ const FIELD_TYPES = window.LacaContactFormVars.FIELD_TYPES;
                             updateStyleInput();
                             renderBtnTextI18n(true);
                         }
+                    })
+                    .catch(function() {
+                        Swal.fire({ title: 'Lỗi', text: 'Không thể kết nối tới máy chủ.', icon: 'error' });
+                    })
+                    .finally(function() {
+                        btnEl.disabled = false;
+                        btnEl.textContent = originalText;
+                    });
+            };
+
+            // ── Public: cập nhật bản dịch Email Khách hàng theo 1 ngôn ngữ ─────
+            window.lcfCustomerEmailI18nUpdate = function(langSlug, key, value) {
+                styles.email_customer_i18n = styles.email_customer_i18n || {};
+                styles.email_customer_i18n[langSlug] = styles.email_customer_i18n[langSlug] || {};
+                styles.email_customer_i18n[langSlug][key] = value;
+                updateStyleInput();
+            };
+
+            // ── Public: gợi ý dịch AI cho Email Khách hàng → 1 ngôn ngữ ────────
+            window.lcfAiTranslateCustomerEmail = function(langSlug, btnEl) {
+                const vars = window.LacaContactFormVars.aiTranslate;
+                if (!vars) return;
+
+                const defaultSub = document.getElementById('email-customer-subject') ? document.getElementById('email-customer-subject').value : '';
+                const defaultBody = document.getElementById('email-customer-body') ? document.getElementById('email-customer-body').value : '';
+
+                const body = new URLSearchParams();
+                body.set('action', 'laca_cf_ai_translate_field');
+                body.set('nonce', vars.nonce);
+                body.set('target_lang', langSlug);
+                body.set('email_customer_subject', defaultSub);
+                body.set('email_customer_body', defaultBody);
+
+                const originalText = btnEl.textContent;
+                btnEl.disabled = true;
+                btnEl.textContent = 'Đang dịch…';
+
+                fetch(vars.ajaxUrl, { method: 'POST', body: body })
+                    .then(function(r) { return r.json(); })
+                    .then(function(res) {
+                        if (!res.success) {
+                            Swal.fire({ title: 'Lỗi dịch AI', text: (res.data && res.data.message) || 'Không thể dịch.', icon: 'error' });
+                            return;
+                        }
+                        styles.email_customer_i18n = styles.email_customer_i18n || {};
+                        styles.email_customer_i18n[langSlug] = styles.email_customer_i18n[langSlug] || {};
+                        if (res.data) {
+                            if (res.data.email_customer_subject) {
+                                styles.email_customer_i18n[langSlug].subject = res.data.email_customer_subject;
+                            }
+                            if (res.data.email_customer_body) {
+                                styles.email_customer_i18n[langSlug].body = res.data.email_customer_body;
+                            }
+                        }
+                        updateStyleInput();
+                        renderCustomerEmailI18n(true);
                     })
                     .catch(function() {
                         Swal.fire({ title: 'Lỗi', text: 'Không thể kết nối tới máy chủ.', icon: 'error' });
@@ -867,8 +1000,148 @@ const FIELD_TYPES = window.LacaContactFormVars.FIELD_TYPES;
                 });
             };
 
+            // ── Sync all fields & translations from DOM directly ─────────────
+            function syncAllFromDOM() {
+                // Read directly from DOM to ensure 100% data sync before save
+                document.querySelectorAll('.laca-cf-field-card').forEach(function(cardEl) {
+                    const fieldId = cardEl.dataset.fieldId;
+                    const found = findField(fieldId);
+                    if (!found) return;
+                    const { field } = found;
+
+                    if (field.type === 'content') {
+                        const contentTa = cardEl.querySelector('.lcf-field-inputs textarea[data-key="content"]');
+                        if (contentTa) field.content = contentTa.value;
+
+                        cardEl.querySelectorAll('.lcf-i18n-lang-group').forEach(function(group) {
+                            const langSlug = group.dataset.lang;
+                            const ta = group.querySelector('textarea[data-i18n-key="content"]');
+                            if (langSlug && ta) {
+                                field.i18n = field.i18n || {};
+                                field.i18n[langSlug] = field.i18n[langSlug] || {};
+                                if (ta.value.trim() !== '') {
+                                    field.i18n[langSlug].content = ta.value;
+                                } else {
+                                    delete field.i18n[langSlug].content;
+                                }
+                                if (Object.keys(field.i18n[langSlug]).length === 0) {
+                                    delete field.i18n[langSlug];
+                                }
+                            }
+                        });
+                    } else {
+                        const labelInp = cardEl.querySelector('.lcf-field-inputs input[data-key="label"]');
+                        if (labelInp) field.label = labelInp.value;
+
+                        const nameInp = cardEl.querySelector('.lcf-field-inputs input[data-key="name"]');
+                        if (nameInp) field.name = nameInp.value;
+
+                        const placeInp = cardEl.querySelector('.lcf-field-inputs input[data-key="placeholder"]');
+                        if (placeInp) field.placeholder = placeInp.value;
+
+                        const reqInp = cardEl.querySelector('.lcf-field-inputs input[data-key="required"]');
+                        if (reqInp) field.required = reqInp.checked;
+
+                        const optTa = cardEl.querySelector('.lcf-field-inputs textarea[data-key="options"]');
+                        if (optTa) {
+                            field.options = optTa.value.split('\n').map(function(s){ return s.trim(); }).filter(Boolean);
+                        }
+
+                        const hasOtherInp = cardEl.querySelector('.lcf-field-inputs input[data-key="has_other"]');
+                        if (hasOtherInp) field.has_other = hasOtherInp.checked;
+
+                        const otherLabelInp = cardEl.querySelector('.lcf-field-inputs input[data-key="other_label"]');
+                        if (otherLabelInp) field.other_label = otherLabelInp.value;
+
+                        cardEl.querySelectorAll('.lcf-i18n-lang-group').forEach(function(group) {
+                            const langSlug = group.dataset.lang;
+                            if (!langSlug) return;
+                            field.i18n = field.i18n || {};
+                            field.i18n[langSlug] = field.i18n[langSlug] || {};
+
+                            const i18nLabel = group.querySelector('input[data-i18n-key="label"]');
+                            if (i18nLabel) {
+                                if (i18nLabel.value.trim() !== '') field.i18n[langSlug].label = i18nLabel.value;
+                                else delete field.i18n[langSlug].label;
+                            }
+
+                            const i18nPlace = group.querySelector('input[data-i18n-key="placeholder"]');
+                            if (i18nPlace) {
+                                if (i18nPlace.value.trim() !== '') field.i18n[langSlug].placeholder = i18nPlace.value;
+                                else delete field.i18n[langSlug].placeholder;
+                            }
+
+                            const i18nOther = group.querySelector('input[data-i18n-key="other_label"]');
+                            if (i18nOther) {
+                                if (i18nOther.value.trim() !== '') field.i18n[langSlug].other_label = i18nOther.value;
+                                else delete field.i18n[langSlug].other_label;
+                            }
+
+                            const i18nOpt = group.querySelector('textarea[data-i18n-key="options"]');
+                            if (i18nOpt) {
+                                const lines = i18nOpt.value.split('\n').map(function(s){ return s.trim(); });
+                                if (lines.some(function(s){ return s !== ''; })) {
+                                    field.i18n[langSlug].options = lines;
+                                } else {
+                                    delete field.i18n[langSlug].options;
+                                }
+                            }
+
+                            if (Object.keys(field.i18n[langSlug]).length === 0) {
+                                delete field.i18n[langSlug];
+                            }
+                        });
+                    }
+                });
+
+                // Sync btn_text_i18n
+                const btnI18nContainer = document.getElementById('btn-text-i18n-container');
+                if (btnI18nContainer) {
+                    btnI18nContainer.querySelectorAll('.lcf-i18n-lang-group').forEach(function(group) {
+                        const langSlug = group.dataset.lang;
+                        const input = group.querySelector('input[data-i18n-key="btn_text"]');
+                        if (langSlug && input) {
+                            styles.btn_text_i18n = styles.btn_text_i18n || {};
+                            if (input.value.trim() !== '') {
+                                styles.btn_text_i18n[langSlug] = input.value;
+                            } else {
+                                delete styles.btn_text_i18n[langSlug];
+                            }
+                        }
+                    });
+                }
+
+                // Sync email_customer_i18n
+                const emailI18nContainer = document.getElementById('email-customer-i18n-container');
+                if (emailI18nContainer) {
+                    emailI18nContainer.querySelectorAll('.lcf-i18n-lang-group').forEach(function(group) {
+                        const langSlug = group.dataset.lang;
+                        if (!langSlug) return;
+                        const subInp = group.querySelector('input[data-i18n-key="subject"]');
+                        const bodyInp = group.querySelector('textarea[data-i18n-key="body"]');
+                        styles.email_customer_i18n = styles.email_customer_i18n || {};
+                        styles.email_customer_i18n[langSlug] = styles.email_customer_i18n[langSlug] || {};
+                        if (subInp && subInp.value.trim() !== '') {
+                            styles.email_customer_i18n[langSlug].subject = subInp.value;
+                        } else {
+                            delete styles.email_customer_i18n[langSlug].subject;
+                        }
+                        if (bodyInp && bodyInp.value.trim() !== '') {
+                            styles.email_customer_i18n[langSlug].body = bodyInp.value;
+                        } else {
+                            delete styles.email_customer_i18n[langSlug].body;
+                        }
+                        if (Object.keys(styles.email_customer_i18n[langSlug]).length === 0) {
+                            delete styles.email_customer_i18n[langSlug];
+                        }
+                    });
+                }
+            }
+
             // ── Form submit validation ────────────────────────────────────────
             document.getElementById('laca-cf-form').addEventListener('submit', function(e) {
+                syncAllFromDOM();
+
                 if (!document.getElementById('cf-name').value.trim()) {
                     e.preventDefault();
                     Swal.fire({ title: 'Lỗi', text: 'Vui lòng nhập tên form.', icon: 'error' });
@@ -1234,6 +1507,7 @@ const FIELD_TYPES = window.LacaContactFormVars.FIELD_TYPES;
                     // Show email preview when switching to email tab
                     if (tab === 'emails') {
                         renderEmailVariablesList();
+                        renderCustomerEmailI18n();
                         initEmailInputTracking();
                         lcfUpdateEmailPreview('admin');
                         lcfUpdateEmailPreview('customer');
@@ -1256,6 +1530,7 @@ const FIELD_TYPES = window.LacaContactFormVars.FIELD_TYPES;
             // ── Init ──────────────────────────────────────────────────────────
             initStyleControls();
             renderBtnTextI18n();
+            renderCustomerEmailI18n();
             renderRows();
             initEmailInputTracking();
             renderEmailVariablesList();
