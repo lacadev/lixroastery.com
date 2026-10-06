@@ -237,7 +237,14 @@ PHP;
                 break;
         }
 
-        return "            \\Carbon_Fields\\Field\\Field::make('{$type}', '{$name}', __('{$label}', 'laca')){$chains},\n";
+        // $label chưa qua addslashes() như mọi chuỗi khác được nhúng vào code
+        // sinh ra ở dưới — admin đặt label có dấu nháy đơn (vd "Khách hàng's
+        // note") sẽ làm file {slug}-meta.php sinh ra lỗi cú pháp PHP. File
+        // này bị require_once vô điều kiện trên MỌI request (DynamicCptManager
+        // ::loadAllMetaFiles()) nên 1 lỗi cú pháp ở đây làm sập trắng toàn site.
+        $safeL = addslashes($label);
+
+        return "            \\Carbon_Fields\\Field\\Field::make('{$type}', '{$name}', __('{$safeL}', 'laca')){$chains},\n";
     }
 
     /**
