@@ -44,7 +44,11 @@ if (empty($related_posts)) {
     return;
 }
 
-$heading = apply_filters('woocommerce_product_related_products_heading', __('Coffee Beans', 'laca'));
+// "Coffee Beans" hiện cứng tiếng Anh trước đây — sản phẩm không phải cà
+// phê hạt (dụng cụ pha chế, quà tặng...) vẫn hiện sai tiêu đề này. File
+// tương đương app/helpers/journal-related-products-render.php đã dùng
+// đúng "Sản phẩm liên quan" — đổi lại cho nhất quán.
+$heading = apply_filters('woocommerce_product_related_products_heading', __('Sản phẩm liên quan', 'laca'));
 $shop_url = function_exists('wc_get_page_permalink') ? esc_url(wc_get_page_permalink('shop')) : '';
 ?>
 <section class="block-product-grid">
