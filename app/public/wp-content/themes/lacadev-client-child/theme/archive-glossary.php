@@ -36,6 +36,26 @@ foreach ($terms as $term) {
     $first_char = mb_strtoupper(mb_substr($term->post_title, 0, 1));
     $letters_with_entries[$first_char] = true;
 }
+
+// "related_articles" là ID bài viết lấy từ Carbon Fields, KHÔNG nằm trong
+// batch query ở trên — nếu không prime trước, mỗi bài liên quan (của MỌI
+// thuật ngữ) sẽ kích hoạt get_post_status()/get_permalink()/get_the_title()/
+// get_the_excerpt() riêng lẻ ở vòng lặp render bên dưới (N+1 query), chậm
+// dần khi danh sách Glossary tăng lên. Gom hết ID lại, prime cache 1 lần
+// duy nhất trước khi render.
+$all_related_ids = [];
+foreach ($terms as $term) {
+    $related_articles = carbon_get_post_meta($term->ID, 'related_articles');
+    foreach ((array) $related_articles as $related) {
+        $related_id = $related['id'] ?? 0;
+        if ($related_id) {
+            $all_related_ids[] = (int) $related_id;
+        }
+    }
+}
+if (!empty($all_related_ids)) {
+    _prime_post_caches(array_unique($all_related_ids), true, true);
+}
 ?>
 
 <section class="glossary-page">
