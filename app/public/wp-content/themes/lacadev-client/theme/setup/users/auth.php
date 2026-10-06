@@ -185,11 +185,15 @@ function socialCallbackRedirectUrl()
 {
     $user = wp_get_current_user();
 
+    // esc_js() cho user_email — giá trị này đến từ tài khoản Google (hoặc
+    // admin tự sửa tay), nối thẳng vào chuỗi JS không qua esc_js() trước
+    // đây có thể phá cú pháp hoặc chèn script tuỳ ý nếu email chứa ký tự "
+    // hay </script>.
     echo '<script>opener.socialLoginReturn({
                 success: true,
                 notification: {
-                    title: "' . __('Xin chào, ', 'laca') . $user->user_email . '", 
-                    message: "' . __('Chúc mừng bạn đã đăng nhập thành công', 'laca') . '"
+                    title: "' . esc_js(__('Xin chào, ', 'laca') . $user->user_email) . '",
+                    message: "' . esc_js(__('Chúc mừng bạn đã đăng nhập thành công', 'laca')) . '"
                 },
                 redirect: "/"
             });window.close();</script>';
