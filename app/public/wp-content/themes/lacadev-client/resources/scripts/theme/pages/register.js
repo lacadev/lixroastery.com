@@ -141,7 +141,18 @@ window.registerFunction = {
 
 	submitForm() {
 		const _this = this;
-		showPageLoader();
+		// showPageLoader()/hidePageLoader() không được định nghĩa ở bất kỳ
+		// đâu trong cả 2 theme — gọi trực tiếp ném ReferenceError ngay dòng
+		// đầu, khiến toàn bộ luồng submit (kể cả fetch() gửi dữ liệu) không
+		// bao giờ chạy. Dùng lại đúng Swal (đã import sẵn ở file này) để
+		// hiện trạng thái loading, không cần thêm hàm/overlay riêng.
+		Swal.fire( {
+			title: 'Đang xử lý...',
+			allowOutsideClick: false,
+			allowEscapeKey: false,
+			showConfirmButton: false,
+			didOpen: () => Swal.showLoading(),
+		} );
 
 		const formData = new FormData( _this.form );
 		const searchParams = new URLSearchParams();
@@ -155,7 +166,7 @@ window.registerFunction = {
 		} )
 			.then( ( response ) => response.json() )
 			.then( ( response ) => {
-				hidePageLoader();
+				Swal.close();
 				if ( response.success !== true ) {
 					let msg = 'Đăng ký tài khoản không thành công!';
 					if ( typeof response.data === 'string' ) {
@@ -174,12 +185,12 @@ window.registerFunction = {
 			} )
 			.catch( ( error ) => {
 				console.error( error );
+				Swal.close();
 				Swal.fire(
 					'Lỗi!',
 					'Đã có lỗi xảy ra, vui lòng thử lại.',
 					'error'
 				);
-				hidePageLoader();
 			} );
 	},
 };
