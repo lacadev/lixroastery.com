@@ -58,6 +58,7 @@
     "sass": "^1.71.1",
     "sass-loader": "^14.1.1",
     "sharp": "^0.33.4",
+    "sortablejs": "^1.15.7",
     "style-loader": "^3.3.4",
     "sweetalert2": "^11.10.5",
     "swiper": "9",

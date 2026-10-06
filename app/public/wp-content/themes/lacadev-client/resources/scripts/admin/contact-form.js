@@ -1,4 +1,11 @@
 import Swal from 'sweetalert2';
+// Bundle qua webpack (import thật) thay vì enqueue riêng file
+// node_modules/sortablejs/Sortable.min.js (ContactFormManager::enqueueAssets()
+// cũ) — package đó CHƯA TỪNG được cài thật (không có trong package.json),
+// file không tồn tại nên wp_enqueue_script() không bao giờ chạy, kéo/thả
+// field trong trình tạo form vì vậy luôn im lặng không hoạt động (code có
+// guard "typeof Sortable === 'undefined'" nên không báo lỗi gì cả).
+import Sortable from 'sortablejs';
             document.addEventListener("DOMContentLoaded", function() {
 if (window.LacaContactFormVars) {
 const FIELD_TYPES = window.LacaContactFormVars.FIELD_TYPES;

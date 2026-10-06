@@ -81,14 +81,11 @@ class ContactFormManager
             return;
         }
 
-        $themeRoot = dirname(get_template_directory());
-        $themeRootUri = dirname(get_template_directory_uri());
-        $sortableFile = $themeRoot . '/node_modules/sortablejs/Sortable.min.js';
-        $sortableUrl = $themeRootUri . '/node_modules/sortablejs/Sortable.min.js';
-
-        if (file_exists($sortableFile)) {
-            wp_enqueue_script('sortablejs', $sortableUrl, [], '1.15.7', false);
-        }
+        // SortableJS giờ được bundle thẳng vào admin.js qua webpack (import
+        // thật trong resources/scripts/admin/contact-form.js) — KHÔNG enqueue
+        // riêng từ node_modules/sortablejs/Sortable.min.js nữa (file đó chưa
+        // từng được cài thật trong package.json nên luôn không tồn tại,
+        // khiến kéo/thả field trong trình tạo form im lặng không hoạt động).
     }
 
     // =========================================================================
