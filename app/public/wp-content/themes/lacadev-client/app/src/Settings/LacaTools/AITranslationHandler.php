@@ -210,9 +210,6 @@ class AITranslationHandler
         $raw_body    = wp_remote_retrieve_body($response);
         $data        = json_decode($raw_body, true);
 
-        // Log raw response để debug (xoá sau khi fix xong)
-        error_log('[callGroq] HTTP ' . $http_code . ' | body: ' . substr($raw_body, 0, 500));
-
         // Groq trả về error JSON khi HTTP != 200
         if ($http_code !== 200) {
             $err_msg = $data['error']['message'] ?? ('Groq API error: HTTP ' . $http_code);
