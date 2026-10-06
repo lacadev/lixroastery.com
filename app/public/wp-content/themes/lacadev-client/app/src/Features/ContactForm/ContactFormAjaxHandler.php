@@ -12,15 +12,26 @@ use App\Databases\ContactFormTable;
  * Shortcode: [laca_contact_form id="X"]
  *   → Render HTML form và JS validation (Pristine.js)
  *
- * AJAX endpoint: wp_ajax_nopriv_laca_contact_submit (cả logged-in lẫn guest)
+ * AJAX endpoint: wp_ajax_nopriv_laca_cf_submit (cả logged-in lẫn guest)
  *   → Validate → Lưu DB → Gửi email → Trả JSON
+ *
+ * ⚠️ Tên action "laca_cf_submit" (KHÔNG phải "laca_contact_submit") — lỗi
+ * thật đã gặp: action "laca_contact_submit" bị TRÙNG với 1 handler legacy
+ * khác (lacadev_handle_contact_submit(), app/helpers/ajax.php, phục vụ
+ * template-contact.php cũ) cùng đăng ký trên CÙNG tên action. WordPress
+ * chạy MỌI callback đã đăng ký cho 1 action — handler legacy chạy trước,
+ * tự check_ajax_referer('laca_contact_nonce', 'nonce') (field "nonce",
+ * KHÁC field "_nonce" form này gửi lên) nên luôn fail và tự wp_die(-1, 403)
+ * NGAY LẬP TỨC, khiến handleSubmit() ở đây không bao giờ chạy tới — mọi
+ * submit qua shortcode [laca_contact_form] luôn báo "Thất bại" dù dữ liệu
+ * hợp lệ. Đổi sang tên action riêng để không bao giờ đụng hàng nữa.
  */
 class ContactFormAjaxHandler
 {
     public function init(): void
     {
-        add_action('wp_ajax_laca_contact_submit',        [$this, 'handleSubmit']);
-        add_action('wp_ajax_nopriv_laca_contact_submit', [$this, 'handleSubmit']);
+        add_action('wp_ajax_laca_cf_submit',        [$this, 'handleSubmit']);
+        add_action('wp_ajax_nopriv_laca_cf_submit', [$this, 'handleSubmit']);
         add_shortcode('laca_contact_form', [$this, 'renderShortcode']);
     }
 
@@ -198,7 +209,7 @@ class ContactFormAjaxHandler
             <form class="laca-contact-form" id="<?php echo esc_attr($formElId); ?>" novalidate>
                 <input type="hidden" name="_nonce" value="<?php echo esc_attr($nonce); ?>">
                 <input type="hidden" name="form_id" value="<?php echo esc_attr($formId); ?>">
-                <input type="hidden" name="action" value="laca_contact_submit">
+                <input type="hidden" name="action" value="laca_cf_submit">
                 <?php if (function_exists('getOption') && getOption('enable_recaptcha_contact')): ?>
                     <input type="hidden" name="laca_recaptcha_response" class="laca-recaptcha-response" value="">
                 <?php endif; ?>
