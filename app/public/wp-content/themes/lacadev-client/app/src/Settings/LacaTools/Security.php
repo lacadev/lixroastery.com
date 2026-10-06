@@ -163,21 +163,4 @@ class Security
         }
     }
 
-    /**
-     * Giám sát hiệu suất, phát hiện bất thường (chỉ khi WP_DEBUG = true)
-     */
-    public function addPerformanceMonitoring()
-    {
-        if (!is_admin() && defined('WP_DEBUG') && WP_DEBUG) {
-            add_action('wp_enqueue_scripts', function () {
-                wp_enqueue_script(
-                    'laca-web-vitals',
-                    get_template_directory_uri() . '/resources/scripts/theme/web-vitals.js',
-                    [],
-                    wp_get_theme()->get('Version'),
-                    true
-                );
-            });
-        }
-    }
 }
