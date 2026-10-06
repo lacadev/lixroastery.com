@@ -180,13 +180,31 @@ $optionsPage = Container::make('theme_options', __('Laca Theme', 'laca'))
 
 	->add_tab(__('AI Translation | Dịch thuật AI', 'laca'), [
 		Field::make('html', 'ai_intro', __('', 'laca'))
-			->set_html('Cấu hình API Key để kích hoạt tính năng tự động dịch nội dung bằng trí tuệ nhân tạo. Bạn nên ưu tiên dùng Gemini hoặc Groq vì có gói miễn phí rất tốt.'),
+			->set_html('Cấu hình API Key để kích hoạt tính năng tự động dịch nội dung bằng trí tuệ nhân tạo. Có thể nhập NHIỀU key cùng lúc — hệ thống sẽ tự động chuyển sang key tiếp theo (theo thứ tự ở mục "Bộ xử lý ưu tiên" bên dưới) nếu key đang dùng bị lỗi hoặc hết quota miễn phí, không cần tự đổi tay.'),
 
 		Field::make('text', 'ai_gemini_key', __('Gemini API Key', 'laca'))
-			->set_help_text('Model: Gemini 1.5 Pro/Flash. Lấy tại: <a href="https://aistudio.google.com/app/apikey" target="_blank">Google AI Studio</a>'),
+			->set_help_text('Model: Gemini 1.5 Flash. ~15-30 request/phút, hàng trăm-1.500 request/ngày miễn phí. Lấy tại: <a href="https://aistudio.google.com/app/apikey" target="_blank">Google AI Studio</a>'),
 
 		Field::make('text', 'ai_groq_key', __('Groq API Key', 'laca'))
-			->set_help_text('Model: Llama 3/3.1. Lấy tại: <a href="https://console.groq.com/keys" target="_blank">Groq Console</a>'),
+			->set_help_text('Model: Llama 3.3. Nhanh nhất (hàng trăm-nghìn token/giây), 30 request/phút, 1.000 request/ngày miễn phí. Lấy tại: <a href="https://console.groq.com/keys" target="_blank">Groq Console</a>'),
+
+		Field::make('text', 'ai_openrouter_key', __('OpenRouter API Key', 'laca'))
+			->set_help_text('1 key dùng được rất nhiều model free (DeepSeek, Qwen, Llama, Gemma...). 20 request/phút, 50 request/ngày (lên 1.000/ngày nếu nạp $10 một lần). Lấy tại: <a href="https://openrouter.ai/keys" target="_blank">openrouter.ai/keys</a>'),
+
+		Field::make('text', 'ai_cloudflare_account_id', __('Cloudflare Account ID', 'laca'))
+			->set_help_text('Lấy tại Cloudflare Dashboard, nằm ở URL hoặc sidebar phải trang chủ Dashboard. Cần nhập CÙNG với API Token bên dưới mới dùng được.'),
+
+		Field::make('text', 'ai_cloudflare_api_token', __('Cloudflare API Token', 'laca'))
+			->set_help_text('Model: Llama 3.1/Mistral/DeepSeek chạy trên edge, 10.000 Neurons/ngày miễn phí. Tạo token tại Cloudflare Dashboard > My Profile > API Tokens (quyền "Workers AI").'),
+
+		Field::make('text', 'ai_mistral_key', __('Mistral API Key', 'laca'))
+			->set_help_text('Model: Mistral Small/Codestral. Rate-limit theo gói Experiment (miễn phí). Lấy tại: <a href="https://console.mistral.ai/" target="_blank">console.mistral.ai</a>'),
+
+		Field::make('text', 'ai_cohere_key', __('Cohere API Key', 'laca'))
+			->set_help_text('Model: Command R, tốt cho dịch/RAG. ~1.000 call/tháng (trial). Lấy tại: <a href="https://dashboard.cohere.com/" target="_blank">dashboard.cohere.com</a>'),
+
+		Field::make('text', 'ai_nvidia_key', __('NVIDIA NIM API Key', 'laca'))
+			->set_help_text('Nhiều model open-source mạnh (Llama 3.1...), rate-limit + cần xác minh số điện thoại. Lấy tại: <a href="https://build.nvidia.com/" target="_blank">build.nvidia.com</a>'),
 
 		Field::make('text', 'ai_deepseek_key', __('DeepSeek API Key', 'laca'))
 			->set_help_text('Model: DeepSeek Chat. Lấy tại: <a href="https://platform.deepseek.com/" target="_blank">DeepSeek Platform</a>'),
@@ -197,10 +215,16 @@ $optionsPage = Container::make('theme_options', __('Laca Theme', 'laca'))
 		Field::make('text', 'ai_anthropic_key', __('Anthropic API Key', 'laca'))
 			->set_help_text('Model: Claude 3.5 Sonnet/Haiku. Lấy tại: <a href="https://console.anthropic.com/" target="_blank">Anthropic Console</a>'),
 
-		Field::make('select', 'ai_default_provider', __('Bô xử lý ưu tiên', 'laca'))
+		Field::make('select', 'ai_default_provider', __('Bộ xử lý ưu tiên', 'laca'))
+			->set_help_text('Nhà cung cấp được thử ĐẦU TIÊN. Nếu lỗi/hết quota, hệ thống tự động chuyển qua các nhà cung cấp khác (đã nhập key) theo thứ tự: Gemini → Groq → OpenRouter → Cloudflare Workers AI → Mistral → Cohere → NVIDIA NIM → DeepSeek → OpenAI → Anthropic.')
 			->set_options([
 				'gemini' => 'Google Gemini (Khuyên dùng)',
 				'groq' => 'Groq (Llama 3 - Tốc độ cực nhanh)',
+				'openrouter' => 'OpenRouter (Nhiều model free)',
+				'cloudflare' => 'Cloudflare Workers AI',
+				'mistral' => 'Mistral',
+				'cohere' => 'Cohere',
+				'nvidia' => 'NVIDIA NIM',
 				'deepseek' => 'DeepSeek (Giá rẻ/Chất lượng cao)',
 				'openai' => 'OpenAI GPT',
 				'anthropic' => 'Anthropic Claude',

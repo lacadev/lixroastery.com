@@ -5,6 +5,10 @@ namespace App\Settings\LacaTools;
 /**
  * AITranslationHandler Class
  * Handles independent AI operations for translation and content processing.
+ *
+ * Hỗ trợ nhiều nhà cung cấp AI miễn phí với cơ chế TỰ ĐỘNG CHUYỂN (fallback
+ * chain): nếu nhà cung cấp ưu tiên lỗi/hết quota free, tự động thử nhà cung
+ * cấp tiếp theo đã có API Key, không cần người dùng tự chuyển tay.
  */
 class AITranslationHandler
 {
@@ -13,7 +17,22 @@ class AITranslationHandler
     private $deepseek_key;
     private $openai_key;
     private $anthropic_key;
+    private $openrouter_key;
+    private $cloudflare_account_id;
+    private $cloudflare_api_token;
+    private $mistral_key;
+    private $cohere_key;
+    private $nvidia_key;
     private $default_provider;
+
+    // Thứ tự fallback khi nhà cung cấp ưu tiên (default_provider) lỗi/hết
+    // quota — ưu tiên theo mức độ "free tier" rộng rãi/ổn định, không phải
+    // thứ tự chữ cái. Chỉ những provider ĐÃ có key cấu hình mới được thử
+    // (xem buildProviderChain()).
+    private const PROVIDER_CHAIN_ORDER = [
+        'gemini', 'groq', 'openrouter', 'cloudflare', 'mistral',
+        'cohere', 'nvidia', 'deepseek', 'openai', 'anthropic',
+    ];
 
     public function __construct()
     {
@@ -22,21 +41,23 @@ class AITranslationHandler
         $this->deepseek_key = carbon_get_theme_option('ai_deepseek_key');
         $this->openai_key = carbon_get_theme_option('ai_openai_key');
         $this->anthropic_key = carbon_get_theme_option('ai_anthropic_key');
+        $this->openrouter_key = carbon_get_theme_option('ai_openrouter_key');
+        $this->cloudflare_account_id = carbon_get_theme_option('ai_cloudflare_account_id');
+        $this->cloudflare_api_token = carbon_get_theme_option('ai_cloudflare_api_token');
+        $this->mistral_key = carbon_get_theme_option('ai_mistral_key');
+        $this->cohere_key = carbon_get_theme_option('ai_cohere_key');
+        $this->nvidia_key = carbon_get_theme_option('ai_nvidia_key');
         $this->default_provider = carbon_get_theme_option('ai_default_provider') ?: 'gemini';
     }
 
     /**
-     * Translates a given text using the preferred/available AI provider.
+     * Translates a given text, tự động chuyển qua provider khác nếu provider
+     * hiện tại lỗi/hết quota (xem executeWithFallback()).
      */
     public function translateText($text, $target_lang = 'en', $source_context = '')
     {
         if (empty($text)) {
             return '';
-        }
-
-        $provider = $this->getAvailableProvider();
-        if (!$provider) {
-            return new \WP_Error('no_ai_key', 'Vui lòng cấu hình API Key trong Laca Admin > AI Translation.');
         }
 
         $system_prompt = "You are a raw machine translation API endpoint.\n" .
@@ -53,25 +74,13 @@ class AITranslationHandler
             $system_prompt .= "\nContext: $source_context";
         }
 
-        switch ($provider) {
-            case 'gemini':
-                return $this->callGemini($text, $system_prompt);
-            case 'groq':
-                return $this->callGroq($text, $system_prompt);
-            case 'deepseek':
-                return $this->callDeepSeek($text, $system_prompt);
-            case 'openai':
-                return $this->callOpenAI($text, $system_prompt);
-            case 'anthropic':
-                return $this->callAnthropic($text, $system_prompt);
-        }
-
-        return new \WP_Error('invalid_provider', 'Bộ xử lý không hợp lệ.');
+        return $this->executeWithFallback($text, $system_prompt);
     }
 
     /**
      * General-purpose chat method (used by AIChatHandler).
-     * System prompt is built externally; this method just calls the provider.
+     * System prompt is built externally; this method just calls the provider
+     * (tự động fallback qua provider khác nếu lỗi/hết quota).
      *
      * @param string $message       The user's message.
      * @param string $system_prompt The full system prompt.
@@ -83,42 +92,82 @@ class AITranslationHandler
             return '';
         }
 
-        $provider = $this->getAvailableProvider();
-        if (! $provider) {
-            return new \WP_Error('no_ai_key', 'Chưa có API Key nào được cấu hình. Vào Laca Admin > AI Translation để cài đặt.');
-        }
-
-        switch ($provider) {
-            case 'gemini':
-                return $this->callGemini($message, $system_prompt);
-            case 'groq':
-                return $this->callGroq($message, $system_prompt);
-            case 'deepseek':
-                return $this->callDeepSeek($message, $system_prompt);
-            case 'openai':
-                return $this->callOpenAI($message, $system_prompt);
-            case 'anthropic':
-                return $this->callAnthropic($message, $system_prompt);
-        }
-
-        return new \WP_Error('invalid_provider', 'Provider không hợp lệ.');
+        return $this->executeWithFallback($message, $system_prompt);
     }
 
-    private function getAvailableProvider()
+    /**
+     * Thử lần lượt từng provider trong chain (ưu tiên default_provider trước)
+     * cho tới khi có 1 provider trả về thành công. Mỗi lỗi (key sai, hết
+     * quota free, rate-limit, provider đang sập...) đều coi là "bỏ qua, thử
+     * provider kế tiếp" thay vì dừng hẳn — vì mục đích của nhiều free key là
+     * TĂNG độ sẵn sàng, không chỉ dùng 1 key duy nhất.
+     */
+    private function executeWithFallback(string $text, string $system_prompt)
     {
-        // Try default first
-        if ($this->isKeySet($this->default_provider)) {
-            return $this->default_provider;
+        $chain = $this->buildProviderChain();
+        if (empty($chain)) {
+            return new \WP_Error('no_ai_key', 'Vui lòng cấu hình ít nhất 1 API Key trong Laca Admin > AI Translation.');
         }
 
-        // Fallbacks
-        if (!empty($this->gemini_key)) return 'gemini';
-        if (!empty($this->groq_key)) return 'groq';
-        if (!empty($this->deepseek_key)) return 'deepseek';
-        if (!empty($this->openai_key)) return 'openai';
-        if (!empty($this->anthropic_key)) return 'anthropic';
+        $errors = [];
+        foreach ($chain as $provider) {
+            $result = $this->callProvider($provider, $text, $system_prompt);
+            if (!is_wp_error($result)) {
+                return $result;
+            }
+            $errors[] = $provider . ': ' . $result->get_error_message();
+        }
 
-        return null;
+        return new \WP_Error(
+            'all_providers_failed',
+            'Tất cả API Key đã cấu hình đều lỗi/hết quota. Chi tiết: ' . implode(' | ', $errors)
+        );
+    }
+
+    /**
+     * Danh sách provider sẽ thử, theo đúng thứ tự: default_provider trước
+     * (nếu có key), rồi tới PROVIDER_CHAIN_ORDER — chỉ gồm provider đã có
+     * key hợp lệ (isKeySet()), không trùng lặp.
+     */
+    private function buildProviderChain(): array
+    {
+        $chain = [];
+        if ($this->isKeySet($this->default_provider)) {
+            $chain[] = $this->default_provider;
+        }
+        foreach (self::PROVIDER_CHAIN_ORDER as $provider) {
+            if (!in_array($provider, $chain, true) && $this->isKeySet($provider)) {
+                $chain[] = $provider;
+            }
+        }
+        return $chain;
+    }
+
+    private function callProvider(string $provider, string $text, string $system_prompt)
+    {
+        switch ($provider) {
+            case 'gemini':
+                return $this->callGemini($text, $system_prompt);
+            case 'groq':
+                return $this->callGroq($text, $system_prompt);
+            case 'openrouter':
+                return $this->callOpenRouter($text, $system_prompt);
+            case 'cloudflare':
+                return $this->callCloudflareWorkersAi($text, $system_prompt);
+            case 'mistral':
+                return $this->callMistral($text, $system_prompt);
+            case 'cohere':
+                return $this->callCohere($text, $system_prompt);
+            case 'nvidia':
+                return $this->callNvidiaNim($text, $system_prompt);
+            case 'deepseek':
+                return $this->callDeepSeek($text, $system_prompt);
+            case 'openai':
+                return $this->callOpenAI($text, $system_prompt);
+            case 'anthropic':
+                return $this->callAnthropic($text, $system_prompt);
+        }
+        return new \WP_Error('invalid_provider', 'Bộ xử lý không hợp lệ.');
     }
 
     private function isKeySet($provider)
@@ -126,6 +175,12 @@ class AITranslationHandler
         switch ($provider) {
             case 'gemini': return !empty($this->gemini_key);
             case 'groq': return !empty($this->groq_key);
+            case 'openrouter': return !empty($this->openrouter_key);
+            // Workers AI cần CẢ Account ID lẫn API Token mới gọi được.
+            case 'cloudflare': return !empty($this->cloudflare_account_id) && !empty($this->cloudflare_api_token);
+            case 'mistral': return !empty($this->mistral_key);
+            case 'cohere': return !empty($this->cohere_key);
+            case 'nvidia': return !empty($this->nvidia_key);
             case 'deepseek': return !empty($this->deepseek_key);
             case 'openai': return !empty($this->openai_key);
             case 'anthropic': return !empty($this->anthropic_key);
@@ -148,7 +203,7 @@ class AITranslationHandler
     private function callGemini($text, $system_prompt)
     {
         $url = 'https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=' . $this->gemini_key;
-        
+
         $body = [
             "system_instruction" => ["parts" => [["text" => $system_prompt]]],
             "contents" => [["role" => "user", "parts" => [["text" => $text]]]],
@@ -163,12 +218,6 @@ class AITranslationHandler
 
         if (is_wp_error($response)) return $response;
 
-        // Chỉ callGroq() trước đây có kiểm tra HTTP status — 4 hàm còn lại
-        // (Gemini/DeepSeek/OpenAI/Anthropic) chỉ json_decode rồi lấy
-        // $data[...] ?? '', nên nếu API key sai/hết hạn/rate-limit (HTTP
-        // 401/429...) sẽ im lặng trả về chuỗi rỗng thay vì WP_Error — phía
-        // trên coi chuỗi rỗng là bản dịch hợp lệ, admin không biết nguyên
-        // nhân thật sự khi dịch AI thất bại.
         $http_code = wp_remote_retrieve_response_code($response);
         $data      = json_decode(wp_remote_retrieve_body($response), true);
         if ($http_code !== 200) {
@@ -184,7 +233,7 @@ class AITranslationHandler
     private function callGroq($text, $system_prompt)
     {
         $url = 'https://api.groq.com/openai/v1/chat/completions';
-        
+
         $body = [
             'model' => 'llama-3.3-70b-versatile',  // stable 2025+, thay llama3-8b-8192 đã bị decommission
             'messages' => [
@@ -210,7 +259,6 @@ class AITranslationHandler
         $raw_body    = wp_remote_retrieve_body($response);
         $data        = json_decode($raw_body, true);
 
-        // Groq trả về error JSON khi HTTP != 200
         if ($http_code !== 200) {
             $err_msg = $data['error']['message'] ?? ('Groq API error: HTTP ' . $http_code);
             return new \WP_Error('groq_api_error', $err_msg);
@@ -219,10 +267,209 @@ class AITranslationHandler
         return trim($data['choices'][0]['message']['content'] ?? '');
     }
 
+    /**
+     * OpenRouter — API tương thích chuẩn OpenAI chat/completions, cho phép
+     * gọi nhiều model khác nhau qua cùng 1 key, trong đó các model có hậu tố
+     * ":free" không tốn phí. Model có thể bị thay đổi/ngừng theo thời gian —
+     * xem danh sách free mới nhất tại openrouter.ai/models?max_price=0.
+     */
+    private function callOpenRouter($text, $system_prompt)
+    {
+        $url = 'https://openrouter.ai/api/v1/chat/completions';
+
+        $body = [
+            'model' => 'deepseek/deepseek-chat-v3.1:free',
+            'messages' => [
+                ['role' => 'system', 'content' => $system_prompt],
+                ['role' => 'user', 'content' => $text]
+            ],
+            'temperature' => 0.1,
+        ];
+
+        $response = wp_remote_post($url, [
+            'headers' => [
+                'Content-Type'  => 'application/json',
+                'Authorization' => 'Bearer ' . $this->openrouter_key,
+            ],
+            'body'    => json_encode($body, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
+            'timeout' => 30
+        ]);
+
+        if (is_wp_error($response)) return $response;
+
+        $http_code = wp_remote_retrieve_response_code($response);
+        $data      = json_decode(wp_remote_retrieve_body($response), true);
+        if ($http_code !== 200) {
+            $err_msg = $data['error']['message'] ?? ('OpenRouter API error: HTTP ' . $http_code);
+            return new \WP_Error('openrouter_api_error', $err_msg);
+        }
+
+        return trim($data['choices'][0]['message']['content'] ?? '');
+    }
+
+    /**
+     * Cloudflare Workers AI — endpoint + response shape RIÊNG (không theo
+     * chuẩn OpenAI), cần cả Account ID (trong URL) lẫn API Token (header).
+     */
+    private function callCloudflareWorkersAi($text, $system_prompt)
+    {
+        $model = '@cf/meta/llama-3.1-8b-instruct';
+        $url = "https://api.cloudflare.com/client/v4/accounts/{$this->cloudflare_account_id}/ai/run/{$model}";
+
+        $body = [
+            'messages' => [
+                ['role' => 'system', 'content' => $system_prompt],
+                ['role' => 'user', 'content' => $text]
+            ],
+        ];
+
+        $response = wp_remote_post($url, [
+            'headers' => [
+                'Content-Type'  => 'application/json',
+                'Authorization' => 'Bearer ' . $this->cloudflare_api_token,
+            ],
+            'body'    => json_encode($body, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
+            'timeout' => 30
+        ]);
+
+        if (is_wp_error($response)) return $response;
+
+        $http_code = wp_remote_retrieve_response_code($response);
+        $data      = json_decode(wp_remote_retrieve_body($response), true);
+        if ($http_code !== 200 || empty($data['success'])) {
+            $err_msg = $data['errors'][0]['message'] ?? ('Cloudflare Workers AI error: HTTP ' . $http_code);
+            return new \WP_Error('cloudflare_api_error', $err_msg);
+        }
+
+        return trim($data['result']['response'] ?? '');
+    }
+
+    /**
+     * Mistral — API tương thích chuẩn OpenAI chat/completions.
+     */
+    private function callMistral($text, $system_prompt)
+    {
+        $url = 'https://api.mistral.ai/v1/chat/completions';
+
+        $body = [
+            'model' => 'mistral-small-latest',
+            'messages' => [
+                ['role' => 'system', 'content' => $system_prompt],
+                ['role' => 'user', 'content' => $text]
+            ],
+            'temperature' => 0.1,
+        ];
+
+        $response = wp_remote_post($url, [
+            'headers' => [
+                'Content-Type'  => 'application/json',
+                'Authorization' => 'Bearer ' . $this->mistral_key,
+            ],
+            'body'    => json_encode($body, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
+            'timeout' => 30
+        ]);
+
+        if (is_wp_error($response)) return $response;
+
+        $http_code = wp_remote_retrieve_response_code($response);
+        $data      = json_decode(wp_remote_retrieve_body($response), true);
+        if ($http_code !== 200) {
+            $err_msg = $data['message'] ?? ($data['error']['message'] ?? ('Mistral API error: HTTP ' . $http_code));
+            return new \WP_Error('mistral_api_error', $err_msg);
+        }
+
+        return trim($data['choices'][0]['message']['content'] ?? '');
+    }
+
+    /**
+     * Cohere — chat endpoint v2, response shape RIÊNG (content là mảng các
+     * block [{type:'text', text:'...'}], không phải string phẳng như
+     * chuẩn OpenAI).
+     */
+    private function callCohere($text, $system_prompt)
+    {
+        $url = 'https://api.cohere.com/v2/chat';
+
+        $body = [
+            'model' => 'command-r',
+            'messages' => [
+                ['role' => 'system', 'content' => $system_prompt],
+                ['role' => 'user', 'content' => $text]
+            ],
+            'temperature' => 0.1,
+        ];
+
+        $response = wp_remote_post($url, [
+            'headers' => [
+                'Content-Type'  => 'application/json',
+                'Authorization' => 'Bearer ' . $this->cohere_key,
+            ],
+            'body'    => json_encode($body, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
+            'timeout' => 30
+        ]);
+
+        if (is_wp_error($response)) return $response;
+
+        $http_code = wp_remote_retrieve_response_code($response);
+        $data      = json_decode(wp_remote_retrieve_body($response), true);
+        if ($http_code !== 200) {
+            $err_msg = $data['message'] ?? ('Cohere API error: HTTP ' . $http_code);
+            return new \WP_Error('cohere_api_error', $err_msg);
+        }
+
+        $blocks = $data['message']['content'] ?? [];
+        $result = '';
+        foreach ($blocks as $block) {
+            if (($block['type'] ?? '') === 'text') {
+                $result .= $block['text'];
+            }
+        }
+
+        return trim($result);
+    }
+
+    /**
+     * NVIDIA NIM — API tương thích chuẩn OpenAI chat/completions (build.nvidia.com).
+     */
+    private function callNvidiaNim($text, $system_prompt)
+    {
+        $url = 'https://integrate.api.nvidia.com/v1/chat/completions';
+
+        $body = [
+            'model' => 'meta/llama-3.1-8b-instruct',
+            'messages' => [
+                ['role' => 'system', 'content' => $system_prompt],
+                ['role' => 'user', 'content' => $text]
+            ],
+            'temperature' => 0.1,
+            'max_tokens'  => 1024,
+        ];
+
+        $response = wp_remote_post($url, [
+            'headers' => [
+                'Content-Type'  => 'application/json',
+                'Authorization' => 'Bearer ' . $this->nvidia_key,
+            ],
+            'body'    => json_encode($body, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
+            'timeout' => 30
+        ]);
+
+        if (is_wp_error($response)) return $response;
+
+        $http_code = wp_remote_retrieve_response_code($response);
+        $data      = json_decode(wp_remote_retrieve_body($response), true);
+        if ($http_code !== 200) {
+            $err_msg = $data['error']['message'] ?? ('NVIDIA NIM API error: HTTP ' . $http_code);
+            return new \WP_Error('nvidia_api_error', $err_msg);
+        }
+
+        return trim($data['choices'][0]['message']['content'] ?? '');
+    }
+
     private function callDeepSeek($text, $system_prompt)
     {
         $url = 'https://api.deepseek.com/v1/chat/completions';
-        
+
         $body = [
             'model' => 'deepseek-chat',
             'messages' => [
@@ -256,7 +503,7 @@ class AITranslationHandler
     private function callOpenAI($text, $system_prompt)
     {
         $url = 'https://api.openai.com/v1/chat/completions';
-        
+
         $body = [
             'model' => 'gpt-4o-mini',
             'messages' => [
@@ -290,7 +537,7 @@ class AITranslationHandler
     private function callAnthropic($text, $system_prompt)
     {
         $url = 'https://api.anthropic.com/v1/messages';
-        
+
         $body = [
             'model' => 'claude-3-5-haiku-20241022',
             'system' => $system_prompt,
