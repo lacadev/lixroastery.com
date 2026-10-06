@@ -227,13 +227,19 @@ const FIELD_TYPES = window.LacaContactFormVars.FIELD_TYPES;
                                 value="${escAttr(subVal)}"
                                 oninput="lcfCustomerEmailI18nUpdate('${escAttr(lang.slug)}','subject',this.value)">
                         </div>
-                        <div class="lcf-input-row" style="margin-top:8px">
-                            <label class="lcf-label">Nội dung (Body — hỗ trợ HTML)</label>
-                            <textarea class="widefat laca-cf-email-body laca-cf-email-input" rows="6" data-i18n-key="body"
-                                placeholder="${escAttr(defaultBody || 'Nội dung email...')}"
-                                oninput="lcfCustomerEmailI18nUpdate('${escAttr(lang.slug)}','body',this.value)"
-                            >${escHtml(bodyVal)}</textarea>
+                        <div class="lcf-email-body-label-row" style="margin-top:8px">
+                            <label class="lcf-label">Nội dung (Body)</label>
+                            <div class="lcf-email-toolbar">
+                                <button type="button" onclick="lcfEmailWrap('email-customer-i18n-${escAttr(lang.slug)}','strong')" title="In đậm"><strong>B</strong></button>
+                                <button type="button" onclick="lcfEmailWrap('email-customer-i18n-${escAttr(lang.slug)}','em')" title="In nghiêng"><em>I</em></button>
+                                <button type="button" onclick="lcfEmailInsertLink('email-customer-i18n-${escAttr(lang.slug)}')">🔗 Link</button>
+                                <button type="button" class="lcf-btn-allfields" onclick="lcfEmailInsertVar('email-customer-i18n-${escAttr(lang.slug)}','$all_fields')">+ $all_fields</button>
+                            </div>
                         </div>
+                        <textarea id="email-customer-i18n-${escAttr(lang.slug)}" class="widefat laca-cf-email-body laca-cf-email-input" rows="6" data-i18n-key="body"
+                            placeholder="${escAttr(defaultBody || 'Nội dung email...')}"
+                            oninput="lcfCustomerEmailI18nUpdate('${escAttr(lang.slug)}','body',this.value)"
+                        >${escHtml(bodyVal)}</textarea>
                     </div>`;
                 }).join('');
 
@@ -835,6 +841,86 @@ const FIELD_TYPES = window.LacaContactFormVars.FIELD_TYPES;
                     });
             };
 
+            function isHtmlDocument(str) {
+                if (!str) return false;
+                const s = str.toLowerCase();
+                return s.includes('<!doctype') || s.includes('<html') || s.includes('<body');
+            }
+
+            // ── Toolbar actions cho soạn thảo Email ───────────────────────────
+            window.lcfEmailWrap = function(textareaId, tag) {
+                const ta = document.getElementById(textareaId);
+                if (!ta) return;
+                wrapTextareaSelection(ta, '<' + tag + '>', '</' + tag + '>');
+            };
+
+            window.lcfEmailInsertLink = function(textareaId) {
+                const ta = document.getElementById(textareaId);
+                if (!ta) return;
+                const url = window.prompt('Nhập URL liên kết:', 'https://');
+                if (!url) return;
+                wrapTextareaSelection(ta, '<a href="' + escAttr(url) + '" target="_blank" rel="noopener">', '</a>');
+            };
+
+            window.lcfEmailInsertVar = function(textareaId, varName) {
+                const ta = document.getElementById(textareaId);
+                if (!ta) return;
+                const start = typeof ta.selectionStart === 'number' ? ta.selectionStart : ta.value.length;
+                const end   = typeof ta.selectionEnd === 'number' ? ta.selectionEnd : ta.value.length;
+                const val   = ta.value || '';
+                ta.value = val.substring(0, start) + varName + val.substring(end);
+                ta.focus();
+                ta.selectionStart = ta.selectionEnd = start + varName.length;
+                ta.dispatchEvent(new Event('input', { bubbles: true }));
+            };
+
+            // ── Chuyển đổi chế độ soạn email: template (Mẫu chuẩn) hoặc html (HTML thô)
+            window.lcfSetEmailMode = function(target, mode, isManualClick) {
+                styles['email_' + target + '_mode'] = mode;
+                updateStyleInput();
+
+                // Cập nhật trạng thái nút bấm
+                const toggle = document.querySelector('.lcf-email-mode-toggle[data-target="' + target + '"]');
+                if (toggle) {
+                    toggle.querySelectorAll('.lcf-mode-btn').forEach(function(btn) {
+                        btn.classList.toggle('is-active', btn.dataset.mode === mode);
+                    });
+                }
+
+                // Hiện/ẩn toolbar và hint
+                const toolbar = document.getElementById('toolbar-email-' + target);
+                const hint    = document.getElementById('hint-email-' + target);
+                const label   = document.getElementById('label-email-' + target + '-body');
+
+                if (toolbar) toolbar.style.display = mode === 'template' ? 'flex' : 'none';
+                if (hint)    hint.style.display    = mode === 'template' ? 'block' : 'none';
+                if (label)   label.textContent     = mode === 'template' ? 'Nội dung thư (Mẫu chuẩn tự đóng khung)' : 'Nội dung HTML (Toàn quyền code)';
+
+                // Nếu chuyển từ HTML thô sang template và đang chứa full document HTML, hỏi đổi sang mẫu văn bản sạch
+                const ta = document.getElementById('email-' + target + '-body');
+                if (isManualClick && mode === 'template' && ta && isHtmlDocument(ta.value)) {
+                    Swal.fire({
+                        title: 'Đổi sang Mẫu chuẩn?',
+                        text: 'Nội dung hiện tại đang là code HTML thô phức tạp. Bạn có muốn đổi sang nội dung văn bản đơn giản kèm bảng $all_fields tự động không?',
+                        icon: 'question',
+                        showCancelButton: true,
+                        confirmButtonText: 'Đổi sang mẫu đơn giản',
+                        cancelButtonText: 'Giữ nguyên văn bản hiện tại',
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            if (target === 'admin') {
+                                ta.value = "Một liên hệ mới vừa được gửi qua website.\n\nDưới đây là thông tin chi tiết:\n$all_fields\n\nIP người gửi: $ip\nThời gian: $time - $date";
+                            } else {
+                                ta.value = "Chào bạn $name,\n\nCảm ơn bạn đã liên hệ với chúng tôi! Chúng tôi đã nhận được thông tin và sẽ phản hồi trong thời gian sớm nhất.\n\nThông tin bạn đã gửi:\n$all_fields\n\nTrân trọng!";
+                            }
+                            ta.dispatchEvent(new Event('input', { bubbles: true }));
+                        }
+                    });
+                }
+
+                lcfUpdateEmailPreview(target);
+            };
+
             // ── Public: duplicate field ────────────────────────────────────────
             window.lcfDuplicateField = function(event, fieldId) {
                 event.stopPropagation(); // prevent accordion toggle
@@ -1195,6 +1281,10 @@ const FIELD_TYPES = window.LacaContactFormVars.FIELD_TYPES;
                     const el = document.getElementById(textMap[key]);
                     if (el && el !== document.activeElement) el.value = value;
                 }
+                if (key === 'primary_color') {
+                    lcfUpdateEmailPreview('admin');
+                    lcfUpdateEmailPreview('customer');
+                }
             };
 
             // ── Init style controls from saved state ──────────────────────────
@@ -1229,6 +1319,15 @@ const FIELD_TYPES = window.LacaContactFormVars.FIELD_TYPES;
                 if (inpS) inpS.value = styles.input_spacing || '';
                 if (cusC) cusC.value = styles.custom_css || '';
                 if (subA) subA.value = styles.submit_align || DEFAULT_STYLES.submit_align;
+
+                // Khởi tạo chế độ soạn email (Mẫu chuẩn vs HTML thô)
+                var adminTa = document.getElementById('email-admin-body');
+                var adminMode = styles.email_admin_mode || (adminTa && isHtmlDocument(adminTa.value) ? 'html' : 'template');
+                lcfSetEmailMode('admin', adminMode, false);
+
+                var custTa = document.getElementById('email-customer-body');
+                var custMode = styles.email_customer_mode || (custTa && isHtmlDocument(custTa.value) ? 'html' : 'template');
+                lcfSetEmailMode('customer', custMode, false);
             }
 
             // ── Build live form preview HTML ───────────────────────────────────
@@ -1395,6 +1494,12 @@ const FIELD_TYPES = window.LacaContactFormVars.FIELD_TYPES;
                 html += '<div class="lcf-email-vars-subhead">Biến từ các trường trong form:</div>';
                 html += '<div class="lcf-email-vars-list">';
 
+                // Smart tag: $all_fields
+                html += '<button type="button" class="lcf-var-tag is-all-fields" data-orig-badge="Bảng toàn bộ dữ liệu" onclick="lcfClickVar(this, \'$all_fields\')" title="Chèn toàn bộ dữ liệu người dùng gửi vào email dưới dạng bảng đẹp mắt">'
+                    + '<code>$all_fields</code>'
+                    + '<span class="lcf-var-label lcf-var-badge">Bảng toàn bộ dữ liệu</span>'
+                    + '</button>';
+
                 if (formVars.length === 0) {
                     html += '<span class="lcf-email-vars-empty">Chưa có trường nào. Hãy thêm trường ở tab <strong>Trường</strong>.</span>';
                 } else {
@@ -1476,23 +1581,115 @@ const FIELD_TYPES = window.LacaContactFormVars.FIELD_TYPES;
             };
 
             // ── Email preview ──────────────────────────────────────────────────
+            function buildSampleEmailData() {
+                var dummy = {
+                    ip: '192.168.1.1',
+                    date: new Date().toISOString().slice(0, 10),
+                    time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                };
+                var flat = [];
+                rows.forEach(function(row) {
+                    row.cols.forEach(function(col) {
+                        col.fields.forEach(function(f) {
+                            if (f.type !== 'content' && f.name) {
+                                var val = 'Nội dung mẫu';
+                                if (f.type === 'email') val = 'nguyenvanan@example.com';
+                                else if (f.type === 'phone') val = '0912 345 678';
+                                else if (f.type === 'textarea') val = 'Tôi muốn tìm hiểu thêm về sản phẩm và đặt lịch hẹn tư vấn.';
+                                else if (f.type === 'select' || f.type === 'radio') {
+                                    val = (f.options && f.options[0]) ? (f.options[0].label || f.options[0].value) : 'Tuỳ chọn 1';
+                                } else if (f.type === 'checkbox') {
+                                    val = 'Đã chọn';
+                                } else if (f.label && f.label.toLowerCase().includes('tên')) {
+                                    val = 'Nguyễn Văn An';
+                                }
+                                dummy[f.name] = val;
+                                flat.push({
+                                    name: f.name,
+                                    label: f.label || f.name,
+                                    val: val
+                                });
+                            }
+                        });
+                    });
+                });
+
+                // Build $all_fields sample table
+                var tableRows = '';
+                flat.forEach(function(item) {
+                    tableRows += '<tr>'
+                        + '<td style="padding:10px 14px;background:#f8fafc;color:#475569;font-weight:600;width:38%;border-bottom:1px solid #e2e8f0;font-size:13px;vertical-align:top">' + escHtml(item.label) + '</td>'
+                        + '<td style="padding:10px 14px;color:#1e293b;border-bottom:1px solid #e2e8f0;font-size:13px;vertical-align:top">' + escHtml(item.val).replace(/\n/g, '<br>') + '</td>'
+                        + '</tr>';
+                });
+                var allFieldsHtml = '<table width="100%" cellpadding="0" cellspacing="0" style="width:100%;border-collapse:collapse;margin:16px 0;border:1px solid #e2e8f0;border-radius:6px;overflow:hidden">'
+                    + '<tbody>' + (tableRows || '<tr><td style="padding:12px;color:#94a3b8;font-style:italic">Chưa có trường dữ liệu</td></tr>') + '</tbody>'
+                    + '</table>';
+
+                return { dummy: dummy, flat: flat, allFieldsHtml: allFieldsHtml };
+            }
+
             window.lcfUpdateEmailPreview = function(which) {
                 var taId  = which === 'admin' ? 'email-admin-body' : 'email-customer-body';
                 var outId = which === 'admin' ? 'lcf-email-admin-preview-output' : 'lcf-email-customer-preview-output';
                 var ta    = document.getElementById(taId);
                 var out   = document.getElementById(outId);
                 if (!ta || !out) return;
-                var body    = ta.value;
-                var isHtml  = body !== body.replace(/<[a-zA-Z]/g, '');
-                var content = document.createElement('div');
-                content.className = 'lcf-pv-email-content' + (isHtml ? ' is-html' : '');
-                if (isHtml) {
-                    content.innerHTML = body;
-                } else {
-                    content.textContent = body;
+
+                var body = ta.value;
+                if (!body.trim()) {
+                    out.innerHTML = '<div style="padding:40px 20px;text-align:center;color:#94a3b8;font-size:13px"><em>(Nội dung thư đang để trống)</em></div>';
+                    return;
                 }
-                out.innerHTML = '';
-                out.appendChild(content);
+
+                var mode = styles['email_' + which + '_mode'] || (isHtmlDocument(body) ? 'html' : 'template');
+                var sample = buildSampleEmailData();
+
+                // Thay thế $all_fields
+                var rendered = body.split('$all_fields').join(sample.allFieldsHtml);
+
+                // Thay thế các biến fields & system
+                var keys = Object.keys(sample.dummy).sort(function(a, b) { return b.length - a.length; });
+                keys.forEach(function(k) {
+                    rendered = rendered.split('$' + k).join(escHtml(sample.dummy[k]));
+                });
+
+                if (mode === 'template' || !isHtmlDocument(rendered)) {
+                    // Title/Subject header
+                    var subjId = which === 'admin' ? 'email-admin-subject' : 'email-customer-subject';
+                    var subjInp = document.getElementById(subjId);
+                    var subjText = subjInp ? subjInp.value : '';
+                    keys.forEach(function(k) {
+                        subjText = subjText.split('$' + k).join(sample.dummy[k]);
+                    });
+                    if (!subjText.trim()) {
+                        subjText = which === 'admin' ? 'Thông báo liên hệ mới' : 'Cảm ơn bạn đã liên hệ';
+                    }
+
+                    // Format plain text newlines to <br>
+                    var formattedBody = rendered.replace(/\n/g, '<br>');
+                    var primaryColor = styles.primary_color || '#2271b1';
+                    var siteName = (window.LacaContactFormVars && window.LacaContactFormVars.siteName) ? window.LacaContactFormVars.siteName : 'Lix Roastery';
+
+                    var htmlCard = '<div style="background:#f1f5f9;padding:24px 14px;border-radius:8px;font-family:-apple-system,BlinkMacSystemFont,\'Segoe UI\',Roboto,Helvetica,Arial,sans-serif;color:#1e293b;line-height:1.6;box-sizing:border-box">'
+                        + '<div style="max-width:540px;margin:0 auto;background:#ffffff;border-radius:8px;border:1px solid #e2e8f0;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.06);text-align:left">'
+                        + '<div style="background:' + escAttr(primaryColor) + ';padding:20px 24px;color:#ffffff">'
+                        + '<h3 style="margin:0;font-size:16px;font-weight:700;letter-spacing:-0.2px;color:#ffffff">' + escHtml(subjText) + '</h3>'
+                        + '<p style="margin:4px 0 0;font-size:12px;opacity:0.9;color:#ffffff">' + escHtml(siteName) + '</p>'
+                        + '</div>'
+                        + '<div style="padding:24px;font-size:13.5px;color:#334155;line-height:1.7">'
+                        + formattedBody
+                        + '</div>'
+                        + '<div style="padding:12px 24px;background:#f8fafc;border-top:1px solid #e2e8f0;font-size:11.5px;color:#94a3b8">'
+                        + '<span>' + escHtml(siteName) + ' &bull; Email tự động</span>'
+                        + '</div>'
+                        + '</div>'
+                        + '</div>';
+
+                    out.innerHTML = htmlCard;
+                } else {
+                    out.innerHTML = '<div class="lcf-pv-email-content is-html">' + rendered + '</div>';
+                }
             };
 
             // ── Tab switching ──────────────────────────────────────────────────

@@ -54,15 +54,28 @@ class ContactFormEmailService
             ? $form['notify_email']
             : get_option('admin_email');
 
-        $subject = self::interpolate($form['email_admin_subject'] ?? '', $vars, false);
-        $body    = self::interpolate($form['email_admin_body'] ?? '', $vars, true);
+        $styleSettings = is_array($form['style_settings'] ?? null)
+            ? $form['style_settings']
+            : (json_decode($form['style_settings'] ?? '{}', true) ?: []);
+
+        $bodyTemplate = $form['email_admin_body'] ?? '';
+        $mode = $styleSettings['email_admin_mode'] ?? (self::isHtmlDocument($bodyTemplate) ? 'html' : 'template');
+
+        $subject = self::interpolate($form['email_admin_subject'] ?? '', $vars, false, $form);
+        $body    = self::interpolate($bodyTemplate, $vars, true, $form);
 
         // Admin cố ý để trống subject/body (tắt tính năng) — không phải lỗi.
         if (!$subject || !$body) {
             return true;
         }
 
-        if (strip_tags($body) === $body) {
+        // Tự động bọc vào layout chuẩn nếu ở chế độ Mẫu chuẩn hoặc không phải HTML thô đầy đủ
+        if ($mode === 'template' || !self::isHtmlDocument($body)) {
+            if (strip_tags($body, '<table><tr><td><th><tbody><thead><p><b><strong><i><em><a><ul><ol><li><h1><h2><h3><h4><br>') === $body) {
+                $body = nl2br($body);
+            }
+            $body = self::wrapInEmailTemplate($body, $subject, $styleSettings);
+        } elseif (strip_tags($body) === $body) {
             $body = nl2br($body);
         }
 
@@ -125,14 +138,22 @@ class ContactFormEmailService
             return true;
         }
 
-        $subject = self::interpolate($subjectTemplate, $vars, false);
-        $body    = self::interpolate($bodyTemplate, $vars, true);
+        $mode = $styleSettings['email_customer_mode'] ?? (self::isHtmlDocument($bodyTemplate) ? 'html' : 'template');
+
+        $subject = self::interpolate($subjectTemplate, $vars, false, $form);
+        $body    = self::interpolate($bodyTemplate, $vars, true, $form);
 
         if (!$subject || !$body) {
             return true;
         }
 
-        if (strip_tags($body) === $body) {
+        // Tự động bọc vào layout chuẩn nếu ở chế độ Mẫu chuẩn hoặc không phải HTML thô đầy đủ
+        if ($mode === 'template' || !self::isHtmlDocument($body)) {
+            if (strip_tags($body, '<table><tr><td><th><tbody><thead><p><b><strong><i><em><a><ul><ol><li><h1><h2><h3><h4><br>') === $body) {
+                $body = nl2br($body);
+            }
+            $body = self::wrapInEmailTemplate($body, $subject, $styleSettings);
+        } elseif (strip_tags($body) === $body) {
             $body = nl2br($body);
         }
 
@@ -155,23 +176,143 @@ class ContactFormEmailService
     // -------------------------------------------------------------------------
 
     /**
+     * Kiểm tra xem chuỗi có phải tài liệu HTML hoàn chỉnh hay không
+     */
+    public static function isHtmlDocument(string $text): bool
+    {
+        $lower = strtolower($text);
+        return str_contains($lower, '<!doctype') || str_contains($lower, '<html') || str_contains($lower, '<body');
+    }
+
+    /**
+     * Tự động bọc nội dung vào khung email chuẩn đẹp
+     */
+    public static function wrapInEmailTemplate(string $content, string $title, array $styleSettings = []): string
+    {
+        $siteName     = get_bloginfo('name');
+        $primaryColor = !empty($styleSettings['primary_color']) ? $styleSettings['primary_color'] : '#2271b1';
+
+        return '<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+</head>
+<body style="margin:0;padding:28px 12px;background:#f1f5f9;font-family:-apple-system,BlinkMacSystemFont,\'Segoe UI\',Roboto,Helvetica,Arial,sans-serif;color:#1e293b;line-height:1.6">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+    <tr>
+      <td align="center">
+        <div style="max-width:580px;width:100%;margin:0 auto;background:#ffffff;border-radius:8px;border:1px solid #e2e8f0;overflow:hidden;text-align:left;box-shadow:0 1px 3px rgba(0,0,0,0.06)">
+          <div style="background:' . esc_attr($primaryColor) . ';padding:22px 28px;color:#ffffff">
+            <h2 style="margin:0;font-size:18px;font-weight:700;letter-spacing:-0.2px;color:#ffffff">' . esc_html($title) . '</h2>
+            <p style="margin:4px 0 0;font-size:13px;opacity:0.9;color:#ffffff">' . esc_html($siteName) . '</p>
+          </div>
+          <div style="padding:28px;font-size:14px;color:#334155;line-height:1.7">
+            ' . $content . '
+          </div>
+          <div style="padding:14px 28px;background:#f8fafc;border-top:1px solid #e2e8f0;font-size:12px;color:#94a3b8">
+            <span>' . esc_html($siteName) . ' &bull; Email tự động</span>
+          </div>
+        </div>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>';
+    }
+
+    /**
+     * Tạo bảng HTML hiển thị toàn bộ các trường trong form ($all_fields)
+     */
+    public static function buildAllFieldsTable(array $form, array $vars, bool $isHtml = true): string
+    {
+        $rawFields = json_decode($form['fields'] ?? '[]', true) ?: [];
+        $flatFields = [];
+
+        // Hỗ trợ cả row-based lẫn flat structure
+        if (!empty($rawFields) && isset($rawFields[0]['cols'])) {
+            foreach ($rawFields as $row) {
+                foreach ($row['cols'] ?? [] as $col) {
+                    foreach ($col['fields'] ?? [] as $f) {
+                        if (($f['type'] ?? '') !== 'content' && !empty($f['name'])) {
+                            $flatFields[] = $f;
+                        }
+                    }
+                }
+            }
+        } else {
+            foreach ($rawFields as $f) {
+                if (($f['type'] ?? '') !== 'content' && !empty($f['name'])) {
+                    $flatFields[] = $f;
+                }
+            }
+        }
+
+        if (empty($flatFields)) {
+            return '';
+        }
+
+        if (!$isHtml) {
+            $lines = [];
+            foreach ($flatFields as $f) {
+                $name = $f['name'];
+                $label = !empty($f['label']) ? $f['label'] : $name;
+                $val = $vars[$name] ?? '';
+                if (is_array($val)) {
+                    $val = implode(', ', $val);
+                }
+                $lines[] = "- {$label}: {$val}";
+            }
+            return implode("\n", $lines);
+        }
+
+        $rowsHtml = '';
+        foreach ($flatFields as $f) {
+            $name = $f['name'];
+            $label = !empty($f['label']) ? $f['label'] : $name;
+            $val = $vars[$name] ?? '';
+
+            if (is_array($val)) {
+                $valHtml = implode(', ', array_map(fn($v) => esc_html((string)$v), $val));
+            } elseif ($f['type'] === 'textarea') {
+                $valHtml = nl2br(esc_html((string)$val));
+            } else {
+                $valHtml = esc_html((string)$val);
+            }
+
+            if ($valHtml === '') {
+                $valHtml = '<span style="color:#94a3b8;font-style:italic">—</span>';
+            }
+
+            $rowsHtml .= '<tr>
+              <td style="padding:10px 14px;background:#f8fafc;color:#475569;font-weight:600;width:38%;border-bottom:1px solid #e2e8f0;font-size:13px;vertical-align:top">' . esc_html($label) . '</td>
+              <td style="padding:10px 14px;color:#1e293b;border-bottom:1px solid #e2e8f0;font-size:13px;vertical-align:top">' . $valHtml . '</td>
+            </tr>';
+        }
+
+        return '<table width="100%" cellpadding="0" cellspacing="0" style="width:100%;border-collapse:collapse;margin:18px 0;border:1px solid #e2e8f0;border-radius:6px;overflow:hidden">
+          <tbody>' . $rowsHtml . '</tbody>
+        </table>';
+    }
+
+    /**
      * Thay thế $ten_bien trong template bằng giá trị thực tế
      *
-     * @param string $template Nội dung với $variable placeholders
-     * @param array  $vars     Array ['variable_name' => 'value']
-     * @param bool   $isHtml   Xử lý định dạng cho HTML email hay plain text (subject)
+     * @param string     $template Nội dung với $variable placeholders
+     * @param array      $vars     Array ['variable_name' => 'value']
+     * @param bool       $isHtml   Xử lý định dạng cho HTML email hay plain text (subject)
+     * @param array|null $form     Form row để sinh bảng $all_fields
      * @return string
      */
-    private static function interpolate(string $template, array $vars, bool $isHtml = true): string
+    private static function interpolate(string $template, array $vars, bool $isHtml = true, ?array $form = null): string
     {
-        // Sắp xếp theo ĐỘ DÀI TÊN BIẾN giảm dần trước khi thay thế — bug
-        // thật đã gặp: str_replace('$' . $key, ...) lặp không theo thứ tự
-        // độ dài nên nếu form có cả field "phone" và "phone_number" (rất dễ
-        // xảy ra, template mặc định dùng đúng $phone_number), xử lý "phone"
-        // trước sẽ thay luôn phần "$phone" nằm BÊN TRONG "$phone_number",
-        // làm sai nội dung email (vd thành "<giá trị phone>_number" thay vì
-        // giá trị thật của phone_number). Xử lý tên dài nhất trước loại bỏ
-        // hoàn toàn khả năng 1 tên biến là tiền tố của tên biến khác.
+        // Xử lý biến thông minh $all_fields
+        if (str_contains($template, '$all_fields') && $form !== null) {
+            $allFieldsHtml = self::buildAllFieldsTable($form, $vars, $isHtml);
+            $template = str_replace('$all_fields', $allFieldsHtml, $template);
+        }
+
+        // Sắp xếp theo ĐỘ DÀI TÊN BIẾN giảm dần trước khi thay thế
         uksort($vars, static fn($a, $b) => strlen((string) $b) <=> strlen((string) $a));
 
         foreach ($vars as $key => $value) {

@@ -337,66 +337,19 @@ class ContactFormManager
     }
 
     /**
-     * Default HTML email body gửi Admin
+     * Default email body gửi Admin (dạng văn bản chuẩn, tự bọc khung giao diện)
      */
     private static function defaultAdminEmailBody(): string
     {
-        return '<!DOCTYPE html>
-<html>
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"></head>
-<body style="margin:0;padding:40px 20px;background:#ffffff;font-family:-apple-system,BlinkMacSystemFont,\'Segoe UI\',Roboto,Arial,sans-serif;color:#111111;line-height:1.6">
-  <div style="max-width:540px;margin:0 auto;border:1px solid #e5e5e5;padding:40px">
-    <div style="margin-bottom:30px">
-      <h1 style="margin:0 0 5px;font-size:20px;font-weight:600;letter-spacing:-0.5px">Thông báo liên hệ mới</h1>
-      <p style="margin:0;font-size:13px;color:#666666">$time - $date</p>
-    </div>
-    <div style="margin-bottom:30px;padding-bottom:30px;border-bottom:1px solid #eeeeee">
-      <p style="margin:0 0 10px;font-size:14px"><strong>Người gửi:</strong> $name</p>
-      <p style="margin:0 0 10px;font-size:14px"><strong>Số điện thoại:</strong> $phone_number</p>
-      <p style="margin:0;font-size:14px"><strong>Email:</strong> $email</p>
-    </div>
-    <div style="margin-bottom:40px">
-      <p style="margin:0 0 10px;font-size:12px;color:#888888;text-transform:uppercase;letter-spacing:0.5px">Nội dung</p>
-      <p style="margin:0;white-space:pre-wrap;font-size:15px;line-height:1.7;color:#333333">$message</p>
-    </div>
-    <div style="margin-top:40px;padding-top:20px;border-top:1px solid #eeeeee">
-      <p style="margin:0;font-size:12px;color:#999999">IP: $ip</p>
-    </div>
-  </div>
-</body>
-</html>';
+        return "Một liên hệ mới vừa được gửi qua website.\n\nDưới đây là thông tin chi tiết:\n\$all_fields\n\nIP người gửi: \$ip\nThời gian: \$time - \$date";
     }
 
     /**
-     * Default HTML email body xác nhận gửi Khách hàng
+     * Default email body xác nhận gửi Khách hàng
      */
     private static function defaultCustomerEmailBody(): string
     {
-        $siteName = get_bloginfo('name');
-        return '<!DOCTYPE html>
-<html>
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"></head>
-<body style="margin:0;padding:40px 20px;background:#ffffff;font-family:-apple-system,BlinkMacSystemFont,\'Segoe UI\',Roboto,Arial,sans-serif;color:#111111;line-height:1.6">
-  <div style="max-width:540px;margin:0 auto;border:1px solid #e5e5e5;padding:40px">
-    <div style="margin-bottom:30px">
-      <h1 style="margin:0 0 5px;font-size:20px;font-weight:600;letter-spacing:-0.5px">Đã nhận lời nhắn</h1>
-      <p style="margin:0;font-size:13px;color:#666666">Cảm ơn bạn đã liên hệ với ' . esc_html($siteName) . '</p>
-    </div>
-    <div style="margin-bottom:30px">
-      <p style="margin:0 0 15px;font-size:15px">Chào <strong>$name</strong>,</p>
-      <p style="margin:0;font-size:15px;color:#444444">Tôi đã nhận được tin nhắn cùng số điện thoại <strong>$phone_number</strong> của bạn.</p>
-      <p style="margin:10px 0 0;font-size:15px;color:#444444">Tôi sẽ xem xét và phản hồi trong vòng 24 giờ.</p>
-    </div>
-    <div style="margin-bottom:30px;padding:25px;background:#fafafa;border:1px solid #eeeeee">
-      <p style="margin:0 0 10px;font-size:12px;color:#888888;text-transform:uppercase;letter-spacing:0.5px">Tóm tắt nội dung</p>
-      <p style="margin:0;font-size:14px;color:#555555">"$message"</p>
-    </div>
-    <div style="margin-top:40px;padding-top:20px;border-top:1px solid #eeeeee">
-      <p style="margin:0;font-size:12px;color:#999999">Đây là email xác nhận tự động từ ' . esc_html($siteName) . '.</p>
-    </div>
-  </div>
-</body>
-</html>';
+        return "Chào bạn \$name,\n\nCảm ơn bạn đã liên hệ với chúng tôi! Chúng tôi đã nhận được thông tin và sẽ phản hồi trong thời gian sớm nhất.\n\nThông tin bạn đã gửi:\n\$all_fields\n\nTrân trọng!";
     }
 
     // =========================================================================
@@ -727,29 +680,61 @@ class ContactFormManager
                                 </div>
 
                                 <div class="lcf-email-section">
-                                    <h3 class="lcf-email-section-title">Email Admin</h3>
+                                    <div class="lcf-email-section-header">
+                                        <h3 class="lcf-email-section-title">Email Admin</h3>
+                                        <div class="lcf-email-mode-toggle" data-target="admin">
+                                            <button type="button" class="lcf-mode-btn is-active" data-mode="template" onclick="lcfSetEmailMode('admin','template',true)">📝 Mẫu chuẩn (Dễ dùng)</button>
+                                            <button type="button" class="lcf-mode-btn" data-mode="html" onclick="lcfSetEmailMode('admin','html',true)">💻 Code HTML</button>
+                                        </div>
+                                    </div>
                                     <div class="laca-cf-field-group">
                                         <label class="lcf-form-label">Tiêu đề (Subject)</label>
                                         <input type="text" name="email_admin_subject" id="email-admin-subject" class="widefat laca-cf-email-input"
-                                               value="<?php echo esc_attr($form['email_admin_subject'] ?? $defaultAdminSubject); ?>">
+                                               value="<?php echo esc_attr($form['email_admin_subject'] ?? $defaultAdminSubject); ?>"
+                                               oninput="lcfUpdateEmailPreview('admin')">
                                     </div>
                                     <div class="laca-cf-field-group">
-                                        <label class="lcf-form-label">Nội dung (Body — hỗ trợ HTML)</label>
+                                        <div class="lcf-email-body-label-row">
+                                            <label class="lcf-form-label" id="label-email-admin-body">Nội dung thư</label>
+                                            <div class="lcf-email-toolbar" id="toolbar-email-admin">
+                                                <button type="button" onclick="lcfEmailWrap('email-admin-body','strong')" title="In đậm"><strong>B</strong></button>
+                                                <button type="button" onclick="lcfEmailWrap('email-admin-body','em')" title="In nghiêng"><em>I</em></button>
+                                                <button type="button" onclick="lcfEmailInsertLink('email-admin-body')" title="Chèn link">🔗 Link</button>
+                                                <button type="button" class="lcf-btn-allfields" onclick="lcfEmailInsertVar('email-admin-body','$all_fields')" title="Chèn toàn bộ thông tin form">+ Bảng thông tin ($all_fields)</button>
+                                            </div>
+                                        </div>
                                         <textarea name="email_admin_body" id="email-admin-body" class="widefat laca-cf-email-body laca-cf-email-input" rows="8"
                                                   oninput="lcfUpdateEmailPreview('admin')"><?php echo esc_textarea($form['email_admin_body'] ?? $defaultAdminBody); ?></textarea>
+                                        <p class="lcf-email-mode-hint" id="hint-email-admin">💡 <em>Chế độ Mẫu chuẩn: Nội dung sẽ tự động được bọc trong khung email đẹp mắt kèm màu sắc thương hiệu và bảng tóm tắt form.</em></p>
                                     </div>
                                 </div>
-                                <div class="lcf-email-section" style="margin-top:20px">
-                                    <h3 class="lcf-email-section-title">Email Khách hàng</h3>
+                                <div class="lcf-email-section" style="margin-top:24px">
+                                    <div class="lcf-email-section-header">
+                                        <h3 class="lcf-email-section-title">Email Khách hàng</h3>
+                                        <div class="lcf-email-mode-toggle" data-target="customer">
+                                            <button type="button" class="lcf-mode-btn is-active" data-mode="template" onclick="lcfSetEmailMode('customer','template',true)">📝 Mẫu chuẩn (Dễ dùng)</button>
+                                            <button type="button" class="lcf-mode-btn" data-mode="html" onclick="lcfSetEmailMode('customer','html',true)">💻 Code HTML</button>
+                                        </div>
+                                    </div>
                                     <div class="laca-cf-field-group">
                                         <label class="lcf-form-label">Tiêu đề (Subject) — để trống = không gửi</label>
                                         <input type="text" name="email_customer_subject" id="email-customer-subject" class="widefat laca-cf-email-input"
-                                               value="<?php echo esc_attr($form['email_customer_subject'] ?? $defaultCustomerSubject); ?>">
+                                               value="<?php echo esc_attr($form['email_customer_subject'] ?? $defaultCustomerSubject); ?>"
+                                               oninput="lcfUpdateEmailPreview('customer')">
                                     </div>
                                     <div class="laca-cf-field-group">
-                                        <label class="lcf-form-label">Nội dung (Body — hỗ trợ HTML)</label>
+                                        <div class="lcf-email-body-label-row">
+                                            <label class="lcf-form-label" id="label-email-customer-body">Nội dung thư</label>
+                                            <div class="lcf-email-toolbar" id="toolbar-email-customer">
+                                                <button type="button" onclick="lcfEmailWrap('email-customer-body','strong')" title="In đậm"><strong>B</strong></button>
+                                                <button type="button" onclick="lcfEmailWrap('email-customer-body','em')" title="In nghiêng"><em>I</em></button>
+                                                <button type="button" onclick="lcfEmailInsertLink('email-customer-body')" title="Chèn link">🔗 Link</button>
+                                                <button type="button" class="lcf-btn-allfields" onclick="lcfEmailInsertVar('email-customer-body','$all_fields')" title="Chèn toàn bộ thông tin form">+ Bảng thông tin ($all_fields)</button>
+                                            </div>
+                                        </div>
                                         <textarea name="email_customer_body" id="email-customer-body" class="widefat laca-cf-email-body laca-cf-email-input" rows="6"
                                                   oninput="lcfUpdateEmailPreview('customer')"><?php echo esc_textarea($form['email_customer_body'] ?? $defaultCustomerBody); ?></textarea>
+                                        <p class="lcf-email-mode-hint" id="hint-email-customer">💡 <em>Chế độ Mẫu chuẩn: Nội dung sẽ tự động được bọc trong khung email đẹp mắt gửi đến người liên hệ.</em></p>
                                     </div>
                                     <div id="email-customer-i18n-container"></div>
                                 </div>
@@ -792,6 +777,7 @@ class ContactFormManager
 
         <script>
             window.LacaContactFormVars = {
+                siteName: <?php echo wp_json_encode(get_bloginfo('name')); ?>,
                 FIELD_TYPES: <?php echo wp_json_encode(self::FIELD_TYPES); ?>,
                 rows: <?php echo wp_json_encode($rows); ?>,
                 languages: <?php echo wp_json_encode($languages); ?>,
@@ -1056,6 +1042,12 @@ class ContactFormManager
             if (!empty($cleanEmailI18n)) {
                 $cleanStyle['email_customer_i18n'] = $cleanEmailI18n;
             }
+        }
+        if (!empty($rawStyle['email_admin_mode']) && in_array($rawStyle['email_admin_mode'], ['template', 'html'], true)) {
+            $cleanStyle['email_admin_mode'] = $rawStyle['email_admin_mode'];
+        }
+        if (!empty($rawStyle['email_customer_mode']) && in_array($rawStyle['email_customer_mode'], ['template', 'html'], true)) {
+            $cleanStyle['email_customer_mode'] = $rawStyle['email_customer_mode'];
         }
         if (!empty($rawStyle['input_spacing'])) {
             $cleanStyle['input_spacing'] = sanitize_text_field($rawStyle['input_spacing']);
