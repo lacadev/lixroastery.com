@@ -104,10 +104,13 @@ class MaintenanceModeManager
             ],
         ]);
 
-        // Inline script for toggle
-        $ajaxUrl = esc_js(admin_url('admin-ajax.php'));
+        // Inline script for toggle — CSP (theme/setup/security.php) chặn
+        // mọi <script> không có đúng nonce của request; script này echo
+        // trực tiếp nên không tự động được gắn nonce như wp_enqueue_script().
+        $ajaxUrl      = esc_js(admin_url('admin-ajax.php'));
+        $cspNonceAttr = \defined('LACA_CSP_NONCE') ? ' nonce="' . esc_attr(LACA_CSP_NONCE) . '"' : '';
         echo "
-        <script>
+        <script{$cspNonceAttr}>
         function lacaToggleMaintenance(e, nonce) {
             e.preventDefault();
             const node = e.currentTarget;

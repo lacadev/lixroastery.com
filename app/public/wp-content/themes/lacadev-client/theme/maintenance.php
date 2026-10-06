@@ -70,7 +70,12 @@
 
     <footer>&copy; 2025 La Cà Dev</footer>
 
-    <script>
+    <?php
+    // CSP (theme/setup/security.php) chặn mọi <script> không có đúng nonce
+    // — script này echo trực tiếp nên không tự được gắn nonce.
+    $cspNonceAttr = \defined('LACA_CSP_NONCE') ? ' nonce="' . esc_attr(LACA_CSP_NONCE) . '"' : '';
+    ?>
+    <script<?php echo $cspNonceAttr; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>
         // Star Generation
         const starsContainer = document.getElementById('stars');
         for (let i = 0; i < 50; i++) {
