@@ -38,6 +38,16 @@ const mediaGridObserver = new MutationObserver( ( mutations ) => {
 									'attachmentID',
 									el.getAttribute( 'data-id' )
 								);
+								// Dùng lại đúng nonce "update_post_thumbnail" đã
+								// localize sẵn (theme/setup/assets.php) — server
+								// giờ bắt buộc check_ajax_referer(), thiếu field
+								// này request sẽ bị từ chối.
+								if ( typeof ajaxurl_params !== 'undefined' ) {
+									formData.append(
+										'nonce',
+										ajaxurl_params.nonce
+									);
+								}
 
 								fetch( '/wp-admin/admin-ajax.php', {
 									method: 'POST',

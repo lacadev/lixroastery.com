@@ -77,12 +77,23 @@ class AdminSettings
 		});
 
 		add_action('wp_ajax_mm_get_attachment_url_thumbnail', static function () {
+			// Dùng lại đúng nonce "update_post_thumbnail" đã localize sẵn
+			// (window.ajaxurl_params.nonce, theme/setup/assets.php) thay vì
+			// thêm 1 localize riêng — trước đây KHÔNG có check_ajax_referer()/
+			// current_user_can() nào cả, bất kỳ role nào đã đăng nhập đều dò
+			// được URL file đính kèm theo ID bất kỳ, và không có CSRF token
+			// nên cũng dễ bị trang khác điều khiển trình duyệt nạn nhân gọi hộ.
+			check_ajax_referer('update_post_thumbnail', 'nonce');
+			if (!current_user_can('upload_files')) {
+				die();
+			}
+
 			$url          = '';
-			$attachmentID = isset($_REQUEST['attachmentID']) ? $_REQUEST['attachmentID'] : '';
+			$attachmentID = isset($_REQUEST['attachmentID']) ? absint($_REQUEST['attachmentID']) : 0;
 			if ($attachmentID) {
 				$url = wp_get_attachment_url($attachmentID);
 			}
-			die($url);
+			die($url ? esc_url_raw($url) : '');
 		});
 	}
 
