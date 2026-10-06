@@ -14,10 +14,25 @@ class EmailLogManager
     const PARENT_SLUG = 'laca-admin';
     const CAP         = 'manage_options';
 
+    /**
+     * Hàng đợi theo thứ tự gọi wp_mail() trong 1 request — mỗi lần gọi đẩy
+     * thêm 1 "phiếu" mặc định status "sent"; nếu wp_mail_failed bắn ra (luôn
+     * xảy ra NGAY trong chính lần gọi wp_mail() đó, trước khi lần gọi tiếp
+     * theo diễn ra) thì sửa lại phiếu CUỐI CÙNG trong hàng đợi thành
+     * "failed". Lúc này mới ghi hết vào DB qua shutdown, tránh ghi "sent"
+     * cho mọi email kể cả khi gửi thất bại (bug thật đã gặp — EmailLog
+     * trước đây luôn hiện "Đã gửi" dù SMTP lỗi, khiến không thể dùng log
+     * này để chẩn đoán vì sao khách không nhận được mail).
+     *
+     * @var array<int, array{to:string,subject:string,source:string,status:string}>
+     */
+    private array $pendingLogs = [];
+
     public function init(): void
     {
         // Hook into wp_mail filter to intercept all outgoing mail
         add_filter('wp_mail', [$this, 'interceptMail'], 999);
+        add_action('wp_mail_failed', [$this, 'markLastFailed']);
 
         // Admin menu
         add_action('admin_menu', [$this, 'registerMenu'], 20);
@@ -31,12 +46,38 @@ class EmailLogManager
         $subject = $args['subject'] ?? '';
         $source  = $this->detectSource();
 
-        // Use shutdown hook to log after mail() result is known
-        add_action('shutdown', function () use ($to, $subject, $source) {
-            EmailLogTable::log($to, $subject, 'sent', $source);
-        });
+        if (empty($this->pendingLogs)) {
+            add_action('shutdown', [$this, 'flushPendingLogs']);
+        }
+
+        $this->pendingLogs[] = [
+            'to'      => $to,
+            'subject' => $subject,
+            'source'  => $source,
+            'status'  => 'sent',
+        ];
 
         return $args;
+    }
+
+    /**
+     * @param \WP_Error $error Lỗi PHPMailer — không dùng tới nội dung lỗi,
+     *                         chỉ cần biết lần gửi NGAY TRƯỚC đó đã fail.
+     */
+    public function markLastFailed($error): void
+    {
+        $lastIndex = array_key_last($this->pendingLogs);
+        if (null !== $lastIndex) {
+            $this->pendingLogs[$lastIndex]['status'] = 'failed';
+        }
+    }
+
+    public function flushPendingLogs(): void
+    {
+        foreach ($this->pendingLogs as $log) {
+            EmailLogTable::log($log['to'], $log['subject'], $log['status'], $log['source']);
+        }
+        $this->pendingLogs = [];
     }
 
     private function detectSource(): string
@@ -92,7 +133,8 @@ class EmailLogManager
             <!-- Filter -->
             <ul class="subsubsub" style="margin-bottom:10px">
                 <li><a href="<?php echo esc_url($pageUrl); ?>" <?php echo !$status ? 'class="current"' : ''; ?>>Tất cả <span class="count">(<?php echo EmailLogTable::countLogs(); ?>)</span></a> |</li>
-                <li><a href="<?php echo esc_url($pageUrl . '&log_status=sent'); ?>" <?php echo $status === 'sent' ? 'class="current"' : ''; ?>>Đã gửi</a></li>
+                <li><a href="<?php echo esc_url($pageUrl . '&log_status=sent'); ?>" <?php echo $status === 'sent' ? 'class="current"' : ''; ?>>Đã gửi <span class="count">(<?php echo EmailLogTable::countLogs('sent'); ?>)</span></a> |</li>
+                <li><a href="<?php echo esc_url($pageUrl . '&log_status=failed'); ?>" <?php echo $status === 'failed' ? 'class="current"' : ''; ?>>Thất bại <span class="count">(<?php echo EmailLogTable::countLogs('failed'); ?>)</span></a></li>
             </ul>
 
             <?php if (empty($logs)): ?>
@@ -123,7 +165,11 @@ class EmailLogManager
                                 </span>
                             </td>
                             <td>
-                                <span style="color:#155724;font-size:11px;font-weight:700">✓ <?php echo esc_html($log['status']); ?></span>
+                                <?php if ('failed' === $log['status']): ?>
+                                    <span style="color:#842029;font-size:11px;font-weight:700">✕ Thất bại</span>
+                                <?php else: ?>
+                                    <span style="color:#155724;font-size:11px;font-weight:700">✓ Đã gửi</span>
+                                <?php endif; ?>
                             </td>
                             <td style="font-size:12px;color:#666">
                                 <?php echo esc_html(date_i18n('d/m/Y H:i', strtotime($log['sent_at']))); ?>

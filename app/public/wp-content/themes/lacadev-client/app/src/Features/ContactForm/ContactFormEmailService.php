@@ -15,13 +15,20 @@ namespace App\Features\ContactForm;
 class ContactFormEmailService
 {
     /**
-     * Gửi toàn bộ emails sau submission
+     * Gửi toàn bộ emails sau submission.
      *
-     * @param array $form      Row từ ContactFormTable::getForm()
-     * @param array $data      Associative array {field_name => value}
-     * @param string $ip       IP address người gửi
+     * @param array  $form Row từ ContactFormTable::getForm()
+     * @param array  $data Associative array {field_name => value}
+     * @param string $ip   IP address người gửi
+     * @return bool        true nếu email báo ADMIN gửi thành công (hoặc admin
+     *                      cố ý tắt tính năng này) — đây là email QUAN TRỌNG
+     *                      nhất (để admin biết có submission mới), nên dùng
+     *                      làm kết quả chung trả lên popup cho người gửi.
+     *                      Email xác nhận cho KHÁCH chỉ là phụ (nice-to-have)
+     *                      — lỗi riêng email đó không nên báo "thất bại" cho
+     *                      người gửi trong khi tin nhắn của họ đã tới nơi.
      */
-    public static function sendAll(array $form, array $data, string $ip): void
+    public static function sendAll(array $form, array $data, string $ip): bool
     {
         $systemVars = [
             'ip'   => $ip,
@@ -31,15 +38,17 @@ class ContactFormEmailService
 
         $vars = array_merge($systemVars, $data);
 
-        self::sendAdminEmail($form, $vars);
+        $adminSent = self::sendAdminEmail($form, $vars);
         self::sendCustomerEmail($form, $vars);
+
+        return $adminSent;
     }
 
     // -------------------------------------------------------------------------
     // Email tới Admin
     // -------------------------------------------------------------------------
 
-    private static function sendAdminEmail(array $form, array $vars): void
+    private static function sendAdminEmail(array $form, array $vars): bool
     {
         $toEmail = !empty($form['notify_email'])
             ? $form['notify_email']
@@ -48,8 +57,9 @@ class ContactFormEmailService
         $subject = self::interpolate($form['email_admin_subject'], $vars);
         $body    = self::interpolate($form['email_admin_body'], $vars);
 
+        // Admin cố ý để trống subject/body (tắt tính năng) — không phải lỗi.
         if (!$subject || !$body) {
-            return;
+            return true;
         }
 
         $headers = [
@@ -57,7 +67,7 @@ class ContactFormEmailService
             'From: ' . get_bloginfo('name') . ' <' . get_option('admin_email') . '>',
         ];
 
-        wp_mail(
+        return wp_mail(
             sanitize_email($toEmail),
             wp_specialchars_decode($subject, ENT_QUOTES),
             $body,
@@ -69,24 +79,24 @@ class ContactFormEmailService
     // Email tới Khách hàng
     // -------------------------------------------------------------------------
 
-    private static function sendCustomerEmail(array $form, array $vars): void
+    private static function sendCustomerEmail(array $form, array $vars): bool
     {
         // Không gửi nếu subject rỗng (admin disable)
         if (empty($form['email_customer_subject'])) {
-            return;
+            return true;
         }
 
         // Tìm email khách trong data (field name = email hoặc chứa 'email')
         $customerEmail = self::findEmailValue($vars);
         if (!$customerEmail || !is_email($customerEmail)) {
-            return;
+            return true;
         }
 
         $subject = self::interpolate($form['email_customer_subject'], $vars);
         $body    = self::interpolate($form['email_customer_body'], $vars);
 
         if (!$subject || !$body) {
-            return;
+            return true;
         }
 
         $headers = [
@@ -94,7 +104,7 @@ class ContactFormEmailService
             'From: ' . get_bloginfo('name') . ' <' . get_option('admin_email') . '>',
         ];
 
-        wp_mail(
+        return wp_mail(
             sanitize_email($customerEmail),
             wp_specialchars_decode($subject, ENT_QUOTES),
             $body,

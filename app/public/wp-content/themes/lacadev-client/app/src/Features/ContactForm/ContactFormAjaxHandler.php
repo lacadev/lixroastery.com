@@ -134,13 +134,24 @@ class ContactFormAjaxHandler
         // 4. Lấy IP
         $ip = self::getClientIp();
 
-        // 5. Lưu DB
+        // 5. Lưu DB — dữ liệu luôn được lưu TRƯỚC, không phụ thuộc email gửi
+        // được hay không (tránh mất submission chỉ vì SMTP lỗi tạm thời).
         ContactFormTable::insertSubmission($formId, $data, $ip);
 
-        // 6. Gửi email
-        ContactFormEmailService::sendAll($form, $data, $ip);
+        // 6. Gửi email — trả về đúng trạng thái THẬT (trước đây luôn báo
+        // "thành công" dù wp_mail() lỗi, người gửi không biết tin nhắn có
+        // tới nơi hay không). Dữ liệu đã lưu DB nên dù email lỗi, admin vẫn
+        // xem được submission trong màn hình quản trị — chỉ cảnh báo người
+        // gửi để họ có thể liên hệ lại qua kênh khác nếu cần.
+        $emailSent = ContactFormEmailService::sendAll($form, $data, $ip);
 
-        wp_send_json_success(['message' => 'Gửi thành công! Chúng tôi sẽ liên hệ lại sớm.']);
+        if ($emailSent) {
+            wp_send_json_success(['message' => 'Gửi thành công! Chúng tôi sẽ liên hệ lại sớm.']);
+        }
+
+        wp_send_json_error([
+            'message' => 'Thông tin của bạn đã được lưu lại, nhưng hệ thống gửi email đang gặp sự cố. Vui lòng liên hệ trực tiếp nếu cần gấp.',
+        ], 500);
     }
 
     // =========================================================================

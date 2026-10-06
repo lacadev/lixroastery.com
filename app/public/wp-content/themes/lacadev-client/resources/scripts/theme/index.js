@@ -8,6 +8,16 @@ import './ajax-search.js';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
+// Expose window.Swal cho MỌI site dùng theme này — ContactFormAjaxHandler
+// (app/src/Features/ContactForm/ContactFormAjaxHandler.php) in ra 1 script
+// inline ngay trong shortcode [laca_contact_form] giả định window.Swal đã
+// có sẵn ("Swal sẽ available vì theme.js chạy trước") nhưng bundle public
+// trước đây KHÔNG tự expose global này (chỉ admin/index.js làm) — mọi form
+// liên hệ trên frontend vì vậy luôn rơi vào fallback alert()/banner thay vì
+// popup SweetAlert2 thật.
+import Swal from 'sweetalert2';
+window.Swal = Swal;
+
 import {setupGsap404 } from './components/animations.js';
 import { initHeaderScroll, resetHeaderState }           from './components/header.js';
 import { initMobileMenu, closeMobileMenu }             from './components/mobile-menu.js';
