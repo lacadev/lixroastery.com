@@ -1244,13 +1244,30 @@ class ContactFormManager
             ];
             foreach ($fields as $field) {
                 $val = $data[$field['name']] ?? '';
-                $row[] = is_array($val) ? implode(', ', $val) : $val;
+                $row[] = self::sanitizeCsvCell(is_array($val) ? implode(', ', $val) : $val);
             }
             fputcsv($out, $row);
         }
 
         fclose($out);
         exit;
+    }
+
+    /**
+     * Chống CSV/Formula Injection: giá trị submission là dữ liệu NHẬP TỰ DO
+     * từ khách (không qua kiểm soát nội dung) — nếu bắt đầu bằng = + - @
+     * (hoặc tab/CR), Excel/Google Sheets có thể hiểu thành công thức và tự
+     * thực thi khi admin mở file (vd =HYPERLINK(...), =cmd|'/c ...'!A1).
+     * Thêm tiền tố nháy đơn để ép hiển thị như text thuần, vô hiệu hoá công
+     * thức — theo đúng khuyến nghị OWASP CSV Injection.
+     */
+    private static function sanitizeCsvCell($value): string
+    {
+        $value = (string) $value;
+        if ($value !== '' && preg_match('/^[=+\-@\t\r]/', $value)) {
+            return "'" . $value;
+        }
+        return $value;
     }
 
     // =========================================================================
