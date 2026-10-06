@@ -13,24 +13,6 @@
 global $wp_query;
 
 $current_post_type = get_post_type() ?: 'post';
-$posts_per_page    = (int) get_option( 'posts_per_page', 12 );
-$paged             = (int) max( 1, get_query_var( 'paged', 1 ) );
-
-// ── Term filter params ───────────────────────────────────────────────────────
-$cat_id   = 0;
-$tag_id   = 0;
-$tax_term = 0;
-$taxonomy = '';
-
-if ( is_category() ) {
-	$cat_id = get_queried_object_id();
-} elseif ( is_tag() ) {
-	$tag_id = get_queried_object_id();
-} elseif ( is_tax() ) {
-	$term     = get_queried_object();
-	$tax_term = $term->term_id ?? 0;
-	$taxonomy = $term->taxonomy ?? '';
-}
 
 // ── N+1 prevention trên lần load đầu ────────────────────────────────────────
 if ( ! empty( $wp_query->posts ) ) {
@@ -38,20 +20,6 @@ if ( ! empty( $wp_query->posts ) ) {
 	update_object_term_cache( wp_list_pluck( $wp_query->posts, 'ID' ), $current_post_type );
 }
 
-// ── AJAX config truyền vào JS qua data-* ────────────────────────────────────
-$ajax_config = wp_json_encode( [
-	'action'         => 'lacadev_archive_load',
-	'nonce'          => wp_create_nonce( 'theme_nonce' ),
-	'ajaxurl'        => admin_url( 'admin-ajax.php' ),
-	'post_type'      => esc_js( $current_post_type ),
-	'posts_per_page' => $posts_per_page,
-	'cat_id'         => $cat_id,
-	'tag_id'         => $tag_id,
-	'tax_term'       => $tax_term,
-	'taxonomy'       => esc_js( $taxonomy ),
-	'current_page'   => $paged,
-	'max_pages'      => (int) $wp_query->max_num_pages,
-] );
 ?>
 
 <div class="breadcumb">
@@ -64,7 +32,7 @@ $ajax_config = wp_json_encode( [
 	</div>
 </div>
 
-<div class="archive-post laca-news-list-archive" data-archive-config='<?php echo $ajax_config; ?>'>
+<div class="archive-post laca-news-list-archive">
 	<?php get_template_part( 'template-parts/page-hero' ); ?>
 
 	<?php laca_render_dynamic_cpt_archive_intro(); ?>
