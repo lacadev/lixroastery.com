@@ -297,12 +297,60 @@ PHP;
         }
 
         $code = wp_unslash($_POST['meta_code'] ?? '');
+
+        // File này bị require_once KHÔNG bọc try/catch trên MỌI request
+        // (DynamicCptManager::loadAllMetaFiles()) — 1 lỗi cú pháp nhỏ
+        // (thiếu dấu ; hay )) làm sập trắng toàn site ngay lập tức. Kiểm
+        // tra cú pháp bằng `php -l` TRƯỚC khi ghi đè file thật, chặn lại
+        // và báo lỗi cho admin thay vì lưu code lỗi.
+        $syntaxError = $this->checkPhpSyntax($code);
+        if ($syntaxError !== '') {
+            wp_die(
+                '<p>' . esc_html__('Code có lỗi cú pháp PHP, CHƯA được lưu để tránh làm sập site:', 'laca') . '</p>'
+                . '<pre style="white-space:pre-wrap;background:#f6f7f7;padding:12px;border:1px solid #ccd0d4">' . esc_html($syntaxError) . '</pre>'
+                . '<p><a href="javascript:history.back()">' . esc_html__('Quay lại', 'laca') . '</a></p>'
+            );
+        }
+
         $this->saveMetaFile($slug, $code);
 
         wp_safe_redirect(admin_url(
             'admin.php?page=laca-dynamic-cpt&meta=' . $slug . '&laca_meta_msg=saved'
         ));
         exit;
+    }
+
+    /**
+     * Kiểm tra cú pháp PHP của $code qua `php -l` (lint, KHÔNG thực thi) —
+     * trả về chuỗi rỗng nếu hợp lệ, hoặc thông báo lỗi nếu không. Nếu môi
+     * trường hosting tắt exec() (khá phổ biến ở 1 số shared hosting), bỏ
+     * qua kiểm tra thay vì chặn hẳn tính năng Code Editor (fail-open có
+     * chủ đích — ưu tiên không chặn tính năng trên môi trường không hỗ
+     * trợ, hơn là luôn chặn lưu).
+     */
+    private function checkPhpSyntax(string $code): string
+    {
+        if (!function_exists('exec') || !function_exists('escapeshellarg')) {
+            return '';
+        }
+
+        $tmpFile = wp_tempnam('laca-dynamic-cpt-lint');
+        if (!$tmpFile) {
+            return '';
+        }
+        // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents
+        file_put_contents($tmpFile, $code);
+
+        $phpBinary = (\defined('PHP_BINARY') && PHP_BINARY) ? PHP_BINARY : 'php';
+        $output     = [];
+        $returnCode = 0;
+        // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged
+        @exec(escapeshellarg($phpBinary) . ' -l ' . escapeshellarg($tmpFile) . ' 2>&1', $output, $returnCode);
+
+        // phpcs:ignore WordPress.WP.AlternativeFunctions.unlink_unlink
+        @unlink($tmpFile);
+
+        return 0 !== $returnCode ? implode("\n", $output) : '';
     }
 
     public function handleGenerate(): void
