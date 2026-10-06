@@ -186,7 +186,7 @@ $optionsPage = Container::make('theme_options', __('Laca Theme', 'laca'))
 			->set_help_text('Model: Gemini 1.5 Flash. ~15-30 request/phút, hàng trăm-1.500 request/ngày miễn phí. Lấy tại: <a href="https://aistudio.google.com/app/apikey" target="_blank">Google AI Studio</a>'),
 
 		Field::make('text', 'ai_groq_key', __('Groq API Key', 'laca'))
-			->set_help_text('Model: Llama 3.3. Nhanh nhất (hàng trăm-nghìn token/giây), 30 request/phút, 1.000 request/ngày miễn phí. Lấy tại: <a href="https://console.groq.com/keys" target="_blank">Groq Console</a>'),
+			->set_help_text('Model: Llama 3.1 / 3.3. Nhanh nhất (hàng trăm-nghìn token/giây), 30 request/phút, 1.000 request/ngày miễn phí. Lấy tại: <a href="https://console.groq.com/keys" target="_blank">Groq Console</a>'),
 
 		Field::make('text', 'ai_openrouter_key', __('OpenRouter API Key', 'laca'))
 			->set_help_text('1 key dùng được rất nhiều model free (DeepSeek, Qwen, Llama, Gemma...). 20 request/phút, 50 request/ngày (lên 1.000/ngày nếu nạp $10 một lần). Lấy tại: <a href="https://openrouter.ai/keys" target="_blank">openrouter.ai/keys</a>'),

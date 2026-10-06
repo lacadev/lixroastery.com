@@ -234,37 +234,57 @@ class AITranslationHandler
     {
         $url = 'https://api.groq.com/openai/v1/chat/completions';
 
-        $body = [
-            'model' => 'llama-3.3-70b-versatile',  // stable 2025+, thay llama3-8b-8192 đã bị decommission
-            'messages' => [
-                ['role' => 'system', 'content' => $system_prompt],
-                ['role' => 'user', 'content' => $text]
-            ],
-            'temperature' => 0.7,
-            'max_tokens'  => 1024,
-        ];
+        // Groq models: llama-3.1-8b-instant (cực nhanh, luôn khả dụng trên mọi tài khoản free),
+        // fallback sang llama-3.3-70b-versatile nếu tài khoản có quyền.
+        $models = ['llama-3.1-8b-instant', 'llama-3.3-70b-versatile'];
+        $last_error = null;
 
-        $response = wp_remote_post($url, [
-            'headers' => [
-                'Content-Type'  => 'application/json',
-                'Authorization' => 'Bearer ' . $this->groq_key
-            ],
-            'body'    => json_encode($body, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
-            'timeout' => 30
-        ]);
+        foreach ($models as $model) {
+            $body = [
+                'model' => $model,
+                'messages' => [
+                    ['role' => 'system', 'content' => $system_prompt],
+                    ['role' => 'user', 'content' => $text]
+                ],
+                'temperature' => 0.3,
+                'max_tokens'  => 1024,
+            ];
 
-        if (is_wp_error($response)) return $response;
+            $response = wp_remote_post($url, [
+                'headers' => [
+                    'Content-Type'  => 'application/json',
+                    'Authorization' => 'Bearer ' . $this->groq_key
+                ],
+                'body'    => json_encode($body, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
+                'timeout' => 30
+            ]);
 
-        $http_code   = wp_remote_retrieve_response_code($response);
-        $raw_body    = wp_remote_retrieve_body($response);
-        $data        = json_decode($raw_body, true);
+            if (is_wp_error($response)) {
+                $last_error = $response;
+                continue;
+            }
 
-        if ($http_code !== 200) {
+            $http_code = wp_remote_retrieve_response_code($response);
+            $raw_body  = wp_remote_retrieve_body($response);
+            $data      = json_decode($raw_body, true);
+
+            if ($http_code === 200 && !empty($data['choices'][0]['message']['content'])) {
+                return trim($data['choices'][0]['message']['content']);
+            }
+
             $err_msg = $data['error']['message'] ?? ('Groq API error: HTTP ' . $http_code);
-            return new \WP_Error('groq_api_error', $err_msg);
+            $last_error = new \WP_Error('groq_api_error', $err_msg);
+
+            // Nếu lỗi do model không tồn tại hoặc tài khoản không có quyền truy cập model đó
+            if (stripos($err_msg, 'does not exist') !== false || stripos($err_msg, 'not have access') !== false || stripos($err_msg, 'decommissioned') !== false) {
+                continue;
+            }
+
+            // Lỗi khác (ví dụ: invalid API key) thì dừng luôn
+            break;
         }
 
-        return trim($data['choices'][0]['message']['content'] ?? '');
+        return $last_error ?: new \WP_Error('groq_api_error', 'Không thể kết nối tới Groq API.');
     }
 
     /**
