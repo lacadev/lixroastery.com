@@ -36,18 +36,18 @@ class AITranslationHandler
 
     public function __construct()
     {
-        $this->gemini_key = carbon_get_theme_option('ai_gemini_key');
-        $this->groq_key = carbon_get_theme_option('ai_groq_key');
-        $this->deepseek_key = carbon_get_theme_option('ai_deepseek_key');
-        $this->openai_key = carbon_get_theme_option('ai_openai_key');
-        $this->anthropic_key = carbon_get_theme_option('ai_anthropic_key');
-        $this->openrouter_key = carbon_get_theme_option('ai_openrouter_key');
-        $this->cloudflare_account_id = carbon_get_theme_option('ai_cloudflare_account_id');
-        $this->cloudflare_api_token = carbon_get_theme_option('ai_cloudflare_api_token');
-        $this->mistral_key = carbon_get_theme_option('ai_mistral_key');
-        $this->cohere_key = carbon_get_theme_option('ai_cohere_key');
-        $this->nvidia_key = carbon_get_theme_option('ai_nvidia_key');
-        $this->default_provider = carbon_get_theme_option('ai_default_provider') ?: 'gemini';
+        $this->gemini_key = trim((string) carbon_get_theme_option('ai_gemini_key'));
+        $this->groq_key = trim((string) carbon_get_theme_option('ai_groq_key'));
+        $this->deepseek_key = trim((string) carbon_get_theme_option('ai_deepseek_key'));
+        $this->openai_key = trim((string) carbon_get_theme_option('ai_openai_key'));
+        $this->anthropic_key = trim((string) carbon_get_theme_option('ai_anthropic_key'));
+        $this->openrouter_key = trim((string) carbon_get_theme_option('ai_openrouter_key'));
+        $this->cloudflare_account_id = trim((string) carbon_get_theme_option('ai_cloudflare_account_id'));
+        $this->cloudflare_api_token = trim((string) carbon_get_theme_option('ai_cloudflare_api_token'));
+        $this->mistral_key = trim((string) carbon_get_theme_option('ai_mistral_key'));
+        $this->cohere_key = trim((string) carbon_get_theme_option('ai_cohere_key'));
+        $this->nvidia_key = trim((string) carbon_get_theme_option('ai_nvidia_key'));
+        $this->default_provider = trim((string) carbon_get_theme_option('ai_default_provider')) ?: 'gemini';
     }
 
     /**
@@ -297,34 +297,75 @@ class AITranslationHandler
     {
         $url = 'https://openrouter.ai/api/v1/chat/completions';
 
-        $body = [
-            'model' => 'deepseek/deepseek-chat-v3.1:free',
-            'messages' => [
-                ['role' => 'system', 'content' => $system_prompt],
-                ['role' => 'user', 'content' => $text]
-            ],
-            'temperature' => 0.1,
+        // Danh sách model ưu tiên:
+        // 1. deepseek/deepseek-chat (siêu rẻ, dịch chuẩn xác cao nhất)
+        // 2. deepseek/deepseek-chat-v3.1
+        // 3. google/gemma-4-31b-it:free (free)
+        // 4. google/gemma-4-26b-a4b-it:free (free)
+        // 5. meta-llama/llama-3.3-70b-instruct:free
+        $models = [
+            'deepseek/deepseek-chat',
+            'deepseek/deepseek-chat-v3.1',
+            'google/gemma-4-31b-it:free',
+            'google/gemma-4-26b-a4b-it:free',
+            'meta-llama/llama-3.3-70b-instruct:free'
         ];
 
-        $response = wp_remote_post($url, [
-            'headers' => [
-                'Content-Type'  => 'application/json',
-                'Authorization' => 'Bearer ' . $this->openrouter_key,
-            ],
-            'body'    => json_encode($body, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
-            'timeout' => 30
-        ]);
+        $last_error = null;
 
-        if (is_wp_error($response)) return $response;
+        foreach ($models as $model) {
+            $body = [
+                'model' => $model,
+                'messages' => [
+                    ['role' => 'system', 'content' => $system_prompt],
+                    ['role' => 'user', 'content' => $text]
+                ],
+                'temperature' => 0.1,
+            ];
 
-        $http_code = wp_remote_retrieve_response_code($response);
-        $data      = json_decode(wp_remote_retrieve_body($response), true);
-        if ($http_code !== 200) {
+            $response = wp_remote_post($url, [
+                'headers' => [
+                    'Content-Type'  => 'application/json',
+                    'Authorization' => 'Bearer ' . $this->openrouter_key,
+                ],
+                'body'    => json_encode($body, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
+                'timeout' => 30
+            ]);
+
+            if (is_wp_error($response)) {
+                $last_error = $response;
+                continue;
+            }
+
+            $http_code = wp_remote_retrieve_response_code($response);
+            $raw_body  = wp_remote_retrieve_body($response);
+            $data      = json_decode($raw_body, true);
+
+            if ($http_code === 200 && !empty($data['choices'][0]['message']['content'])) {
+                return trim($data['choices'][0]['message']['content']);
+            }
+
             $err_msg = $data['error']['message'] ?? ('OpenRouter API error: HTTP ' . $http_code);
-            return new \WP_Error('openrouter_api_error', $err_msg);
+            $last_error = new \WP_Error('openrouter_api_error', $err_msg);
+
+            // Nếu lỗi do model không khả dụng, không free, hoặc yêu cầu slug khác thì thử model tiếp theo
+            if (
+                $http_code === 404 ||
+                stripos($err_msg, 'unavailable') !== false ||
+                stripos($err_msg, 'not exist') !== false ||
+                stripos($err_msg, 'not found') !== false ||
+                stripos($err_msg, 'rate') !== false ||
+                stripos($err_msg, 'free') !== false ||
+                stripos($err_msg, 'slug') !== false
+            ) {
+                continue;
+            }
+
+            // Lỗi invalid API key thì dừng
+            break;
         }
 
-        return trim($data['choices'][0]['message']['content'] ?? '');
+        return $last_error ?: new \WP_Error('openrouter_api_error', 'Không thể kết nối tới OpenRouter API.');
     }
 
     /**
