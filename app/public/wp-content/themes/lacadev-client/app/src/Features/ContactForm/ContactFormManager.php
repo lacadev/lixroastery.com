@@ -713,37 +713,42 @@ class ContactFormManager
                         <!-- Tab: Email -->
                         <div id="lcf-panel-emails" class="lcf-tab-panel">
                             <div class="lcf-panel-inner">
-                                <p class="description" style="margin-bottom:12px;color:#888">
-                                    Dùng <code>$tên_field</code> để chèn giá trị. Hỗ trợ HTML — preview hiển thị bên phải.
-                                </p>
+                                <div class="lcf-email-vars-box" id="lcf-email-vars-container">
+                                    <div class="lcf-email-vars-head">
+                                        <div class="lcf-email-vars-title">
+                                            <span class="dashicons dashicons-tag" style="font-size:16px;line-height:1.2;width:16px;height:16px"></span>
+                                            <span>Biến có sẵn trong form:</span>
+                                        </div>
+                                        <span class="lcf-email-vars-tip">💡 Click vào biến để copy hoặc chèn nhanh vào ô đang nhập</span>
+                                    </div>
+                                    <div class="lcf-email-vars-content" id="lcf-email-vars-content">
+                                        <!-- Rendered dynamically by JS -->
+                                    </div>
+                                </div>
+
                                 <div class="lcf-email-section">
                                     <h3 class="lcf-email-section-title">Email Admin</h3>
                                     <div class="laca-cf-field-group">
                                         <label class="lcf-form-label">Tiêu đề (Subject)</label>
-                                        <input type="text" name="email_admin_subject" class="widefat"
+                                        <input type="text" name="email_admin_subject" id="email-admin-subject" class="widefat laca-cf-email-input"
                                                value="<?php echo esc_attr($form['email_admin_subject'] ?? $defaultAdminSubject); ?>">
                                     </div>
                                     <div class="laca-cf-field-group">
                                         <label class="lcf-form-label">Nội dung (Body — hỗ trợ HTML)</label>
-                                        <textarea name="email_admin_body" id="email-admin-body" class="widefat laca-cf-email-body" rows="8"
+                                        <textarea name="email_admin_body" id="email-admin-body" class="widefat laca-cf-email-body laca-cf-email-input" rows="8"
                                                   oninput="lcfUpdateEmailPreview('admin')"><?php echo esc_textarea($form['email_admin_body'] ?? $defaultAdminBody); ?></textarea>
-                                    </div>
-                                    <div class="laca-cf-var-hint">
-                                        <strong>Biến:</strong>
-                                        <code>$name</code> <code>$email</code> <code>$phone_number</code>
-                                        <code>$message</code> <code>$ip</code> <code>$date</code> <code>$time</code>
                                     </div>
                                 </div>
                                 <div class="lcf-email-section" style="margin-top:20px">
                                     <h3 class="lcf-email-section-title">Email Khách hàng</h3>
                                     <div class="laca-cf-field-group">
                                         <label class="lcf-form-label">Tiêu đề (Subject) — để trống = không gửi</label>
-                                        <input type="text" name="email_customer_subject" class="widefat"
+                                        <input type="text" name="email_customer_subject" id="email-customer-subject" class="widefat laca-cf-email-input"
                                                value="<?php echo esc_attr($form['email_customer_subject'] ?? $defaultCustomerSubject); ?>">
                                     </div>
                                     <div class="laca-cf-field-group">
                                         <label class="lcf-form-label">Nội dung (Body — hỗ trợ HTML)</label>
-                                        <textarea name="email_customer_body" id="email-customer-body" class="widefat laca-cf-email-body" rows="6"
+                                        <textarea name="email_customer_body" id="email-customer-body" class="widefat laca-cf-email-body laca-cf-email-input" rows="6"
                                                   oninput="lcfUpdateEmailPreview('customer')"><?php echo esc_textarea($form['email_customer_body'] ?? $defaultCustomerBody); ?></textarea>
                                     </div>
                                 </div>

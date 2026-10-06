@@ -428,6 +428,7 @@ const FIELD_TYPES = window.LacaContactFormVars.FIELD_TYPES;
                 updateJsonInput();
                 initSortables();
                 updatePreview();
+                renderEmailVariablesList();
             }
 
             // ── Sync data from DOM (called after drag) ────────────────────────
@@ -469,6 +470,7 @@ const FIELD_TYPES = window.LacaContactFormVars.FIELD_TYPES;
 
                 rows = newRows;
                 updateJsonInput();
+                renderEmailVariablesList();
             }
 
             // ── Init SortableJS ───────────────────────────────────────────────
@@ -571,6 +573,9 @@ const FIELD_TYPES = window.LacaContactFormVars.FIELD_TYPES;
 
                 updateJsonInput();
                 updatePreview();
+                if (key === 'label' || key === 'name') {
+                    renderEmailVariablesList();
+                }
             };
 
             // ── Public: update per-language translation of a field property ───
@@ -1077,6 +1082,126 @@ const FIELD_TYPES = window.LacaContactFormVars.FIELD_TYPES;
                 if (out) out.innerHTML = buildFormPreviewHtml();
             }
 
+            // ── Dynamic Email Variables List ────────────────────────────────────
+            let lastActiveEmailInput = null;
+
+            function onEmailInputFocus(e) {
+                lastActiveEmailInput = e.target;
+            }
+
+            function initEmailInputTracking() {
+                document.querySelectorAll('.laca-cf-email-input').forEach(function(el) {
+                    el.removeEventListener('focus', onEmailInputFocus);
+                    el.removeEventListener('click', onEmailInputFocus);
+                    el.addEventListener('focus', onEmailInputFocus);
+                    el.addEventListener('click', onEmailInputFocus);
+                });
+            }
+
+            function renderEmailVariablesList() {
+                const container = document.getElementById('lcf-email-vars-content');
+                if (!container) return;
+
+                const formVars = [];
+                rows.forEach(function(row) {
+                    row.cols.forEach(function(col) {
+                        col.fields.forEach(function(f) {
+                            if (f.type !== 'content') {
+                                const defaultLabel = f.type === 'email' ? 'Email' : (f.type === 'phone' ? 'Số điện thoại' : (f.type === 'textarea' ? 'Nội dung' : f.type));
+                                formVars.push({
+                                    name: f.name ? f.name.trim() : '',
+                                    label: f.label ? f.label.trim() : defaultLabel,
+                                    type: f.type,
+                                });
+                            }
+                        });
+                    });
+                });
+
+                let html = '<div class="lcf-email-vars-section">';
+                html += '<div class="lcf-email-vars-subhead">Biến từ các trường trong form:</div>';
+                html += '<div class="lcf-email-vars-list">';
+
+                if (formVars.length === 0) {
+                    html += '<span class="lcf-email-vars-empty">Chưa có trường nào. Hãy thêm trường ở tab <strong>Trường</strong>.</span>';
+                } else {
+                    formVars.forEach(function(v) {
+                        if (v.name) {
+                            const varStr = '$' + v.name;
+                            html += '<button type="button" class="lcf-var-tag" data-orig-badge="' + escAttr(v.label) + '" onclick="lcfClickVar(this, \'' + escAttr(varStr) + '\')" title="Click để chèn/copy ' + escAttr(varStr) + '">'
+                                + '<code>' + escHtml(varStr) + '</code>'
+                                + '<span class="lcf-var-label lcf-var-badge">' + escHtml(v.label) + '</span>'
+                                + '</button>';
+                        } else {
+                            html += '<span class="lcf-var-tag is-missing-name" title="Trường này chưa đặt tên biến! Qua tab Trường để đặt tên biến.">'
+                                + '<span class="dashicons dashicons-warning" style="font-size:14px;width:14px;height:14px;line-height:1"></span>'
+                                + '<span>' + escHtml(v.label || v.type) + '</span>'
+                                + '<em style="font-size:11px;opacity:0.8">(Chưa có tên biến)</em>'
+                                + '</span>';
+                        }
+                    });
+                }
+                html += '</div></div>';
+
+                // System variables
+                html += '<div class="lcf-email-vars-section">';
+                html += '<div class="lcf-email-vars-subhead">Biến hệ thống:</div>';
+                html += '<div class="lcf-email-vars-list">';
+                const sysVars = [
+                    { name: '$ip', label: 'IP người gửi' },
+                    { name: '$date', label: 'Ngày gửi' },
+                    { name: '$time', label: 'Giờ gửi' },
+                ];
+                sysVars.forEach(function(v) {
+                    html += '<button type="button" class="lcf-var-tag is-system" data-orig-badge="' + escAttr(v.label) + '" onclick="lcfClickVar(this, \'' + escAttr(v.name) + '\')" title="Click để chèn/copy ' + escAttr(v.name) + '">'
+                        + '<code>' + escHtml(v.name) + '</code>'
+                        + '<span class="lcf-var-label lcf-var-badge">' + escHtml(v.label) + '</span>'
+                        + '</button>';
+                });
+                html += '</div></div>';
+
+                container.innerHTML = html;
+            }
+
+            window.lcfClickVar = function(btn, varName) {
+                // Copy to clipboard
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    navigator.clipboard.writeText(varName).catch(function() {});
+                }
+
+                // Insert into active input if available
+                if (lastActiveEmailInput && document.body.contains(lastActiveEmailInput)) {
+                    const start = typeof lastActiveEmailInput.selectionStart === 'number' ? lastActiveEmailInput.selectionStart : lastActiveEmailInput.value.length;
+                    const end   = typeof lastActiveEmailInput.selectionEnd === 'number' ? lastActiveEmailInput.selectionEnd : lastActiveEmailInput.value.length;
+                    const val   = lastActiveEmailInput.value || '';
+                    lastActiveEmailInput.value = val.substring(0, start) + varName + val.substring(end);
+                    lastActiveEmailInput.focus();
+                    lastActiveEmailInput.selectionStart = lastActiveEmailInput.selectionEnd = start + varName.length;
+
+                    // Trigger update preview if email body
+                    if (lastActiveEmailInput.id === 'email-admin-body') {
+                        lcfUpdateEmailPreview('admin');
+                    } else if (lastActiveEmailInput.id === 'email-customer-body') {
+                        lcfUpdateEmailPreview('customer');
+                    }
+                }
+
+                // Visual feedback on button
+                btn.classList.add('is-copied');
+                const badge = btn.querySelector('.lcf-var-badge');
+                const origText = btn.dataset.origBadge || (badge ? badge.textContent : '');
+                btn.dataset.origBadge = origText;
+                if (badge) {
+                    badge.textContent = '✓ Đã chèn/copy';
+                }
+                setTimeout(function() {
+                    btn.classList.remove('is-copied');
+                    if (badge) {
+                        badge.textContent = btn.dataset.origBadge;
+                    }
+                }, 1200);
+            };
+
             // ── Email preview ──────────────────────────────────────────────────
             window.lcfUpdateEmailPreview = function(which) {
                 var taId  = which === 'admin' ? 'email-admin-body' : 'email-customer-body';
@@ -1108,6 +1233,8 @@ const FIELD_TYPES = window.LacaContactFormVars.FIELD_TYPES;
                     if (panel) panel.classList.add('is-active');
                     // Show email preview when switching to email tab
                     if (tab === 'emails') {
+                        renderEmailVariablesList();
+                        initEmailInputTracking();
                         lcfUpdateEmailPreview('admin');
                         lcfUpdateEmailPreview('customer');
                     }
@@ -1130,6 +1257,8 @@ const FIELD_TYPES = window.LacaContactFormVars.FIELD_TYPES;
             initStyleControls();
             renderBtnTextI18n();
             renderRows();
+            initEmailInputTracking();
+            renderEmailVariablesList();
             lcfUpdateEmailPreview('admin');
             lcfUpdateEmailPreview('customer');
         }
