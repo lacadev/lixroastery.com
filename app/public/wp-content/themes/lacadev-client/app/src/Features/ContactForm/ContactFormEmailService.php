@@ -54,18 +54,33 @@ class ContactFormEmailService
             ? $form['notify_email']
             : get_option('admin_email');
 
-        $subject = self::interpolate($form['email_admin_subject'], $vars);
-        $body    = self::interpolate($form['email_admin_body'], $vars);
+        $subject = self::interpolate($form['email_admin_subject'] ?? '', $vars, false);
+        $body    = self::interpolate($form['email_admin_body'] ?? '', $vars, true);
 
         // Admin cố ý để trống subject/body (tắt tính năng) — không phải lỗi.
         if (!$subject || !$body) {
             return true;
         }
 
+        if (strip_tags($body) === $body) {
+            $body = nl2br($body);
+        }
+
         $headers = [
-            'Content-Type: text/plain; charset=UTF-8',
+            'Content-Type: text/html; charset=UTF-8',
             'From: ' . get_bloginfo('name') . ' <' . get_option('admin_email') . '>',
         ];
+
+        // Gắn Reply-To về email của khách nếu có
+        $customerEmail = self::findEmailValue($vars);
+        if ($customerEmail && is_email($customerEmail)) {
+            $customerName = !empty($vars['name']) ? sanitize_text_field((string) $vars['name']) : '';
+            if ($customerName) {
+                $headers[] = 'Reply-To: ' . $customerName . ' <' . $customerEmail . '>';
+            } else {
+                $headers[] = 'Reply-To: ' . $customerEmail;
+            }
+        }
 
         return wp_mail(
             sanitize_email($toEmail),
@@ -92,16 +107,21 @@ class ContactFormEmailService
             return true;
         }
 
-        $subject = self::interpolate($form['email_customer_subject'], $vars);
-        $body    = self::interpolate($form['email_customer_body'], $vars);
+        $subject = self::interpolate($form['email_customer_subject'] ?? '', $vars, false);
+        $body    = self::interpolate($form['email_customer_body'] ?? '', $vars, true);
 
         if (!$subject || !$body) {
             return true;
         }
 
+        if (strip_tags($body) === $body) {
+            $body = nl2br($body);
+        }
+
         $headers = [
-            'Content-Type: text/plain; charset=UTF-8',
+            'Content-Type: text/html; charset=UTF-8',
             'From: ' . get_bloginfo('name') . ' <' . get_option('admin_email') . '>',
+            'Reply-To: ' . get_option('admin_email'),
         ];
 
         return wp_mail(
@@ -119,17 +139,37 @@ class ContactFormEmailService
     /**
      * Thay thế $ten_bien trong template bằng giá trị thực tế
      *
-     * @param string $template  Nội dung với $variable placeholders
-     * @param array  $vars      Array ['variable_name' => 'value']
+     * @param string $template Nội dung với $variable placeholders
+     * @param array  $vars     Array ['variable_name' => 'value']
+     * @param bool   $isHtml   Xử lý định dạng cho HTML email hay plain text (subject)
      * @return string
      */
-    private static function interpolate(string $template, array $vars): string
+    private static function interpolate(string $template, array $vars, bool $isHtml = true): string
     {
         foreach ($vars as $key => $value) {
-            $key   = preg_replace('/[^a-z0-9_]/i', '', (string) $key);
-            $value = is_array($value) ? implode(', ', $value) : (string) $value;
-            $template = str_replace('$' . $key, $value, $template);
+            $key = preg_replace('/[^a-z0-9_]/i', '', (string) $key);
+            if ($key === '') {
+                continue;
+            }
+
+            if (is_array($value)) {
+                $formattedValue = $isHtml
+                    ? implode(', ', array_map(fn($v) => esc_html((string) $v), $value))
+                    : implode(', ', array_map('strval', $value));
+            } else {
+                $formattedValue = (string) $value;
+                if ($isHtml) {
+                    if (!in_array($key, ['ip', 'date', 'time'], true)) {
+                        $formattedValue = nl2br(esc_html($formattedValue));
+                    } else {
+                        $formattedValue = esc_html($formattedValue);
+                    }
+                }
+            }
+
+            $template = str_replace('$' . $key, $formattedValue, $template);
         }
+
         return $template;
     }
 
