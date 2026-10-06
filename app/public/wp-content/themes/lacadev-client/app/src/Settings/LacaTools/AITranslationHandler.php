@@ -163,7 +163,19 @@ class AITranslationHandler
 
         if (is_wp_error($response)) return $response;
 
-        $data = json_decode(wp_remote_retrieve_body($response), true);
+        // Chỉ callGroq() trước đây có kiểm tra HTTP status — 4 hàm còn lại
+        // (Gemini/DeepSeek/OpenAI/Anthropic) chỉ json_decode rồi lấy
+        // $data[...] ?? '', nên nếu API key sai/hết hạn/rate-limit (HTTP
+        // 401/429...) sẽ im lặng trả về chuỗi rỗng thay vì WP_Error — phía
+        // trên coi chuỗi rỗng là bản dịch hợp lệ, admin không biết nguyên
+        // nhân thật sự khi dịch AI thất bại.
+        $http_code = wp_remote_retrieve_response_code($response);
+        $data      = json_decode(wp_remote_retrieve_body($response), true);
+        if ($http_code !== 200) {
+            $err_msg = $data['error']['message'] ?? ('Gemini API error: HTTP ' . $http_code);
+            return new \WP_Error('gemini_api_error', $err_msg);
+        }
+
         $result = $data['candidates'][0]['content']['parts'][0]['text'] ?? '';
 
         return trim($result);
@@ -234,7 +246,13 @@ class AITranslationHandler
 
         if (is_wp_error($response)) return $response;
 
-        $data = json_decode(wp_remote_retrieve_body($response), true);
+        $http_code = wp_remote_retrieve_response_code($response);
+        $data      = json_decode(wp_remote_retrieve_body($response), true);
+        if ($http_code !== 200) {
+            $err_msg = $data['error']['message'] ?? ('DeepSeek API error: HTTP ' . $http_code);
+            return new \WP_Error('deepseek_api_error', $err_msg);
+        }
+
         return trim($data['choices'][0]['message']['content'] ?? '');
     }
 
@@ -262,7 +280,13 @@ class AITranslationHandler
 
         if (is_wp_error($response)) return $response;
 
-        $data = json_decode(wp_remote_retrieve_body($response), true);
+        $http_code = wp_remote_retrieve_response_code($response);
+        $data      = json_decode(wp_remote_retrieve_body($response), true);
+        if ($http_code !== 200) {
+            $err_msg = $data['error']['message'] ?? ('OpenAI API error: HTTP ' . $http_code);
+            return new \WP_Error('openai_api_error', $err_msg);
+        }
+
         return trim($data['choices'][0]['message']['content'] ?? '');
     }
 
@@ -290,7 +314,13 @@ class AITranslationHandler
 
         if (is_wp_error($response)) return $response;
 
-        $data = json_decode(wp_remote_retrieve_body($response), true);
+        $http_code = wp_remote_retrieve_response_code($response);
+        $data      = json_decode(wp_remote_retrieve_body($response), true);
+        if ($http_code !== 200) {
+            $err_msg = $data['error']['message'] ?? ('Anthropic API error: HTTP ' . $http_code);
+            return new \WP_Error('anthropic_api_error', $err_msg);
+        }
+
         return trim($data['content'][0]['text'] ?? '');
     }
 }
