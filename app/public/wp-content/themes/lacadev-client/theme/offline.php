@@ -85,7 +85,14 @@ $homeUrl  = function_exists('home_url') ? home_url('/') : '/';
         <span class="dot"></span>
         <span>Đang chờ kết nối...</span>
     </div>
-    <script>
+    <?php
+    // CSP (theme/setup/security.php) chặn mọi <script> không có đúng nonce.
+    // Trang này được Service Worker precache lúc còn mạng (nonce + header
+    // CSP đóng băng cùng lúc trong snapshot cache đó) nên vẫn khớp đúng khi
+    // phát lại lúc offline.
+    $cspNonceAttr = \defined('LACA_CSP_NONCE') ? ' nonce="' . esc_attr(LACA_CSP_NONCE) . '"' : '';
+    ?>
+    <script<?php echo $cspNonceAttr; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>
         // Tự động reload khi có mạng trở lại
         window.addEventListener('online', function () {
             window.location.reload();
