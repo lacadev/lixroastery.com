@@ -53,6 +53,10 @@
             "type": "string",
             "default": "#2f4a34"
         },
+        "cardTextAlign": {
+            "type": "string",
+            "default": "center"
+        },
         "items": {
             "type": "array",
             "translatable": true,

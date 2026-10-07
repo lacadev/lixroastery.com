@@ -20,6 +20,9 @@ $columns = max(2, min(4, intval($attributes['columns'] ?? 3)));
 $aspect_ratio = preg_match('/^\d+:\d+$/', $attributes['aspectRatio'] ?? '') ? $attributes['aspectRatio'] : '3:4';
 $items = is_array($attributes['items'] ?? null) ? $attributes['items'] : [];
 $is_checkerboard = $layout_mode === 'checkerboard';
+$card_text_align = in_array($attributes['cardTextAlign'] ?? '', ['left', 'center', 'right', 'justify'], true)
+    ? $attributes['cardTextAlign']
+    : 'center';
 
 $bg_color = preg_match('/^#[0-9a-fA-F]{6}$/', $attributes['bgColor'] ?? '')
     ? $attributes['bgColor']
@@ -43,6 +46,9 @@ $wrapper_attrs = get_block_wrapper_attributes(['class' => 'block-image-card-grid
                 $desc = wp_kses_post($item['desc'] ?? '');
                 $link = esc_url($item['link'] ?? '');
                 $link_target = ($item['linkTarget'] ?? '_self') === '_blank' ? '_blank' : '_self';
+                $item_align = in_array($item['textAlign'] ?? '', ['left', 'center', 'right', 'justify'], true)
+                    ? $item['textAlign']
+                    : $card_text_align;
                 if (!$title && !$desc && !$image_url) {
                     continue;
                 }
@@ -57,15 +63,15 @@ $wrapper_attrs = get_block_wrapper_attributes(['class' => 'block-image-card-grid
                 <div class="block-image-card-grid__card" <?php echo $is_checkerboard ? 'style="grid-column: span ' . $col_span . ';"' : ''; ?>>
                     <<?php echo $tag; ?>     <?php echo $link ? 'href="' . $link . '" target="' . esc_attr($link_target) . '"' . ($link_target === '_blank' ? ' rel="noopener noreferrer"' : '') : ''; ?> class="block-image-card-grid__image<?php echo $is_tall ? ' block-image-card-grid__image--tall' : ''; ?>" style="<?php echo $image_url ? '' : 'background:' . esc_attr($bg_color) . ';'; ?>">
                             <?php if ($image_url): ?>
-                                    <img src="<?php echo $image_url; ?>" alt="<?php echo $title; ?>" loading="lazy" />
+                                     <img src="<?php echo $image_url; ?>" alt="<?php echo $title; ?>" loading="lazy" />
                             <?php endif; ?>
                             <div class="block-image-card-grid__overlay"></div>
-                            <div class="block-image-card-grid__content">
+                            <div class="block-image-card-grid__content block-image-card-grid__content--<?php echo esc_attr($item_align); ?>">
                                 <?php if ($title): ?>
-                                        <h3 class="block-image-card-grid__title"><?php echo $title; ?></h3>
+                                         <h3 class="block-image-card-grid__title"><?php echo $title; ?></h3>
                                 <?php endif; ?>
                                 <?php if ($desc): ?>
-                                        <p class="block-image-card-grid__desc"><?php echo $desc; ?></p>
+                                         <p class="block-image-card-grid__desc"><?php echo $desc; ?></p>
                                 <?php endif; ?>
                             </div>
                         </<?php echo $tag; ?>>

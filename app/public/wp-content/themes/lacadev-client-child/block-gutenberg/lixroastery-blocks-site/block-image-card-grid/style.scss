@@ -120,6 +120,40 @@
         bottom: 0;
         padding: 2.5rem 1.5rem;
         text-align: center;
+
+        &--left {
+            text-align: left;
+
+            .block-image-card-grid__desc {
+                margin-left: 0;
+                margin-right: auto;
+            }
+        }
+
+        &--center {
+            text-align: center;
+
+            .block-image-card-grid__desc {
+                margin: 0 auto;
+            }
+        }
+
+        &--right {
+            text-align: right;
+
+            .block-image-card-grid__desc {
+                margin-left: auto;
+                margin-right: 0;
+            }
+        }
+
+        &--justify {
+            text-align: justify;
+
+            .block-image-card-grid__desc {
+                margin: 0 auto;
+            }
+        }
     }
 
     &__title {
