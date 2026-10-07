@@ -56,7 +56,7 @@ class ContactFormTable
             id                   BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT,
             name                 VARCHAR(255) NOT NULL DEFAULT '',
             fields               LONGTEXT NOT NULL COMMENT 'JSON array of field definitions',
-            notify_email         VARCHAR(255) NOT NULL DEFAULT '' COMMENT 'Email nhận thông báo admin. Rỗng = dùng admin_email',
+            notify_email         VARCHAR(500) NOT NULL DEFAULT '' COMMENT 'Email nhận thông báo admin (hỗ trợ nhiều email phân cách dấu phẩy). Rỗng = dùng admin_email',
             email_admin_subject  VARCHAR(500) NOT NULL DEFAULT 'Đăng kí tư vấn [\$name - \$phone_number]',
             email_admin_body     LONGTEXT NOT NULL,
             email_customer_subject VARCHAR(500) NOT NULL DEFAULT 'Cảm ơn bạn đã liên hệ',
@@ -128,6 +128,37 @@ class ContactFormTable
     }
 
     /**
+     * Làm sạch danh sách email nhận thông báo (hỗ trợ nhập nhiều email,
+     * phân tách bởi dấu phẩy, chấm phẩy hoặc khoảng trắng).
+     *
+     * @param mixed      $emails
+     * @param array|null $invalid Nếu truyền vào, được điền danh sách các
+     *                            phần tử sai định dạng (nguyên văn, chưa
+     *                            sanitize) để nơi gọi hiển thị cảnh báo cho
+     *                            admin — không truyền thì bỏ qua, hành vi
+     *                            như cũ (chỉ âm thầm loại bỏ).
+     */
+    public static function sanitizeEmailList($emails, ?array &$invalid = null): string
+    {
+        if (is_array($emails)) {
+            $emails = implode(',', $emails);
+        }
+        $parts = preg_split('/[\s,;]+/', (string) $emails, -1, PREG_SPLIT_NO_EMPTY);
+        $valid = [];
+        foreach ($parts as $part) {
+            $clean = sanitize_email($part);
+            if ($clean && is_email($clean)) {
+                if (!in_array($clean, $valid, true)) {
+                    $valid[] = $clean;
+                }
+            } elseif ($invalid !== null) {
+                $invalid[] = $part;
+            }
+        }
+        return implode(', ', $valid);
+    }
+
+    /**
      * Insert form mới, trả về ID
      */
     public static function insertForm(array $data): int
@@ -136,7 +167,7 @@ class ContactFormTable
         $wpdb->insert(self::getFormsTable(), [
             'name'                   => sanitize_text_field($data['name']),
             'fields'                 => wp_json_encode($data['fields'] ?? []),
-            'notify_email'           => sanitize_email($data['notify_email'] ?? ''),
+            'notify_email'           => self::sanitizeEmailList($data['notify_email'] ?? ''),
             'email_admin_subject'    => sanitize_text_field($data['email_admin_subject'] ?? ''),
             'email_admin_body'       => wp_kses_post($data['email_admin_body'] ?? ''),
             'email_customer_subject' => sanitize_text_field($data['email_customer_subject'] ?? ''),
@@ -158,7 +189,7 @@ class ContactFormTable
             [
                 'name'                   => sanitize_text_field($data['name']),
                 'fields'                 => wp_json_encode($data['fields'] ?? []),
-                'notify_email'           => sanitize_email($data['notify_email'] ?? ''),
+                'notify_email'           => self::sanitizeEmailList($data['notify_email'] ?? ''),
                 'email_admin_subject'    => sanitize_text_field($data['email_admin_subject'] ?? ''),
                 'email_admin_body'       => wp_kses_post($data['email_admin_body'] ?? ''),
                 'email_customer_subject' => sanitize_text_field($data['email_customer_subject'] ?? ''),

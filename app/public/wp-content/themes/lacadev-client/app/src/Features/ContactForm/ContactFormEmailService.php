@@ -50,9 +50,23 @@ class ContactFormEmailService
 
     private static function sendAdminEmail(array $form, array $vars): bool
     {
-        $toEmail = !empty($form['notify_email'])
+        $rawNotify = !empty($form['notify_email'])
             ? $form['notify_email']
-            : get_option('admin_email');
+            : (string) get_option('admin_email');
+
+        $recipients = [];
+        foreach (preg_split('/[\s,;]+/', (string) $rawNotify, -1, PREG_SPLIT_NO_EMPTY) as $item) {
+            $clean = sanitize_email($item);
+            if ($clean && is_email($clean) && !in_array($clean, $recipients, true)) {
+                $recipients[] = $clean;
+            }
+        }
+        if (empty($recipients)) {
+            $adminEmail = sanitize_email((string) get_option('admin_email'));
+            if ($adminEmail && is_email($adminEmail)) {
+                $recipients[] = $adminEmail;
+            }
+        }
 
         $styleSettings = is_array($form['style_settings'] ?? null)
             ? $form['style_settings']
@@ -95,8 +109,8 @@ class ContactFormEmailService
             }
         }
 
-        return wp_mail(
-            sanitize_email($toEmail),
+        return (bool) wp_mail(
+            $recipients,
             wp_specialchars_decode($subject, ENT_QUOTES),
             $body,
             $headers

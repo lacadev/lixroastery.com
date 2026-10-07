@@ -533,10 +533,10 @@ class ContactFormManager
                                 </div>
                                 <div class="laca-cf-field-group">
                                     <label for="cf-notify-email" class="lcf-form-label">Email nhận thông báo</label>
-                                    <input type="email" id="cf-notify-email" name="notify_email" class="widefat"
+                                    <input type="text" id="cf-notify-email" name="notify_email" class="widefat"
                                            value="<?php echo esc_attr($form['notify_email'] ?? ''); ?>"
-                                           placeholder="Để trống = dùng <?php echo esc_attr(get_option('admin_email')); ?>">
-                                    <p class="description">Email admin nhận thông báo mỗi khi có submission mới.</p>
+                                           placeholder="VD: info@lixroastery.com, tuyendung@lixroastery.com">
+                                    <p class="description">Email admin nhận thông báo mỗi khi có submission mới (có thể nhập nhiều email, phân tách bằng dấu phẩy <code>,</code>). Để trống = dùng email quản trị (<?php echo esc_html(get_option('admin_email')); ?>).</p>
                                 </div>
                             </div>
                         </div>
@@ -1068,10 +1068,11 @@ class ContactFormManager
             $cleanStyle['custom_css'] = wp_strip_all_tags(stripslashes($rawStyle['custom_css']));
         }
 
+        $invalidEmails = [];
         $data = [
             'name' => $formName,
             'fields' => $cleanRows,
-            'notify_email' => sanitize_email($_POST['notify_email'] ?? ''),
+            'notify_email' => ContactFormTable::sanitizeEmailList($_POST['notify_email'] ?? '', $invalidEmails),
             'email_admin_subject' => sanitize_text_field($_POST['email_admin_subject'] ?? ''),
             'email_admin_body' => wp_kses_post(stripslashes($_POST['email_admin_body'] ?? '')),
             'email_customer_subject' => sanitize_text_field($_POST['email_customer_subject'] ?? ''),
@@ -1084,6 +1085,16 @@ class ContactFormManager
             $redirectId = $formId;
         } else {
             $redirectId = ContactFormTable::insertForm($data);
+        }
+
+        // Có email sai định dạng bị loại bỏ khỏi "Email nhận thông báo" —
+        // vẫn lưu form bình thường (không chặn save) nhưng cảnh báo rõ cho
+        // admin biết, thay vì âm thầm bớt người nhận.
+        if (!empty($invalidEmails)) {
+            $url = $this->buildRedirectUrl($redirectId, 'saved_invalid_email')
+                . '&laca_bad_emails=' . rawurlencode(implode(', ', $invalidEmails));
+            wp_redirect($url);
+            exit;
         }
 
         wp_redirect($this->buildRedirectUrl($redirectId, 'saved'));
@@ -1321,6 +1332,17 @@ class ContactFormManager
     private function getFlashMessage(): ?array
     {
         $msg = sanitize_key($_GET['laca_msg'] ?? '');
+
+        // Nội dung động (kèm danh sách email sai) — không đưa vào $map tĩnh
+        // bên dưới vì text phụ thuộc query param laca_bad_emails.
+        if ($msg === 'saved_invalid_email') {
+            $bad = sanitize_text_field(wp_unslash($_GET['laca_bad_emails'] ?? ''));
+            return [
+                'type' => 'warning',
+                'text' => 'Đã lưu form, nhưng các email sau sai định dạng nên đã bị bỏ qua ở mục "Email nhận thông báo": ' . $bad,
+            ];
+        }
+
         $map = [
             'saved' => ['type' => 'success', 'text' => 'Đã lưu form thành công.'],
             'deleted' => ['type' => 'success', 'text' => 'Đã xoá thành công.'],
