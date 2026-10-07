@@ -37,6 +37,54 @@
             "type": "string",
             "default": "center"
         },
+        "headingFontSize": {
+            "type": "number",
+            "default": 34
+        },
+        "headingFontSizeTablet": {
+            "type": "number",
+            "default": 26
+        },
+        "headingFontSizeMobile": {
+            "type": "number",
+            "default": 18
+        },
+        "fontSize": {
+            "type": "number",
+            "default": 16
+        },
+        "fontSizeTablet": {
+            "type": "number",
+            "default": 15
+        },
+        "fontSizeMobile": {
+            "type": "number",
+            "default": 14
+        },
+        "lineHeight": {
+            "type": "number",
+            "default": 1.7
+        },
+        "lineHeightTablet": {
+            "type": "number",
+            "default": 1.7
+        },
+        "lineHeightMobile": {
+            "type": "number",
+            "default": 1.6
+        },
+        "blockSpacing": {
+            "type": "number",
+            "default": 20
+        },
+        "blockSpacingTablet": {
+            "type": "number",
+            "default": 16
+        },
+        "blockSpacingMobile": {
+            "type": "number",
+            "default": 14
+        },
         "__isPreview": {
             "type": "boolean",
             "default": false

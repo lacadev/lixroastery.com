@@ -23,19 +23,164 @@
     // 100% (full width) nhưng admin có thể tự chỉnh khác qua tab Mobile.
     max-width: var(--mw-pc, 50%);
     margin: var(--align-margin-pc, 0 auto);
+    text-align: var(--text-align-pc, inherit);
 
     @include maxWidth($md) {
         max-width: var(--mw-tablet, 100%);
         margin: var(--align-margin-tablet, 0 auto);
+        text-align: var(--text-align-tablet, var(--text-align-pc, inherit));
     }
 
     @include maxWidth($sm) {
         max-width: var(--mw-mobile, 100%);
         margin: var(--align-margin-mobile, 0 auto);
+        text-align: var(--text-align-mobile, var(--text-align-tablet, var(--text-align-pc, inherit)));
+    }
+
+    // 1. Font chữ & cỡ chữ cho Heading (mặc định theo block-cta-section: 34px -> 26px -> 18px)
+    h1, h2, h3, h4, h5, h6,
+    .h1, .h2, .h3, .h4, .h5, .h6,
+    .wp-block-heading {
+        font-family: $subFont, sans-serif !important;
+        font-size: var(--h-fs-pc, rem(34)) !important;
+        line-height: 1.3 !important;
+    }
+
+    // 2. Font chữ & cỡ chữ cho Thẻ nội dung (mặc định theo _general.scss: 16px -> 15px -> 14px, line-height 1.7)
+    p, ul, ol, li, blockquote, q, div, span, a, table, figcaption,
+    .wp-block-paragraph,
+    .wp-block-list,
+    .wp-block-quote {
+        font-family: $mainFont, sans-serif !important;
+        font-size: var(--fs-pc, rem(16)) !important;
+        line-height: var(--lh-pc, 1.7) !important;
+    }
+
+    @include maxWidth($md) {
+        h1, h2, h3, h4, h5, h6,
+        .h1, .h2, .h3, .h4, .h5, .h6,
+        .wp-block-heading {
+            font-size: var(--h-fs-tablet, rem(26)) !important;
+        }
+
+        p, ul, ol, li, blockquote, q, figcaption,
+        .wp-block-paragraph,
+        .wp-block-list,
+        .wp-block-quote {
+            font-size: var(--fs-tablet, rem(15)) !important;
+            line-height: var(--lh-tablet, 1.7) !important;
+        }
+    }
+
+    @include maxWidth($sm) {
+        h1, h2, h3, h4, h5, h6,
+        .h1, .h2, .h3, .h4, .h5, .h6,
+        .wp-block-heading {
+            font-size: var(--h-fs-mobile, rem(18)) !important;
+        }
+
+        p, ul, ol, li, blockquote, q, figcaption,
+        .wp-block-paragraph,
+        .wp-block-list,
+        .wp-block-quote {
+            font-size: var(--fs-mobile, rem(14)) !important;
+            line-height: var(--lh-mobile, 1.6) !important;
+        }
+    }
+
+    // 3. Spacing khoảng cách giữa các block con
+    > *,
+    .block-editor-block-list__layout > * {
+        margin-bottom: var(--spacing-pc, 20px) !important;
+
+        &:last-child {
+            margin-bottom: 0 !important;
+        }
+    }
+
+    @include maxWidth($md) {
+        > *,
+        .block-editor-block-list__layout > * {
+            margin-bottom: var(--spacing-tablet, 16px) !important;
+
+            &:last-child {
+                margin-bottom: 0 !important;
+            }
+        }
+    }
+
+    @include maxWidth($sm) {
+        > *,
+        .block-editor-block-list__layout > * {
+            margin-bottom: var(--spacing-mobile, 14px) !important;
+
+            &:last-child {
+                margin-bottom: 0 !important;
+            }
+        }
     }
 
     section .container {
         padding-left: 0 !important;
         padding-right: 0 !important;
+    }
+
+    // 4. Hiển thị trong Editor: Viền nét đứt nhận diện + thanh bar dễ click chọn
+    &--editor {
+        border: 1.5px dashed rgba(61, 90, 69, 0.45);
+        border-radius: 6px;
+        background-color: rgba(61, 90, 69, 0.015);
+        padding: 10px 14px 20px !important;
+        transition: border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
+        position: relative;
+
+        &:hover {
+            border-color: rgba(61, 90, 69, 0.85);
+            background-color: rgba(61, 90, 69, 0.03);
+        }
+
+        &.is-selected,
+        &.has-child-selected {
+            border: 1.5px dashed #3D5A45;
+            box-shadow: 0 0 0 1px rgba(61, 90, 69, 0.25);
+            background-color: rgba(61, 90, 69, 0.025);
+        }
+
+        .block-container__editor-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 5px 10px;
+            margin-bottom: 14px;
+            background-color: rgba(61, 90, 69, 0.08);
+            border: 1px solid rgba(61, 90, 69, 0.15);
+            border-radius: 4px;
+            cursor: pointer;
+            user-select: none;
+            transition: all 0.2s ease;
+
+            &:hover {
+                background-color: rgba(61, 90, 69, 0.16);
+                border-color: rgba(61, 90, 69, 0.35);
+            }
+        }
+
+        .block-container__editor-tag {
+            display: inline-flex;
+            align-items: center;
+            font-size: 11px;
+            font-weight: 600;
+            color: #3D5A45;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+        }
+
+        .block-container__editor-info {
+            font-size: 11px;
+            color: rgba(61, 90, 69, 0.85);
+            font-weight: 500;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+        }
     }
 }
