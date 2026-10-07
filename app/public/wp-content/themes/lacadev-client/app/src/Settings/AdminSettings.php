@@ -88,7 +88,7 @@ class AdminSettings
 				die();
 			}
 
-			$url          = '';
+			$url = '';
 			$attachmentID = isset($_REQUEST['attachmentID']) ? absint($_REQUEST['attachmentID']) : 0;
 			if ($attachmentID) {
 				$url = wp_get_attachment_url($attachmentID);
@@ -100,10 +100,10 @@ class AdminSettings
 	public function applyAdminColorVariables(): void
 	{
 		$printColors = static function () {
-			$primary   = carbon_get_theme_option('primary_color_ad') ?: '#566a7f';
+			$primary = carbon_get_theme_option('primary_color_ad') ?: '#566a7f';
 			$secondary = carbon_get_theme_option('secondary_color_ad') ?: '#566a7f';
-			$bg        = carbon_get_theme_option('bg_color_ad') ?: '#E6E4FC';
-			$text      = carbon_get_theme_option('text_color_ad') ?: '#000';
+			$bg = carbon_get_theme_option('bg_color_ad') ?: '#E6E4FC';
+			$text = carbon_get_theme_option('text_color_ad') ?: '#000';
 
 			echo '<style>:root{'
 				. '--primary-color-ad:' . esc_attr($primary) . ';'
@@ -143,21 +143,28 @@ class AdminSettings
 		add_action('wp_dashboard_setup', static function () {
 			wp_add_dashboard_widget('custom_help_widget', 'Giới thiệu', static function () { ?>
 				<div style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px 0;">
-					<a target="_blank" href="<?php echo AUTHOR['website'] ?>" title="<?php echo AUTHOR['name'] ?>" style="opacity: 0.9; transition: opacity 0.2s;">
-						<img style="max-width: 160px; height: auto; display: block;" src="<?php echo get_site_url() . '/wp-content/themes/lacadev/resources/images/dev/moomsdev-black.png' ?>" alt="<?php echo AUTHOR['name'] ?>">
+					<a target="_blank" href="<?php echo AUTHOR['website'] ?>" title="<?php echo AUTHOR['name'] ?>"
+						style="opacity: 0.9; transition: opacity 0.2s;">
+						<img style="max-width: 160px; height: auto; display: block;"
+							src="<?php echo get_site_url() . '/wp-content/themes/lacadev/resources/images/dev/moomsdev-black.png' ?>"
+							alt="<?php echo AUTHOR['name'] ?>">
 					</a>
 					<div style="margin-top: 20px; text-align: center;">
-						
-						<p style="margin: 0 0 15px; font-size: 16px; font-style: italic; color: #b5b5b5; font-family: 'Quicksand', sans-serif; font-weight: 500;">
+
+						<p
+							style="margin: 0 0 15px; font-size: 16px; font-style: italic; color: #b5b5b5; font-family: 'Quicksand', sans-serif; font-weight: 500;">
 							"Coding amidst the journeys"
 						</p>
 
-						<div style="display: flex; gap: 12px; justify-content: center; align-items: center; font-size: 14px; color: #848383; font-family: 'Quicksand', sans-serif; font-weight: 600;">
-							<a style="color: inherit; text-decoration: none;" href="tel:<?php echo str_replace(['.', ',', ' '], '', AUTHOR['phone_number']); ?>" target="_blank">
+						<div
+							style="display: flex; gap: 12px; justify-content: center; align-items: center; font-size: 14px; color: #848383; font-family: 'Quicksand', sans-serif; font-weight: 600;">
+							<a style="color: inherit; text-decoration: none;"
+								href="tel:<?php echo str_replace(['.', ',', ' '], '', AUTHOR['phone_number']); ?>" target="_blank">
 								<?php echo AUTHOR['phone_number'] ?>
 							</a>
 							<span style="color: #dcdcde;">|</span>
-							<a style="color: inherit; text-decoration: none;" href="mailto:<?php echo AUTHOR['email'] ?>" target="_blank">
+							<a style="color: inherit; text-decoration: none;" href="mailto:<?php echo AUTHOR['email'] ?>"
+								target="_blank">
 								<?php echo AUTHOR['email'] ?>
 							</a>
 							<span style="color: #dcdcde;">|</span>
@@ -167,7 +174,7 @@ class AdminSettings
 						</div>
 					</div>
 				</div>
-<?php });
+			<?php });
 		});
 	}
 
@@ -246,10 +253,10 @@ class AdminSettings
 
 		add_action('admin_bar_menu', static function ($wp_admin_bar) use ($author) {
 			$args = [
-				'id'    => 'logo_author',
+				'id' => 'logo_author',
 				'title' => '<img src="' . get_site_url() . "/wp-content/themes/lacadev/resources/images/dev/moomsdev-white.png" . '" class="logo-admin-bar" alt="' . AUTHOR['name'] . '">',
-				'href'  => $author['website'],
-				'meta'  => [
+				'href' => $author['website'],
+				'meta' => [
 					'target' => '_blank',
 				],
 			];
@@ -260,10 +267,10 @@ class AdminSettings
 	public function renameUploadFileName()
 	{
 		add_filter('sanitize_file_name', function ($filename) {
-			$info        = pathinfo($filename);
-			$ext         = empty($info['extension']) ? '' : '.' . $info['extension'];
+			$info = pathinfo($filename);
+			$ext = empty($info['extension']) ? '' : '.' . $info['extension'];
 			$newFileName = str_replace($ext, '', date('YmdHi') . '-' . $filename);
-			$unicode     = [
+			$unicode = [
 				'a' => 'á|à|ả|ã|ạ|ă|ắ|ặ|ằ|ẳ|ẵ|â|ấ|ầ|ẩ|ẫ|ậ',
 				'd' => 'đ',
 				'e' => 'é|è|ẻ|ẽ|ẹ|ê|ế|ề|ể|ễ|ệ',
@@ -315,10 +322,10 @@ class AdminSettings
 		add_filter('wp_generate_attachment_metadata', static function ($image_data) {
 			try {
 				$upload_dir = wp_upload_dir();
-				$imgPath    = $upload_dir['basedir'] . '/' . $image_data['file'];
-				$image      = Image::make($imgPath);
-				$imgWidth   = $image->width();
-				$imgHeight  = $image->height();
+				$imgPath = $upload_dir['basedir'] . '/' . $image_data['file'];
+				$image = Image::make($imgPath);
+				$imgWidth = $image->width();
+				$imgHeight = $image->height();
 				$image->resize(null, null, static function ($constraint) {
 					$constraint->aspectRatio();
 				});
@@ -672,23 +679,23 @@ class AdminSettings
 
 	public function checkIsMaintenance()
 	{
-        // Sử dụng template_redirect để chỉ ảnh hưởng Frontend
-        // Không ảnh hưởng wp-admin hoặc wp-login.php
+		// Sử dụng template_redirect để chỉ ảnh hưởng Frontend
+		// Không ảnh hưởng wp-admin hoặc wp-login.php
 		add_action('template_redirect', static function () {
-            // 1. Kiểm tra option có đang bật không
+			// 1. Kiểm tra option có đang bật không
 			if (get_option('_is_maintenance') === 'yes') {
-                
-                // 2. Nếu là Admin hoặc Editor thì CHO PHÉP truy cập để làm việc
-                if (current_user_can('edit_theme_options')) {
-                    return;
-                }
 
-                // 3. Chặn tất cả user khác và load template báo trì
-                // Sử dụng status_header + exit thay vì wp_die để render full custom UI
-                status_header(503);
-                nocache_headers();
-                include get_template_directory() . '/maintenance.php';
-                exit();
+				// 2. Nếu là Admin hoặc Editor thì CHO PHÉP truy cập để làm việc
+				if (current_user_can('edit_theme_options')) {
+					return;
+				}
+
+				// 3. Chặn tất cả user khác và load template báo trì
+				// Sử dụng status_header + exit thay vì wp_die để render full custom UI
+				status_header(503);
+				nocache_headers();
+				include get_template_directory() . '/maintenance.php';
+				exit();
 			}
 		});
 	}
@@ -718,7 +725,7 @@ class AdminSettings
 
 		$errorMessage = $this->errorMessage;
 		add_action('current_screen', static function () use ($errorMessage) {
-			$deniePage      = [
+			$deniePage = [
 				'plugins',
 				'plugin-install',
 				'plugin-editor',
@@ -764,7 +771,7 @@ class AdminSettings
 		});
 
 		$errorMessage = $this->errorMessage;
-		$denyPages    = [
+		$denyPages = [
 			'options-reading',
 			'options-writing',
 			'options-discussion',
@@ -796,14 +803,16 @@ class AdminSettings
 			global $menu;
 			global $submenu;
 			foreach ($menu as $key => $menuItem) {
-				if (in_array($menuItem[2], [
-					'tools.php',
-					'edit-comments.php',
-					'wpseo_dashboard',
-					'duplicator',
-					'yit_plugin_panel',
-					'woocommerce-checkout-manager',
-				])) {
+				if (
+					in_array($menuItem[2], [
+						'tools.php',
+						'edit-comments.php',
+						'wpseo_dashboard',
+						'duplicator',
+						'yit_plugin_panel',
+						'woocommerce-checkout-manager',
+					])
+				) {
 					unset($menu[$key]);
 				}
 			}
@@ -841,47 +850,47 @@ class AdminSettings
 						->set_width(25),
 				])
 				->add_tab(__('ADMIN', 'laca'), [
-					Field::make('checkbox', 'is_maintenance', __('Bật chế độ bảo trì', 'laca')) 
+					Field::make('checkbox', 'is_maintenance', __('Bật chế độ bảo trì', 'laca'))
 						->set_width(30),
-					Field::make( 'html', 'is_maintenance_desc' )
+					Field::make('html', 'is_maintenance_desc')
 						->set_width(70)
-						->set_html( '<i class="fa-regular fa-lightbulb-on"></i> Khi bật chế độ bảo trì, tất cả người dùng sẽ không thể truy cập vào trang web của bạn. Bạn có thể tạm thời đóng băng trang web để tránh việc người dùng truy cập vào trang web của bạn.' ),
-					
+						->set_html('<i class="fa-regular fa-lightbulb-on"></i> Khi bật chế độ bảo trì, tất cả người dùng sẽ không thể truy cập vào trang web của bạn. Bạn có thể tạm thời đóng băng trang web để tránh việc người dùng truy cập vào trang web của bạn.'),
+
 					// hide theme editor
 					Field::make('checkbox', 'hide_theme_editor', __('Tắt chức năng chỉnh sửa code', 'laca'))
-					->set_width(30),
-					Field::make( 'html', 'hide_theme_editor_desc' )
+						->set_width(30),
+					Field::make('html', 'hide_theme_editor_desc')
 						->set_width(70)
-						->set_html( '<i class="fa-regular fa-lightbulb-on"></i> Khi bật chế độ này, bạn sẽ không thể chỉnh sửa code trong trang admin.' ),
+						->set_html('<i class="fa-regular fa-lightbulb-on"></i> Khi bật chế độ này, bạn sẽ không thể chỉnh sửa code trong trang admin.'),
 
 					Field::make('checkbox', 'disable_admin_confirm_email', __('Tắt chức năng xác thực email khi thay đổi email admin', 'laca'))
 						->set_width(30),
-					Field::make( 'html', 'disable_admin_confirm_email_desc' )
+					Field::make('html', 'disable_admin_confirm_email_desc')
 						->set_width(70)
-						->set_html( '<i class="fa-regular fa-lightbulb-on"></i> Khi bật chế độ này, bạn sẽ không cần phải xác thực email khi thay đổi email admin.' ),
-					
+						->set_html('<i class="fa-regular fa-lightbulb-on"></i> Khi bật chế độ này, bạn sẽ không cần phải xác thực email khi thay đổi email admin.'),
+
 					Field::make('checkbox', 'disable_use_weak_password', __('Tắt chức năng sử dụng mật khẩu yếu', 'laca'))
 						->set_width(30),
-					Field::make( 'html', 'disable_use_weak_password_desc' )
+					Field::make('html', 'disable_use_weak_password_desc')
 						->set_width(70)
-						->set_html( '<i class="fa-regular fa-lightbulb-on"></i> Khi bật chế độ này, bạn sẽ không thể sử dụng mật khẩu yếu.' ),
+						->set_html('<i class="fa-regular fa-lightbulb-on"></i> Khi bật chế độ này, bạn sẽ không thể sử dụng mật khẩu yếu.'),
 
 					Field::make('checkbox', 'hide_post_menu_default', __('Ẩn menu bài viết mặc định', 'laca'))
 						->set_width(30),
-					Field::make( 'html', 'hide_post_menu_default_desc' )
+					Field::make('html', 'hide_post_menu_default_desc')
 						->set_width(70)
-						->set_html( '<i class="fa-regular fa-lightbulb-on"></i> Khi bật chế độ này, bạn sẽ không thể xem menu bài viết trong trang admin.' ),
+						->set_html('<i class="fa-regular fa-lightbulb-on"></i> Khi bật chế độ này, bạn sẽ không thể xem menu bài viết trong trang admin.'),
 
 					Field::make('checkbox', 'hide_comment_menu_default', __('Ẩn menu bình luận mặc định', 'laca'))
 						->set_width(30),
-					Field::make( 'html', 'hide_comment_menu_default_desc' )
+					Field::make('html', 'hide_comment_menu_default_desc')
 						->set_width(70)
-						->set_html( '<i class="fa-regular fa-lightbulb-on"></i> Khi bật chế độ này, bạn sẽ không thể xem menu bình luận trong trang admin.' ),
-						
+						->set_html('<i class="fa-regular fa-lightbulb-on"></i> Khi bật chế độ này, bạn sẽ không thể xem menu bình luận trong trang admin.'),
+
 				])
 				->add_tab(__('SMTP', 'laca'), [
 					Field::make('checkbox', 'use_smtp', __('Sử dụng SMTP để gửi mail', 'laca')),
-					
+
 					Field::make('separator', 'smtp_separator_1', __('Thông tin máy chủ SMTP', 'laca')),
 					Field::make('text', 'smtp_host', __('Địa chỉ máy chủ', 'laca'))
 						->set_width(33.33)
@@ -960,162 +969,162 @@ class AdminSettings
 				]);
 
 			Container::make('theme_options', __('Tools', 'laca'))
-			->set_page_parent($options)
-			->set_page_file(__('laca-tools', 'laca'))
-			->add_tab(__('Optimization', 'laca'), [
-				// Disable unnecessary items
-				Field::make( 'separator', 'title_disable_unnecessary_items', __( 'Disable unnecessary items' ) ),
-				Field::make('checkbox', 'disable_use_jquery_migrate', __('Disable jQuery Migrate', 'laca'))
-					->set_width(30),
-				Field::make( 'html', 'disable_use_jquery_migrate_desc' )
-					->set_width(70)
-					->set_html( '<i class="fa-regular fa-lightbulb-on"></i> jQuery Migrate là thư viện được sử dụng để duy trì hoạt động của các plugin và theme cũ. Nếu bạn không sử dụng plugin này, bạn có thể tắt nó để tăng tốc độ tải trang.' ),
-					
-				Field::make('checkbox', 'disable_gutenberg_css', __('Disable Gutenberg CSS', 'laca'))
-					->set_width(30),
-				Field::make( 'html', 'gutenberg_css_desc' )
-					->set_width(70)
-					->set_html( '<i class="fa-regular fa-lightbulb-on"></i> Gutenberg CSS là thư viện được sử dụng để duy trì hoạt động của các plugin và theme cũ. Nếu bạn không sử dụng plugin này, bạn có thể tắt nó để tăng tốc độ tải trang.' ),
-					
-				Field::make('checkbox', 'disable_classic_css', __('Disable Classic CSS', 'laca'))
-					->set_width(30),
-				Field::make( 'html', 'classic_css_desc' )
-					->set_width(70)
-					->set_html( '<i class="fa-regular fa-lightbulb-on"></i> Classic CSS là thư viện được sử dụng để duy trì hoạt động của các plugin và theme cũ. Nếu bạn không sử dụng plugin này, bạn có thể tắt nó để tăng tốc độ tải trang.' ),
-					
-				Field::make('checkbox', 'disable_emoji', __('Disable Emoji', 'laca'))
-					->set_width(30),
-				Field::make( 'html', 'emoji_desc' )
-					->set_width(70)
-					->set_html( '<i class="fa-regular fa-lightbulb-on"></i> Emoji là thư viện được sử dụng để hiển thị các biểu tượng trong trang web. Nếu bạn không sử dụng plugin này, bạn có thể tắt nó để tăng tốc độ tải trang.' ),
-				
-				// Optimization Library
-				Field::make( 'separator', 'title_optimization_library', __( 'Optimization Library' ) ),
-				Field::make('checkbox', 'enable_instant_page', __('Enable Instant-page', 'laca'))
-					->set_width(30),
-				Field::make( 'html', 'instant_page_desc' )
-					->set_width(70)
-					->set_html( '<i class="fa-regular fa-lightbulb-on"></i> Instant-Page là một thư viện cho phép bạn tải trước nội dung của trang được liên kết vào bộ nhớ trình duyệt chỉ bằng cách di chuyển qua liên kết. Khi bạn nhấp vào liên kết, nó cung cấp trải nghiệm tải nhanh đáng kể' ),
-					
-				Field::make('checkbox', 'enable_smooth_scroll', __('Enable Smooth-scroll', 'laca'))
-					->set_width(30),
-				Field::make( 'html', 'smooth_scroll_desc' )
-					->set_width(70)
-					->set_html( '<i class="fa-regular fa-lightbulb-on"></i> Smooth-scroll là thư viện cho phép bạn tạo hiệu ứng cuộn mượt mà, cung cấp cho người dùng cảm giác điều hướng trang nhanh hơn.' ),
-					
-				// The function of lazy loading images
-				Field::make( 'separator', 'title_lazy_loading_images', __( 'The function of lazy loading images' ) ),
-				Field::make( 'html', 'lazy_loading_images_desc' )
-					->set_width(70)
-					->set_html( '<i class="fa-regular fa-lightbulb-on"></i> Nếu bạn muốn lazy load hình ảnh mỗi khi trang tải, hãy bật tính năng này. Chức năng này giúp trang web của bạn tải nhanh hơn' ),
+				->set_page_parent($options)
+				->set_page_file(__('laca-tools', 'laca'))
+				->add_tab(__('Optimization', 'laca'), [
+					// Disable unnecessary items
+					Field::make('separator', 'title_disable_unnecessary_items', __('Disable unnecessary items')),
+					Field::make('checkbox', 'disable_use_jquery_migrate', __('Disable jQuery Migrate', 'laca'))
+						->set_width(30),
+					Field::make('html', 'disable_use_jquery_migrate_desc')
+						->set_width(70)
+						->set_html('<i class="fa-regular fa-lightbulb-on"></i> jQuery Migrate là thư viện được sử dụng để duy trì hoạt động của các plugin và theme cũ. Nếu bạn không sử dụng plugin này, bạn có thể tắt nó để tăng tốc độ tải trang.'),
 
-				Field::make('checkbox', 'remove_comments', __('Remove comments from HTML, JavaScript, and CSS', 'laca')),
-				Field::make('checkbox', 'remove_xhtml_closing_tags', __('Remove XHTML closing tags from empty elements in HTML5', 'laca')),
-				Field::make('checkbox', 'remove_relative_domain', __('Remove relative domain from internal URLs', 'laca')),
-				Field::make('checkbox', 'remove_protocols', __('Remove protocols (HTTP: and HTTPS:) from all URLs', 'laca')),
-				Field::make('checkbox', 'support_multi_byte_utf_8', __('Support multi-byte UTF-8 encoding (if you see strange characters)', 'laca')),
-				// Thêm các field tối ưu hóa mới
-				Field::make('checkbox', 'enable_advanced_resource_hints', __('Bật Advanced Resource Hints', 'laca'))
-					->set_width(30),
-				Field::make('html', 'enable_advanced_resource_hints_desc')
-					->set_width(70)
-					->set_html('<i class="fa-regular fa-lightbulb-on"></i> Bật tính năng thêm resource hint (preload, preconnect,...) giúp tăng tốc tải tài nguyên.'),
+					Field::make('checkbox', 'disable_gutenberg_css', __('Disable Gutenberg CSS', 'laca'))
+						->set_width(30),
+					Field::make('html', 'gutenberg_css_desc')
+						->set_width(70)
+						->set_html('<i class="fa-regular fa-lightbulb-on"></i> Gutenberg CSS là thư viện được sử dụng để duy trì hoạt động của các plugin và theme cũ. Nếu bạn không sử dụng plugin này, bạn có thể tắt nó để tăng tốc độ tải trang.'),
 
-				Field::make('checkbox', 'enable_optimize_images', __('Tối ưu hóa thuộc tính ảnh', 'laca'))
-					->set_width(30),
-				Field::make('html', 'enable_optimize_images_desc')
-					->set_width(70)
-					->set_html('<i class="fa-regular fa-lightbulb-on"></i> Tự động thêm lazy loading, alt, dimension cho ảnh.'),
+					Field::make('checkbox', 'disable_classic_css', __('Disable Classic CSS', 'laca'))
+						->set_width(30),
+					Field::make('html', 'classic_css_desc')
+						->set_width(70)
+						->set_html('<i class="fa-regular fa-lightbulb-on"></i> Classic CSS là thư viện được sử dụng để duy trì hoạt động của các plugin và theme cũ. Nếu bạn không sử dụng plugin này, bạn có thể tắt nó để tăng tốc độ tải trang.'),
 
-				Field::make('checkbox', 'enable_optimize_content_images', __('Tối ưu hóa ảnh trong nội dung', 'laca'))
-					->set_width(30),
-				Field::make('html', 'enable_optimize_content_images_desc')
-					->set_width(70)
-					->set_html('<i class="fa-regular fa-lightbulb-on"></i> Tự động lazy load ảnh trong nội dung bài viết.'),
+					Field::make('checkbox', 'disable_emoji', __('Disable Emoji', 'laca'))
+						->set_width(30),
+					Field::make('html', 'emoji_desc')
+						->set_width(70)
+						->set_html('<i class="fa-regular fa-lightbulb-on"></i> Emoji là thư viện được sử dụng để hiển thị các biểu tượng trong trang web. Nếu bạn không sử dụng plugin này, bạn có thể tắt nó để tăng tốc độ tải trang.'),
 
-				Field::make('checkbox', 'enable_register_service_worker', __('Bật Service Worker cache', 'laca'))
-					->set_width(30),
-				Field::make('html', 'enable_register_service_worker_desc')
-					->set_width(70)
-					->set_html('<i class="fa-regular fa-lightbulb-on"></i> Đăng ký service worker để tăng tốc tải trang và cache tài nguyên.'),
-			])
-			// Security
-			->add_tab(__('Security', 'laca'), [
-				// Enhance website security
-				Field::make( 'separator', 'title_enhance_website_security', __( 'Enhance website security' ) ),
-				Field::make('checkbox', 'disable_rest_api', __('Disable REST API', 'laca'))
-					->set_width(30),
-				Field::make( 'html', 'disable_rest_api_desc' )
-					->set_width(70)
-					->set_html( '<i class="fa-regular fa-lightbulb-on"></i> REST API mặc định trong WordPress cho phép ứng dụng bên ngoài giao tiếp với WordPress để lấy dữ liệu hoặc đăng nội dung, bạn nên vô hiệu hóa nó cho mục đích bảo mật.' ),
+					// Optimization Library
+					Field::make('separator', 'title_optimization_library', __('Optimization Library')),
+					Field::make('checkbox', 'enable_instant_page', __('Enable Instant-page', 'laca'))
+						->set_width(30),
+					Field::make('html', 'instant_page_desc')
+						->set_width(70)
+						->set_html('<i class="fa-regular fa-lightbulb-on"></i> Instant-Page là một thư viện cho phép bạn tải trước nội dung của trang được liên kết vào bộ nhớ trình duyệt chỉ bằng cách di chuyển qua liên kết. Khi bạn nhấp vào liên kết, nó cung cấp trải nghiệm tải nhanh đáng kể'),
 
-				Field::make('checkbox', 'disable_xml_rpc', __('Disable XML RPC', 'laca'))
-					->set_width(30),
-				Field::make( 'html', 'disable_xml_rpc_desc' )
-					->set_width(70)
-					->set_html( '<i class="fa-regular fa-lightbulb-on"></i> XML-RPC là giao thức cho phép quản lý website từ xa thông qua ứng dụng như WordPress App hoặc Jetpack.<br> <b>Khuyến cáo:</b> Nên tắt hoàn toàn nếu không dùng tới.' ),
+					Field::make('checkbox', 'enable_smooth_scroll', __('Enable Smooth-scroll', 'laca'))
+						->set_width(30),
+					Field::make('html', 'smooth_scroll_desc')
+						->set_width(70)
+						->set_html('<i class="fa-regular fa-lightbulb-on"></i> Smooth-scroll là thư viện cho phép bạn tạo hiệu ứng cuộn mượt mà, cung cấp cho người dùng cảm giác điều hướng trang nhanh hơn.'),
 
-				Field::make('checkbox', 'disable_wp_embed', __('Disable Wp-Embed', 'laca'))
-					->set_width(30),	
-				Field::make( 'html', 'disable_wp_embed_desc' )
-					->set_width(70)
-					->set_html( '<i class="fa-regular fa-lightbulb-on"></i> WP-Embed cho phép nội dung của trang WordPress được nhúng vào trang web khác thông qua oEmbed.<br> <b>Khuyến cáo:</b> Nếu không dùng, nên tắt để giảm thiểu tải không cần thiết.' ),
+					// The function of lazy loading images
+					Field::make('separator', 'title_lazy_loading_images', __('The function of lazy loading images')),
+					Field::make('html', 'lazy_loading_images_desc')
+						->set_width(70)
+						->set_html('<i class="fa-regular fa-lightbulb-on"></i> Nếu bạn muốn lazy load hình ảnh mỗi khi trang tải, hãy bật tính năng này. Chức năng này giúp trang web của bạn tải nhanh hơn'),
 
-				Field::make('checkbox', 'disable_x_pingback', __('Disable X-Pingback', 'laca'))
-					->set_width(30),
-				Field::make( 'html', 'disable_x_pingback_desc' )
-					->set_width(70)
-					->set_html( '<i class="fa-regular fa-lightbulb-on"></i> X-Pingback là cơ chế thông báo giữa các blog (khi ai đó liên kết đến trang web).<br> <b>Khuyến cáo:</b> Nên tắt hoàn toàn nếu không dùng tới.' ),
-					
-				// Thêm các field bảo mật mới
-				Field::make('checkbox', 'enable_remove_wordpress_bloat', __('Loại bỏ bloat WordPress', 'laca'))
-					->set_width(30),
-				Field::make('html', 'enable_remove_wordpress_bloat_desc')
-					->set_width(70)
-					->set_html('<i class="fa-regular fa-lightbulb-on"></i> Loại bỏ các thành phần không cần thiết của WordPress để tăng bảo mật và hiệu suất.'),
+					Field::make('checkbox', 'remove_comments', __('Remove comments from HTML, JavaScript, and CSS', 'laca')),
+					Field::make('checkbox', 'remove_xhtml_closing_tags', __('Remove XHTML closing tags from empty elements in HTML5', 'laca')),
+					Field::make('checkbox', 'remove_relative_domain', __('Remove relative domain from internal URLs', 'laca')),
+					Field::make('checkbox', 'remove_protocols', __('Remove protocols (HTTP: and HTTPS:) from all URLs', 'laca')),
+					Field::make('checkbox', 'support_multi_byte_utf_8', __('Support multi-byte UTF-8 encoding (if you see strange characters)', 'laca')),
+					// Thêm các field tối ưu hóa mới
+					Field::make('checkbox', 'enable_advanced_resource_hints', __('Bật Advanced Resource Hints', 'laca'))
+						->set_width(30),
+					Field::make('html', 'enable_advanced_resource_hints_desc')
+						->set_width(70)
+						->set_html('<i class="fa-regular fa-lightbulb-on"></i> Bật tính năng thêm resource hint (preload, preconnect,...) giúp tăng tốc tải tài nguyên.'),
 
-				Field::make('checkbox', 'enable_optimize_database_queries', __('Tối ưu hóa truy vấn database', 'laca'))
-					->set_width(30),
-				Field::make('html', 'enable_optimize_database_queries_desc')
-					->set_width(70)
-					->set_html('<i class="fa-regular fa-lightbulb-on"></i> Giới hạn post revision, tăng autosave interval, bật object cache.'),
+					Field::make('checkbox', 'enable_optimize_images', __('Tối ưu hóa thuộc tính ảnh', 'laca'))
+						->set_width(30),
+					Field::make('html', 'enable_optimize_images_desc')
+						->set_width(70)
+						->set_html('<i class="fa-regular fa-lightbulb-on"></i> Tự động thêm lazy loading, alt, dimension cho ảnh.'),
 
-				Field::make('checkbox', 'enable_optimize_sql_queries', __('Log truy vấn SQL chậm', 'laca'))
-					->set_width(30),
-				Field::make('html', 'enable_optimize_sql_queries_desc')
-					->set_width(70)
-					->set_html('<i class="fa-regular fa-lightbulb-on"></i> Log các truy vấn SQL chậm để phát hiện truy vấn bất thường.'),
+					Field::make('checkbox', 'enable_optimize_content_images', __('Tối ưu hóa ảnh trong nội dung', 'laca'))
+						->set_width(30),
+					Field::make('html', 'enable_optimize_content_images_desc')
+						->set_width(70)
+						->set_html('<i class="fa-regular fa-lightbulb-on"></i> Tự động lazy load ảnh trong nội dung bài viết.'),
 
-				Field::make('checkbox', 'enable_optimize_memory_usage', __('Tối ưu hóa bộ nhớ', 'laca'))
-					->set_width(30),
-				Field::make('html', 'enable_optimize_memory_usage_desc')
-					->set_width(70)
-					->set_html('<i class="fa-regular fa-lightbulb-on"></i> Tăng memory limit, bật garbage collection.'),
+					Field::make('checkbox', 'enable_register_service_worker', __('Bật Service Worker cache', 'laca'))
+						->set_width(30),
+					Field::make('html', 'enable_register_service_worker_desc')
+						->set_width(70)
+						->set_html('<i class="fa-regular fa-lightbulb-on"></i> Đăng ký service worker để tăng tốc tải trang và cache tài nguyên.'),
+				])
+				// Security
+				->add_tab(__('Security', 'laca'), [
+					// Enhance website security
+					Field::make('separator', 'title_enhance_website_security', __('Enhance website security')),
+					Field::make('checkbox', 'disable_rest_api', __('Disable REST API', 'laca'))
+						->set_width(30),
+					Field::make('html', 'disable_rest_api_desc')
+						->set_width(70)
+						->set_html('<i class="fa-regular fa-lightbulb-on"></i> REST API mặc định trong WordPress cho phép ứng dụng bên ngoài giao tiếp với WordPress để lấy dữ liệu hoặc đăng nội dung, bạn nên vô hiệu hóa nó cho mục đích bảo mật.'),
 
-				Field::make('checkbox', 'enable_cleanup_memory', __('Dọn dẹp bộ nhớ cuối trang', 'laca'))
-					->set_width(30),
-				Field::make('html', 'enable_cleanup_memory_desc')
-					->set_width(70)
-					->set_html('<i class="fa-regular fa-lightbulb-on"></i> Dọn dẹp bộ nhớ cuối trang để giảm nguy cơ memory leak.'),
+					Field::make('checkbox', 'disable_xml_rpc', __('Disable XML RPC', 'laca'))
+						->set_width(30),
+					Field::make('html', 'disable_xml_rpc_desc')
+						->set_width(70)
+						->set_html('<i class="fa-regular fa-lightbulb-on"></i> XML-RPC là giao thức cho phép quản lý website từ xa thông qua ứng dụng như WordPress App hoặc Jetpack.<br> <b>Khuyến cáo:</b> Nên tắt hoàn toàn nếu không dùng tới.'),
 
-				Field::make('checkbox', 'enable_set_cache_headers', __('Đặt cache header nâng cao', 'laca'))
-					->set_width(30),
-				Field::make('html', 'enable_set_cache_headers_desc')
-					->set_width(70)
-					->set_html('<i class="fa-regular fa-lightbulb-on"></i> Đặt cache header bảo vệ trang admin và user login.'),
+					Field::make('checkbox', 'disable_wp_embed', __('Disable Wp-Embed', 'laca'))
+						->set_width(30),
+					Field::make('html', 'disable_wp_embed_desc')
+						->set_width(70)
+						->set_html('<i class="fa-regular fa-lightbulb-on"></i> WP-Embed cho phép nội dung của trang WordPress được nhúng vào trang web khác thông qua oEmbed.<br> <b>Khuyến cáo:</b> Nếu không dùng, nên tắt để giảm thiểu tải không cần thiết.'),
 
-				Field::make('checkbox', 'enable_compression', __('Bật gzip nén dữ liệu', 'laca'))
-					->set_width(30),
-				Field::make('html', 'enable_compression_desc')
-					->set_width(70)
-					->set_html('<i class="fa-regular fa-lightbulb-on"></i> Bật gzip để bảo vệ dữ liệu truyền tải.'),
+					Field::make('checkbox', 'disable_x_pingback', __('Disable X-Pingback', 'laca'))
+						->set_width(30),
+					Field::make('html', 'disable_x_pingback_desc')
+						->set_width(70)
+						->set_html('<i class="fa-regular fa-lightbulb-on"></i> X-Pingback là cơ chế thông báo giữa các blog (khi ai đó liên kết đến trang web).<br> <b>Khuyến cáo:</b> Nên tắt hoàn toàn nếu không dùng tới.'),
 
-				Field::make('checkbox', 'enable_performance_monitoring', __('Giám sát hiệu suất', 'laca'))
-					->set_width(30),
-				Field::make('html', 'enable_performance_monitoring_desc')
-					->set_width(70)
-					->set_html('<i class="fa-regular fa-lightbulb-on"></i> Giám sát hiệu suất, phát hiện bất thường.'),
-			]);
+					// Thêm các field bảo mật mới
+					Field::make('checkbox', 'enable_remove_wordpress_bloat', __('Loại bỏ bloat WordPress', 'laca'))
+						->set_width(30),
+					Field::make('html', 'enable_remove_wordpress_bloat_desc')
+						->set_width(70)
+						->set_html('<i class="fa-regular fa-lightbulb-on"></i> Loại bỏ các thành phần không cần thiết của WordPress để tăng bảo mật và hiệu suất.'),
+
+					Field::make('checkbox', 'enable_optimize_database_queries', __('Tối ưu hóa truy vấn database', 'laca'))
+						->set_width(30),
+					Field::make('html', 'enable_optimize_database_queries_desc')
+						->set_width(70)
+						->set_html('<i class="fa-regular fa-lightbulb-on"></i> Giới hạn post revision, tăng autosave interval, bật object cache.'),
+
+					Field::make('checkbox', 'enable_optimize_sql_queries', __('Log truy vấn SQL chậm', 'laca'))
+						->set_width(30),
+					Field::make('html', 'enable_optimize_sql_queries_desc')
+						->set_width(70)
+						->set_html('<i class="fa-regular fa-lightbulb-on"></i> Log các truy vấn SQL chậm để phát hiện truy vấn bất thường.'),
+
+					Field::make('checkbox', 'enable_optimize_memory_usage', __('Tối ưu hóa bộ nhớ', 'laca'))
+						->set_width(30),
+					Field::make('html', 'enable_optimize_memory_usage_desc')
+						->set_width(70)
+						->set_html('<i class="fa-regular fa-lightbulb-on"></i> Tăng memory limit, bật garbage collection.'),
+
+					Field::make('checkbox', 'enable_cleanup_memory', __('Dọn dẹp bộ nhớ cuối trang', 'laca'))
+						->set_width(30),
+					Field::make('html', 'enable_cleanup_memory_desc')
+						->set_width(70)
+						->set_html('<i class="fa-regular fa-lightbulb-on"></i> Dọn dẹp bộ nhớ cuối trang để giảm nguy cơ memory leak.'),
+
+					Field::make('checkbox', 'enable_set_cache_headers', __('Đặt cache header nâng cao', 'laca'))
+						->set_width(30),
+					Field::make('html', 'enable_set_cache_headers_desc')
+						->set_width(70)
+						->set_html('<i class="fa-regular fa-lightbulb-on"></i> Đặt cache header bảo vệ trang admin và user login.'),
+
+					Field::make('checkbox', 'enable_compression', __('Bật gzip nén dữ liệu', 'laca'))
+						->set_width(30),
+					Field::make('html', 'enable_compression_desc')
+						->set_width(70)
+						->set_html('<i class="fa-regular fa-lightbulb-on"></i> Bật gzip để bảo vệ dữ liệu truyền tải.'),
+
+					Field::make('checkbox', 'enable_performance_monitoring', __('Giám sát hiệu suất', 'laca'))
+						->set_width(30),
+					Field::make('html', 'enable_performance_monitoring_desc')
+						->set_width(70)
+						->set_html('<i class="fa-regular fa-lightbulb-on"></i> Giám sát hiệu suất, phát hiện bất thường.'),
+				]);
 
 			// LacaDev Block Sync
 			Container::make('theme_options', __('🧩 LacaDev', 'laca'))
@@ -1237,30 +1246,30 @@ class AdminSettings
 				->add_fields([
 					Field::make('html', 'recaptcha_info', '')
 						->set_html('<div class="carbon-field-description">Bảo vệ website khỏi spam/bot bằng Google reCAPTCHA v3. <a href="https://www.google.com/recaptcha/admin/create" target="_blank">Đăng ký Key tại đây</a>.</div>'),
-					
+
 					Field::make('text', 'recaptcha_site_key', __('Site Key', 'laca'))
 						->set_width(50)
 						->set_attribute('placeholder', '6Le...'),
-						
+
 					Field::make('text', 'recaptcha_secret_key', __('Secret Key', 'laca'))
 						->set_width(50)
 						->set_attribute('type', 'password')
 						->set_attribute('placeholder', '6Le...'),
-						
+
 					Field::make('separator', 'recaptcha_separator', __('Cấu hình hiển thị', 'laca')),
-					
+
 					Field::make('checkbox', 'enable_recaptcha_login', __('Kích hoạt cho Đăng nhập', 'laca'))
 						->set_width(25)
 						->set_default_value(true),
-						
+
 					Field::make('checkbox', 'enable_recaptcha_register', __('Kích hoạt cho Đăng ký', 'laca'))
 						->set_width(25)
 						->set_default_value(true),
-						
+
 					Field::make('checkbox', 'enable_recaptcha_comment', __('Kích hoạt cho Bình luận', 'laca'))
 						->set_width(25)
 						->set_default_value(true),
-						
+
 					Field::make('text', 'recaptcha_score', __('Điểm tối thiểu (0.0 - 1.0)', 'laca'))
 						->set_width(25)
 						->set_default_value('0.5')
@@ -1283,7 +1292,7 @@ class AdminSettings
 
 					Field::make('text', 'zalo_oa_access_token', __('Access Token', 'laca'))
 						->set_width(50),
-						
+
 					Field::make('text', 'zalo_oa_refresh_token', __('Refresh Token', 'laca'))
 						->set_width(50),
 
@@ -1298,72 +1307,72 @@ class AdminSettings
 						->set_help_text('Bạn có thể nhập nhiều email cách nhau bởi dấu phẩy (,).'),
 				]);
 
-            Container::make('theme_options', __('Login Socials', 'laca'))
-            ->set_page_parent($options)
-            ->set_page_file(__('laca-login-socials', 'laca'))
-            ->add_tab(__('Google', 'laca'), [
-                Field::make('html', 'login_socials_google_info', '')
-                    ->set_html('<div style="background:#f0f9ff;border:1px solid #bae6fd;border-radius:6px;padding:14px 16px;margin:8px 0"><p style="margin:0 0 8px;font-weight:600;color:#0369a1">🔧 Đăng nhập bằng Google</p><p style="margin:0;font-size:13px;color:#374151">Cho phép người dùng đăng nhập vào site bằng tài khoản Google thay vì username/mật khẩu. Bạn cần tạo <strong>Client ID</strong> và <strong>Client Secret</strong> trên Google Cloud Console, dán vào bên dưới, rồi cấu hình <strong>Redirect URI</strong> (đã điền sẵn) trong đó.</p></div>'),
+			Container::make('theme_options', __('Login Socials', 'laca'))
+				->set_page_parent($options)
+				->set_page_file(__('laca-login-socials', 'laca'))
+				->add_tab(__('Google', 'laca'), [
+					Field::make('html', 'login_socials_google_info', '')
+						->set_html('<div style="background:#f0f9ff;border:1px solid #bae6fd;border-radius:6px;padding:14px 16px;margin:8px 0"><p style="margin:0 0 8px;font-weight:600;color:#0369a1">🔧 Đăng nhập bằng Google</p><p style="margin:0;font-size:13px;color:#374151">Cho phép người dùng đăng nhập vào site bằng tài khoản Google thay vì username/mật khẩu. Bạn cần tạo <strong>Client ID</strong> và <strong>Client Secret</strong> trên Google Cloud Console, dán vào bên dưới, rồi cấu hình <strong>Redirect URI</strong> (đã điền sẵn) trong đó.</p></div>'),
 
-                Field::make('checkbox', 'enable_login_google', __('Bật Login Google', 'laca')),
-                Field::make('text', 'google_client_id', __('Client ID', 'laca'))
-                    ->set_width(50),
-                Field::make('text', 'google_client_secret', __('Client Secret', 'laca'))
-                    ->set_width(50),
-                Field::make('text', 'google_redirect_uri', __('Redirect URI', 'laca'))
-                    ->set_attribute('readOnly', true)
-                    ->set_default_value(admin_url('admin-ajax.php?action=google_admin_callback')),
-            ]);
+					Field::make('checkbox', 'enable_login_google', __('Bật Login Google', 'laca')),
+					Field::make('text', 'google_client_id', __('Client ID', 'laca'))
+						->set_width(50),
+					Field::make('text', 'google_client_secret', __('Client Secret', 'laca'))
+						->set_width(50),
+					Field::make('text', 'google_redirect_uri', __('Redirect URI', 'laca'))
+						->set_default_value(admin_url('admin-ajax.php?action=google_admin_callback')),
+				]);
 
-            // Workspace / HD Sử dụng & Dashboard Widgets Settings
-            Container::make('theme_options', __('Quản trị & HD Sử dụng', 'laca'))
-                ->set_page_parent($options)
-                ->set_page_file(__('laca-management-settings', 'laca'))
-                ->add_tab(__('Dashboard Widget', 'laca'), [
-                    Field::make('html', 'dashboard_widget_desc')
-                        ->set_html('<div class="carbon-field-description">Cấu hình hiển thị Widget <b>"Tổng hợp Nội dung"</b> trên màn hình Dashboard chính.</div>'),
-                    
-                    Field::make('multiselect', 'dashboard_widget_post_types', __('Các Post Type hiển thị', 'laca'))
-                        ->set_options(function() {
-                            $types = get_post_types(['public' => true, 'show_in_menu' => true], 'objects');
-                            $options = [];
-                            foreach ($types as $pt) {
-                                if (in_array($pt->name, ['attachment', 'wp_block', 'wp_template', 'wp_template_part'])) continue;
-                                $options[$pt->name] = $pt->label;
-                            }
-                            return $options;
-                        })
-                        ->set_help_text(__('Để trống để tự động hiển thị tất cả các loại nội dung quan trọng (Posts, Services, Projects, Properties...).', 'laca'))
-                        ->set_default_value(['post']),
+			// Workspace / HD Sử dụng & Dashboard Widgets Settings
+			Container::make('theme_options', __('Quản trị & HD Sử dụng', 'laca'))
+				->set_page_parent($options)
+				->set_page_file(__('laca-management-settings', 'laca'))
+				->add_tab(__('Dashboard Widget', 'laca'), [
+					Field::make('html', 'dashboard_widget_desc')
+						->set_html('<div class="carbon-field-description">Cấu hình hiển thị Widget <b>"Tổng hợp Nội dung"</b> trên màn hình Dashboard chính.</div>'),
 
-                    Field::make('text', 'dashboard_widget_limit', __('Số lượng bài hiển thị', 'laca'))
-                        ->set_attribute('type', 'number')
-                        ->set_default_value('5')
-                        ->set_width(50),
-                ])
-                ->add_tab(__('Nội dung HD Sử dụng', 'laca'), [
-                    Field::make('html', 'help_page_desc')
-                        ->set_html('<div class="carbon-field-description">Nội dung này sẽ hiển thị ở menu <b>"HD Sử dụng"</b> dành cho khách hàng.</div>'),
+					Field::make('multiselect', 'dashboard_widget_post_types', __('Các Post Type hiển thị', 'laca'))
+						->set_options(function () {
+							$types = get_post_types(['public' => true, 'show_in_menu' => true], 'objects');
+							$options = [];
+							foreach ($types as $pt) {
+								if (in_array($pt->name, ['attachment', 'wp_block', 'wp_template', 'wp_template_part']))
+									continue;
+								$options[$pt->name] = $pt->label;
+							}
+							return $options;
+						})
+						->set_help_text(__('Để trống để tự động hiển thị tất cả các loại nội dung quan trọng (Posts, Services, Projects, Properties...).', 'laca'))
+						->set_default_value(['post']),
 
-                    Field::make('text', 'help_page_title', __('Tiêu đề trang', 'laca'))
-                        ->set_default_value('Hướng dẫn quản trị Website Professional'),
-                        
-                    Field::make('textarea', 'help_page_intro', __('Đoạn giới thiệu', 'laca'))
-                        ->set_default_value('Chào mừng bạn đến với hệ thống quản trị website nâng cao. Hệ thống đã được tối ưu để bạn quản lý nội dung dễ dàng nhất.'),
+					Field::make('text', 'dashboard_widget_limit', __('Số lượng bài hiển thị', 'laca'))
+						->set_attribute('type', 'number')
+						->set_default_value('5')
+						->set_width(50),
+				])
+				->add_tab(__('Nội dung HD Sử dụng', 'laca'), [
+					Field::make('html', 'help_page_desc')
+						->set_html('<div class="carbon-field-description">Nội dung này sẽ hiển thị ở menu <b>"HD Sử dụng"</b> dành cho khách hàng.</div>'),
 
-                    Field::make('complex', 'help_page_blocks', __('Các khối hướng dẫn (Blog, WooCommerce...)', 'laca'))
-                        ->set_layout('tabbed-horizontal')
-                        ->add_fields([
-                            Field::make('text', 'title', __('Tiêu đề khối', 'laca')),
-                            Field::make('color', 'border_color', __('Màu viền (Border top)', 'laca'))->set_default_value('#2271b1'),
-                            Field::make('rich_text', 'content', __('Nội dung hướng dẫn (Link, Video, Text)', 'laca')),
-                        ]),
+					Field::make('text', 'help_page_title', __('Tiêu đề trang', 'laca'))
+						->set_default_value('Hướng dẫn quản trị Website Professional'),
 
-                    Field::make('separator', 'help_separator', __('Thông tin hỗ trợ kỹ thuật', 'laca')),
-                    Field::make('text', 'help_support_phone', __('Điện thoại/Zalo', 'laca')),
-                    Field::make('text', 'help_support_email', __('Email', 'laca')),
-                    Field::make('text', 'help_support_website', __('Website', 'laca')),
-                ]);
-        });
+					Field::make('textarea', 'help_page_intro', __('Đoạn giới thiệu', 'laca'))
+						->set_default_value('Chào mừng bạn đến với hệ thống quản trị website nâng cao. Hệ thống đã được tối ưu để bạn quản lý nội dung dễ dàng nhất.'),
+
+					Field::make('complex', 'help_page_blocks', __('Các khối hướng dẫn (Blog, WooCommerce...)', 'laca'))
+						->set_layout('tabbed-horizontal')
+						->add_fields([
+							Field::make('text', 'title', __('Tiêu đề khối', 'laca')),
+							Field::make('color', 'border_color', __('Màu viền (Border top)', 'laca'))->set_default_value('#2271b1'),
+							Field::make('rich_text', 'content', __('Nội dung hướng dẫn (Link, Video, Text)', 'laca')),
+						]),
+
+					Field::make('separator', 'help_separator', __('Thông tin hỗ trợ kỹ thuật', 'laca')),
+					Field::make('text', 'help_support_phone', __('Điện thoại/Zalo', 'laca')),
+					Field::make('text', 'help_support_email', __('Email', 'laca')),
+					Field::make('text', 'help_support_website', __('Website', 'laca')),
+				]);
+		});
 	}
 }
