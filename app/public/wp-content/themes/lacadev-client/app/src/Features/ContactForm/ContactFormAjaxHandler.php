@@ -587,8 +587,15 @@ class ContactFormAjaxHandler
      * "placeholder" của field "hidden" bị dùng làm giá trị submit thật (xem
      * renderField() case 'hidden') nên KHÔNG dịch, tránh đổi data theo ngôn
      * ngữ hiển thị.
+     *
+     * public (không phải private) vì ContactFormEmailService::
+     * buildAllFieldsTable() cũng gọi hàm này từ bên ngoài class — trước đây
+     * để private gây Fatal Error "Call to private method ... from scope
+     * ContactFormEmailService" ngay khi có $lang khác rỗng (luôn xảy ra khi
+     * Polylang bật), khiến email KHÁCH HÀNG (có truyền $lang) luôn crash
+     * trong khi email ADMIN (không truyền $lang) vẫn gửi bình thường.
      */
-    private static function applyFieldTranslation(array $field, string $lang = ''): array
+    public static function applyFieldTranslation(array $field, string $lang = ''): array
     {
         if (empty($field['i18n']) || !is_array($field['i18n'])) {
             return $field;
