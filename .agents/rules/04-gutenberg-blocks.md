@@ -23,7 +23,8 @@ block-gutenberg/lixroastery-blocks-site/[block-name]/
 * Cung cấp controls trực quan trong `InspectorControls` (Sidebar) và xem trước trực quan (Preview) ngay trong Editor đồng nhất với `render.php`.
 * Khi dùng Repeaters / Danh sách con: Sử dụng component lặp linh hoạt có nút thêm/sửa/xóa trực quan.
 
-## 4. Safe Block Registration & Build
+## 4. Safe Block Registration, Linting & Build
 * Đăng ký an toàn qua `lacadev_safe_register_block()` để tránh emit notice duplicate khi build.
-* **Quy trình Build & Xác thực**:
-  * Chạy `yarn dev:blocks` hoặc `yarn build:blocks` sau khi tạo hoặc sửa block để đảm bảo file `build/index.js` và `build/style-index.css` được compile thành công không có lỗi syntax.
+* **Quy trình Build, Lint & Xác thực CI (MANDATORY)**:
+  * Sau khi tạo hoặc sửa block: BẮT BUỘC chạy `yarn lint` (hoặc `yarn lint-fix`) trong `lacadev-client-child` để kiểm tra và khắc phục 100% lỗi Prettier, ESLint, Stylelint. Đảm bảo 0 lỗi trước khi bàn giao (bảo đảm Theme CI trên GitHub Actions không fail).
+  * Chạy `yarn dev:blocks` hoặc `yarn build:blocks` để đảm bảo file `build/index.js` và `build/style-index.css` được compile thành công không có lỗi syntax.

@@ -317,7 +317,8 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 						{ __( 'Khung nội dung (Container)', 'laca' ) }
 					</span>
 					<span className="block-container__editor-info">
-						{ maxWidth }% • { ALIGN_LABELS[ contentAlign ] || contentAlign }
+						{ maxWidth }% •{ ' ' }
+						{ ALIGN_LABELS[ contentAlign ] || contentAlign }
 					</span>
 				</div>
 				<InnerBlocks />

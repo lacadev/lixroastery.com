@@ -30,7 +30,9 @@
 
 ### 4. Custom Gutenberg Blocks (React + PHP Server-Side Render)
 * Mỗi block gồm 6 file chuẩn tại `block-gutenberg/lixroastery-blocks-site/[block-name]/`: `block.json`, `index.js`, `edit.js`, `save.js`, `render.php`, `style.scss`.
-* Sau khi tạo/sửa block: Chạy lệnh `yarn dev:blocks` hoặc `yarn build:blocks` để kiểm tra compile không lỗi cú pháp.
+* **Quy chuẩn Code Quality & Theme CI (BẮT BUỘC TRƯỚC KHI HOÀN TẤT TÁC VỤ)**:
+  * Sau khi tạo/sửa block hay bất kỳ file JS/SCSS/PHP nào: BẮT BUỘC chạy `yarn lint` (hoặc `yarn lint-fix`) trong `lacadev-client-child` để đảm bảo 0 lỗi ESLint, Prettier, Stylelint, bảo đảm Theme CI trên GitHub Actions luôn PASS 100%.
+  * BẮT BUỘC chạy `yarn build:blocks` để kiểm tra và biên dịch bundle không có lỗi cú pháp.
 
 ### 5. Frontend & UI/UX (BEM + Tailwind + Vanilla JS)
 * Không dùng jQuery. Sử dụng 100% Vanilla JS ES6+ modules.
