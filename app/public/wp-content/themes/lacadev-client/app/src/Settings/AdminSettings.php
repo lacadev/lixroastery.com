@@ -1321,6 +1321,57 @@ class AdminSettings
 						->set_width(50),
 					Field::make('text', 'google_redirect_uri', __('Redirect URI', 'laca'))
 						->set_default_value(admin_url('admin-ajax.php?action=google_admin_callback')),
+
+					Field::make('html', 'google_login_guide', '')
+						->set_html(function () {
+							$redirect_uri = admin_url('admin-ajax.php?action=google_admin_callback');
+							$origin_uri = home_url();
+
+							return '
+							<div style="background:#ffffff;border:1px solid #e2e8f0;border-radius:8px;padding:20px 24px;margin:20px 0;box-shadow:0 1px 3px rgba(0,0,0,0.05);font-size:13px;line-height:1.6;color:#334155">
+								<h3 style="margin:0 0 16px;font-size:15px;color:#0f172a;display:flex;align-items:center;gap:8px">
+									📘 Hướng dẫn từng bước cấu hình Google Login
+								</h3>
+
+								<div style="display:grid;gap:14px">
+									<div style="background:#f8fafc;border-left:4px solid #3b82f6;padding:12px 16px;border-radius:4px">
+										<p style="margin:0 0 6px;font-weight:600;color:#1e40af">Bước 1: Tạo Project trên Google Cloud</p>
+										<p style="margin:0">Truy cập <a href="https://console.cloud.google.com/" target="_blank" style="color:#2563eb;text-decoration:underline">Google Cloud Console</a> ➔ Bấm chọn danh sách Project ở thanh trên cùng ➔ Chọn <strong>New Project</strong> ➔ Đặt tên website (VD: <code>' . esc_html(get_bloginfo('name')) . '</code>) ➔ Bấm <strong>Create</strong>.</p>
+									</div>
+
+									<div style="background:#f8fafc;border-left:4px solid #3b82f6;padding:12px 16px;border-radius:4px">
+										<p style="margin:0 0 6px;font-weight:600;color:#1e40af">Bước 2: Cấu hình Màn hình đồng thuận (OAuth consent screen / Audience)</p>
+										<ul style="margin:0;padding-left:18px">
+											<li>Ở menu bên trái, vào <strong>Audience</strong> (hoặc <strong>OAuth consent screen</strong>).</li>
+											<li>Chọn loại người dùng là <strong>External</strong> ➔ Bấm <strong>Create</strong> ➔ Điền tên App, Email hỗ trợ và Email nhà phát triển.</li>
+											<li><strong>Cấp quyền tài khoản:</strong> Tại mục <strong>Audience</strong>, cuộn xuống <strong>Test users</strong> ➔ Bấm <strong>+ Add users</strong> ➔ Nhập email Google của bạn (email admin) ➔ Bấm <strong>Save</strong> <em>(hoặc bấm nút <strong>Publish app</strong> để công khai cho mọi tài khoản Google).</em></li>
+										</ul>
+									</div>
+
+									<div style="background:#f8fafc;border-left:4px solid #3b82f6;padding:12px 16px;border-radius:4px">
+										<p style="margin:0 0 6px;font-weight:600;color:#1e40af">Bước 3: Tạo OAuth Client ID & Nhập URL chính xác</p>
+										<p style="margin:0 0 8px">Vào menu bên trái <strong>Clients</strong> (hoặc <strong>Credentials</strong>) ➔ Bấm <strong>+ Create Credentials</strong> ➔ Chọn <strong>OAuth client ID</strong> ➔ Application type chọn <strong>Web application</strong>.</p>
+										<div style="background:#f1f5f9;border:1px solid #cbd5e1;padding:10px 14px;border-radius:6px;margin:8px 0">
+											<p style="margin:0 0 6px"><strong>1. Authorized JavaScript origins:</strong></p>
+											<code style="background:#ffffff;padding:4px 8px;border-radius:4px;border:1px solid #cbd5e1;color:#0f172a;display:inline-block;font-size:12px">' . esc_html($origin_uri) . '</code>
+											<p style="margin:10px 0 6px"><strong>2. Authorized redirect URIs:</strong> (Bắt buộc khớp 100% từng ký tự)</p>
+											<code style="background:#ffffff;padding:4px 8px;border-radius:4px;border:1px solid #cbd5e1;color:#0f172a;display:inline-block;font-size:12px">' . esc_html($redirect_uri) . '</code>
+										</div>
+										<p style="margin:6px 0 0;color:#64748b;font-size:12px"><em>* Lưu ý: Sau khi bấm nút Save trên Google Console, có thể mất từ 1-3 phút để Google kích hoạt URL mới.</em></p>
+									</div>
+
+									<div style="background:#f8fafc;border-left:4px solid #10b981;padding:12px 16px;border-radius:4px">
+										<p style="margin:0 0 6px;font-weight:600;color:#065f46">Bước 4: Lưu vào Website & Bắt đầu sử dụng</p>
+										<p style="margin:0">Copy <strong>Client ID</strong> và <strong>Client Secret</strong> từ Google dán vào 2 ô ở trên ➔ Tích chọn <strong>"Bật Login Google"</strong> ➔ Bấm <strong>Save Changes</strong> (Lưu thay đổi) ở cột bên phải. Ra trang <code>/wp-login.php</code> bấm nút Google để đăng nhập.</p>
+									</div>
+								</div>
+
+								<div style="margin-top:16px;background:#fefce8;border:1px solid #fef08a;border-radius:6px;padding:12px 16px;color:#854d0e;font-size:12px">
+									<strong>💡 Mẹo quản lý nhiều website:</strong> 
+									Một tài khoản Google Cloud có thể dùng cho nhiều website. Trong cùng một Client ID, tại ô <em>Authorized redirect URIs</em>, bạn có thể bấm <code>+ Add URI</code> để thêm các link callback của các website khác nhau, sau đó dùng chung Client ID & Secret này cho tất cả các site đó.
+								</div>
+							</div>';
+						}),
 				]);
 
 			// Workspace / HD Sử dụng & Dashboard Widgets Settings
