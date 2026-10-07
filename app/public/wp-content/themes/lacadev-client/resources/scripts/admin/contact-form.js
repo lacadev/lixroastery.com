@@ -150,6 +150,7 @@ function createPopupController(state, serializeFn, nonDefaultLangs, aiTranslateV
             ['msg_invalid_email_suffix', 'msg_invalid_email_suffix'], ['msg_invalid_url_suffix', 'msg_invalid_url_suffix'],
             ['msg_invalid_phone_suffix', 'msg_invalid_phone_suffix'], ['msg_technical_error', 'msg_technical_error'],
             ['msg_email_failed', 'msg_email_failed'], ['msg_network_error', 'msg_network_error'],
+            ['msg_submitting_text', 'msg_submitting_text'],
         ];
         simple.forEach(function(pair) {
             const el = document.getElementById(pair[0]);
@@ -167,7 +168,7 @@ function createPopupController(state, serializeFn, nonDefaultLangs, aiTranslateV
         ['popup_success_title', 'popup_success_desc', 'popup_error_title', 'popup_error_desc', 'popup_close_text',
             'msg_session_expired', 'msg_invalid_form', 'msg_form_not_found', 'msg_field_required_suffix',
             'msg_invalid_email_suffix', 'msg_invalid_url_suffix', 'msg_invalid_phone_suffix',
-            'msg_technical_error', 'msg_email_failed', 'msg_network_error'].forEach(function(k) { renderI18nBlock(k); });
+            'msg_technical_error', 'msg_email_failed', 'msg_network_error', 'msg_submitting_text'].forEach(function(k) { renderI18nBlock(k); });
 
         const overrideToggle = document.getElementById('popup-override-toggle');
         if (overrideToggle) overrideToggle.checked = !!state.popup_override;

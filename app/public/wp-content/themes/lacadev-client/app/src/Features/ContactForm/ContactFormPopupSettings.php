@@ -84,6 +84,8 @@ class ContactFormPopupSettings
         'msg_email_failed_i18n' => [],
         'msg_network_error' => 'Không thể kết nối đến máy chủ. Vui lòng kiểm tra kết nối internet.',
         'msg_network_error_i18n' => [],
+        'msg_submitting_text' => 'Đang gửi...',
+        'msg_submitting_text_i18n' => [],
     ];
 
     /** Grid icon preset dùng cho CẢ icon trạng thái lẫn icon nút đóng. */
@@ -98,6 +100,7 @@ class ContactFormPopupSettings
         'msg_field_required_suffix_i18n', 'msg_invalid_email_suffix_i18n',
         'msg_invalid_url_suffix_i18n', 'msg_invalid_phone_suffix_i18n',
         'msg_technical_error_i18n', 'msg_email_failed_i18n', 'msg_network_error_i18n',
+        'msg_submitting_text_i18n',
     ];
 
     /** Key text ngắn (title/button/msg suffix...) — sanitize_text_field. */
@@ -108,6 +111,7 @@ class ContactFormPopupSettings
         'msg_session_expired', 'msg_invalid_form', 'msg_form_not_found',
         'msg_field_required_suffix', 'msg_invalid_email_suffix',
         'msg_invalid_url_suffix', 'msg_invalid_phone_suffix',
+        'msg_submitting_text',
     ];
 
     /** Key mô tả dài hơn, cho phép xuống dòng — sanitize_textarea_field. */
@@ -410,6 +414,7 @@ class ContactFormPopupSettings
             'msg_technical_error' => 'Lỗi kỹ thuật khi lưu/gửi email (dữ liệu vẫn đã lưu)',
             'msg_email_failed' => 'Lỗi gửi email xác nhận (dữ liệu vẫn đã lưu)',
             'msg_network_error' => 'Mất kết nối mạng lúc gửi form (lỗi phía trình duyệt khách)',
+            'msg_submitting_text' => 'Chữ hiện trên nút Submit trong lúc đang gửi (vd "Đang gửi...")',
         ];
 
         ob_start();

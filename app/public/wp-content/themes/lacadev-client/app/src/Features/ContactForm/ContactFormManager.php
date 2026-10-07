@@ -1258,6 +1258,7 @@ class ContactFormManager
             'msg_session_expired', 'msg_invalid_form', 'msg_form_not_found',
             'msg_field_required_suffix', 'msg_invalid_email_suffix', 'msg_invalid_url_suffix',
             'msg_invalid_phone_suffix', 'msg_technical_error', 'msg_email_failed', 'msg_network_error',
+            'msg_submitting_text',
         ];
         foreach ($popupTranslateKeys as $key) {
             $text = trim((string) ($_POST[$key] ?? ''));
@@ -1283,6 +1284,7 @@ class ContactFormManager
                 'msg_technical_error' => 'Thông báo khi hệ thống lỗi kỹ thuật lúc lưu/gửi email nhưng dữ liệu khách gửi vẫn đã được lưu lại',
                 'msg_email_failed' => 'Thông báo khi gửi email xác nhận thất bại nhưng dữ liệu khách gửi vẫn đã được lưu lại',
                 'msg_network_error' => 'Thông báo khi trình duyệt khách mất kết nối mạng lúc gửi form liên hệ',
+                'msg_submitting_text' => 'Chữ hiện trên nút Submit của form liên hệ trong lúc đang gửi (vd "Đang gửi...")',
                 default => 'Nhãn/nội dung 1 field trong form liên hệ trên website',
             };
             $translated = $handler->translateText($text, $targetLang, $context);

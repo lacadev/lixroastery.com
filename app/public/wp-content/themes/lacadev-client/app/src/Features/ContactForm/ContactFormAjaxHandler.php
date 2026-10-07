@@ -85,8 +85,13 @@ class ContactFormAjaxHandler
             $required = !empty($field['required']);
             $type     = $field['type'];
 
-            // Lấy giá trị raw từ POST
-            $rawValue = $_POST[$name] ?? '';
+            // Lấy giá trị raw từ POST — BẮT BUỘC wp_unslash() trước khi
+            // dùng: WordPress tự động addslashes() MỌI giá trị $_POST (mô
+            // phỏng magic_quotes cũ), sanitize_text_field()/sanitize_
+            // textarea_field() KHÔNG tự strip slashes này. Thiếu bước này
+            // là lý do thật đã gặp: khách gõ "I don't" nhưng email admin/
+            // khách nhận được lại hiện "I don\'t" (backslash thừa).
+            $rawValue = wp_unslash($_POST[$name] ?? '');
 
             // checkbox có 3 dạng: 1 ô đơn (options rỗng/1 phần tử — gửi lên
             // dạng STRING khi tick, KHÔNG có key khi bỏ tick, name không có
@@ -127,7 +132,7 @@ class ContactFormAjaxHandler
             // nhập ở ô nhập kèm theo, rồi thay sentinel "__other__" bằng nội
             // dung thật để hiện đúng trong email/CSV thay vì hiện chữ thô.
             if (!empty($field['has_other']) && in_array($type, ['checkbox', 'radio'], true)) {
-                $otherRaw = sanitize_text_field((string) ($_POST[$name . '_other'] ?? ''));
+                $otherRaw = sanitize_text_field(wp_unslash($_POST[$name . '_other'] ?? ''));
                 $data[$name . '_other'] = $otherRaw;
 
                 $otherText = $otherRaw !== '' ? $otherRaw : ($field['other_label'] ?: __('Khác', 'laca'));
@@ -319,7 +324,7 @@ class ContactFormAjaxHandler
                             <svg class="laca-cf-spinner" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
                                 <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="3" stroke-dasharray="31.4" stroke-dashoffset="31.4"/>
                             </svg>
-                            Đang gửi...
+                            <?php echo esc_html($popup['msg_submitting_text']); ?>
                         </span>
                     </button>
                 </div>

@@ -318,21 +318,26 @@ class ContactFormEmailService
                 $valHtml = '<span style="color:#94a3b8;font-style:italic">—</span>';
             }
 
-            // Cột nhãn (trái) fix CỨNG bằng px (width + HTML attribute,
-            // KHÔNG dùng % — Gmail/Gmail app tự tính lại width theo % độc
-            // lập cho TỪNG hàng khi độ dài nội dung giữa các hàng chênh
-            // lệch nhiều (nhãn ngắn như "Họ và tên" vs nhãn dài như "Liên
-            // kết CV / Portfolio..."), khiến cột nhãn/giá trị lệch nhau
-            // giữa các hàng dù cùng 1 bảng. Kèm table-layout:fixed ở bảng
-            // ngoài để trình duyệt/app email không tự co giãn lại cột.
-            $rowsHtml .= '<tr>
-              <td width="170" style="padding:10px 14px;background:#f8fafc;color:#475569;font-weight:600;width:170px;max-width:170px;border-bottom:1px solid #e2e8f0;font-size:13px;vertical-align:top;word-break:break-word">' . esc_html($label) . '</td>
-              <td style="padding:10px 14px;color:#1e293b;border-bottom:1px solid #e2e8f0;font-size:13px;vertical-align:top;word-break:break-word">' . $valHtml . '</td>
-            </tr>';
+            // Mỗi field là 1 BẢNG RIÊNG BIỆT (độc lập hoàn toàn), KHÔNG
+            // gộp chung 1 <table> nhiều <tr> — đã thử table-layout:fixed +
+            // width cố định trên 1 bảng chung nhưng Gmail vẫn tự tính lại
+            // cột theo % độc lập cho một vài hàng (lỗi thật đã gặp: riêng
+            // hàng "Họ và tên" lệch cột so với các hàng còn lại dù cùng 1
+            // bảng, cùng CSS). Tách mỗi field thành 1 bảng độc lập (kèm
+            // <colgroup> ấn định đúng 170px cho cột nhãn) loại bỏ hẳn khả
+            // năng 1 hàng này ảnh hưởng cách tính cột của hàng khác — đây
+            // là kỹ thuật chuẩn cho email HTML cần cột ổn định tuyệt đối.
+            $rowsHtml .= '<table width="100%" cellpadding="0" cellspacing="0" style="width:100%;table-layout:fixed;border-collapse:collapse">
+              <colgroup><col style="width:170px"><col></colgroup>
+              <tr>
+                <td width="170" style="padding:10px 14px;background:#f8fafc;color:#475569;font-weight:600;width:170px;max-width:170px;border-bottom:1px solid #e2e8f0;font-size:13px;vertical-align:top;word-break:break-word">' . esc_html($label) . '</td>
+                <td style="padding:10px 14px;color:#1e293b;border-bottom:1px solid #e2e8f0;font-size:13px;vertical-align:top;word-break:break-word">' . $valHtml . '</td>
+              </tr>
+            </table>';
         }
 
-        return '<table width="100%" cellpadding="0" cellspacing="0" style="width:100%;table-layout:fixed;border-collapse:collapse;margin:18px 0;border:1px solid #e2e8f0;border-radius:6px;overflow:hidden">
-          <tbody>' . $rowsHtml . '</tbody>
+        return '<table width="100%" cellpadding="0" cellspacing="0" style="width:100%;border-collapse:collapse;margin:18px 0;border:1px solid #e2e8f0;border-radius:6px;overflow:hidden">
+          <tr><td style="padding:0">' . $rowsHtml . '</td></tr>
         </table>';
     }
 
