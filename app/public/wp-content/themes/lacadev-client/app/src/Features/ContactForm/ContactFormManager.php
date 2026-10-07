@@ -663,6 +663,24 @@ class ContactFormManager
                                             <option value="left">Trái</option>
                                             <option value="center">Giữa</option>
                                             <option value="right">Phải</option>
+                                            <option value="full">Toàn chiều rộng (100%)</option>
+                                        </select>
+                                    </div>
+                                    <div class="laca-cf-field-group">
+                                        <label class="lcf-form-label">Khoảng cách nút Submit (Margin Top)</label>
+                                        <div class="lcf-range-row">
+                                            <input type="range" min="0" max="100" id="s-submit-margin-top"
+                                                   oninput="lcfStyleUpdate('submit_margin_top',this.value);document.getElementById('s-submit-margin-top-num').value=this.value">
+                                            <input type="number" min="0" max="100" id="s-submit-margin-top-num" class="lcf-range-num"
+                                                   oninput="lcfStyleUpdate('submit_margin_top',this.value);document.getElementById('s-submit-margin-top').value=this.value">
+                                            <span class="lcf-range-unit">px</span>
+                                        </div>
+                                    </div>
+                                    <div class="laca-cf-field-group">
+                                        <label class="lcf-form-label">Độ rộng nút Submit</label>
+                                        <select class="widefat" id="s-submit-width" onchange="lcfStyleUpdate('submit_width',this.value)">
+                                            <option value="auto">Tự động (Vừa nội dung chữ)</option>
+                                            <option value="full">Toàn chiều rộng (100%)</option>
                                         </select>
                                     </div>
                                     <div class="laca-cf-field-group" style="grid-column:1/-1">
@@ -1120,8 +1138,14 @@ class ContactFormManager
         if (isset($rawStyle['show_label'])) {
             $cleanStyle['show_label'] = (bool) $rawStyle['show_label'];
         }
-        if (in_array($rawStyle['submit_align'] ?? '', ['left', 'center', 'right'], true)) {
+        if (in_array($rawStyle['submit_align'] ?? '', ['left', 'center', 'right', 'full'], true)) {
             $cleanStyle['submit_align'] = $rawStyle['submit_align'];
+        }
+        if (in_array($rawStyle['submit_width'] ?? '', ['auto', 'full'], true)) {
+            $cleanStyle['submit_width'] = $rawStyle['submit_width'];
+        }
+        if (isset($rawStyle['submit_margin_top'])) {
+            $cleanStyle['submit_margin_top'] = max(0, min(200, (int) $rawStyle['submit_margin_top']));
         }
         if (!empty($rawStyle['custom_css'])) {
             // Strip tags but allow proper CSS syntax, wp_strip_all_tags handles basic sanitization

@@ -25,6 +25,8 @@
     // (field "Căn nút Submit" — admin chọn thì rule đó scope theo ID
     // #laca-cf-{id}, độ ưu tiên cao hơn nên tự override được giá trị này).
     --cf-submit-align: center;
+    --cf-submit-margin-top: 0;
+    --cf-submit-width: auto;
 
     max-width: rem(560);
     margin: 0 auto;
@@ -32,6 +34,11 @@
 
 .laca-contact-form {
     gap: rem(20);
+}
+
+.laca-cf-submit-row {
+    margin-top: var(--cf-submit-margin-top, 0);
+    justify-content: var(--cf-submit-align, center);
 }
 
 .laca-cf-input,
@@ -97,6 +104,8 @@
 .laca-cf-submit-btn {
     font-family: $mainFont;
     font-weight: $regular;
+    width: var(--cf-submit-width, auto);
+    justify-content: center;
     padding: rem(14) rem(24);
 
     @include resFont(rem(14), rem(15));

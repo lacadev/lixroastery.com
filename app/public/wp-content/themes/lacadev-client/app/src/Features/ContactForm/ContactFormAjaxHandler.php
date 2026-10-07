@@ -151,6 +151,27 @@ class ContactFormAjaxHandler
             wp_send_json_error(['message' => implode('<br>', $errors), 'errors' => $errors], 422);
         }
 
+        // 3.4. Kiểm tra form không được để trống hoàn toàn (phải có ít nhất 1 dữ liệu nhập hoặc lựa chọn)
+        $hasAnyData = false;
+        foreach ($data as $val) {
+            if (is_array($val)) {
+                if (!empty($val)) {
+                    $hasAnyData = true;
+                    break;
+                }
+            } elseif (is_string($val) || is_numeric($val) || is_bool($val)) {
+                if (trim((string) $val) !== '') {
+                    $hasAnyData = true;
+                    break;
+                }
+            }
+        }
+        if (!$hasAnyData) {
+            wp_send_json_error([
+                'message' => $popup['msg_form_empty'] ?? __('Vui lòng nhập hoặc chọn ít nhất một thông tin trước khi gửi.', 'laca')
+            ], 422);
+        }
+
         // 3.5. Verify reCAPTCHA
         $isRecaptchaEnabled = function_exists('getOption') ? getOption('enable_recaptcha_contact') : false;
         if ($isRecaptchaEnabled) {
@@ -385,6 +406,7 @@ class ContactFormAjaxHandler
             const MSG_FIELD_REQUIRED = <?php echo wp_json_encode(__('Trường này', 'laca') . ' ' . $popup['msg_field_required_suffix']); ?>;
             const MSG_INVALID_EMAIL  = <?php echo wp_json_encode($popup['msg_invalid_email_suffix']); ?>;
             const MSG_INVALID_PHONE  = <?php echo wp_json_encode($popup['msg_invalid_phone_suffix']); ?>;
+            const MSG_FORM_EMPTY     = <?php echo wp_json_encode($popup['msg_form_empty'] ?? __('Vui lòng nhập hoặc chọn ít nhất một thông tin trước khi gửi.', 'laca')); ?>;
 
             // Wait for DOM + theme.js to expose window.Swal
             function boot() {
@@ -476,7 +498,26 @@ class ContactFormAjaxHandler
                         valid = false;
                     }
 
-                    return valid;
+                    if (!valid) return false;
+
+                    // Kiểm tra form có ít nhất 1 dữ liệu được nhập/chọn không (tránh gửi form rỗng)
+                    let hasAnyInput = false;
+                    formEl.querySelectorAll('input:not([type="hidden"]), select, textarea').forEach(function(el) {
+                        if (el.type === 'checkbox' || el.type === 'radio') {
+                            if (el.checked) hasAnyInput = true;
+                        } else if (el.value && el.value.trim() !== '') {
+                            hasAnyInput = true;
+                        }
+                    });
+
+                    if (!hasAnyInput) {
+                        showSwal(Object.assign({}, POPUP_ERROR_BASE, {
+                            text: MSG_FORM_EMPTY,
+                        }));
+                        return false;
+                    }
+
+                    return true;
                 };
 
                 // ── Real-time clear errors on input ───────────────────────────
@@ -899,10 +940,14 @@ class ContactFormAjaxHandler
         .laca-cf-hint { margin: 4px 0 0; font-size: 12px; color: #888; }
         .laca-cf-content-block { font-size: 14px; line-height: 1.6; color: #444; }
         .laca-cf-content-block a { color: var(--cf-primary, var(--primary-color, #2271b1)); text-decoration: underline; }
-        /* Submit row — căn trái/giữa/phải qua --cf-submit-align (tab Giao diện) */
-        .laca-cf-submit-row { flex-direction: row; align-items: center; justify-content: var(--cf-submit-align, flex-end); }
+        /* Submit row — căn trái/giữa/phải qua --cf-submit-align, khoảng cách qua --cf-submit-margin-top */
+        .laca-cf-submit-row {
+            flex-direction: row; align-items: center; justify-content: var(--cf-submit-align, flex-end);
+            margin-top: var(--cf-submit-margin-top, 0);
+        }
         .laca-cf-submit-btn {
-            display: inline-flex; align-items: center; gap: 8px;
+            display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+            width: var(--cf-submit-width, auto);
             padding: 11px 28px; background: var(--cf-primary, var(--primary-color, #2271b1));
             color: #fff; border: none; border-radius: var(--cf-btn-radius, 6px); font-size: 15px;
             font-weight: 600; cursor: pointer;
@@ -1076,17 +1121,30 @@ class ContactFormAjaxHandler
             $vars[] = '--cf-label-display:none';
         }
 
-        // Căn nút Submit (trái/giữa/phải)
+        // Khoảng cách nút Submit (Margin Top)
+        if (isset($s['submit_margin_top']) && $s['submit_margin_top'] !== '') {
+            $val = (int) $s['submit_margin_top'];
+            $vars[] = '--cf-submit-margin-top:' . $val . 'px';
+        }
+
+        // Căn nút Submit (trái/giữa/phải/full)
         if (!empty($s['submit_align'])) {
             $align = match ($s['submit_align']) {
                 'left'   => 'flex-start',
                 'center' => 'center',
                 'right'  => 'flex-end',
+                'full'   => 'stretch',
                 default  => '',
             };
             if ($align) {
                 $vars[] = '--cf-submit-align:' . $align;
             }
+        }
+
+        // Độ rộng nút Submit (auto / full)
+        $isFullWidth = ($s['submit_width'] ?? '') === 'full' || ($s['submit_align'] ?? '') === 'full';
+        if ($isFullWidth) {
+            $vars[] = '--cf-submit-width:100%';
         }
 
         $css = '';

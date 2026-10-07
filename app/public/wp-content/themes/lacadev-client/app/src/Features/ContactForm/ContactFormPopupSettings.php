@@ -86,6 +86,8 @@ class ContactFormPopupSettings
         'msg_network_error_i18n' => [],
         'msg_submitting_text' => 'Đang gửi...',
         'msg_submitting_text_i18n' => [],
+        'msg_form_empty' => 'Vui lòng nhập hoặc chọn ít nhất một thông tin trước khi gửi.',
+        'msg_form_empty_i18n' => [],
     ];
 
     /** Grid icon preset dùng cho CẢ icon trạng thái lẫn icon nút đóng. */
@@ -100,7 +102,7 @@ class ContactFormPopupSettings
         'msg_field_required_suffix_i18n', 'msg_invalid_email_suffix_i18n',
         'msg_invalid_url_suffix_i18n', 'msg_invalid_phone_suffix_i18n',
         'msg_technical_error_i18n', 'msg_email_failed_i18n', 'msg_network_error_i18n',
-        'msg_submitting_text_i18n',
+        'msg_submitting_text_i18n', 'msg_form_empty_i18n',
     ];
 
     /** Key text ngắn (title/button/msg suffix...) — sanitize_text_field. */
@@ -118,6 +120,7 @@ class ContactFormPopupSettings
     private const TEXTAREA_KEYS = [
         'popup_success_desc', 'popup_error_desc',
         'msg_technical_error', 'msg_email_failed', 'msg_network_error',
+        'msg_form_empty',
     ];
 
     private const COLOR_KEYS = ['popup_success_color', 'popup_error_color', 'popup_button_color'];

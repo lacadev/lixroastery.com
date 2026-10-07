@@ -237,6 +237,7 @@ const FIELD_TYPES = window.LacaContactFormVars.FIELD_TYPES;
                 input_border_color: '#cccccc', label_color: '#333333',
                 btn_border_radius: 6, input_border_radius: 6,
                 btn_text: 'Gửi thông tin', submit_align: 'right',
+                submit_margin_top: 0, submit_width: 'auto',
                 popup_success_color: '#28a745', popup_error_color: '#dc3545',
                 popup_border_radius: 12,
                 // Nội dung/hành vi popup — KHỚP với ContactFormPopupSettings::DEFAULTS
@@ -249,7 +250,7 @@ const FIELD_TYPES = window.LacaContactFormVars.FIELD_TYPES;
                 popup_close_mode: 'text', popup_close_text: 'Đóng',
                 popup_dismiss_mode: 'button', popup_dismiss_seconds: 3,
             };
-            const SUBMIT_ALIGN_TO_JUSTIFY = { left: 'flex-start', center: 'center', right: 'flex-end' };
+            const SUBMIT_ALIGN_TO_JUSTIFY = { left: 'flex-start', center: 'center', right: 'flex-end', full: 'stretch' };
             let styles = Object.assign({}, DEFAULT_STYLES, (function() {
                 try { return JSON.parse(document.getElementById('style-json-input').value || '{}'); } catch(e) { return {}; }
             })());
@@ -1554,6 +1555,8 @@ const FIELD_TYPES = window.LacaContactFormVars.FIELD_TYPES;
             window.lcfStyleUpdate = function(key, value) {
                 if (key === 'btn_border_radius' || key === 'input_border_radius' || key === 'popup_border_radius') {
                     styles[key] = Math.max(0, Math.min(50, parseInt(value) || 0));
+                } else if (key === 'submit_margin_top') {
+                    styles[key] = Math.max(0, Math.min(100, parseInt(value) || 0));
                 } else {
                     styles[key] = value;
                 }
@@ -1604,6 +1607,9 @@ const FIELD_TYPES = window.LacaContactFormVars.FIELD_TYPES;
                 var inpS = document.getElementById('s-input-spacing');
                 var cusC = document.getElementById('s-custom-css');
                 var subA = document.getElementById('s-submit-align');
+                var subM = document.getElementById('s-submit-margin-top');
+                var subMN = document.getElementById('s-submit-margin-top-num');
+                var subW = document.getElementById('s-submit-width');
 
                 if (btnR) btnR.value = styles.btn_border_radius;
                 if (btnN) btnN.value = styles.btn_border_radius;
@@ -1613,6 +1619,9 @@ const FIELD_TYPES = window.LacaContactFormVars.FIELD_TYPES;
                 if (inpS) inpS.value = styles.input_spacing || '';
                 if (cusC) cusC.value = styles.custom_css || '';
                 if (subA) subA.value = styles.submit_align || DEFAULT_STYLES.submit_align;
+                if (subM) subM.value = styles.submit_margin_top !== undefined ? styles.submit_margin_top : DEFAULT_STYLES.submit_margin_top;
+                if (subMN) subMN.value = styles.submit_margin_top !== undefined ? styles.submit_margin_top : DEFAULT_STYLES.submit_margin_top;
+                if (subW) subW.value = styles.submit_width || DEFAULT_STYLES.submit_width;
 
                 // Khởi tạo chế độ soạn email (Mẫu chuẩn vs HTML thô)
                 var adminTa = document.getElementById('email-admin-body');
@@ -1733,9 +1742,12 @@ const FIELD_TYPES = window.LacaContactFormVars.FIELD_TYPES;
                     html += '</div>';
                 });
 
+                var isFullWidth = styles.submit_width === 'full' || styles.submit_align === 'full';
                 var submitJustify = SUBMIT_ALIGN_TO_JUSTIFY[styles.submit_align] || SUBMIT_ALIGN_TO_JUSTIFY[DEFAULT_STYLES.submit_align];
-                html += '<div style="display:flex;justify-content:' + submitJustify + ';margin-top:4px">';
-                html += '<button type="button" class="lcf-pv-btn">' + escHtml(btnText) + '</button>';
+                var submitMarginTop = parseInt(styles.submit_margin_top !== undefined ? styles.submit_margin_top : DEFAULT_STYLES.submit_margin_top) || 0;
+                var btnWidthStyle = isFullWidth ? 'width:100%;justify-content:center;' : '';
+                html += '<div style="display:flex;justify-content:' + submitJustify + ';margin-top:' + (submitMarginTop ? submitMarginTop + 'px' : '4px') + '">';
+                html += '<button type="button" class="lcf-pv-btn" style="' + btnWidthStyle + '">' + escHtml(btnText) + '</button>';
                 html += '</div>';
                 html += '</form></div>';
                 return html;
