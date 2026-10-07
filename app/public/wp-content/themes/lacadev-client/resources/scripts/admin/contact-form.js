@@ -1215,22 +1215,40 @@ const FIELD_TYPES = window.LacaContactFormVars.FIELD_TYPES;
 
                             if (!hasAnyValue) return;
 
-                            field.i18n = field.i18n || {};
-                            field.i18n[langSlug] = field.i18n[langSlug] || {};
+                            console.log('[LACA-DEBUG step0] isFrozen(field)=' + Object.isFrozen(field)
+                                + ' isFrozen(field.i18n)=' + Object.isFrozen(field.i18n)
+                                + ' isExtensible(field)=' + Object.isExtensible(field));
 
-                            if (i18nLabel && i18nLabel.value.trim() !== '') field.i18n[langSlug].label = i18nLabel.value;
-                            if (i18nPlace && i18nPlace.value.trim() !== '') field.i18n[langSlug].placeholder = i18nPlace.value;
-                            if (i18nOther && i18nOther.value.trim() !== '') field.i18n[langSlug].other_label = i18nOther.value;
+                            field.i18n = field.i18n || {};
+                            console.log('[LACA-DEBUG step1] after field.i18n||{} -> ' + JSON.stringify(field.i18n) + ' isFrozen=' + Object.isFrozen(field.i18n));
+
+                            field.i18n[langSlug] = field.i18n[langSlug] || {};
+                            console.log('[LACA-DEBUG step2] after field.i18n[langSlug]||{} -> ' + JSON.stringify(field.i18n) + ' hasKey=' + Object.prototype.hasOwnProperty.call(field.i18n, langSlug));
+
+                            if (i18nLabel && i18nLabel.value.trim() !== '') {
+                                field.i18n[langSlug].label = i18nLabel.value;
+                                console.log('[LACA-DEBUG step3-label] -> ' + JSON.stringify(field.i18n));
+                            }
+                            if (i18nPlace && i18nPlace.value.trim() !== '') {
+                                field.i18n[langSlug].placeholder = i18nPlace.value;
+                                console.log('[LACA-DEBUG step3-place] -> ' + JSON.stringify(field.i18n));
+                            }
+                            if (i18nOther && i18nOther.value.trim() !== '') {
+                                field.i18n[langSlug].other_label = i18nOther.value;
+                                console.log('[LACA-DEBUG step3-other] -> ' + JSON.stringify(field.i18n));
+                            }
                             if (i18nOpt) {
                                 const lines = i18nOpt.value.split('\n').map(function(s){ return s.trim(); });
                                 if (lines.some(function(s){ return s !== ''; })) {
                                     field.i18n[langSlug].options = lines;
+                                    console.log('[LACA-DEBUG step3-options] -> ' + JSON.stringify(field.i18n));
                                 }
                             }
 
                             console.log('[LACA-DEBUG i18n-sync] AFTER ASSIGN field.name=' + field.name
                                 + ' field.id=' + field.id
-                                + ' stateAfter=' + JSON.stringify(field.i18n));
+                                + ' stateAfter=' + JSON.stringify(field.i18n)
+                                + ' sameFieldObjCheck=' + (findField(field.id).field === field));
                         });
                     }
                 });
