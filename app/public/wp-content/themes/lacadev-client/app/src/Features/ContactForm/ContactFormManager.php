@@ -183,26 +183,7 @@ class ContactFormManager
      */
     private static function getActiveLanguages(): array
     {
-        if (!function_exists('pll_languages_list') || !function_exists('pll_default_language')) {
-            return [];
-        }
-        $slugs = pll_languages_list(['fields' => 'slug']);
-        if (!is_array($slugs) || count($slugs) < 2) {
-            return [];
-        }
-        // Gọi 'name' cùng thứ tự list_order với 'slug' ở trên nên ghép theo
-        // index là đúng — Polylang không có API trả cặp slug+name 1 lần.
-        $names = pll_languages_list(['fields' => 'name']);
-        $default = pll_default_language();
-        $languages = [];
-        foreach ($slugs as $i => $slug) {
-            $languages[] = [
-                'slug' => $slug,
-                'name' => $names[$i] ?? strtoupper($slug),
-                'is_default' => $slug === $default,
-            ];
-        }
-        return $languages;
+        return \App\Helpers\PolylangLanguages::getActive();
     }
 
     /**

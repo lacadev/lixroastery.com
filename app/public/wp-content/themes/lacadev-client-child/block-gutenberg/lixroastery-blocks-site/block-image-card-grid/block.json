@@ -55,6 +55,7 @@
         },
         "items": {
             "type": "array",
+            "translatable": true,
             "default": [
                 { "imageId": 0, "imageUrl": "", "title": "TRANSPARENCY", "desc": "Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat.", "link": "", "linkTarget": "_self" },
                 { "imageId": 0, "imageUrl": "", "title": "RESPONSIBILITY", "desc": "Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat.", "link": "", "linkTarget": "_self" },

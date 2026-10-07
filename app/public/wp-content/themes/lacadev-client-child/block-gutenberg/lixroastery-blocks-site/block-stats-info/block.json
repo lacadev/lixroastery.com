@@ -39,6 +39,7 @@
         },
         "items": {
             "type": "array",
+            "translatable": true,
             "default": [
                 { "number": "+20", "label": "Global partners in the world", "description": "Direct and indirect, transparent alliances with distinguished partners worldwide." },
                 { "number": "+50", "label": "Specialty standards to rare gems", "description": "A curated portfolio ranging from standard specialty to outstanding-rare gems." },

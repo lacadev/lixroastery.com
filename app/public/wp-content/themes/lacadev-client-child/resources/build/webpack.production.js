@@ -31,7 +31,10 @@ const babelLoader = {
         cacheDirectory: false,
         comments: false,
         presets: [
-            '@babel/preset-env'
+            '@babel/preset-env',
+            // Cho phép cú pháp JSX trong các file ngoài webpack.blocks.js
+            // (vd resources/scripts/editor/ai-translate-block.js).
+            '@babel/preset-react',
         ],
     },
 };

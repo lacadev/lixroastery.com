@@ -429,7 +429,12 @@ function app_action_editor_enqueue_assets()
     Assets::enqueueScript(
         'theme-editor-js-bundle',
         $template_dir . '/dist/editor.js',
-        [],
+        // Khai báo rõ phụ thuộc wp-* — bundle này import @wordpress/* qua
+        // externals map (xem resources/build/webpack/externals.js) nên cần
+        // các global window.wp.* tương ứng đã sẵn sàng TRƯỚC khi chạy. Luôn
+        // an toàn khai báo (dù không dùng hết) vì đang ở màn hình Block
+        // Editor, các handle này chắc chắn đã được core đăng ký sẵn.
+        ['wp-element', 'wp-components', 'wp-compose', 'wp-block-editor', 'wp-data', 'wp-hooks', 'wp-i18n'],
         true
     );
 

@@ -16,6 +16,7 @@
     "attributes": {
         "tabTitle": {
             "type": "string",
+            "translatable": true,
             "default": "Tab"
         },
         "__isPreview": {

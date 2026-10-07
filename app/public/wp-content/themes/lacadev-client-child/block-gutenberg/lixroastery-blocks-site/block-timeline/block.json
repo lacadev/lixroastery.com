@@ -39,6 +39,7 @@
         },
         "items": {
             "type": "array",
+            "translatable": true,
             "default": [
                 {
                     "year": "2018",

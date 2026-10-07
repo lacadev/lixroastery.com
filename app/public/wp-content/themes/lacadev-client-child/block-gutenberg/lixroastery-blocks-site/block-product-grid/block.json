@@ -40,10 +40,12 @@
         },
         "sectionTitle": {
             "type": "string",
+            "translatable": true,
             "default": "SHOP"
         },
         "viewAllText": {
             "type": "string",
+            "translatable": true,
             "default": "View all"
         },
         "viewAllLink": {

@@ -27,10 +27,12 @@
         },
         "headline": {
             "type": "string",
+            "translatable": true,
             "default": "SUSTAINABILITY IS NOT A CHOICE<br>IT'S OUR FUNDAMENTAL RESPONSIBILITY"
         },
         "description": {
             "type": "string",
+            "translatable": true,
             "default": ""
         },
         "overlayColor": {

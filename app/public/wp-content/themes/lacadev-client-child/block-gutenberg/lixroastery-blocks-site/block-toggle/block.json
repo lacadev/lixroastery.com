@@ -39,14 +39,17 @@
         },
         "title": {
             "type": "string",
+            "translatable": true,
             "default": "Subject 1"
         },
         "description": {
             "type": "string",
+            "translatable": true,
             "default": "Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna"
         },
         "items": {
             "type": "array",
+            "translatable": true,
             "default": [
                 {
                     "question": "Where does Lix Roastery' coffee come from?",

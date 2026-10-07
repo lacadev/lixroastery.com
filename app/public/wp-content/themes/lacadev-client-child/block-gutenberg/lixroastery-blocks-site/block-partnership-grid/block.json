@@ -39,10 +39,12 @@
         },
         "sectionTitle": {
             "type": "string",
+            "translatable": true,
             "default": "PARTNERSHIP"
         },
         "viewAllText": {
             "type": "string",
+            "translatable": true,
             "default": "View all"
         },
         "viewAllLink": {

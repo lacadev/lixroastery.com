@@ -65,6 +65,37 @@ class AITranslationParser
     }
 
     /**
+     * Map block_name => attribute dịch được. "core/*" là danh sách CỐ ĐỊNH
+     * (block lõi WordPress, không có block.json riêng để đánh dấu), phần
+     * còn lại quét ĐỘNG từ block.json của mọi block custom
+     * (lacadev_get_translatable_block_attrs()) — tạo block mới chỉ cần khai
+     * "translatable": true trên attribute trong block.json, không cần sửa
+     * file này.
+     */
+    public static function getTranslatableMap(): array
+    {
+        static $cached = null;
+        if ($cached !== null) {
+            return $cached;
+        }
+
+        $core = [
+            'core/paragraph' => ['content'],
+            'core/heading'   => ['content'],
+            'core/button'    => ['text'],
+            'core/quote'     => ['citation'],
+            'core/image'     => ['alt', 'caption'],
+            'core/list-item' => ['content'],
+        ];
+
+        $custom = function_exists('lacadev_get_translatable_block_attrs')
+            ? \lacadev_get_translatable_block_attrs()
+            : [];
+
+        return $cached = array_merge($core, $custom);
+    }
+
+    /**
      * Wrapper around translateBlockAttributes that passes additional source context.
      */
     private function translateBlockAttributesWithContext(array $block, string $target_lang, string $source_context = ''): array|\WP_Error
@@ -72,29 +103,7 @@ class AITranslationParser
         $name  = $block['blockName'];
         $attrs = &$block['attrs'];
 
-        $translatable_map = [
-            // LaCa custom blocks
-            'lacadev/slogan-block'         => ['slogan'],
-            'lacadev/about-laca-block'     => ['title', 'content', 'btn_text'],
-            'lacadev/service-block'        => ['title', 'description', 'buttonText'],
-            'lacadev/blog-block'           => ['title', 'description', 'buttonText'],
-            'lacadev/staggered-blog-block' => ['title', 'description', 'buttonText'],
-            'lacadev/project-block'        => ['title', 'description', 'buttonText'],
-            'lacadev/button-block'         => ['text'],
-            'lacadev/statement-block'      => ['title', 'subtitle'],
-            'lacadev/process-block'        => ['title', 'description', 'steps'],
-            'lacadev/marquee-block'        => ['brands'],
-            'lacadev/tech-list-block'      => ['technologies'],
-            'lacadev/workflow-block'       => ['subTitle', 'title', 'steps'],
-            
-            // WordPress core blocks that store text directly in attributes
-            'core/paragraph'               => ['content'],
-            'core/heading'                 => ['content'],
-            'core/button'                  => ['text'],
-            'core/quote'                   => ['citation'],
-            'core/image'                   => ['alt', 'caption'],
-            'core/list-item'               => ['content'],
-        ];
+        $translatable_map = self::getTranslatableMap();
 
         if (isset($translatable_map[$name])) {
             foreach ($translatable_map[$name] as $attr_key) {
@@ -120,9 +129,20 @@ class AITranslationParser
         }
 
         if (is_array($value)) {
+            // Key thuộc nhóm "cấu trúc/trình bày" (url, màu, căn lề, cỡ chữ,
+            // target, năm mốc...) — giữ nguyên dù nằm trong 1 attribute array
+            // được đánh dấu translatable, vì dịch nhầm các giá trị này (vd
+            // "left" → "trái") sẽ làm hỏng logic CSS/layout đang đọc đúng
+            // giá trị gốc. Khi thêm field repeater mới cho block, nhớ bổ
+            // sung key không-phải-nội-dung vào đây nếu cần.
+            $nonTranslatableKeys = [
+                'url', 'link', 'id', 'iconid', 'iconurl', 'imageurl', 'imageid',
+                'linktarget', 'target', 'align', 'quotealign', 'quotefontfamily',
+                'quotefontsize', 'quotefontsizetablet', 'quotefontsizemobile',
+                'asidetype', 'number', 'year', 'color', 'mode', 'type',
+            ];
             foreach ($value as $k => $v) {
-                // Skip if it's a known non-translatable key like url, id, iconId
-                if (in_array(strtolower($k), ['url', 'link', 'id', 'iconid', 'iconurl', 'imageurl', 'imageid'], true)) {
+                if (in_array(strtolower((string) $k), $nonTranslatableKeys, true)) {
                     continue;
                 }
                 
@@ -235,21 +255,12 @@ class AITranslationParser
         $name = $block['blockName'];
         $attrs = &$block['attrs'];
 
-        // Define which attributes are translatable for each block
-        $translatable_map = [
-            'lacadev/slogan-block' => ['slogan'],
-            'lacadev/about-laca-block' => ['title', 'content', 'btn_text'],
-            'lacadev/service-block' => ['title', 'excerpt'],
-            'lacadev/button-block' => ['text'],
-            'lacadev/statement-block' => ['content'],
-            'core/image' => ['alt', 'caption'],
-            // Add more as needed
-        ];
+        $translatable_map = self::getTranslatableMap();
 
         if (isset($translatable_map[$name])) {
             foreach ($translatable_map[$name] as $attr_key) {
                 if (!empty($attrs[$attr_key])) {
-                    $translated_val = $this->handler->translateText($attrs[$attr_key], $target_lang, "Block attribute: $attr_key");
+                    $translated_val = $this->translateRecursive($attrs[$attr_key], $target_lang, "Block attribute: $attr_key");
                     if (is_wp_error($translated_val)) return $translated_val;
                     $attrs[$attr_key] = $translated_val;
                 }

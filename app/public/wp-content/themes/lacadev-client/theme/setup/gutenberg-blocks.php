@@ -222,6 +222,63 @@ function lacadev_scan_block_relative_paths(string $rootDir): array
 }
 
 /**
+ * Quét toàn bộ block.json (parent flat + child bucket theo site) để lấy map
+ * block_name => danh sách attribute được đánh dấu "translatable": true.
+ * Đây là NGUỒN DUY NHẤT xác định field nào của 1 block custom sẽ được dịch
+ * bằng AI (xem AITranslationParser::getTranslatableMap()) — tạo block mới
+ * chỉ cần đánh dấu đúng attribute ngay trong block.json, KHÔNG cần sửa
+ * thêm bất kỳ file PHP nào khác. Ví dụ:
+ *   "title": { "type": "string", "default": "", "translatable": true }
+ *
+ * @return array<string, string[]>
+ */
+function lacadev_get_translatable_block_attrs(): array
+{
+    static $map = null;
+    if ($map !== null) {
+        return $map;
+    }
+
+    $map = [];
+    $roots = [];
+    if (defined('APP_DIR')) {
+        $roots[] = trailingslashit(APP_DIR) . 'block-gutenberg';
+    }
+    $childRoot = dirname(get_stylesheet_directory()) . '/block-gutenberg';
+    if (!in_array($childRoot, $roots, true)) {
+        $roots[] = $childRoot;
+    }
+
+    foreach ($roots as $root) {
+        if (!is_dir($root)) {
+            continue;
+        }
+        foreach (lacadev_scan_block_relative_paths($root) as $relPath) {
+            $blockJson = "{$root}/{$relPath}/block.json";
+            if (!file_exists($blockJson)) {
+                continue;
+            }
+            $metadata = lacadev_read_block_metadata($blockJson);
+            $name = isset($metadata['name']) ? lacadev_normalize_block_name($metadata['name']) : '';
+            if ($name === '' || empty($metadata['attributes']) || !is_array($metadata['attributes'])) {
+                continue;
+            }
+            $keys = [];
+            foreach ($metadata['attributes'] as $attrKey => $attrDef) {
+                if (is_array($attrDef) && !empty($attrDef['translatable'])) {
+                    $keys[] = $attrKey;
+                }
+            }
+            if ($keys) {
+                $map[$name] = $keys;
+            }
+        }
+    }
+
+    return $map;
+}
+
+/**
  * Đọc title/icon category cho 1 bucket từ file category.json trong chính
  * thư mục bucket (nếu có) — file này ĐI THEO thư mục khi bucket được
  * copy/đồng bộ sang site khác, nên site khác tự có tên đẹp không cần đăng

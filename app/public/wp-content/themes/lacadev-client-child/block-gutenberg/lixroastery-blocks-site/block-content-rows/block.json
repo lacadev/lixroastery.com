@@ -15,6 +15,7 @@
     "attributes": {
         "mainTitle": {
             "type": "string",
+            "translatable": true,
             "default": "TITLE"
         },
         "maxWidth": {
@@ -43,6 +44,7 @@
         },
         "rows": {
             "type": "array",
+            "translatable": true,
             "default": [
                 {
                     "subTitle": "Sub title 1",
