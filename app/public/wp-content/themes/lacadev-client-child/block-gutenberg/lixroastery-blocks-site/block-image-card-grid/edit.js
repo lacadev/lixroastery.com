@@ -43,7 +43,13 @@ const CONTENT_ALIGN_KEYS = {
 	mobile: 'contentAlignMobile',
 };
 
-const CARD_ALIGN_OPTIONS = [
+const TITLE_ALIGN_OPTIONS = [
+	{ label: __( 'Căn giữa (mặc định)', 'laca' ), value: 'center' },
+	{ label: __( 'Căn trái', 'laca' ), value: 'left' },
+	{ label: __( 'Căn phải', 'laca' ), value: 'right' },
+];
+
+const DESC_ALIGN_OPTIONS = [
 	{ label: __( 'Căn giữa (mặc định)', 'laca' ), value: 'center' },
 	{ label: __( 'Căn trái', 'laca' ), value: 'left' },
 	{ label: __( 'Căn phải', 'laca' ), value: 'right' },
@@ -103,7 +109,8 @@ export default function Edit( { attributes, setAttributes } ) {
 		layoutMode,
 		aspectRatio,
 		bgColor,
-		cardTextAlign = 'center',
+		titleAlign = 'center',
+		descAlign = 'center',
 		items,
 	} = attributes;
 	const isCheckerboard = layoutMode === 'checkerboard';
@@ -163,7 +170,6 @@ export default function Edit( { attributes, setAttributes } ) {
 					desc: '',
 					link: '',
 					linkTarget: '_self',
-					textAlign: cardTextAlign || 'center',
 				},
 			],
 		} );
@@ -272,30 +278,24 @@ export default function Edit( { attributes, setAttributes } ) {
 							} )
 						}
 					/>
+					<SelectControl
+						label={ __( 'Căn lề tiêu đề thẻ', 'laca' ) }
+						value={ titleAlign }
+						options={ TITLE_ALIGN_OPTIONS }
+						onChange={ ( v ) => setAttributes( { titleAlign: v } ) }
+					/>
+					<SelectControl
+						label={ __( 'Căn lề nội dung (mô tả) thẻ', 'laca' ) }
+						value={ descAlign }
+						options={ DESC_ALIGN_OPTIONS }
+						onChange={ ( v ) => setAttributes( { descAlign: v } ) }
+					/>
 				</PanelBody>
 
 				<PanelBody
 					title={ __( 'Danh sách thẻ', 'laca' ) }
 					initialOpen={ true }
 				>
-					<SelectControl
-						label={ __( 'Căn lề chung cho các thẻ', 'laca' ) }
-						help={ __(
-							'Đổi nhanh căn lề mặc định cho tất cả các thẻ.',
-							'laca'
-						) }
-						value={ cardTextAlign }
-						options={ CARD_ALIGN_OPTIONS }
-						onChange={ ( v ) => {
-							setAttributes( {
-								cardTextAlign: v,
-								items: items.map( ( it ) => ( {
-									...it,
-									textAlign: v,
-								} ) ),
-							} );
-						} }
-					/>
 					{ items.map( ( item, index ) => {
 						const isCollapsed = !! collapsedItems[ index ];
 						const plainTitle = ( item.title || '' ).replace(
@@ -390,22 +390,6 @@ export default function Edit( { attributes, setAttributes } ) {
 												updateItem(
 													index,
 													'linkTarget',
-													v
-												)
-											}
-										/>
-										<SelectControl
-											label={ __( 'Căn lề', 'laca' ) }
-											value={
-												item.textAlign ||
-												cardTextAlign ||
-												'center'
-											}
-											options={ CARD_ALIGN_OPTIONS }
-											onChange={ ( v ) =>
-												updateItem(
-													index,
-													'textAlign',
 													v
 												)
 											}
@@ -518,17 +502,13 @@ export default function Edit( { attributes, setAttributes } ) {
 												/>
 											) }
 											<div className="block-image-card-grid__overlay" />
-											<div
-												className={
-													'block-image-card-grid__content block-image-card-grid__content--' +
-													( item.textAlign ||
-														cardTextAlign ||
-														'center' )
-												}
-											>
+											<div className="block-image-card-grid__content">
 												<RichText
 													tagName="h3"
-													className="block-image-card-grid__title"
+													className={
+														'block-image-card-grid__title block-image-card-grid__title--' +
+														titleAlign
+													}
 													value={ item.title }
 													onChange={ ( v ) =>
 														updateItem(
@@ -545,7 +525,10 @@ export default function Edit( { attributes, setAttributes } ) {
 												/>
 												<RichText
 													tagName="p"
-													className="block-image-card-grid__desc"
+													className={
+														'block-image-card-grid__desc block-image-card-grid__desc--' +
+														descAlign
+													}
 													value={ item.desc }
 													onChange={ ( v ) =>
 														updateItem(

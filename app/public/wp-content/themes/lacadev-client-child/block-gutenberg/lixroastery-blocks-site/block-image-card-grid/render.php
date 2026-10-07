@@ -20,9 +20,12 @@ $columns = max(2, min(4, intval($attributes['columns'] ?? 3)));
 $aspect_ratio = preg_match('/^\d+:\d+$/', $attributes['aspectRatio'] ?? '') ? $attributes['aspectRatio'] : '3:4';
 $items = is_array($attributes['items'] ?? null) ? $attributes['items'] : [];
 $is_checkerboard = $layout_mode === 'checkerboard';
-$card_text_align = in_array($attributes['cardTextAlign'] ?? '', ['left', 'center', 'right', 'justify'], true)
-    ? $attributes['cardTextAlign']
+$title_align = in_array($attributes['titleAlign'] ?? '', ['left', 'center', 'right'], true)
+    ? $attributes['titleAlign']
     : 'center';
+$desc_align = in_array($attributes['descAlign'] ?? '', ['left', 'center', 'right', 'justify'], true)
+    ? $attributes['descAlign']
+    : ($attributes['cardTextAlign'] ?? 'center');
 
 $bg_color = preg_match('/^#[0-9a-fA-F]{6}$/', $attributes['bgColor'] ?? '')
     ? $attributes['bgColor']
@@ -46,9 +49,6 @@ $wrapper_attrs = get_block_wrapper_attributes(['class' => 'block-image-card-grid
                 $desc = wp_kses_post($item['desc'] ?? '');
                 $link = esc_url($item['link'] ?? '');
                 $link_target = ($item['linkTarget'] ?? '_self') === '_blank' ? '_blank' : '_self';
-                $item_align = in_array($item['textAlign'] ?? '', ['left', 'center', 'right', 'justify'], true)
-                    ? $item['textAlign']
-                    : $card_text_align;
                 if (!$title && !$desc && !$image_url) {
                     continue;
                 }
@@ -66,12 +66,12 @@ $wrapper_attrs = get_block_wrapper_attributes(['class' => 'block-image-card-grid
                                      <img src="<?php echo $image_url; ?>" alt="<?php echo $title; ?>" loading="lazy" />
                             <?php endif; ?>
                             <div class="block-image-card-grid__overlay"></div>
-                            <div class="block-image-card-grid__content block-image-card-grid__content--<?php echo esc_attr($item_align); ?>">
+                            <div class="block-image-card-grid__content">
                                 <?php if ($title): ?>
-                                         <h3 class="block-image-card-grid__title"><?php echo $title; ?></h3>
+                                         <h3 class="block-image-card-grid__title block-image-card-grid__title--<?php echo esc_attr($title_align); ?>"><?php echo $title; ?></h3>
                                 <?php endif; ?>
                                 <?php if ($desc): ?>
-                                         <p class="block-image-card-grid__desc"><?php echo $desc; ?></p>
+                                         <p class="block-image-card-grid__desc block-image-card-grid__desc--<?php echo esc_attr($desc_align); ?>"><?php echo $desc; ?></p>
                                 <?php endif; ?>
                             </div>
                         </<?php echo $tag; ?>>

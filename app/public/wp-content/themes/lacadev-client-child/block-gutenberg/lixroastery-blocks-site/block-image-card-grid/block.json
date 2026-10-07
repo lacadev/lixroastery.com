@@ -53,6 +53,14 @@
             "type": "string",
             "default": "#2f4a34"
         },
+        "titleAlign": {
+            "type": "string",
+            "default": "center"
+        },
+        "descAlign": {
+            "type": "string",
+            "default": "center"
+        },
         "cardTextAlign": {
             "type": "string",
             "default": "center"
