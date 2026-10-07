@@ -52,6 +52,12 @@ const FIELD_TYPES = window.LacaContactFormVars.FIELD_TYPES;
                 });
             })(rows);
 
+            // Mặc định thu gọn TẤT CẢ field khi mới vào trang sửa form — dễ
+            // nhìn tổng quan cấu trúc form hơn, nhất là form có nhiều field
+            // (yêu cầu người dùng, tránh cuộn dài để tìm field cần sửa).
+            // Hàm collapseAllFields() được khai báo (hoisted) phía dưới.
+            collapseAllFields();
+
             // ── Styles state ──────────────────────────────────────────────────
             const DEFAULT_STYLES = {
                 primary_color: '#2271b1', secondary_color: '#1a5a9e',
@@ -116,6 +122,19 @@ const FIELD_TYPES = window.LacaContactFormVars.FIELD_TYPES;
                     }
                 }
                 return null;
+            }
+
+            // ── Thu gọn mọi field (trừ exceptId nếu có) — dùng cho hành vi
+            // "accordion": chỉ 1 field mở rộng tại 1 thời điểm, để form dài
+            // nhiều field vẫn dễ nhìn tổng quan/dễ sửa.
+            function collapseAllFields(exceptId) {
+                rows.forEach(function(row) {
+                    row.cols.forEach(function(col) {
+                        col.fields.forEach(function(f) {
+                            if (f.id !== exceptId) f._isOpen = false;
+                        });
+                    });
+                });
             }
 
             // ── Khối "Dịch sang ngôn ngữ khác" cho field thường (không áp
@@ -639,6 +658,20 @@ const FIELD_TYPES = window.LacaContactFormVars.FIELD_TYPES;
                 const fieldId = cardEl.dataset.fieldId;
                 const found = fieldId ? findField(fieldId) : null;
                 if (found) found.field._isOpen = isOpen;
+
+                // Accordion: mở field này thì tự đóng mọi field khác (yêu
+                // cầu người dùng) — chỉ toggle class DOM + cập nhật state,
+                // KHÔNG renderRows() lại để không mất focus/giá trị đang gõ
+                // dở ở field khác.
+                if (isOpen) {
+                    document.querySelectorAll('.laca-cf-field-card.is-open').forEach(function(otherCard) {
+                        if (otherCard === cardEl) return;
+                        otherCard.classList.remove('is-open');
+                        const otherId = otherCard.dataset.fieldId;
+                        const otherFound = otherId ? findField(otherId) : null;
+                        if (otherFound) otherFound.field._isOpen = false;
+                    });
+                }
             };
 
             // ── Public: update field property (no re-render) ──────────────────
@@ -989,6 +1022,8 @@ const FIELD_TYPES = window.LacaContactFormVars.FIELD_TYPES;
                 clone.id = uid();
                 clone.name = field.name ? field.name + '_copy' : '';
                 clone._autoName = '';
+
+                collapseAllFields(); // accordion: đóng mọi field khác trước khi mở thẻ vừa nhân bản
                 clone._isOpen = true; // luôn mở thẻ vừa nhân bản, bất kể field gốc đang đóng/mở
 
                 const idx = col.fields.findIndex(function(f) { return f.id === fieldId; });
@@ -1085,6 +1120,8 @@ const FIELD_TYPES = window.LacaContactFormVars.FIELD_TYPES;
                 if (!row) return;
                 const col = row.cols.find(function(c) { return c.id === colId; });
                 if (!col) return;
+
+                collapseAllFields(); // accordion: đóng mọi field khác trước khi mở field mới
 
                 const newField = {
                     id: uid(), type: type, name: '', label: '',
