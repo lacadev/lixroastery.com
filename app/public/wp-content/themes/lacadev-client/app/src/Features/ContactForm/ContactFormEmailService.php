@@ -206,6 +206,19 @@ class ContactFormEmailService
         $siteName     = get_bloginfo('name');
         $primaryColor = !empty($styleSettings['primary_color']) ? $styleSettings['primary_color'] : '#2271b1';
 
+        // Logo lấy từ Theme Options > Branding (Carbon Fields "image" field
+        // lưu attachment ID, xem theme/setup/theme-options.php của child
+        // theme + cách dùng gốc ở theme/header.php). Đặt trên 1 dải nền
+        // TRẮNG riêng phía trên thanh tiêu đề màu primary — để logo hiện rõ
+        // bất kể logo tối hay sáng màu, không phụ thuộc màu primary site.
+        $logoId  = function_exists('carbon_get_theme_option') ? (int) carbon_get_theme_option('logo') : 0;
+        $logoUrl = $logoId ? wp_get_attachment_image_url($logoId, 'medium') : '';
+        $logoHtml = $logoUrl
+            ? '<div style="padding:20px 28px;text-align:center;background:#ffffff;border-bottom:1px solid #e2e8f0">
+            <img src="' . esc_url($logoUrl) . '" alt="' . esc_attr($siteName) . '" style="max-height:40px;max-width:220px;height:auto;display:inline-block">
+          </div>'
+            : '';
+
         return '<!DOCTYPE html>
 <html>
 <head>
@@ -217,6 +230,7 @@ class ContactFormEmailService
     <tr>
       <td align="center">
         <div style="max-width:580px;width:100%;margin:0 auto;background:#ffffff;border-radius:8px;border:1px solid #e2e8f0;overflow:hidden;text-align:left;box-shadow:0 1px 3px rgba(0,0,0,0.06)">
+          ' . $logoHtml . '
           <div style="background:' . esc_attr($primaryColor) . ';padding:22px 28px;color:#ffffff">
             <h2 style="margin:0;font-size:18px;font-weight:700;letter-spacing:-0.2px;color:#ffffff">' . esc_html($title) . '</h2>
             <p style="margin:4px 0 0;font-size:13px;opacity:0.9;color:#ffffff">' . esc_html($siteName) . '</p>

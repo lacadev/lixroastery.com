@@ -1696,8 +1696,16 @@ const FIELD_TYPES = window.LacaContactFormVars.FIELD_TYPES;
                     var primaryColor = styles.primary_color || '#2271b1';
                     var siteName = (window.LacaContactFormVars && window.LacaContactFormVars.siteName) ? window.LacaContactFormVars.siteName : 'Lix Roastery';
 
+                    var logoUrl = (window.LacaContactFormVars && window.LacaContactFormVars.logoUrl) || '';
+                    var logoHtml = logoUrl
+                        ? '<div style="padding:18px 24px;text-align:center;background:#ffffff;border-bottom:1px solid #e2e8f0">'
+                            + '<img src="' + escAttr(logoUrl) + '" alt="' + escAttr(siteName) + '" style="max-height:36px;max-width:200px;height:auto;display:inline-block">'
+                            + '</div>'
+                        : '';
+
                     var htmlCard = '<div style="background:#f1f5f9;padding:24px 14px;border-radius:8px;font-family:-apple-system,BlinkMacSystemFont,\'Segoe UI\',Roboto,Helvetica,Arial,sans-serif;color:#1e293b;line-height:1.6;box-sizing:border-box">'
                         + '<div style="max-width:540px;margin:0 auto;background:#ffffff;border-radius:8px;border:1px solid #e2e8f0;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.06);text-align:left">'
+                        + logoHtml
                         + '<div style="background:' + escAttr(primaryColor) + ';padding:20px 24px;color:#ffffff">'
                         + '<h3 style="margin:0;font-size:16px;font-weight:700;letter-spacing:-0.2px;color:#ffffff">' + escHtml(subjText) + '</h3>'
                         + '<p style="margin:4px 0 0;font-size:12px;opacity:0.9;color:#ffffff">' + escHtml(siteName) + '</p>'

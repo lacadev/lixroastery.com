@@ -759,6 +759,14 @@ class ContactFormManager
         <script>
             window.LacaContactFormVars = {
                 siteName: <?php echo wp_json_encode(get_bloginfo('name')); ?>,
+                <?php
+                // Logo Theme Options > Branding — để preview email trong
+                // builder khớp với email thật (xem
+                // ContactFormEmailService::wrapInEmailTemplate()).
+                $lcfLogoId = function_exists('carbon_get_theme_option') ? (int) carbon_get_theme_option('logo') : 0;
+                $lcfLogoUrl = $lcfLogoId ? wp_get_attachment_image_url($lcfLogoId, 'medium') : '';
+                ?>
+                logoUrl: <?php echo wp_json_encode($lcfLogoUrl ?: ''); ?>,
                 FIELD_TYPES: <?php echo wp_json_encode(self::FIELD_TYPES); ?>,
                 rows: <?php echo wp_json_encode($rows); ?>,
                 languages: <?php echo wp_json_encode($languages); ?>,
