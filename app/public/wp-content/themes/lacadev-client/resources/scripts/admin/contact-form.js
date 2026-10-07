@@ -328,6 +328,23 @@ const FIELD_TYPES = window.LacaContactFormVars.FIELD_TYPES;
                             oninput="lcfFieldUpdate('${escAttr(field.id)}','other_label',this.value)">` : ''}
                     </div>` : '';
 
+                // Checkbox mặc định cho phép tick nhiều lựa chọn — field này
+                // bật "chỉ chọn 1" thì render giống radio (dùng chung name,
+                // JS tự bỏ tick các ô khác trong nhóm) nhưng vẫn style checkbox.
+                // Luôn hiện cho mọi field checkbox (không ẩn/hiện theo số
+                // lượng option đang gõ) — rebuild card theo mỗi keystroke của
+                // ô "Các lựa chọn" sẽ làm mất focus đang gõ dở của textarea.
+                // Chỉ có tác dụng thật khi field có từ 2 lựa chọn trở lên,
+                // xem ContactFormAjaxHandler::renderField().
+                const singleChoiceHtml = (field.type === 'checkbox') ? `
+                    <div class="lcf-input-row" style="margin-top:8px">
+                        <label class="lcf-checkbox-label">
+                            <input type="checkbox" data-key="single_choice" ${field.single_choice ? 'checked' : ''}
+                                onchange="lcfFieldUpdate('${escAttr(field.id)}','single_choice',this.checked)">
+                            <span>Chỉ cho phép chọn 1 lựa chọn (giống radio button)</span>
+                        </label>
+                    </div>` : '';
+
                 const visibilityBadge = field.show_label
                     ? '<span class="lcf-badge-vis is-shown" title="Nhãn hiển thị trên form">Hiện nhãn</span>'
                     : '<span class="lcf-badge-vis is-hidden" title="Nhãn bị ẩn trên form, chỉ dùng trong Email">Ẩn nhãn</span>';
@@ -396,6 +413,7 @@ const FIELD_TYPES = window.LacaContactFormVars.FIELD_TYPES;
                             </div>
 
                             ${optHtml}
+                            ${singleChoiceHtml}
                             ${otherHtml}
                             ${buildI18nBlock(field)}
                         </div>
@@ -1037,6 +1055,7 @@ const FIELD_TYPES = window.LacaContactFormVars.FIELD_TYPES;
                     id: uid(), type: type, name: '', label: '',
                     placeholder: '', required: false, show_label: false, options: [], _autoName: '',
                     has_other: false, other_label: '', content: '', i18n: {},
+                    single_choice: false,
                 };
                 col.fields.push(newField);
                 renderRows();
@@ -1140,6 +1159,9 @@ const FIELD_TYPES = window.LacaContactFormVars.FIELD_TYPES;
 
                         const hasOtherInp = cardEl.querySelector('.lcf-field-inputs input[data-key="has_other"]');
                         if (hasOtherInp) field.has_other = hasOtherInp.checked;
+
+                        const singleChoiceInp = cardEl.querySelector('.lcf-field-inputs input[data-key="single_choice"]');
+                        if (singleChoiceInp) field.single_choice = singleChoiceInp.checked;
 
                         const otherLabelInp = cardEl.querySelector('.lcf-field-inputs input[data-key="other_label"]');
                         if (otherLabelInp) field.other_label = otherLabelInp.value;

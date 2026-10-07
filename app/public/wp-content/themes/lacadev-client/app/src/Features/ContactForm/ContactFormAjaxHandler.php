@@ -79,14 +79,17 @@ class ContactFormAjaxHandler
             // Lấy giá trị raw từ POST
             $rawValue = $_POST[$name] ?? '';
 
-            // checkbox có 2 dạng: 1 ô đơn (options rỗng/1 phần tử — gửi lên
+            // checkbox có 3 dạng: 1 ô đơn (options rỗng/1 phần tử — gửi lên
             // dạng STRING khi tick, KHÔNG có key khi bỏ tick, name không có
-            // "[]") hoặc nhóm nhiều lựa chọn (name="...[]", luôn gửi dạng
-            // array). Trước đây ép CẢ 2 dạng thành array nên ô đơn luôn bị
-            // coi là rỗng dù đã tick (bug) — chỉ ép array cho multiselect và
-            // checkbox NHÓM, không áp dụng cho checkbox đơn.
+            // "[]"), nhóm "chỉ chọn 1" (single_choice — cũng gửi STRING vì
+            // name trùng nhau không có "[]", JS tự bỏ tick ô khác), hoặc
+            // nhóm nhiều lựa chọn mặc định (name="...[]", luôn gửi array).
+            // Trước đây ép CẢ 2 dạng đầu thành array nên luôn bị coi là rỗng
+            // dù đã tick (bug) — chỉ ép array cho multiselect và checkbox
+            // NHÓM nhiều lựa chọn, không áp dụng cho 2 dạng single ở trên.
             $isSingleCheckbox = $type === 'checkbox' && count($field['options'] ?? []) <= 1;
-            if ($type === 'multiselect' || ($type === 'checkbox' && !$isSingleCheckbox)) {
+            $isSingleChoiceGroup = $type === 'checkbox' && !empty($field['single_choice']) && count($field['options'] ?? []) > 1;
+            if ($type === 'multiselect' || ($type === 'checkbox' && !$isSingleCheckbox && !$isSingleChoiceGroup)) {
                 $rawValue = is_array($rawValue) ? $rawValue : [];
             }
 
@@ -147,16 +150,30 @@ class ContactFormAjaxHandler
         // 4. Lấy IP
         $ip = self::getClientIp();
 
-        // 5. Lưu DB — dữ liệu luôn được lưu TRƯỚC, không phụ thuộc email gửi
-        // được hay không (tránh mất submission chỉ vì SMTP lỗi tạm thời).
-        ContactFormTable::insertSubmission($formId, $data, $ip);
+        // 5+6. Lưu DB rồi gửi email — bọc try/catch vì đây là 2 thao tác duy
+        // nhất chạm ra ngoài PHP (DB, SMTP): 1 exception không bắt ở đây (vd
+        // PHPMailer lỗi, DB mất kết nối tạm thời) sẽ làm hỏng toàn bộ response
+        // JSON (PHP in thêm "Fatal error:..." dạng HTML trước phần JSON),
+        // khiến fetch().then(res=>res.json()) ở trình duyệt ném lỗi parse và
+        // rơi vào nhánh .catch() chung chung "Lỗi kết nối" — trong khi lỗi
+        // thật có thể chỉ là gửi email thất bại, dữ liệu vẫn cần được lưu.
+        try {
+            // Dữ liệu luôn được lưu TRƯỚC, không phụ thuộc email gửi được hay
+            // không (tránh mất submission chỉ vì SMTP lỗi tạm thời).
+            ContactFormTable::insertSubmission($formId, $data, $ip);
 
-        // 6. Gửi email — trả về đúng trạng thái THẬT (trước đây luôn báo
-        // "thành công" dù wp_mail() lỗi, người gửi không biết tin nhắn có
-        // tới nơi hay không). Dữ liệu đã lưu DB nên dù email lỗi, admin vẫn
-        // xem được submission trong màn hình quản trị — chỉ cảnh báo người
-        // gửi để họ có thể liên hệ lại qua kênh khác nếu cần.
-        $emailSent = ContactFormEmailService::sendAll($form, $data, $ip, $lang);
+            // Trả về đúng trạng thái THẬT (trước đây luôn báo "thành công" dù
+            // wp_mail() lỗi, người gửi không biết tin nhắn có tới nơi hay
+            // không). Dữ liệu đã lưu DB nên dù email lỗi, admin vẫn xem được
+            // submission trong màn hình quản trị — chỉ cảnh báo người gửi để
+            // họ có thể liên hệ lại qua kênh khác nếu cần.
+            $emailSent = ContactFormEmailService::sendAll($form, $data, $ip, $lang);
+        } catch (\Throwable $e) {
+            error_log('[ContactForm] handleSubmit() lỗi khi lưu DB/gửi email: ' . $e->getMessage() . ' tại ' . $e->getFile() . ':' . $e->getLine());
+            wp_send_json_error([
+                'message' => 'Thông tin của bạn đã được ghi nhận, nhưng hệ thống đang gặp sự cố kỹ thuật. Vui lòng liên hệ trực tiếp nếu cần gấp.',
+            ], 500);
+        }
 
         if ($emailSent) {
             wp_send_json_success(['message' => 'Gửi thành công! Chúng tôi sẽ liên hệ lại sớm.']);
@@ -427,6 +444,25 @@ class ContactFormAjaxHandler
                 formEl.addEventListener('change', syncOtherToggles);
                 syncOtherToggles();
 
+                // ── Checkbox "chỉ chọn 1" (laca-cf-checkbox-group--single) ──
+                // Vẫn là <input type="checkbox"> (style/markup không đổi) nhưng
+                // hành vi chọn-1-trong-nhóm giống radio — tick 1 ô thì tự bỏ
+                // tick các ô CÒN LẠI cùng nhóm (name trùng nhau, không có "[]"
+                // nên trình duyệt submit đúng 1 giá trị).
+                formEl.addEventListener('change', function(e) {
+                    const target = e.target;
+                    if (!target.matches('input[type="checkbox"]')) return;
+                    const group = target.closest('.laca-cf-checkbox-group--single');
+                    if (!group || !target.checked) return;
+                    group.querySelectorAll('input[type="checkbox"]').forEach(function(cb) {
+                        if (cb !== target) cb.checked = false;
+                    });
+                    // Bỏ tick lập trình (set .checked) không tự bắn "change"
+                    // nên nếu vừa bỏ tick ô "Khác" ở trên, gọi lại thủ công để
+                    // ẩn ngay ô nhập chi tiết thay vì đợi lần change kế tiếp.
+                    syncOtherToggles();
+                });
+
                 // ── Khoá nút Submit cho tới khi tick hết checkbox đơn bắt buộc ──
                 // (vd "Đồng ý điều khoản") — chỉ áp dụng cho checkbox ĐƠN (name
                 // không có "[]"), không áp dụng cho nhóm nhiều lựa chọn vì
@@ -686,16 +722,24 @@ class ContactFormAjaxHandler
                         $singleLabel = $optionLabels[0] ?? $singleOpt;
                         echo '<label class="laca-cf-checkbox-label"><input type="checkbox" id="' . esc_attr($fieldId) . '" name="' . $name . '" value="' . esc_attr($singleOpt) . '" ' . $reqAttr . '> ' . esc_html($singleLabel) . '</label>';
                     } else {
-                        // Multiple checkboxes
-                        echo '<div class="laca-cf-checkbox-group" id="' . esc_attr($fieldId) . '">';
+                        // Nhóm nhiều lựa chọn — mặc định tick được nhiều ô
+                        // (name="...[]"). Admin bật "Chỉ cho phép chọn 1" thì
+                        // render CÙNG name (không có "[]", giống radio) +
+                        // class riêng để JS tự bỏ tick các ô khác trong cùng
+                        // nhóm khi 1 ô được chọn — vẫn style checkbox nhưng
+                        // hành vi submit là 1 giá trị duy nhất.
+                        $isSingleChoiceGroup = !empty($field['single_choice']);
+                        $groupClass = 'laca-cf-checkbox-group' . ($isSingleChoiceGroup ? ' laca-cf-checkbox-group--single' : '');
+                        $inputName  = $isSingleChoiceGroup ? $name : ($name . '[]');
+                        echo '<div class="' . esc_attr($groupClass) . '" id="' . esc_attr($fieldId) . '">';
                         foreach ($options as $idx => $opt) {
                             $optId = esc_attr($fieldId . '-' . $idx);
-                            echo '<label class="laca-cf-checkbox-label"><input type="checkbox" id="' . $optId . '" name="' . $name . '[]" value="' . esc_attr($opt) . '" data-required="' . ($required ? 'true' : 'false') . '"> ' . esc_html($optionLabels[$idx] ?? $opt) . '</label>';
+                            echo '<label class="laca-cf-checkbox-label"><input type="checkbox" id="' . $optId . '" name="' . $inputName . '" value="' . esc_attr($opt) . '" data-required="' . ($required ? 'true' : 'false') . '"> ' . esc_html($optionLabels[$idx] ?? $opt) . '</label>';
                         }
                         if ($hasOther) {
                             $otherOptId   = esc_attr($fieldId . '-other');
                             $otherInputId = esc_attr($fieldId . '-other-input');
-                            echo '<label class="laca-cf-checkbox-label"><input type="checkbox" id="' . $otherOptId . '" name="' . $name . '[]" value="__other__" class="laca-cf-other-toggle" data-other-target="' . $otherInputId . '"> ' . esc_html($otherLabel) . '</label>';
+                            echo '<label class="laca-cf-checkbox-label"><input type="checkbox" id="' . $otherOptId . '" name="' . $inputName . '" value="__other__" class="laca-cf-other-toggle" data-other-target="' . $otherInputId . '"> ' . esc_html($otherLabel) . '</label>';
                             echo '<input type="text" id="' . $otherInputId . '" name="' . $name . '_other" class="laca-cf-input laca-cf-other-input" placeholder="' . esc_attr__('Vui lòng ghi rõ…', 'laca') . '" style="display:none">';
                         }
                         echo '</div>';
@@ -860,10 +904,11 @@ class ContactFormAjaxHandler
 
     private static function sanitizeByType(string $type, mixed $value, array $field): mixed
     {
-        $isSingleCheckbox = $type === 'checkbox' && count($field['options'] ?? []) <= 1;
-        $hasOther         = !empty($field['has_other']);
+        $isSingleCheckbox    = $type === 'checkbox' && count($field['options'] ?? []) <= 1;
+        $isSingleChoiceGroup = $type === 'checkbox' && !empty($field['single_choice']) && count($field['options'] ?? []) > 1;
+        $hasOther            = !empty($field['has_other']);
 
-        if (in_array($type, ['multiselect', 'checkbox'], true) && is_array($value) && !$isSingleCheckbox) {
+        if (in_array($type, ['multiselect', 'checkbox'], true) && is_array($value) && !$isSingleCheckbox && !$isSingleChoiceGroup) {
             // Nhóm checkbox/multiselect có bật "Khác" sẽ gửi thêm giá trị
             // sentinel "__other__" (xem renderField()) — phải cho phép nó
             // lọt qua array_filter, không thì bị coi như 1 lựa chọn không
@@ -875,9 +920,20 @@ class ContactFormAjaxHandler
             return array_filter($value, fn($v) => in_array($v, $allowed, true));
         }
 
+        // Client cố tình bypass HTML (gửi mảng cho field lẽ ra chỉ 1 giá trị,
+        // vd forge request thẳng không qua form thật) — lấy phần tử CUỐI,
+        // giống hành vi PHP collapse tự nhiên khi nhiều field trùng name
+        // không có "[]" cùng gửi lên. Tránh warning "Array to string
+        // conversion" + tránh so sánh chuỗi "Array" không khớp option nào.
+        if (($type === 'radio' || $isSingleChoiceGroup) && is_array($value)) {
+            $value = (string) (end($value) ?: '');
+        }
+
         $value = (string) $value;
 
-        if ($type === 'radio') {
+        // Checkbox "chỉ chọn 1" validate giống hệt radio: value phải nằm
+        // trong đúng danh sách option (hoặc sentinel "__other__") mới giữ.
+        if ($type === 'radio' || $isSingleChoiceGroup) {
             $allowed = $field['options'] ?? [];
             if ($hasOther) {
                 $allowed[] = '__other__';

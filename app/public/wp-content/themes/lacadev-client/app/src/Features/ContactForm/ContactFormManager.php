@@ -954,6 +954,10 @@ class ContactFormManager
                         'options' => array_map('sanitize_text_field', (array) ($field['options'] ?? [])),
                         'has_other' => !empty($field['has_other']),
                         'other_label' => sanitize_text_field($field['other_label'] ?? ''),
+                        // Chỉ áp dụng thật khi type=checkbox có >=2 option —
+                        // xem ContactFormAjaxHandler::renderField(). Field
+                        // type khác/option <2 vẫn lưu cờ này vô hại.
+                        'single_choice' => !empty($field['single_choice']),
                         'i18n' => self::sanitizeFieldI18n($field['i18n'] ?? [], 'field'),
                     ];
                 }
