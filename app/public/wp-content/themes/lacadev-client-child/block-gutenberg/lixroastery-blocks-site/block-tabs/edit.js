@@ -6,7 +6,7 @@ import {
 } from '@wordpress/block-editor';
 import { useSelect, useDispatch } from '@wordpress/data';
 import { createBlock } from '@wordpress/blocks';
-import { PanelBody } from '@wordpress/components';
+import { PanelBody, ToggleControl } from '@wordpress/components';
 import { useState, useEffect, useRef, Fragment } from '@wordpress/element';
 import { useInserterPreview, BlockPreviewMock } from '../../utils/preview';
 import {
@@ -66,6 +66,7 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 		contentAlign,
 		contentAlignTablet,
 		contentAlignMobile,
+		showNavButtons = true,
 	} = attributes;
 	const maxWidthStyle = {
 		'--mw-pc': `${ maxWidth }%`,
@@ -226,6 +227,30 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 						}
 					/>
 				</PanelBody>
+
+				<PanelBody
+					title={ __( 'Điều hướng', 'laca' ) }
+					initialOpen={ true }
+				>
+					<ToggleControl
+						label={ __( 'Hiển thị nút Prev / Next', 'laca' ) }
+						help={
+							showNavButtons
+								? __(
+										'Hiển thị nút Prev và Next ở chân tab.',
+										'laca'
+								  )
+								: __(
+										'Ẩn nút Prev và Next ở chân tab.',
+										'laca'
+								  )
+						}
+						checked={ showNavButtons }
+						onChange={ ( v ) =>
+							setAttributes( { showNavButtons: v } )
+						}
+					/>
+				</PanelBody>
 			</InspectorControls>
 
 			<div { ...blockProps }>
@@ -270,6 +295,46 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 						</button>
 					</nav>
 					<div { ...innerBlocksProps } />
+					{ showNavButtons && (
+						<div className="tabs-block__footer">
+							<button
+								type="button"
+								className="tabs-block__prev"
+								onClick={ () => {
+									if ( innerBlocks.length > 0 ) {
+										const prevIdx =
+											( activeTab -
+												1 +
+												innerBlocks.length ) %
+											innerBlocks.length;
+										setActiveTab( prevIdx );
+										selectBlock(
+											innerBlocks[ prevIdx ].clientId
+										);
+									}
+								} }
+							>
+								{ __( 'Prev', 'laca' ) }
+							</button>
+							<button
+								type="button"
+								className="tabs-block__next"
+								onClick={ () => {
+									if ( innerBlocks.length > 0 ) {
+										const nextIdx =
+											( activeTab + 1 ) %
+											innerBlocks.length;
+										setActiveTab( nextIdx );
+										selectBlock(
+											innerBlocks[ nextIdx ].clientId
+										);
+									}
+								} }
+							>
+								{ __( 'Next', 'laca' ) }
+							</button>
+						</div>
+					) }
 				</div>
 			</div>
 		</>

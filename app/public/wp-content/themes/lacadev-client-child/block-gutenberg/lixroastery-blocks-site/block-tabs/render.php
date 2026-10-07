@@ -18,6 +18,7 @@ $content_align_tablet = in_array($attributes['contentAlignTablet'] ?? '', ['left
 $content_align_mobile = in_array($attributes['contentAlignMobile'] ?? '', ['left', 'center', 'right'], true)
     ? $attributes['contentAlignMobile']
     : 'center';
+$show_nav_buttons = (bool) ($attributes['showNavButtons'] ?? true);
 $margin_map = ['left' => '0 auto 0 0', 'center' => '0 auto', 'right' => '0 0 0 auto'];
 
 $wrapper_attrs = get_block_wrapper_attributes(['class' => 'tabs-block']);
@@ -37,10 +38,12 @@ $scoped_selector = '#' . $unique_id;
             <div class="tabs-block__panels">
                 <?php echo $content; ?>
             </div>
+            <?php if ($show_nav_buttons): ?>
             <div class="tabs-block__footer">
                 <a href="#" class="tabs-block__prev"><?php esc_html_e('Prev', 'laca'); ?></a>
                 <a href="#" class="tabs-block__next"><?php esc_html_e('Next', 'laca'); ?></a>
             </div>
+            <?php endif; ?>
         </div>
     </div>
 </section>

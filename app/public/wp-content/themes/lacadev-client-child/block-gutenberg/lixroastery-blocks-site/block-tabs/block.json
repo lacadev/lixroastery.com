@@ -37,6 +37,10 @@
             "type": "string",
             "default": "center"
         },
+        "showNavButtons": {
+            "type": "boolean",
+            "default": true
+        },
         "__isPreview": {
             "type": "boolean",
             "default": false
