@@ -1312,7 +1312,7 @@ class AdminSettings
                     ->set_width(50),
                 Field::make('text', 'google_redirect_uri', __('Redirect URI', 'laca'))
                     ->set_attribute('readOnly', true)
-                    ->set_default_value(home_url('/wp-admin/admin-ajax.php?action=social_login_callback&driver=google')),
+                    ->set_default_value(admin_url('admin-ajax.php?action=google_admin_callback')),
             ]);
 
             // Workspace / HD Sử dụng & Dashboard Widgets Settings
