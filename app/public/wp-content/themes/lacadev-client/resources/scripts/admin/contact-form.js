@@ -1137,20 +1137,22 @@ const FIELD_TYPES = window.LacaContactFormVars.FIELD_TYPES;
                         const contentTa = cardEl.querySelector('.lcf-field-inputs textarea[data-key="content"]');
                         if (contentTa) field.content = contentTa.value;
 
+                        // CHỈ GHI THÊM (merge), KHÔNG xoá — field.i18n đã được
+                        // cập nhật real-time qua oninput/sau khi Dịch bằng AI
+                        // (lcfFieldI18nUpdate(), lcfAiTranslateField()); đọc lại
+                        // DOM ở đây chỉ là lớp an toàn bổ sung. Trước đây hễ
+                        // query DOM không khớp/đọc ra rỗng (vd card build lại
+                        // ngay trước đó, selector lệch...) sẽ XOÁ NGAY bản dịch
+                        // vừa dịch AI xong dù state JS vẫn đúng — bug thật đã
+                        // gặp: dịch xong hiện đúng trên màn hình nhưng bấm Lưu
+                        // xong thì rỗng.
                         cardEl.querySelectorAll('.lcf-i18n-lang-group').forEach(function(group) {
                             const langSlug = group.dataset.lang;
                             const ta = group.querySelector('textarea[data-i18n-key="content"]');
-                            if (langSlug && ta) {
+                            if (langSlug && ta && ta.value.trim() !== '') {
                                 field.i18n = field.i18n || {};
                                 field.i18n[langSlug] = field.i18n[langSlug] || {};
-                                if (ta.value.trim() !== '') {
-                                    field.i18n[langSlug].content = ta.value;
-                                } else {
-                                    delete field.i18n[langSlug].content;
-                                }
-                                if (Object.keys(field.i18n[langSlug]).length === 0) {
-                                    delete field.i18n[langSlug];
-                                }
+                                field.i18n[langSlug].content = ta.value;
                             }
                         });
                     } else {
@@ -1180,42 +1182,37 @@ const FIELD_TYPES = window.LacaContactFormVars.FIELD_TYPES;
                         const otherLabelInp = cardEl.querySelector('.lcf-field-inputs input[data-key="other_label"]');
                         if (otherLabelInp) field.other_label = otherLabelInp.value;
 
+                        // CHỈ GHI THÊM (merge) khi DOM có giá trị thật, KHÔNG
+                        // xoá key nào chỉ vì đọc ra rỗng — xem lý do ở nhánh
+                        // "content" phía trên (field.i18n đã đúng từ trước,
+                        // đây chỉ là lớp an toàn bổ sung, không phải nguồn sự
+                        // thật duy nhất).
                         cardEl.querySelectorAll('.lcf-i18n-lang-group').forEach(function(group) {
                             const langSlug = group.dataset.lang;
                             if (!langSlug) return;
+
+                            const i18nLabel = group.querySelector('input[data-i18n-key="label"]');
+                            const i18nPlace = group.querySelector('input[data-i18n-key="placeholder"]');
+                            const i18nOther = group.querySelector('input[data-i18n-key="other_label"]');
+                            const i18nOpt   = group.querySelector('textarea[data-i18n-key="options"]');
+
+                            const hasAnyValue = (i18nLabel && i18nLabel.value.trim() !== '')
+                                || (i18nPlace && i18nPlace.value.trim() !== '')
+                                || (i18nOther && i18nOther.value.trim() !== '')
+                                || (i18nOpt && i18nOpt.value.trim() !== '');
+                            if (!hasAnyValue) return;
+
                             field.i18n = field.i18n || {};
                             field.i18n[langSlug] = field.i18n[langSlug] || {};
 
-                            const i18nLabel = group.querySelector('input[data-i18n-key="label"]');
-                            if (i18nLabel) {
-                                if (i18nLabel.value.trim() !== '') field.i18n[langSlug].label = i18nLabel.value;
-                                else delete field.i18n[langSlug].label;
-                            }
-
-                            const i18nPlace = group.querySelector('input[data-i18n-key="placeholder"]');
-                            if (i18nPlace) {
-                                if (i18nPlace.value.trim() !== '') field.i18n[langSlug].placeholder = i18nPlace.value;
-                                else delete field.i18n[langSlug].placeholder;
-                            }
-
-                            const i18nOther = group.querySelector('input[data-i18n-key="other_label"]');
-                            if (i18nOther) {
-                                if (i18nOther.value.trim() !== '') field.i18n[langSlug].other_label = i18nOther.value;
-                                else delete field.i18n[langSlug].other_label;
-                            }
-
-                            const i18nOpt = group.querySelector('textarea[data-i18n-key="options"]');
+                            if (i18nLabel && i18nLabel.value.trim() !== '') field.i18n[langSlug].label = i18nLabel.value;
+                            if (i18nPlace && i18nPlace.value.trim() !== '') field.i18n[langSlug].placeholder = i18nPlace.value;
+                            if (i18nOther && i18nOther.value.trim() !== '') field.i18n[langSlug].other_label = i18nOther.value;
                             if (i18nOpt) {
                                 const lines = i18nOpt.value.split('\n').map(function(s){ return s.trim(); });
                                 if (lines.some(function(s){ return s !== ''; })) {
                                     field.i18n[langSlug].options = lines;
-                                } else {
-                                    delete field.i18n[langSlug].options;
                                 }
-                            }
-
-                            if (Object.keys(field.i18n[langSlug]).length === 0) {
-                                delete field.i18n[langSlug];
                             }
                         });
                     }
