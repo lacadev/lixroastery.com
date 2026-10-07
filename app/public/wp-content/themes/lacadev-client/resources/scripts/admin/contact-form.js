@@ -1200,6 +1200,17 @@ const FIELD_TYPES = window.LacaContactFormVars.FIELD_TYPES;
                                 || (i18nPlace && i18nPlace.value.trim() !== '')
                                 || (i18nOther && i18nOther.value.trim() !== '')
                                 || (i18nOpt && i18nOpt.value.trim() !== '');
+
+                            // DEBUG TẠM THỜI — xoá sau khi xác định xong nguyên
+                            // nhân mất bản dịch khi lưu.
+                            console.log('[LACA-DEBUG i18n-sync]', field.name, langSlug, {
+                                foundLabelEl: !!i18nLabel, labelVal: i18nLabel && i18nLabel.value,
+                                foundPlaceEl: !!i18nPlace, placeVal: i18nPlace && i18nPlace.value,
+                                foundOptEl: !!i18nOpt, optVal: i18nOpt && i18nOpt.value,
+                                hasAnyValue: hasAnyValue,
+                                stateBefore: JSON.stringify(field.i18n),
+                            });
+
                             if (!hasAnyValue) return;
 
                             field.i18n = field.i18n || {};
@@ -1264,7 +1275,9 @@ const FIELD_TYPES = window.LacaContactFormVars.FIELD_TYPES;
 
             // ── Form submit validation ────────────────────────────────────────
             document.getElementById('laca-cf-form').addEventListener('submit', function(e) {
+                console.log('[LACA-DEBUG] submit handler fired. rows before sync:', JSON.stringify(rows));
                 syncAllFromDOM();
+                console.log('[LACA-DEBUG] rows after syncAllFromDOM:', JSON.stringify(rows));
 
                 if (!document.getElementById('cf-name').value.trim()) {
                     e.preventDefault();
@@ -1294,6 +1307,7 @@ const FIELD_TYPES = window.LacaContactFormVars.FIELD_TYPES;
                     }
                 }
                 updateJsonInput();
+                console.log('[LACA-DEBUG] FINAL fields-json-input value about to submit:', document.getElementById('fields-json-input').value);
                 // Ensure style state is synced before submit
                 if (typeof updateStyleInput === 'function') updateStyleInput();
             });
