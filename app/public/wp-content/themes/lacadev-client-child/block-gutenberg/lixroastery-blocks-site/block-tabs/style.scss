@@ -46,7 +46,7 @@
         opacity: 0.3;
         transition: opacity 0.2s ease;
 
-        @include resFont(rem(20), rem(30));
+        @include resFont(rem(16), rem(18));
 
         &.is-active {
             opacity: 1;

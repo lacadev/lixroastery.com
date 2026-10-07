@@ -102,10 +102,10 @@
 
     &__card-title {
         font-family: $subFont;
-        font-weight: $regular;
+        font-weight: $bold;
         text-transform: uppercase;
         margin: 0 0 0.8rem;
-        line-height: 1.35;
+        line-height: 1.7;
 
         @include resFont(rem(14), rem(16));
     }
