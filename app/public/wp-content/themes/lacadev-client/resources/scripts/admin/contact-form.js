@@ -31,6 +31,27 @@ const FIELD_TYPES = window.LacaContactFormVars.FIELD_TYPES;
             let rows = window.LacaContactFormVars.rows || [];
             let sortableInstances = [];
 
+            // PHP không phân biệt được mảng kết hợp rỗng với mảng số rỗng —
+            // json_encode([]) LUÔN LUÔN ra "[]" dù field['i18n'] rỗng vì
+            // chưa từng dịch ngôn ngữ nào (chưa đủ ý nghĩa "mảng kết hợp").
+            // JSON.parse("[]") ở đây cho ra 1 JAVASCRIPT ARRAY thay vì
+            // object — gán field.i18n['en'] = {...} lên ARRAY vẫn "thành
+            // công" (đọc lại thấy đúng) nhưng JSON.stringify() trên array
+            // CHỈ xuất phần tử số, ÂM THẦM bỏ qua thuộc tính string khi gửi
+            // lưu — field MỚI dịch lần đầu luôn mất bản dịch ngay khi lưu.
+            // Ép lại i18n thành object thật NGAY LÚC TẢI DỮ LIỆU (không chỉ
+            // sửa PHP cho lần lưu sau) để xử lý luôn các form ĐÃ LỠ lưu sai
+            // từ trước khi có fix này.
+            (function normalizeI18nShape(fieldList) {
+                fieldList.forEach(function(row) {
+                    row.cols.forEach(function(col) {
+                        col.fields.forEach(function(f) {
+                            if (!f.i18n || Array.isArray(f.i18n)) f.i18n = {};
+                        });
+                    });
+                });
+            })(rows);
+
             // ── Styles state ──────────────────────────────────────────────────
             const DEFAULT_STYLES = {
                 primary_color: '#2271b1', secondary_color: '#1a5a9e',
@@ -1132,7 +1153,6 @@ const FIELD_TYPES = window.LacaContactFormVars.FIELD_TYPES;
                     const found = findField(fieldId);
                     if (!found) return;
                     const { field } = found;
-                    console.log('[LACA-DEBUG card-match] dom-fieldId=' + fieldId + ' matched field.id=' + field.id + ' field.name=' + field.name + ' same-ref-check=' + (cardEl.dataset.fieldId === field.id));
 
                     if (field.type === 'content') {
                         const contentTa = cardEl.querySelector('.lcf-field-inputs textarea[data-key="content"]');
@@ -1202,53 +1222,26 @@ const FIELD_TYPES = window.LacaContactFormVars.FIELD_TYPES;
                                 || (i18nOther && i18nOther.value.trim() !== '')
                                 || (i18nOpt && i18nOpt.value.trim() !== '');
 
-                            // DEBUG TẠM THỜI — xoá sau khi xác định xong nguyên
-                            // nhân mất bản dịch khi lưu.
-                            console.log('[LACA-DEBUG i18n-sync] field.name=' + field.name + ' field.id=' + field.id
-                                + ' cardEl.dataset.fieldId=' + cardEl.dataset.fieldId
-                                + ' langSlug=' + JSON.stringify(langSlug)
-                                + ' labelVal=' + JSON.stringify(i18nLabel && i18nLabel.value)
-                                + ' placeVal=' + JSON.stringify(i18nPlace && i18nPlace.value)
-                                + ' optVal=' + JSON.stringify(i18nOpt && i18nOpt.value)
-                                + ' hasAnyValue=' + hasAnyValue
-                                + ' stateBefore=' + JSON.stringify(field.i18n));
-
                             if (!hasAnyValue) return;
 
-                            console.log('[LACA-DEBUG step0] isFrozen(field)=' + Object.isFrozen(field)
-                                + ' isFrozen(field.i18n)=' + Object.isFrozen(field.i18n)
-                                + ' isExtensible(field)=' + Object.isExtensible(field));
-
                             field.i18n = field.i18n || {};
-                            console.log('[LACA-DEBUG step1] after field.i18n||{} -> ' + JSON.stringify(field.i18n) + ' isFrozen=' + Object.isFrozen(field.i18n));
-
                             field.i18n[langSlug] = field.i18n[langSlug] || {};
-                            console.log('[LACA-DEBUG step2] after field.i18n[langSlug]||{} -> ' + JSON.stringify(field.i18n) + ' hasKey=' + Object.prototype.hasOwnProperty.call(field.i18n, langSlug));
 
                             if (i18nLabel && i18nLabel.value.trim() !== '') {
                                 field.i18n[langSlug].label = i18nLabel.value;
-                                console.log('[LACA-DEBUG step3-label] -> ' + JSON.stringify(field.i18n));
                             }
                             if (i18nPlace && i18nPlace.value.trim() !== '') {
                                 field.i18n[langSlug].placeholder = i18nPlace.value;
-                                console.log('[LACA-DEBUG step3-place] -> ' + JSON.stringify(field.i18n));
                             }
                             if (i18nOther && i18nOther.value.trim() !== '') {
                                 field.i18n[langSlug].other_label = i18nOther.value;
-                                console.log('[LACA-DEBUG step3-other] -> ' + JSON.stringify(field.i18n));
                             }
                             if (i18nOpt) {
                                 const lines = i18nOpt.value.split('\n').map(function(s){ return s.trim(); });
                                 if (lines.some(function(s){ return s !== ''; })) {
                                     field.i18n[langSlug].options = lines;
-                                    console.log('[LACA-DEBUG step3-options] -> ' + JSON.stringify(field.i18n));
                                 }
                             }
-
-                            console.log('[LACA-DEBUG i18n-sync] AFTER ASSIGN field.name=' + field.name
-                                + ' field.id=' + field.id
-                                + ' stateAfter=' + JSON.stringify(field.i18n)
-                                + ' sameFieldObjCheck=' + (findField(field.id).field === field));
                         });
                     }
                 });
@@ -1299,9 +1292,7 @@ const FIELD_TYPES = window.LacaContactFormVars.FIELD_TYPES;
 
             // ── Form submit validation ────────────────────────────────────────
             document.getElementById('laca-cf-form').addEventListener('submit', function(e) {
-                console.log('[LACA-DEBUG] submit handler fired. rows before sync:', JSON.stringify(rows));
                 syncAllFromDOM();
-                console.log('[LACA-DEBUG] rows after syncAllFromDOM:', JSON.stringify(rows));
 
                 if (!document.getElementById('cf-name').value.trim()) {
                     e.preventDefault();
@@ -1331,7 +1322,6 @@ const FIELD_TYPES = window.LacaContactFormVars.FIELD_TYPES;
                     }
                 }
                 updateJsonInput();
-                console.log('[LACA-DEBUG] FINAL fields-json-input value about to submit:', document.getElementById('fields-json-input').value);
                 // Ensure style state is synced before submit
                 if (typeof updateStyleInput === 'function') updateStyleInput();
             });

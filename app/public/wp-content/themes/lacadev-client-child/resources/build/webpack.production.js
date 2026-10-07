@@ -96,10 +96,7 @@ module.exports = {
                 exclude: /\.min\.js$/, // Don't minify already minified files
                 terserOptions: {
                     compress: {
-                        // TẠM THỜI tắt (false) để thấy console.log debug trên
-                        // production — PHẢI bật lại true ngay sau khi xong,
-                        // không được để false vĩnh viễn.
-                        drop_console: false,
+                        drop_console: true,
                         drop_debugger: true,
                         pure_funcs: [],
                     },

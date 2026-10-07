@@ -984,7 +984,20 @@ class ContactFormManager
                             'id' => sanitize_key($field['id'] ?? uniqid('field_', true)),
                             'type' => 'content',
                             'content' => wp_kses_post($field['content'] ?? ''),
-                            'i18n' => self::sanitizeFieldI18n($field['i18n'] ?? [], 'content'),
+                            // (object) ép buộc json_encode() ra "{}" thay vì
+                            // "[]" khi rỗng — PHP không phân biệt được mảng
+                            // kết hợp rỗng với mảng số rỗng, json_encode([])
+                            // LUÔN LUÔN ra "[]". Phía JS đọc "[]" thành một
+                            // JAVASCRIPT ARRAY thay vì object; gán thuộc tính
+                            // string (vd field.i18n.en = {...}) lên ARRAY vẫn
+                            // "thành công" (đọc lại thấy đúng) nhưng
+                            // JSON.stringify() trên array CHỈ xuất phần tử số,
+                            // ÂM THẦM bỏ qua thuộc tính string — khiến field
+                            // MỚI dịch lần đầu (i18n rỗng từ đầu) luôn mất bản
+                            // dịch ngay khi lưu, trong khi field đã có sẵn
+                            // i18n (khác rỗng, vốn dĩ đã là object đúng) thì
+                            // không bị ảnh hưởng.
+                            'i18n' => (object) self::sanitizeFieldI18n($field['i18n'] ?? [], 'content'),
                         ];
                         continue;
                     }
@@ -1011,7 +1024,10 @@ class ContactFormManager
                         // xem ContactFormAjaxHandler::renderField(). Field
                         // type khác/option <2 vẫn lưu cờ này vô hại.
                         'single_choice' => !empty($field['single_choice']),
-                        'i18n' => self::sanitizeFieldI18n($field['i18n'] ?? [], 'field'),
+                        // (object) ép json_encode() ra "{}" thay vì "[]" khi
+                        // rỗng — xem giải thích đầy đủ ở nhánh 'content' phía
+                        // trên (cùng 1 nguyên nhân gây mất bản dịch field mới).
+                        'i18n' => (object) self::sanitizeFieldI18n($field['i18n'] ?? [], 'field'),
                     ];
                 }
                 $span = (int) ($col['span'] ?? 12);
