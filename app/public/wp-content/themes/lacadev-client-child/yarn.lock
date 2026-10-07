@@ -1011,7 +1011,7 @@
     "@babel/types" "^7.4.4"
     esutils "^2.0.2"
 
-"@babel/preset-react@^7.18.6":
+"@babel/preset-react@^7.18.6", "@babel/preset-react@^7.29.7":
   version "7.29.7"
   resolved "https://registry.yarnpkg.com/@babel/preset-react/-/preset-react-7.29.7.tgz#2ed18366e38c2081bbf1760dc01e88fa5674eb17"
   integrity sha512-C+PV1TFUPTmBQGoPBL8j2QmLpZ117YTCwxIZeJOM96GbYMFSc7/pOXU5lVykwnZxyTqQxRsvoRk6f2FktZgGHA==
@@ -3588,7 +3588,7 @@
     use-lilius "^2.0.5"
     uuid "^9.0.1"
 
-"@wordpress/compose@^6.27.0", "@wordpress/compose@^6.35.0":
+"@wordpress/compose@^6.0.0", "@wordpress/compose@^6.27.0", "@wordpress/compose@^6.35.0":
   version "6.35.0"
   resolved "https://registry.yarnpkg.com/@wordpress/compose/-/compose-6.35.0.tgz#411a1929bb28102cf4c508a13dc4d46812bbc871"
   integrity sha512-PfruhCxxxJokDQHc2YBgerEiHV7BIxQk9g5vU4/f9X/0PBQWUTuxOzSFcAba03vnjfAgtPTSMp50T50hcJwXfA==
@@ -3607,7 +3607,7 @@
     mousetrap "^1.6.5"
     use-memo-one "^1.1.1"
 
-"@wordpress/data@^9.28.0":
+"@wordpress/data@^9.0.0", "@wordpress/data@^9.28.0":
   version "9.28.0"
   resolved "https://registry.yarnpkg.com/@wordpress/data/-/data-9.28.0.tgz#64efd691384ba26faa1b460549fad9a237728818"
   integrity sha512-EDPpZdkngdoW7EMzPpGj0BmNcr7syJO67pgTODtN/4XFIdYL2RKzFyn3nlLBKhX17UsE/ALq9WdijacH4QJ9qw==
@@ -3766,7 +3766,7 @@
     globals "^13.12.0"
     requireindex "^1.2.0"
 
-"@wordpress/hooks@^3.50.0", "@wordpress/hooks@^3.58.0":
+"@wordpress/hooks@^3.0.0", "@wordpress/hooks@^3.50.0", "@wordpress/hooks@^3.58.0":
   version "3.58.0"
   resolved "https://registry.yarnpkg.com/@wordpress/hooks/-/hooks-3.58.0.tgz#68094f7e7e3f8cbc3ab68a0fe9ac2a9b3cfe55d6"
   integrity sha512-9LB0ZHnZRQlORttux9t/xbAskF+dk2ujqzPGsVzc92mSKpQP3K2a5Wy74fUnInguB1vLUNHT6nrNdkVom5qX1Q==
