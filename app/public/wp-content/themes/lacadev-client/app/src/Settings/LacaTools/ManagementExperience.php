@@ -69,6 +69,9 @@ class ManagementExperience
         // 10. Dynamic CPT admin page (Appearance > Custom Post Types)
         new \App\Features\DynamicCPT\DynamicCptAdminPage();
 
+        // 10.5. Thu gọn/mở rộng danh mục con trên edit-tags.php (mọi taxonomy phân cấp)
+        (new \App\Features\DynamicCPT\CollapsibleTaxonomyTerms())->register();
+
         // 11. Contact Form Manager (Appearance > Form Liên Hệ)
         new \App\Features\ContactForm\ContactFormManager();
     }
