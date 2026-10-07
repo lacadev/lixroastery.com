@@ -640,6 +640,51 @@ class ContactFormManager
                                                   oninput="lcfStyleUpdate('custom_css',this.value)"
                                                   placeholder="/* Nhập CSS tuỳ chỉnh...\n Dùng __FORM__ để ám chỉ class chứa form (ví dụ: __FORM__ .laca-cf-input { ... }) */"></textarea>
                                     </div>
+
+                                    <div class="laca-cf-field-group" style="grid-column:1/-1">
+                                        <h3 class="lcf-email-section-title" style="margin:18px 0 4px">💬 Popup thông báo (Thành công / Thất bại)</h3>
+                                        <p class="lcf-form-help" style="margin:0 0 10px">Tuỳ chỉnh màu sắc popup hiện ra sau khi khách bấm "Gửi thông tin".</p>
+                                    </div>
+                                    <div class="laca-cf-field-group">
+                                        <label class="lcf-form-label">Màu Thành công</label>
+                                        <div class="lcf-color-row">
+                                            <input type="color" id="s-popup-success-color" oninput="lcfStyleUpdate('popup_success_color',this.value)">
+                                            <input type="text" class="lcf-color-text" id="s-popup-success-color-text" maxlength="7"
+                                                   oninput="lcfStyleUpdate('popup_success_color',this.value);document.getElementById('s-popup-success-color').value=this.value">
+                                        </div>
+                                    </div>
+                                    <div class="laca-cf-field-group">
+                                        <label class="lcf-form-label">Màu Thất bại</label>
+                                        <div class="lcf-color-row">
+                                            <input type="color" id="s-popup-error-color" oninput="lcfStyleUpdate('popup_error_color',this.value)">
+                                            <input type="text" class="lcf-color-text" id="s-popup-error-color-text" maxlength="7"
+                                                   oninput="lcfStyleUpdate('popup_error_color',this.value);document.getElementById('s-popup-error-color').value=this.value">
+                                        </div>
+                                    </div>
+                                    <div class="laca-cf-field-group">
+                                        <label class="lcf-form-label">Màu nút trong Popup <small style="font-weight:400">(để trống = dùng Màu chính)</small></label>
+                                        <div class="lcf-color-row">
+                                            <input type="color" id="s-popup-button-color" oninput="lcfStyleUpdate('popup_button_color',this.value)">
+                                            <input type="text" class="lcf-color-text" id="s-popup-button-color-text" maxlength="7"
+                                                   oninput="lcfStyleUpdate('popup_button_color',this.value);document.getElementById('s-popup-button-color').value=this.value">
+                                        </div>
+                                    </div>
+                                    <div class="laca-cf-field-group">
+                                        <label class="lcf-form-label">Bo góc Popup (px)</label>
+                                        <div class="lcf-range-row">
+                                            <input type="range" min="0" max="40" id="s-popup-radius"
+                                                   oninput="lcfStyleUpdate('popup_border_radius',this.value);document.getElementById('s-popup-radius-num').value=this.value">
+                                            <input type="number" min="0" max="40" id="s-popup-radius-num" class="lcf-range-num"
+                                                   oninput="lcfStyleUpdate('popup_border_radius',this.value);document.getElementById('s-popup-radius').value=this.value">
+                                            <span class="lcf-range-unit">px</span>
+                                        </div>
+                                    </div>
+                                    <div class="laca-cf-field-group" style="grid-column:1/-1">
+                                        <label class="lcf-form-label">Custom CSS riêng cho Popup</label>
+                                        <textarea class="widefat laca-cf-email-body" id="s-popup-custom-css" rows="4"
+                                                  oninput="lcfStyleUpdate('popup_custom_css',this.value)"
+                                                  placeholder="/* Dùng __POPUP__ để ám chỉ class popup (ví dụ: __POPUP__ .swal2-title { font-size:22px } */"></textarea>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -986,7 +1031,7 @@ class ContactFormManager
         $styleJson = stripslashes($_POST['style_json'] ?? '{}');
         $rawStyle = json_decode($styleJson, true) ?: [];
         $cleanStyle = [];
-        foreach (['primary_color', 'secondary_color', 'input_border_color', 'label_color'] as $colorKey) {
+        foreach (['primary_color', 'secondary_color', 'input_border_color', 'label_color', 'popup_success_color', 'popup_error_color', 'popup_button_color'] as $colorKey) {
             if (!empty($rawStyle[$colorKey])) {
                 $hex = sanitize_hex_color($rawStyle[$colorKey]);
                 if ($hex) {
@@ -998,6 +1043,9 @@ class ContactFormManager
             if (isset($rawStyle[$numKey])) {
                 $cleanStyle[$numKey] = max(0, min(50, (int) $rawStyle[$numKey]));
             }
+        }
+        if (isset($rawStyle['popup_border_radius'])) {
+            $cleanStyle['popup_border_radius'] = max(0, min(40, (int) $rawStyle['popup_border_radius']));
         }
         if (!empty($rawStyle['btn_text'])) {
             $cleanStyle['btn_text'] = sanitize_text_field($rawStyle['btn_text']);
@@ -1059,6 +1107,9 @@ class ContactFormManager
         if (!empty($rawStyle['custom_css'])) {
             // Strip tags but allow proper CSS syntax, wp_strip_all_tags handles basic sanitization
             $cleanStyle['custom_css'] = wp_strip_all_tags(stripslashes($rawStyle['custom_css']));
+        }
+        if (!empty($rawStyle['popup_custom_css'])) {
+            $cleanStyle['popup_custom_css'] = wp_strip_all_tags(stripslashes($rawStyle['popup_custom_css']));
         }
 
         $invalidEmails = [];

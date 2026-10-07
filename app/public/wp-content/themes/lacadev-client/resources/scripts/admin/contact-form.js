@@ -37,6 +37,8 @@ const FIELD_TYPES = window.LacaContactFormVars.FIELD_TYPES;
                 input_border_color: '#cccccc', label_color: '#333333',
                 btn_border_radius: 6, input_border_radius: 6,
                 btn_text: 'Gửi thông tin', submit_align: 'right',
+                popup_success_color: '#28a745', popup_error_color: '#dc3545',
+                popup_border_radius: 12,
             };
             const SUBMIT_ALIGN_TO_JUSTIFY = { left: 'flex-start', center: 'center', right: 'flex-end' };
             let styles = Object.assign({}, DEFAULT_STYLES, (function() {
@@ -71,6 +73,7 @@ const FIELD_TYPES = window.LacaContactFormVars.FIELD_TYPES;
                                 fields: col.fields.map(function(f) {
                                     const c = Object.assign({}, f);
                                     delete c._autoName;
+                                    delete c._isOpen; // trạng thái đóng/mở card — chỉ dùng phía UI, không lưu DB
                                     return c;
                                 }),
                             };
@@ -349,7 +352,8 @@ const FIELD_TYPES = window.LacaContactFormVars.FIELD_TYPES;
                     ? '<span class="lcf-badge-vis is-shown" title="Nhãn hiển thị trên form">Hiện nhãn</span>'
                     : '<span class="lcf-badge-vis is-hidden" title="Nhãn bị ẩn trên form, chỉ dùng trong Email">Ẩn nhãn</span>';
 
-                return `<div class="laca-cf-field-card is-open" data-field-id="${escAttr(field.id)}">
+                const isOpenClass = field._isOpen === false ? '' : ' is-open';
+                return `<div class="laca-cf-field-card${isOpenClass}" data-field-id="${escAttr(field.id)}">
                     <div class="laca-cf-field-card-header" onclick="lcfToggleCard(this.closest('.laca-cf-field-card'))">
                         <span class="lcf-field-drag-handle" title="Kéo để di chuyển field">
                             <svg width="10" height="16" viewBox="0 0 10 16" fill="currentColor">
@@ -428,7 +432,8 @@ const FIELD_TYPES = window.LacaContactFormVars.FIELD_TYPES;
                     ? escHtml(plainPreview.slice(0, 50)) + (plainPreview.length > 50 ? '…' : '')
                     : '<em style="color:#aaa;font-weight:400">Nội dung trống</em>';
 
-                return `<div class="laca-cf-field-card is-open" data-field-id="${escAttr(field.id)}">
+                const isOpenClass = field._isOpen === false ? '' : ' is-open';
+                return `<div class="laca-cf-field-card${isOpenClass}" data-field-id="${escAttr(field.id)}">
                     <div class="laca-cf-field-card-header" onclick="lcfToggleCard(this.closest('.laca-cf-field-card'))">
                         <span class="lcf-field-drag-handle" title="Kéo để di chuyển field">
                             <svg width="10" height="16" viewBox="0 0 10 16" fill="currentColor">
@@ -602,9 +607,17 @@ const FIELD_TYPES = window.LacaContactFormVars.FIELD_TYPES;
             }
 
             // ── Public: toggle accordion ──────────────────────────────────────
+            // Ghi lại trạng thái đóng/mở vào CHÍNH field._isOpen (không chỉ
+            // toggle class DOM) — renderRows() dựng lại TOÀN BỘ HTML từ đầu
+            // (builder.innerHTML = '') mỗi khi có thay đổi (thêm/xoá/nhân
+            // bản field, kéo thả...), nếu không lưu vào state thì mọi field
+            // đang thu gọn sẽ bị bung ra hết ngay khi renderRows() chạy lại.
             window.lcfToggleCard = function(cardEl) {
                 if (!cardEl) return;
-                cardEl.classList.toggle('is-open');
+                const isOpen = cardEl.classList.toggle('is-open');
+                const fieldId = cardEl.dataset.fieldId;
+                const found = fieldId ? findField(fieldId) : null;
+                if (found) found.field._isOpen = isOpen;
             };
 
             // ── Public: update field property (no re-render) ──────────────────
@@ -955,6 +968,7 @@ const FIELD_TYPES = window.LacaContactFormVars.FIELD_TYPES;
                 clone.id = uid();
                 clone.name = field.name ? field.name + '_copy' : '';
                 clone._autoName = '';
+                clone._isOpen = true; // luôn mở thẻ vừa nhân bản, bất kể field gốc đang đóng/mở
 
                 const idx = col.fields.findIndex(function(f) { return f.id === fieldId; });
                 col.fields.splice(idx + 1, 0, clone);
@@ -1055,7 +1069,7 @@ const FIELD_TYPES = window.LacaContactFormVars.FIELD_TYPES;
                     id: uid(), type: type, name: '', label: '',
                     placeholder: '', required: false, show_label: false, options: [], _autoName: '',
                     has_other: false, other_label: '', content: '', i18n: {},
-                    single_choice: false,
+                    single_choice: false, _isOpen: true,
                 };
                 col.fields.push(newField);
                 renderRows();
@@ -1294,15 +1308,19 @@ const FIELD_TYPES = window.LacaContactFormVars.FIELD_TYPES;
 
             // ── Style update ──────────────────────────────────────────────────
             window.lcfStyleUpdate = function(key, value) {
-                styles[key] = (key === 'btn_border_radius' || key === 'input_border_radius')
-                    ? Math.max(0, Math.min(50, parseInt(value) || 0))
-                    : value;
+                if (key === 'btn_border_radius' || key === 'input_border_radius' || key === 'popup_border_radius') {
+                    styles[key] = Math.max(0, Math.min(50, parseInt(value) || 0));
+                } else {
+                    styles[key] = value;
+                }
                 updateStyleInput();
                 updatePreview();
                 // Sync text <-> color
                 const textMap = {
                     primary_color: 's-primary-color-text', secondary_color: 's-secondary-color-text',
                     input_border_color: 's-input-border-text', label_color: 's-label-color-text',
+                    popup_success_color: 's-popup-success-color-text', popup_error_color: 's-popup-error-color-text',
+                    popup_button_color: 's-popup-button-color-text',
                 };
                 if (textMap[key]) {
                     const el = document.getElementById(textMap[key]);
@@ -1321,6 +1339,8 @@ const FIELD_TYPES = window.LacaContactFormVars.FIELD_TYPES;
                     ['s-secondary-color',  's-secondary-color-text',  'secondary_color'],
                     ['s-input-border',     's-input-border-text',     'input_border_color'],
                     ['s-label-color',      's-label-color-text',      'label_color'],
+                    ['s-popup-success-color', 's-popup-success-color-text', 'popup_success_color'],
+                    ['s-popup-error-color',   's-popup-error-color-text',   'popup_error_color'],
                 ];
                 map.forEach(function(item) {
                     var picker = document.getElementById(item[0]);
@@ -1329,6 +1349,14 @@ const FIELD_TYPES = window.LacaContactFormVars.FIELD_TYPES;
                     if (picker) picker.value = val;
                     if (text)   text.value   = val;
                 });
+                // Màu nút Popup — KHÔNG fallback DEFAULT_STYLES (để trống =
+                // tự dùng primary_color lúc hiển thị, xem buildPopupCss()).
+                var popupBtn = document.getElementById('s-popup-button-color');
+                var popupBtnText = document.getElementById('s-popup-button-color-text');
+                var popupBtnVal = styles.popup_button_color || styles.primary_color || DEFAULT_STYLES.primary_color;
+                if (popupBtn) popupBtn.value = popupBtnVal;
+                if (popupBtnText) popupBtnText.value = styles.popup_button_color || '';
+
                 var btnR = document.getElementById('s-btn-radius');
                 var btnN = document.getElementById('s-btn-radius-num');
                 var inpR = document.getElementById('s-input-radius');
@@ -1337,6 +1365,9 @@ const FIELD_TYPES = window.LacaContactFormVars.FIELD_TYPES;
                 var inpS = document.getElementById('s-input-spacing');
                 var cusC = document.getElementById('s-custom-css');
                 var subA = document.getElementById('s-submit-align');
+                var popR = document.getElementById('s-popup-radius');
+                var popN = document.getElementById('s-popup-radius-num');
+                var popC = document.getElementById('s-popup-custom-css');
 
                 if (btnR) btnR.value = styles.btn_border_radius;
                 if (btnN) btnN.value = styles.btn_border_radius;
@@ -1346,6 +1377,9 @@ const FIELD_TYPES = window.LacaContactFormVars.FIELD_TYPES;
                 if (inpS) inpS.value = styles.input_spacing || '';
                 if (cusC) cusC.value = styles.custom_css || '';
                 if (subA) subA.value = styles.submit_align || DEFAULT_STYLES.submit_align;
+                if (popR) popR.value = styles.popup_border_radius !== undefined ? styles.popup_border_radius : DEFAULT_STYLES.popup_border_radius;
+                if (popN) popN.value = styles.popup_border_radius !== undefined ? styles.popup_border_radius : DEFAULT_STYLES.popup_border_radius;
+                if (popC) popC.value = styles.popup_custom_css || '';
 
                 // Khởi tạo chế độ soạn email (Mẫu chuẩn vs HTML thô)
                 var adminTa = document.getElementById('email-admin-body');

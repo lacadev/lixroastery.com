@@ -212,7 +212,8 @@ class ContactFormAjaxHandler
 
         // Build scoped CSS vars từ style_settings
         $styleSettings = json_decode($form['style_settings'] ?? '{}', true) ?: [];
-        $scopedCss     = self::buildScopedCss($wrapId, $styleSettings);
+        $scopedCss     = self::buildScopedCss($wrapId, $styleSettings)
+            . self::buildPopupCss('laca-cf-swal-' . $formId, $styleSettings);
 
         // Enqueue inline CSS once
         if (!wp_style_is('laca-contact-form', 'done')) {
@@ -322,6 +323,7 @@ class ContactFormAjaxHandler
         (function() {
             const FORM_ID  = '<?php echo esc_js($formElId); ?>';
             const AJAX_URL = '<?php echo esc_js($ajaxUrl); ?>';
+            const SWAL_CLASS = '<?php echo esc_js('laca-cf-swal-' . $formId); ?>';
 
             // Wait for DOM + theme.js to expose window.Swal
             function boot() {
@@ -337,7 +339,11 @@ class ContactFormAjaxHandler
 
                 const showSwal = (opts) => {
                     if (typeof window.Swal !== 'undefined') {
-                        window.Swal.fire({ ...opts, ...getThemeColors() });
+                        window.Swal.fire({
+                            ...opts,
+                            ...getThemeColors(),
+                            customClass: { popup: SWAL_CLASS, ...(opts.customClass || {}) },
+                        });
                     } else {
                         // Fallback khi Swal chưa load (SSR/cache edge cases)
                         if (opts.icon === 'success') {
@@ -1040,6 +1046,58 @@ class ContactFormAjaxHandler
         if (!empty($s['custom_css'])) {
             $custom = wp_strip_all_tags($s['custom_css']);
             $custom = str_replace('__FORM__', '#' . $wrapId, $custom);
+            $css .= "\n" . $custom;
+        }
+
+        return $css;
+    }
+
+    /**
+     * CSS cho popup SweetAlert2 (Thành công/Thất bại) — scoped theo class
+     * riêng từng form ($swalClass = "laca-cf-swal-{id}", gắn vào
+     * customClass.popup lúc Swal.fire(), xem showSwal() trong
+     * renderShortcode()). KHÔNG dùng "#wrapId .swal2-popup" như
+     * buildScopedCss() vì SweetAlert2 chèn popup thẳng vào <body>, không
+     * nằm trong DOM của form — scope theo #wrapId sẽ không bao giờ khớp.
+     */
+    private static function buildPopupCss(string $swalClass, array $s): string
+    {
+        if (empty($s)) {
+            return '';
+        }
+
+        $css = '';
+        $sanitizeColor = static fn($v) => preg_replace('/[^a-zA-Z0-9#()\s,%.+-]/', '', (string) $v);
+
+        if (isset($s['popup_border_radius'])) {
+            $css .= '.' . $swalClass . '.swal2-popup{border-radius:' . (int) $s['popup_border_radius'] . 'px}';
+        }
+
+        if (!empty($s['popup_success_color'])) {
+            $c = $sanitizeColor($s['popup_success_color']);
+            $css .= '.' . $swalClass . ' .swal2-icon.swal2-success{border-color:' . $c . '}'
+                . '.' . $swalClass . ' .swal2-success-ring{border-color:' . $c . '4d}'
+                . '.' . $swalClass . ' .swal2-success-line-tip,.' . $swalClass . ' .swal2-success-line-long{background-color:' . $c . '}';
+        }
+
+        if (!empty($s['popup_error_color'])) {
+            $c = $sanitizeColor($s['popup_error_color']);
+            $css .= '.' . $swalClass . ' .swal2-icon.swal2-error{border-color:' . $c . '}'
+                . '.' . $swalClass . ' .swal2-x-mark-line-left,.' . $swalClass . ' .swal2-x-mark-line-right{background-color:' . $c . '}';
+        }
+
+        // Màu nút: ưu tiên popup_button_color riêng, không có thì dùng luôn
+        // primary_color chung của form cho đồng bộ (không bắt buộc cấu hình
+        // thêm 1 màu mới nếu admin không cần tách riêng).
+        $buttonColor = $s['popup_button_color'] ?? $s['primary_color'] ?? '';
+        if (!empty($buttonColor)) {
+            $c = $sanitizeColor($buttonColor);
+            $css .= '.' . $swalClass . ' .swal2-confirm{background-color:' . $c . ' !important;border-color:' . $c . ' !important}';
+        }
+
+        if (!empty($s['popup_custom_css'])) {
+            $custom = wp_strip_all_tags($s['popup_custom_css']);
+            $custom = str_replace('__POPUP__', '.' . $swalClass, $custom);
             $css .= "\n" . $custom;
         }
 
