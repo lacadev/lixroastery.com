@@ -318,13 +318,20 @@ class ContactFormEmailService
                 $valHtml = '<span style="color:#94a3b8;font-style:italic">—</span>';
             }
 
+            // Cột nhãn (trái) fix CỨNG bằng px (width + HTML attribute,
+            // KHÔNG dùng % — Gmail/Gmail app tự tính lại width theo % độc
+            // lập cho TỪNG hàng khi độ dài nội dung giữa các hàng chênh
+            // lệch nhiều (nhãn ngắn như "Họ và tên" vs nhãn dài như "Liên
+            // kết CV / Portfolio..."), khiến cột nhãn/giá trị lệch nhau
+            // giữa các hàng dù cùng 1 bảng. Kèm table-layout:fixed ở bảng
+            // ngoài để trình duyệt/app email không tự co giãn lại cột.
             $rowsHtml .= '<tr>
-              <td style="padding:10px 14px;background:#f8fafc;color:#475569;font-weight:600;width:38%;border-bottom:1px solid #e2e8f0;font-size:13px;vertical-align:top">' . esc_html($label) . '</td>
-              <td style="padding:10px 14px;color:#1e293b;border-bottom:1px solid #e2e8f0;font-size:13px;vertical-align:top">' . $valHtml . '</td>
+              <td width="170" style="padding:10px 14px;background:#f8fafc;color:#475569;font-weight:600;width:170px;max-width:170px;border-bottom:1px solid #e2e8f0;font-size:13px;vertical-align:top;word-break:break-word">' . esc_html($label) . '</td>
+              <td style="padding:10px 14px;color:#1e293b;border-bottom:1px solid #e2e8f0;font-size:13px;vertical-align:top;word-break:break-word">' . $valHtml . '</td>
             </tr>';
         }
 
-        return '<table width="100%" cellpadding="0" cellspacing="0" style="width:100%;border-collapse:collapse;margin:18px 0;border:1px solid #e2e8f0;border-radius:6px;overflow:hidden">
+        return '<table width="100%" cellpadding="0" cellspacing="0" style="width:100%;table-layout:fixed;border-collapse:collapse;margin:18px 0;border:1px solid #e2e8f0;border-radius:6px;overflow:hidden">
           <tbody>' . $rowsHtml . '</tbody>
         </table>';
     }

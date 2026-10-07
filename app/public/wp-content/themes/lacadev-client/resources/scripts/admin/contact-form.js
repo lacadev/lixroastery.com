@@ -6,7 +6,179 @@ import Swal from 'sweetalert2';
 // field trong trình tạo form vì vậy luôn im lặng không hoạt động (code có
 // guard "typeof Sortable === 'undefined'" nên không báo lỗi gì cả).
 import Sortable from 'sortablejs';
-            document.addEventListener("DOMContentLoaded", function() {
+
+// ── Popup Thông báo (Thành công/Thất bại) — logic DÙNG CHUNG giữa tab
+// "Giao diện" của 1 form (state = styles) VÀ panel "Cài đặt chung" ở trang
+// danh sách form (state = popupDefaults, xem khối if(window.LacaCfPopupDefaultsVars)
+// phía dưới). 2 ngữ cảnh KHÔNG BAO GIỜ cùng tồn tại trên 1 trang nên dùng
+// chung HẾT tên hàm window.lcfPopup* không sợ đụng nhau — mỗi trang tự gán
+// lại các hàm này trỏ về đúng controller của state riêng nó.
+function createPopupController(state, serializeFn, nonDefaultLangs, aiTranslateVars) {
+    const ICON_PRESET = ['✓', '✕', '⚠', 'ℹ', '★', '♥', '👍', '👎', '🎉', '🔔', '⏰', '→'];
+    const esc = function(s) { return (s || '').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); };
+
+    function refreshVisibility() {
+        ['success', 'error'].forEach(function(st) {
+            const wrap = document.getElementById('popup-' + st + '-custom-icon-wrap');
+            if (wrap) wrap.hidden = state['popup_' + st + '_icon_mode'] !== 'custom';
+        });
+        const closeTextWrap = document.getElementById('popup-close-text-wrap');
+        const closeIconWrap = document.getElementById('popup-close-icon-wrap');
+        if (closeTextWrap) closeTextWrap.hidden = state.popup_close_mode === 'icon';
+        if (closeIconWrap) closeIconWrap.hidden = state.popup_close_mode !== 'icon';
+        const secWrap = document.getElementById('popup-dismiss-seconds-wrap');
+        if (secWrap) secWrap.hidden = state.popup_dismiss_mode !== 'timer';
+    }
+
+    function renderIconGrid(fieldKey) {
+        const container = document.getElementById(fieldKey + '-icon-grid');
+        if (!container) return;
+        container.innerHTML = ICON_PRESET.map(function(e) {
+            const active = state[fieldKey] === e ? ' is-active' : '';
+            return '<button type="button" class="lcf-icon-pick-btn' + active + '" onclick="lcfPopupIconPick(\'' + fieldKey + '\',\'' + e + '\')">' + e + '</button>';
+        }).join('');
+    }
+
+    function renderI18nBlock(fieldKey, forceOpen) {
+        const container = document.getElementById(fieldKey + '-i18n-container');
+        if (!container || !nonDefaultLangs || !nonDefaultLangs.length) return;
+        const wasOpen = forceOpen || !!container.querySelector('.lcf-i18n-wrap.is-open');
+        const groups = nonDefaultLangs.map(function(lang) {
+            const val = (state[fieldKey + '_i18n'] && state[fieldKey + '_i18n'][lang.slug]) || '';
+            return '<div class="lcf-i18n-lang-group" data-lang="' + esc(lang.slug) + '">'
+                + '<div class="lcf-i18n-lang-title"><span>' + esc(lang.name) + '</span>'
+                + '<button type="button" class="lcf-i18n-ai-btn" onclick="lcfAiTranslatePopupField(\'' + fieldKey + '\',\'' + esc(lang.slug) + '\',this)">✨ Dịch bằng AI</button></div>'
+                + '<div class="lcf-input-row"><input type="text" class="widefat" value="' + esc(val) + '" oninput="lcfPopupI18nUpdate(\'' + fieldKey + '\',\'' + esc(lang.slug) + '\',this.value)"></div>'
+                + '</div>';
+        }).join('');
+        container.innerHTML = '<div class="lcf-i18n-wrap' + (wasOpen ? ' is-open' : '') + '">'
+            + '<button type="button" class="lcf-i18n-toggle" onclick="this.closest(\'.lcf-i18n-wrap\').classList.toggle(\'is-open\')">🌐 Dịch sang ngôn ngữ khác (' + nonDefaultLangs.length + ')</button>'
+            + '<div class="lcf-i18n-block">' + groups + '</div></div>';
+    }
+
+    function update(key, value) {
+        if (key === 'popup_border_radius') {
+            value = Math.max(0, Math.min(40, parseInt(value, 10) || 0));
+        } else if (key === 'popup_dismiss_seconds') {
+            value = Math.max(1, Math.min(30, parseInt(value, 10) || 1));
+        }
+        state[key] = value;
+        serializeFn();
+        refreshVisibility();
+    }
+
+    function i18nUpdate(fieldKey, langSlug, value) {
+        state[fieldKey + '_i18n'] = state[fieldKey + '_i18n'] || {};
+        state[fieldKey + '_i18n'][langSlug] = value;
+        serializeFn();
+    }
+
+    function iconPick(fieldKey, emoji) {
+        update(fieldKey, emoji);
+        renderIconGrid(fieldKey);
+    }
+
+    function aiTranslate(fieldKey, langSlug, btnEl) {
+        if (!aiTranslateVars) return;
+        const body = new URLSearchParams();
+        body.set('action', 'laca_cf_ai_translate_field');
+        body.set('nonce', aiTranslateVars.nonce);
+        body.set('target_lang', langSlug);
+        body.set(fieldKey, state[fieldKey] || '');
+
+        const originalText = btnEl.textContent;
+        btnEl.disabled = true;
+        btnEl.textContent = 'Đang dịch…';
+
+        fetch(aiTranslateVars.ajaxUrl, { method: 'POST', body: body })
+            .then(function(r) { return r.json(); })
+            .then(function(res) {
+                if (!res.success) {
+                    Swal.fire({ title: 'Lỗi dịch AI', text: (res.data && res.data.message) || 'Không thể dịch.', icon: 'error' });
+                    return;
+                }
+                if (res.data && res.data[fieldKey] !== undefined) {
+                    i18nUpdate(fieldKey, langSlug, res.data[fieldKey]);
+                    renderI18nBlock(fieldKey, true);
+                }
+            })
+            .catch(function() {
+                Swal.fire({ title: 'Lỗi', text: 'Không thể kết nối tới máy chủ.', icon: 'error' });
+            })
+            .finally(function() {
+                btnEl.disabled = false;
+                btnEl.textContent = originalText;
+            });
+    }
+
+    function preview(kind) {
+        const title = state['popup_' + kind + '_title'] || (kind === 'success' ? '✓ Thành công!' : '✕ Thất bại');
+        const desc = state['popup_' + kind + '_desc'] || '';
+        const iconMode = state['popup_' + kind + '_icon_mode'] || 'default';
+        const customIcon = state['popup_' + kind + '_custom_icon'] || '';
+        const opts = { title: title, text: desc, confirmButtonText: state.popup_close_text || 'Đóng' };
+        if (iconMode === 'hidden') {
+            // Không set icon — Swal không vẽ icon nào.
+        } else if (iconMode === 'custom' && customIcon) {
+            opts.icon = kind;
+            opts.iconHtml = '<span style="font-size:3.75em;line-height:1">' + customIcon + '</span>';
+        } else {
+            opts.icon = kind;
+        }
+        if ((state.popup_dismiss_mode || 'button') === 'timer') {
+            opts.timer = Math.max(1, parseInt(state.popup_dismiss_seconds, 10) || 3) * 1000;
+            opts.timerProgressBar = true;
+            opts.showConfirmButton = false;
+        }
+        Swal.fire(opts);
+    }
+
+    function initAll() {
+        const simple = [
+            ['popup-success-color', 'popup_success_color'], ['popup-success-color-text', 'popup_success_color'],
+            ['popup-error-color', 'popup_error_color'], ['popup-error-color-text', 'popup_error_color'],
+            ['popup-radius', 'popup_border_radius'], ['popup-radius-num', 'popup_border_radius'],
+            ['popup-custom-css', 'popup_custom_css'],
+            ['popup-success-title', 'popup_success_title'], ['popup-success-desc', 'popup_success_desc'],
+            ['popup-success-icon-mode', 'popup_success_icon_mode'],
+            ['popup-error-title', 'popup_error_title'], ['popup-error-desc', 'popup_error_desc'],
+            ['popup-error-icon-mode', 'popup_error_icon_mode'],
+            ['popup-close-mode', 'popup_close_mode'], ['popup-close-text', 'popup_close_text'],
+            ['popup-dismiss-mode', 'popup_dismiss_mode'], ['popup-dismiss-seconds', 'popup_dismiss_seconds'],
+            ['msg_session_expired', 'msg_session_expired'], ['msg_invalid_form', 'msg_invalid_form'],
+            ['msg_form_not_found', 'msg_form_not_found'], ['msg_field_required_suffix', 'msg_field_required_suffix'],
+            ['msg_invalid_email_suffix', 'msg_invalid_email_suffix'], ['msg_invalid_url_suffix', 'msg_invalid_url_suffix'],
+            ['msg_invalid_phone_suffix', 'msg_invalid_phone_suffix'], ['msg_technical_error', 'msg_technical_error'],
+            ['msg_email_failed', 'msg_email_failed'], ['msg_network_error', 'msg_network_error'],
+        ];
+        simple.forEach(function(pair) {
+            const el = document.getElementById(pair[0]);
+            if (el && state[pair[1]] !== undefined && state[pair[1]] !== null) el.value = state[pair[1]];
+        });
+        // Màu nút popup: để trống = fallback primary_color (không áp dụng
+        // cho global vì không có primary_color global — vẫn an toàn vì
+        // styles.primary_color undefined thì || bỏ qua, input để trống).
+        const popupBtn = document.getElementById('popup-button-color');
+        const popupBtnText = document.getElementById('popup-button-color-text');
+        if (popupBtn) popupBtn.value = state.popup_button_color || state.primary_color || '#2271b1';
+        if (popupBtnText) popupBtnText.value = state.popup_button_color || '';
+
+        ['popup_success_custom_icon', 'popup_error_custom_icon', 'popup_close_text'].forEach(renderIconGrid);
+        ['popup_success_title', 'popup_success_desc', 'popup_error_title', 'popup_error_desc', 'popup_close_text',
+            'msg_session_expired', 'msg_invalid_form', 'msg_form_not_found', 'msg_field_required_suffix',
+            'msg_invalid_email_suffix', 'msg_invalid_url_suffix', 'msg_invalid_phone_suffix',
+            'msg_technical_error', 'msg_email_failed', 'msg_network_error'].forEach(function(k) { renderI18nBlock(k); });
+
+        const overrideToggle = document.getElementById('popup-override-toggle');
+        if (overrideToggle) overrideToggle.checked = !!state.popup_override;
+
+        refreshVisibility();
+    }
+
+    return { update, i18nUpdate, iconPick, aiTranslate, preview, initAll, renderIconGrid, renderI18nBlock, refreshVisibility };
+}
+
+document.addEventListener("DOMContentLoaded", function() {
 if (window.LacaContactFormVars) {
 const FIELD_TYPES = window.LacaContactFormVars.FIELD_TYPES;
             const HAS_OPTIONS = ['select', 'multiselect', 'radio', 'checkbox'];
@@ -66,6 +238,15 @@ const FIELD_TYPES = window.LacaContactFormVars.FIELD_TYPES;
                 btn_text: 'Gửi thông tin', submit_align: 'right',
                 popup_success_color: '#28a745', popup_error_color: '#dc3545',
                 popup_border_radius: 12,
+                // Nội dung/hành vi popup — KHỚP với ContactFormPopupSettings::DEFAULTS
+                // phía PHP (chỉ dùng làm giá trị hiển thị lúc popup_override
+                // tắt; giá trị THẬT dùng khi gửi form luôn do PHP resolve()).
+                popup_success_title: '✓ Thành công!', popup_success_desc: 'Cảm ơn bạn đã liên hệ. Chúng tôi sẽ phản hồi sớm nhất!',
+                popup_success_icon_mode: 'default', popup_success_custom_icon: '',
+                popup_error_title: '✕ Thất bại', popup_error_desc: 'Đã có lỗi xảy ra. Vui lòng thử lại.',
+                popup_error_icon_mode: 'default', popup_error_custom_icon: '',
+                popup_close_mode: 'text', popup_close_text: 'Đóng',
+                popup_dismiss_mode: 'button', popup_dismiss_seconds: 3,
             };
             const SUBMIT_ALIGN_TO_JUSTIFY = { left: 'flex-start', center: 'center', right: 'flex-end' };
             let styles = Object.assign({}, DEFAULT_STYLES, (function() {
@@ -1381,8 +1562,8 @@ const FIELD_TYPES = window.LacaContactFormVars.FIELD_TYPES;
                 const textMap = {
                     primary_color: 's-primary-color-text', secondary_color: 's-secondary-color-text',
                     input_border_color: 's-input-border-text', label_color: 's-label-color-text',
-                    popup_success_color: 's-popup-success-color-text', popup_error_color: 's-popup-error-color-text',
-                    popup_button_color: 's-popup-button-color-text',
+                    popup_success_color: 'popup-success-color-text', popup_error_color: 'popup-error-color-text',
+                    popup_button_color: 'popup-button-color-text',
                 };
                 if (textMap[key]) {
                     const el = document.getElementById(textMap[key]);
@@ -1401,8 +1582,6 @@ const FIELD_TYPES = window.LacaContactFormVars.FIELD_TYPES;
                     ['s-secondary-color',  's-secondary-color-text',  'secondary_color'],
                     ['s-input-border',     's-input-border-text',     'input_border_color'],
                     ['s-label-color',      's-label-color-text',      'label_color'],
-                    ['s-popup-success-color', 's-popup-success-color-text', 'popup_success_color'],
-                    ['s-popup-error-color',   's-popup-error-color-text',   'popup_error_color'],
                 ];
                 map.forEach(function(item) {
                     var picker = document.getElementById(item[0]);
@@ -1411,13 +1590,10 @@ const FIELD_TYPES = window.LacaContactFormVars.FIELD_TYPES;
                     if (picker) picker.value = val;
                     if (text)   text.value   = val;
                 });
-                // Màu nút Popup — KHÔNG fallback DEFAULT_STYLES (để trống =
-                // tự dùng primary_color lúc hiển thị, xem buildPopupCss()).
-                var popupBtn = document.getElementById('s-popup-button-color');
-                var popupBtnText = document.getElementById('s-popup-button-color-text');
-                var popupBtnVal = styles.popup_button_color || styles.primary_color || DEFAULT_STYLES.primary_color;
-                if (popupBtn) popupBtn.value = popupBtnVal;
-                if (popupBtnText) popupBtnText.value = styles.popup_button_color || '';
+                // Màu/bo góc/CSS popup (popup_success_color, popup_error_color,
+                // popup_button_color, popup_border_radius, popup_custom_css) +
+                // mọi field popup mới (title/desc/icon/nút đóng/tự ẩn) đều do
+                // popupCtl.initAll() xử lý chung (xem createPopupController()).
 
                 var btnR = document.getElementById('s-btn-radius');
                 var btnN = document.getElementById('s-btn-radius-num');
@@ -1427,9 +1603,6 @@ const FIELD_TYPES = window.LacaContactFormVars.FIELD_TYPES;
                 var inpS = document.getElementById('s-input-spacing');
                 var cusC = document.getElementById('s-custom-css');
                 var subA = document.getElementById('s-submit-align');
-                var popR = document.getElementById('s-popup-radius');
-                var popN = document.getElementById('s-popup-radius-num');
-                var popC = document.getElementById('s-popup-custom-css');
 
                 if (btnR) btnR.value = styles.btn_border_radius;
                 if (btnN) btnN.value = styles.btn_border_radius;
@@ -1439,9 +1612,6 @@ const FIELD_TYPES = window.LacaContactFormVars.FIELD_TYPES;
                 if (inpS) inpS.value = styles.input_spacing || '';
                 if (cusC) cusC.value = styles.custom_css || '';
                 if (subA) subA.value = styles.submit_align || DEFAULT_STYLES.submit_align;
-                if (popR) popR.value = styles.popup_border_radius !== undefined ? styles.popup_border_radius : DEFAULT_STYLES.popup_border_radius;
-                if (popN) popN.value = styles.popup_border_radius !== undefined ? styles.popup_border_radius : DEFAULT_STYLES.popup_border_radius;
-                if (popC) popC.value = styles.popup_custom_css || '';
 
                 // Khởi tạo chế độ soạn email (Mẫu chuẩn vs HTML thô)
                 var adminTa = document.getElementById('email-admin-body');
@@ -1853,8 +2023,37 @@ const FIELD_TYPES = window.LacaContactFormVars.FIELD_TYPES;
                 });
             });
 
+            // ── Popup Thông báo (Thành công/Thất bại) — state = styles (per-form) ──
+            const popupCtl = createPopupController(
+                styles,
+                updateStyleInput,
+                NON_DEFAULT_LANGS,
+                window.LacaContactFormVars.aiTranslate || null
+            );
+            window.lcfPopupFieldUpdate = popupCtl.update;
+            window.lcfPopupI18nUpdate = popupCtl.i18nUpdate;
+            window.lcfAiTranslatePopupField = popupCtl.aiTranslate;
+            window.lcfPopupIconPick = popupCtl.iconPick;
+            window.lcfPopupPreview = popupCtl.preview;
+
+            // Bật/tắt tuỳ chỉnh Popup riêng cho form này (mặc định dùng cài
+            // đặt chung) — ẩn mờ + disable toàn bộ input bên trong, KHÔNG
+            // xoá khỏi DOM để giữ nguyên giá trị đã nhập khi tích lại sau.
+            window.lcfPopupOverrideToggle = function(checked) {
+                styles.popup_override = checked;
+                updateStyleInput();
+                const block = document.getElementById('popup-fields-block');
+                if (!block) return;
+                block.style.opacity = checked ? '' : '0.45';
+                block.querySelectorAll('input, select, textarea, button').forEach(function(el) {
+                    el.disabled = !checked;
+                });
+            };
+
             // ── Init ──────────────────────────────────────────────────────────
             initStyleControls();
+            popupCtl.initAll();
+            window.lcfPopupOverrideToggle(!!styles.popup_override);
             renderBtnTextI18n();
             renderCustomerEmailI18n();
             renderRows();
@@ -1867,7 +2066,65 @@ const FIELD_TYPES = window.LacaContactFormVars.FIELD_TYPES;
 
 // Global actions for Submissions & List Views
 document.addEventListener('DOMContentLoaded', () => {
-    
+
+    // ── Panel "Cài đặt Popup & Thông báo chung" (trang danh sách form) ──
+    // state = popupDefaults (KHÁC đối tượng styles của trang sửa form) —
+    // dùng CHUNG createPopupController() (định nghĩa ở module scope phía
+    // trên) nên window.lcfPopup* ở đây trỏ về đúng state riêng của trang này.
+    if (window.LacaCfPopupDefaultsVars) {
+        const popupDefaults = Object.assign({}, window.LacaCfPopupDefaultsVars.values || {});
+        const nonDefaultLangs = (window.LacaCfPopupDefaultsVars.languages || []).filter(function(l) { return !l.is_default; });
+
+        function updatePopupDefaultsInput() {
+            const input = document.getElementById('popup-json-input');
+            if (input) input.value = JSON.stringify(popupDefaults);
+        }
+
+        const popupCtl = createPopupController(
+            popupDefaults,
+            updatePopupDefaultsInput,
+            nonDefaultLangs,
+            window.LacaCfPopupDefaultsVars.aiTranslate || null
+        );
+        window.lcfPopupFieldUpdate = popupCtl.update;
+        window.lcfPopupI18nUpdate = popupCtl.i18nUpdate;
+        window.lcfAiTranslatePopupField = popupCtl.aiTranslate;
+        window.lcfPopupIconPick = popupCtl.iconPick;
+        window.lcfPopupPreview = popupCtl.preview;
+        // Trang này không có khái niệm "primary_color" riêng form nào —
+        // lcfStyleUpdate (dùng cho popup_success_color/error_color/button_color/
+        // border_radius/custom_css) cần tồn tại y hệt trang sửa form.
+        window.lcfStyleUpdate = function(key, value) {
+            if (key === 'popup_border_radius') {
+                value = Math.max(0, Math.min(40, parseInt(value, 10) || 0));
+            }
+            popupDefaults[key] = value;
+            updatePopupDefaultsInput();
+            const textMap = {
+                popup_success_color: 'popup-success-color-text',
+                popup_error_color: 'popup-error-color-text',
+                popup_button_color: 'popup-button-color-text',
+            };
+            if (textMap[key]) {
+                const el = document.getElementById(textMap[key]);
+                if (el && el !== document.activeElement) el.value = value;
+            }
+        };
+
+        // popupCtl.initAll() đã tự fill cả popup_success_color/popup_error_color/
+        // popup_button_color/popup_border_radius/popup_custom_css (cùng field
+        // list "simple" dùng chung với trang sửa form), không cần lặp lại.
+        popupCtl.initAll();
+        updatePopupDefaultsInput();
+
+        const form = document.getElementById('popup-defaults-form');
+        if (form) {
+            form.addEventListener('submit', function() {
+                updatePopupDefaultsInput();
+            });
+        }
+    }
+
     // Delete form from list
     document.querySelectorAll('.laca-cf-delete-form').forEach(form => {
         form.addEventListener('submit', (e) => {

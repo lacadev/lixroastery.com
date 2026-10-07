@@ -41,25 +41,34 @@ class ContactFormAjaxHandler
 
     public function handleSubmit(): void
     {
+        // $lang cần có TRƯỚC cả bước check nonce/form — client luôn gửi kèm
+        // "_lang" bất kể nonce còn hạn hay không, để 2 lỗi sớm nhất (phiên
+        // hết hạn, form không hợp lệ) vẫn hiện đúng ngôn ngữ trang.
+        $lang = sanitize_key($_POST['_lang'] ?? (function_exists('pll_current_language') ? (pll_current_language() ?: '') : ''));
+        // Chưa biết form nào (hoặc form không tồn tại) nên chỉ dùng được
+        // cài đặt GLOBAL — không có style_settings riêng để override.
+        $earlyPopup = ContactFormPopupSettings::resolveForLang([], $lang);
+
         // 1. Nonce check
         if (!check_ajax_referer('laca_contact_submit_nonce', '_nonce', false)) {
-            wp_send_json_error(['message' => 'Phiên làm việc hết hạn. Vui lòng tải lại trang.'], 403);
+            wp_send_json_error(['message' => $earlyPopup['msg_session_expired']], 403);
         }
 
         // 2. Form ID
         $formId = absint($_POST['form_id'] ?? 0);
         if (!$formId) {
-            wp_send_json_error(['message' => 'Form không hợp lệ.'], 400);
+            wp_send_json_error(['message' => $earlyPopup['msg_invalid_form']], 400);
         }
 
         $form = ContactFormTable::getForm($formId);
         if (!$form) {
-            wp_send_json_error(['message' => 'Form không tồn tại.'], 404);
+            wp_send_json_error(['message' => $earlyPopup['msg_form_not_found']], 404);
         }
 
         $fields = self::extractFlatFields($form);
 
-        $lang = sanitize_key($_POST['_lang'] ?? (function_exists('pll_current_language') ? (pll_current_language() ?: '') : ''));
+        $styleSettings = json_decode($form['style_settings'] ?? '{}', true) ?: [];
+        $popup         = ContactFormPopupSettings::resolveForLang($styleSettings, $lang);
 
         // 3. Validate & Sanitize từng field
         $data   = [];
@@ -97,7 +106,7 @@ class ContactFormAjaxHandler
             if ($required) {
                 $isEmpty = is_array($rawValue) ? empty($rawValue) : (trim((string) $rawValue) === '');
                 if ($isEmpty) {
-                    $errors[] = $label . ' là bắt buộc.';
+                    $errors[] = $label . ' ' . $popup['msg_field_required_suffix'];
                     continue;
                 }
             }
@@ -106,7 +115,7 @@ class ContactFormAjaxHandler
             $cleanValue = self::sanitizeByType($type, $rawValue, $field);
 
             // Validate format
-            $formatError = self::validateFormat($type, $cleanValue, $label);
+            $formatError = self::validateFormat($type, $cleanValue, $label, $popup);
             if ($formatError) {
                 $errors[] = $formatError;
                 continue;
@@ -171,16 +180,16 @@ class ContactFormAjaxHandler
         } catch (\Throwable $e) {
             error_log('[ContactForm] handleSubmit() lỗi khi lưu DB/gửi email: ' . $e->getMessage() . ' tại ' . $e->getFile() . ':' . $e->getLine());
             wp_send_json_error([
-                'message' => 'Thông tin của bạn đã được ghi nhận, nhưng hệ thống đang gặp sự cố kỹ thuật. Vui lòng liên hệ trực tiếp nếu cần gấp.',
+                'message' => $popup['msg_technical_error'],
             ], 500);
         }
 
         if ($emailSent) {
-            wp_send_json_success(['message' => 'Gửi thành công! Chúng tôi sẽ liên hệ lại sớm.']);
+            wp_send_json_success(['message' => $popup['popup_success_desc']]);
         }
 
         wp_send_json_error([
-            'message' => 'Thông tin của bạn đã được lưu lại, nhưng hệ thống gửi email đang gặp sự cố. Vui lòng liên hệ trực tiếp nếu cần gấp.',
+            'message' => $popup['msg_email_failed'],
         ], 500);
     }
 
@@ -212,8 +221,19 @@ class ContactFormAjaxHandler
 
         // Build scoped CSS vars từ style_settings
         $styleSettings = json_decode($form['style_settings'] ?? '{}', true) ?: [];
+        $currentLang   = function_exists('pll_current_language') ? (pll_current_language() ?: '') : '';
+        // resolve(): gộp cài đặt GLOBAL (laca_cf_popup_global_settings) với
+        // override riêng form này (nếu style_settings.popup_override bật),
+        // rồi chọn đúng bản dịch theo $currentLang cho MỌI chuỗi popup/
+        // thông báo hệ thống — thay thế toàn bộ string hardcode tiếng Việt
+        // trước đây (xem ContactFormPopupSettings).
+        $popup         = ContactFormPopupSettings::resolveForLang($styleSettings, $currentLang);
+        // buildPopupCss() cần primary_color (CHỈ có ở $styleSettings per-form,
+        // KHÔNG thuộc schema popup chung) để fallback màu nút khi admin để
+        // trống popup_button_color — giữ đúng hành vi cũ.
+        $popupCssSource = $popup + ['primary_color' => $styleSettings['primary_color'] ?? ''];
         $scopedCss     = self::buildScopedCss($wrapId, $styleSettings)
-            . self::buildPopupCss('laca-cf-swal-' . $formId, $styleSettings);
+            . self::buildPopupCss('laca-cf-swal-' . $formId, $popupCssSource);
 
         // Enqueue inline CSS once
         if (!wp_style_is('laca-contact-form', 'done')) {
@@ -318,12 +338,48 @@ class ContactFormAjaxHandler
         // về submit thường của trình duyệt (tải lại trang) — đúng lỗi thật
         // đã gặp trên production.
         $cspNonceAttr = defined('LACA_CSP_NONCE') ? ' nonce="' . esc_attr(LACA_CSP_NONCE) . '"' : '';
+
+        // Build sẵn phần "khung" (title/icon/nút đóng/tự ẩn) cho popup
+        // Thành công & Thất bại — PHẦN NỘI DUNG ĐỘNG (message cụ thể từ JSON
+        // response, hoặc lỗi mạng) được JS merge đè lên lúc showSwal().
+        $buildPopupBase = static function (string $state) use ($popup): array {
+            $opts = [
+                'title' => $popup['popup_' . $state . '_title'],
+                'confirmButtonText' => $popup['popup_close_text'],
+            ];
+            $iconMode = $popup['popup_' . $state . '_icon_mode'] ?? 'default';
+            $customIcon = (string) ($popup['popup_' . $state . '_custom_icon'] ?? '');
+            if ($iconMode === 'hidden') {
+                // Không set 'icon' — Swal không vẽ icon/vòng tròn nào.
+            } elseif ($iconMode === 'custom' && $customIcon !== '') {
+                $opts['icon'] = $state;
+                $opts['iconHtml'] = '<span style="font-size:3.75em;line-height:1">' . esc_html($customIcon) . '</span>';
+            } else {
+                $opts['icon'] = $state;
+            }
+            if (($popup['popup_dismiss_mode'] ?? 'button') === 'timer') {
+                $opts['timer'] = max(1, (int) ($popup['popup_dismiss_seconds'] ?? 3)) * 1000;
+                $opts['timerProgressBar'] = true;
+                $opts['showConfirmButton'] = false;
+            }
+            return $opts;
+        };
+        $popupSuccessBase = $buildPopupBase('success');
+        $popupErrorBase   = $buildPopupBase('error');
         ?>
         <script<?php echo $cspNonceAttr; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>
         (function() {
             const FORM_ID  = '<?php echo esc_js($formElId); ?>';
             const AJAX_URL = '<?php echo esc_js($ajaxUrl); ?>';
             const SWAL_CLASS = '<?php echo esc_js('laca-cf-swal-' . $formId); ?>';
+            const POPUP_SUCCESS_BASE = <?php echo wp_json_encode($popupSuccessBase); ?>;
+            const POPUP_ERROR_BASE   = <?php echo wp_json_encode($popupErrorBase); ?>;
+            const POPUP_SUCCESS_DESC = <?php echo wp_json_encode($popup['popup_success_desc']); ?>;
+            const POPUP_ERROR_DESC   = <?php echo wp_json_encode($popup['popup_error_desc']); ?>;
+            const MSG_NETWORK_ERROR  = <?php echo wp_json_encode($popup['msg_network_error']); ?>;
+            const MSG_FIELD_REQUIRED = <?php echo wp_json_encode(__('Trường này', 'laca') . ' ' . $popup['msg_field_required_suffix']); ?>;
+            const MSG_INVALID_EMAIL  = <?php echo wp_json_encode($popup['msg_invalid_email_suffix']); ?>;
+            const MSG_INVALID_PHONE  = <?php echo wp_json_encode($popup['msg_invalid_phone_suffix']); ?>;
 
             // Wait for DOM + theme.js to expose window.Swal
             function boot() {
@@ -396,7 +452,7 @@ class ContactFormAjaxHandler
                             isEmpty = !el.value.trim();
                         }
                         if (isEmpty) {
-                            showFieldError(el, 'Trường này là bắt buộc.');
+                            showFieldError(el, MSG_FIELD_REQUIRED);
                             valid = false;
                         }
                     });
@@ -404,14 +460,14 @@ class ContactFormAjaxHandler
                     // Email format check
                     const emailEl = formEl.querySelector('input[type="email"]');
                     if (emailEl && emailEl.value.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailEl.value.trim())) {
-                        showFieldError(emailEl, 'Email không hợp lệ.');
+                        showFieldError(emailEl, MSG_INVALID_EMAIL);
                         valid = false;
                     }
 
                     // Phone format check (Vietnam)
                     const phoneEl = formEl.querySelector('input[type="tel"]');
                     if (phoneEl && phoneEl.value.trim() && !/^[0-9\s\+\-\(\)]{8,20}$/.test(phoneEl.value.trim())) {
-                        showFieldError(phoneEl, 'Số điện thoại không hợp lệ.');
+                        showFieldError(phoneEl, MSG_INVALID_PHONE);
                         valid = false;
                     }
 
@@ -424,7 +480,7 @@ class ContactFormAjaxHandler
                     el.addEventListener('input', function() { clearFieldError(el); });
                     el.addEventListener('blur', function() {
                         if (el.getAttribute('data-required') === 'true' && !el.value.trim()) {
-                            showFieldError(el, 'Trường này là bắt buộc.');
+                            showFieldError(el, MSG_FIELD_REQUIRED);
                         } else {
                             clearFieldError(el);
                         }
@@ -527,34 +583,25 @@ class ContactFormAjaxHandler
                     .then(function(res) { return res.json(); })
                     .then(function(json) {
                         if (json.success) {
-                            showSwal({
-                                title: '✓ Thành công!',
-                                text: json.data.message || 'Cảm ơn bạn đã liên hệ. Chúng tôi sẽ phản hồi sớm nhất!',
-                                icon: 'success',
-                                confirmButtonText: 'Đóng',
-                            });
+                            showSwal(Object.assign({}, POPUP_SUCCESS_BASE, {
+                                text: json.data.message || POPUP_SUCCESS_DESC,
+                            }));
                             formEl.reset();
                             clearAllErrors();
                             syncSubmitLock(); // reset() không tự bắn "change" trên checkbox
                         } else {
                             const msg = (json.data && json.data.message)
                                 ? json.data.message
-                                : 'Đã có lỗi xảy ra. Vui lòng thử lại.';
-                            showSwal({
-                                title: '✕ Thất bại',
+                                : POPUP_ERROR_DESC;
+                            showSwal(Object.assign({}, POPUP_ERROR_BASE, {
                                 html: '<p>' + msg + '</p>',
-                                icon: 'error',
-                                confirmButtonText: 'Thử lại',
-                            });
+                            }));
                         }
                     })
                     .catch(function() {
-                        showSwal({
-                            title: '✕ Lỗi kết nối',
-                            text: 'Không thể kết nối đến máy chủ. Vui lòng kiểm tra kết nối internet.',
-                            icon: 'error',
-                            confirmButtonText: 'Đã hiểu',
-                        });
+                        showSwal(Object.assign({}, POPUP_ERROR_BASE, {
+                            text: MSG_NETWORK_ERROR,
+                        }));
                     })
                     .finally(function() {
                         btn.setAttribute('aria-busy', 'false');
@@ -965,16 +1012,16 @@ class ContactFormAjaxHandler
         };
     }
 
-    private static function validateFormat(string $type, mixed $value, string $label): string
+    private static function validateFormat(string $type, mixed $value, string $label, array $popup): string
     {
         if ($type === 'email' && !empty($value) && !is_email($value)) {
-            return $label . ': Địa chỉ email không hợp lệ.';
+            return $label . ': ' . $popup['msg_invalid_email_suffix'];
         }
         if ($type === 'url' && !empty($value) && !filter_var($value, FILTER_VALIDATE_URL)) {
-            return $label . ': Đường dẫn URL không hợp lệ.';
+            return $label . ': ' . $popup['msg_invalid_url_suffix'];
         }
         if ($type === 'phone' && !empty($value) && !preg_match('/^[0-9\s\+\-\(\)]{8,20}$/', $value)) {
-            return $label . ': Số điện thoại không hợp lệ.';
+            return $label . ': ' . $popup['msg_invalid_phone_suffix'];
         }
         return '';
     }

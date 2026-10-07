@@ -64,6 +64,7 @@ class ContactFormManager
         add_action('admin_post_laca_cf_delete_submission', [$this, 'handleDeleteSubmission']);
         add_action('admin_post_laca_cf_mark_read', [$this, 'handleMarkRead']);
         add_action('admin_post_laca_cf_export_csv', [$this, 'handleExportCsv']);
+        add_action('admin_post_laca_cf_save_popup_defaults', [$this, 'handleSavePopupDefaults']);
         // Nút "✨ Dịch bằng AI" trong khối "🌐 Dịch" của builder — tái dùng
         // AITranslationHandler có sẵn (Laca Admin > AI Translation), KHÔNG
         // phải tính năng dịch riêng mới. Gợi ý AI, admin vẫn sửa tay được.
@@ -354,6 +355,36 @@ class ContactFormManager
                 </a>
             </div>
 
+            <p>
+                <button type="button" class="button" onclick="var p=document.getElementById('popup-defaults-panel');p.hidden=!p.hidden;">
+                    ⚙️ Cài đặt Popup &amp; Thông báo chung <small style="font-weight:400">(mặc định cho mọi form — mỗi form có thể tự tuỳ chỉnh riêng ở tab "Giao diện")</small>
+                </button>
+            </p>
+            <div id="popup-defaults-panel" class="laca-cf-wrap" hidden style="background:#fff;border:1px solid #dcdcde;border-radius:6px;padding:16px;margin-bottom:16px">
+                <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" id="popup-defaults-form">
+                    <?php wp_nonce_field(self::NONCE_ACTION, self::NONCE_FIELD); ?>
+                    <input type="hidden" name="action" value="laca_cf_save_popup_defaults">
+                    <input type="hidden" name="popup_json" id="popup-json-input" value="">
+                    <div class="lcf-style-grid">
+                        <?php
+                        echo ContactFormPopupSettings::renderFieldsHtml(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+                        echo ContactFormPopupSettings::renderSystemMessagesHtml(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+                        ?>
+                    </div>
+                    <p><button type="submit" class="button button-primary">Lưu cài đặt chung</button></p>
+                </form>
+            </div>
+            <script>
+                window.LacaCfPopupDefaultsVars = <?php echo wp_json_encode([
+                    'values' => ContactFormPopupSettings::getGlobal(),
+                    'languages' => self::getActiveLanguages(),
+                    'aiTranslate' => [
+                        'ajaxUrl' => admin_url('admin-ajax.php'),
+                        'nonce' => wp_create_nonce('laca_cf_ai_translate'),
+                    ],
+                ]); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>;
+            </script>
+
             <?php if ($message): ?>
                 <div class="laca-cf-notice laca-cf-notice--<?php echo esc_attr($message['type']); ?>">
                     <?php echo esc_html($message['text']); ?>
@@ -643,47 +674,14 @@ class ContactFormManager
 
                                     <div class="laca-cf-field-group" style="grid-column:1/-1">
                                         <h3 class="lcf-email-section-title" style="margin:18px 0 4px">💬 Popup thông báo (Thành công / Thất bại)</h3>
-                                        <p class="lcf-form-help" style="margin:0 0 10px">Tuỳ chỉnh màu sắc popup hiện ra sau khi khách bấm "Gửi thông tin".</p>
+                                        <label class="lcf-checkbox-label" style="margin:0 0 10px">
+                                            <input type="checkbox" id="popup-override-toggle"
+                                                   onchange="lcfPopupOverrideToggle(this.checked)">
+                                            <span>Tuỳ chỉnh riêng cho form này <small style="font-weight:400">(bỏ tích = dùng Cài đặt Popup chung ở trang danh sách form)</small></span>
+                                        </label>
                                     </div>
-                                    <div class="laca-cf-field-group">
-                                        <label class="lcf-form-label">Màu Thành công</label>
-                                        <div class="lcf-color-row">
-                                            <input type="color" id="s-popup-success-color" oninput="lcfStyleUpdate('popup_success_color',this.value)">
-                                            <input type="text" class="lcf-color-text" id="s-popup-success-color-text" maxlength="7"
-                                                   oninput="lcfStyleUpdate('popup_success_color',this.value);document.getElementById('s-popup-success-color').value=this.value">
-                                        </div>
-                                    </div>
-                                    <div class="laca-cf-field-group">
-                                        <label class="lcf-form-label">Màu Thất bại</label>
-                                        <div class="lcf-color-row">
-                                            <input type="color" id="s-popup-error-color" oninput="lcfStyleUpdate('popup_error_color',this.value)">
-                                            <input type="text" class="lcf-color-text" id="s-popup-error-color-text" maxlength="7"
-                                                   oninput="lcfStyleUpdate('popup_error_color',this.value);document.getElementById('s-popup-error-color').value=this.value">
-                                        </div>
-                                    </div>
-                                    <div class="laca-cf-field-group">
-                                        <label class="lcf-form-label">Màu nút trong Popup <small style="font-weight:400">(để trống = dùng Màu chính)</small></label>
-                                        <div class="lcf-color-row">
-                                            <input type="color" id="s-popup-button-color" oninput="lcfStyleUpdate('popup_button_color',this.value)">
-                                            <input type="text" class="lcf-color-text" id="s-popup-button-color-text" maxlength="7"
-                                                   oninput="lcfStyleUpdate('popup_button_color',this.value);document.getElementById('s-popup-button-color').value=this.value">
-                                        </div>
-                                    </div>
-                                    <div class="laca-cf-field-group">
-                                        <label class="lcf-form-label">Bo góc Popup (px)</label>
-                                        <div class="lcf-range-row">
-                                            <input type="range" min="0" max="40" id="s-popup-radius"
-                                                   oninput="lcfStyleUpdate('popup_border_radius',this.value);document.getElementById('s-popup-radius-num').value=this.value">
-                                            <input type="number" min="0" max="40" id="s-popup-radius-num" class="lcf-range-num"
-                                                   oninput="lcfStyleUpdate('popup_border_radius',this.value);document.getElementById('s-popup-radius').value=this.value">
-                                            <span class="lcf-range-unit">px</span>
-                                        </div>
-                                    </div>
-                                    <div class="laca-cf-field-group" style="grid-column:1/-1">
-                                        <label class="lcf-form-label">Custom CSS riêng cho Popup</label>
-                                        <textarea class="widefat laca-cf-email-body" id="s-popup-custom-css" rows="4"
-                                                  oninput="lcfStyleUpdate('popup_custom_css',this.value)"
-                                                  placeholder="/* Dùng __POPUP__ để ám chỉ class popup (ví dụ: __POPUP__ .swal2-title { font-size:22px } */"></textarea>
+                                    <div id="popup-fields-block" style="display:contents">
+                                        <?php echo ContactFormPopupSettings::renderFieldsHtml(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
                                     </div>
                                 </div>
                             </div>
@@ -1046,8 +1044,16 @@ class ContactFormManager
         // Parse + sanitize style_json
         $styleJson = stripslashes($_POST['style_json'] ?? '{}');
         $rawStyle = json_decode($styleJson, true) ?: [];
-        $cleanStyle = [];
-        foreach (['primary_color', 'secondary_color', 'input_border_color', 'label_color', 'popup_success_color', 'popup_error_color', 'popup_button_color'] as $colorKey) {
+        // Toàn bộ key popup_*/msg_* (nội dung + hành vi popup Thành công/
+        // Thất bại) đi qua ContactFormPopupSettings::sanitize() DÙNG CHUNG
+        // với panel cài đặt global ở trang danh sách — tránh trùng lặp logic
+        // sanitize (xem class đó để biết đầy đủ schema). $withSystemMessages
+        // = false vì msg_* CHỈ cấu hình được ở global, form riêng không có
+        // quyền "khoá" nhầm thông báo hệ thống của site.
+        $cleanStyle = ContactFormPopupSettings::sanitize($rawStyle, false);
+        $cleanStyle['popup_override'] = !empty($rawStyle['popup_override']);
+
+        foreach (['primary_color', 'secondary_color', 'input_border_color', 'label_color'] as $colorKey) {
             if (!empty($rawStyle[$colorKey])) {
                 $hex = sanitize_hex_color($rawStyle[$colorKey]);
                 if ($hex) {
@@ -1059,9 +1065,6 @@ class ContactFormManager
             if (isset($rawStyle[$numKey])) {
                 $cleanStyle[$numKey] = max(0, min(50, (int) $rawStyle[$numKey]));
             }
-        }
-        if (isset($rawStyle['popup_border_radius'])) {
-            $cleanStyle['popup_border_radius'] = max(0, min(40, (int) $rawStyle['popup_border_radius']));
         }
         if (!empty($rawStyle['btn_text'])) {
             $cleanStyle['btn_text'] = sanitize_text_field($rawStyle['btn_text']);
@@ -1124,9 +1127,6 @@ class ContactFormManager
             // Strip tags but allow proper CSS syntax, wp_strip_all_tags handles basic sanitization
             $cleanStyle['custom_css'] = wp_strip_all_tags(stripslashes($rawStyle['custom_css']));
         }
-        if (!empty($rawStyle['popup_custom_css'])) {
-            $cleanStyle['popup_custom_css'] = wp_strip_all_tags(stripslashes($rawStyle['popup_custom_css']));
-        }
 
         $invalidEmails = [];
         $data = [
@@ -1158,6 +1158,24 @@ class ContactFormManager
         }
 
         wp_redirect($this->buildRedirectUrl($redirectId, 'saved'));
+        exit;
+    }
+
+    /**
+     * Lưu cài đặt Popup & Thông báo CHUNG (áp dụng mặc định cho mọi form
+     * trừ khi form tự bật popup_override) — panel ở trang danh sách form.
+     */
+    public function handleSavePopupDefaults(): void
+    {
+        if (!current_user_can(self::CAP)) {
+            wp_die(esc_html__('Không có quyền.', 'laca'));
+        }
+        check_admin_referer(self::NONCE_ACTION, self::NONCE_FIELD);
+
+        $raw = json_decode(stripslashes($_POST['popup_json'] ?? '{}'), true) ?: [];
+        ContactFormPopupSettings::saveGlobal($raw);
+
+        wp_redirect(admin_url('admin.php?page=' . self::MENU_SLUG . '&laca_msg=popup_saved'));
         exit;
     }
 
@@ -1232,7 +1250,16 @@ class ContactFormManager
         $handler = new AITranslationHandler();
         $result = [];
 
-        foreach (['label', 'placeholder', 'other_label', 'content', 'btn_text', 'email_customer_subject', 'email_customer_body'] as $key) {
+        $popupTranslateKeys = [
+            'label', 'placeholder', 'other_label', 'content', 'btn_text',
+            'email_customer_subject', 'email_customer_body',
+            'popup_success_title', 'popup_success_desc', 'popup_error_title', 'popup_error_desc',
+            'popup_close_text',
+            'msg_session_expired', 'msg_invalid_form', 'msg_form_not_found',
+            'msg_field_required_suffix', 'msg_invalid_email_suffix', 'msg_invalid_url_suffix',
+            'msg_invalid_phone_suffix', 'msg_technical_error', 'msg_email_failed', 'msg_network_error',
+        ];
+        foreach ($popupTranslateKeys as $key) {
             $text = trim((string) ($_POST[$key] ?? ''));
             if ($text === '') {
                 continue;
@@ -1241,6 +1268,21 @@ class ContactFormManager
                 'email_customer_subject' => 'Tiêu đề email xác nhận gửi tới khách hàng sau khi điền form liên hệ',
                 'email_customer_body' => 'Nội dung email HTML xác nhận gửi tới khách hàng sau khi điền form liên hệ. Giữ nguyên toàn bộ cấu trúc HTML, thẻ style và các tên biến bắt đầu bằng dấu $ như $name, $phone_number, $date, $time, $ip',
                 'btn_text' => 'Chữ trên nút gửi (Submit button) của form liên hệ',
+                'popup_success_title' => 'Tiêu đề popup hiện ra khi khách gửi form liên hệ THÀNH CÔNG',
+                'popup_success_desc' => 'Mô tả ngắn trong popup khi khách gửi form liên hệ THÀNH CÔNG',
+                'popup_error_title' => 'Tiêu đề popup hiện ra khi khách gửi form liên hệ THẤT BẠI',
+                'popup_error_desc' => 'Mô tả ngắn mặc định trong popup khi khách gửi form liên hệ THẤT BẠI',
+                'popup_close_text' => 'Chữ trên nút đóng popup thông báo của form liên hệ',
+                'msg_session_expired' => 'Thông báo lỗi khi phiên làm việc (nonce) hết hạn lúc gửi form liên hệ',
+                'msg_invalid_form' => 'Thông báo lỗi khi ID form liên hệ không hợp lệ',
+                'msg_form_not_found' => 'Thông báo lỗi khi form liên hệ không tồn tại',
+                'msg_field_required_suffix' => 'Cụm từ nối sau tên field báo field đó bắt buộc nhập (vd "Email là bắt buộc.")',
+                'msg_invalid_email_suffix' => 'Thông báo lỗi khi email nhập sai định dạng',
+                'msg_invalid_url_suffix' => 'Thông báo lỗi khi đường dẫn URL nhập sai định dạng',
+                'msg_invalid_phone_suffix' => 'Thông báo lỗi khi số điện thoại nhập sai định dạng',
+                'msg_technical_error' => 'Thông báo khi hệ thống lỗi kỹ thuật lúc lưu/gửi email nhưng dữ liệu khách gửi vẫn đã được lưu lại',
+                'msg_email_failed' => 'Thông báo khi gửi email xác nhận thất bại nhưng dữ liệu khách gửi vẫn đã được lưu lại',
+                'msg_network_error' => 'Thông báo khi trình duyệt khách mất kết nối mạng lúc gửi form liên hệ',
                 default => 'Nhãn/nội dung 1 field trong form liên hệ trên website',
             };
             $translated = $handler->translateText($text, $targetLang, $context);
@@ -1409,6 +1451,7 @@ class ContactFormManager
             'duplicated' => ['type' => 'success', 'text' => 'Đã nhân bản form. Sửa tên/nội dung nếu cần.'],
             'marked_read' => ['type' => 'success', 'text' => 'Đã đánh dấu đã đọc.'],
             'error_name' => ['type' => 'error', 'text' => 'Vui lòng nhập tên form.'],
+            'popup_saved' => ['type' => 'success', 'text' => 'Đã lưu cài đặt Popup chung.'],
         ];
         return $map[$msg] ?? null;
     }
