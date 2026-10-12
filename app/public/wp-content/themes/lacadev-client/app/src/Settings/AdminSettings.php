@@ -1107,18 +1107,6 @@ class AdminSettings
 						->set_width(70)
 						->set_html('<i class="fa-regular fa-lightbulb-on"></i> Dọn dẹp bộ nhớ cuối trang để giảm nguy cơ memory leak.'),
 
-					Field::make('checkbox', 'enable_set_cache_headers', __('Đặt cache header nâng cao', 'laca'))
-						->set_width(30),
-					Field::make('html', 'enable_set_cache_headers_desc')
-						->set_width(70)
-						->set_html('<i class="fa-regular fa-lightbulb-on"></i> Đặt cache header bảo vệ trang admin và user login.'),
-
-					Field::make('checkbox', 'enable_compression', __('Bật gzip nén dữ liệu', 'laca'))
-						->set_width(30),
-					Field::make('html', 'enable_compression_desc')
-						->set_width(70)
-						->set_html('<i class="fa-regular fa-lightbulb-on"></i> Bật gzip để bảo vệ dữ liệu truyền tải.'),
-
 					Field::make('checkbox', 'enable_performance_monitoring', __('Giám sát hiệu suất', 'laca'))
 						->set_width(30),
 					Field::make('html', 'enable_performance_monitoring_desc')

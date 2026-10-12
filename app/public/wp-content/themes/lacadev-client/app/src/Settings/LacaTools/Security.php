@@ -133,34 +133,4 @@ class Security
         }
     }
 
-    /**
-     * Đặt cache header bảo vệ trang admin và user login
-     */
-    public function setCacheHeaders()
-    {
-        if (!is_admin() && !is_user_logged_in()) {
-            if (preg_match('/\.(css|js|png|jpg|jpeg|gif|webp|svg|woff|woff2|ttf|eot|ico)$/', $_SERVER['REQUEST_URI'])) {
-                header('Cache-Control: public, max-age=31536000, immutable');
-                header('Expires: ' . gmdate('D, d M Y H:i:s', time() + 31536000) . ' GMT');
-                header('Pragma: public');
-            } else {
-                header('Cache-Control: public, max-age=3600, must-revalidate');
-                header('Expires: ' . gmdate('D, d M Y H:i:s', time() + 3600) . ' GMT');
-                header('Vary: Accept-Encoding');
-            }
-        }
-    }
-
-    /**
-     * Bật gzip để bảo vệ dữ liệu truyền tải
-     */
-    public function enableCompression()
-    {
-        if (!is_admin()) {
-            if (function_exists('gzencode') && !ob_get_contents()) {
-                ob_start('ob_gzhandler');
-            }
-        }
-    }
-
 }
