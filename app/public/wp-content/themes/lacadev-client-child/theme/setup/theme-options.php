@@ -252,7 +252,7 @@ $optionsPage = Container::make('theme_options', __('Laca Theme', 'laca'))
 
 	->add_tab(__('📧 Newsletter', 'laca'), [
 		Field::make('html', 'newsletter_intro', __('', 'laca'))
-			->set_html('<div style="background:#f0f9ff;border:1px solid #bae6fd;border-radius:6px;padding:14px 16px;margin:8px 0"><p style="margin:0 0 8px;font-weight:600;color:#0369a1">🔧 Newsletter ở footer</p><p style="margin:0;font-size:13px;color:#374151">Khách nhập email ở footer → website gửi <strong>email xác nhận</strong> (qua SMTP ở Laca Admin → SMTP) → khách bấm link mới chính thức đăng ký. Mọi email đều có link <strong>huỷ đăng ký</strong>. Xem danh sách theo trạng thái và xuất CSV tại menu <strong>Newsletter</strong> bên trái.</p></div>'),
+			->set_html('<div style="background:#f0f9ff;border:1px solid #bae6fd;border-radius:6px;padding:14px 16px;margin:8px 0"><p style="margin:0 0 8px;font-weight:600;color:#0369a1">🔧 Newsletter ở footer</p><p style="margin:0;font-size:13px;color:#374151">Khách nhập email ở footer và bấm Subscribe là <strong>đăng ký luôn</strong>, không cần xác nhận. Website gửi 1 <strong>email cảm ơn</strong> (qua SMTP ở Laca Admin → SMTP), cuối email có link <strong>huỷ đăng ký</strong>. Xem danh sách theo trạng thái và xuất CSV tại menu <strong>Newsletter</strong> bên trái.</p></div>'),
 
 		Field::make('checkbox', 'newsletter_enable' . currentLanguage(), __('Hiển thị form Newsletter ở footer', 'laca'))
 			->set_option_value('yes')
@@ -274,8 +274,8 @@ $optionsPage = Container::make('theme_options', __('Laca Theme', 'laca'))
 		Field::make('text', 'newsletter_privacy_url' . currentLanguage(), __('Link chính sách bảo mật (không bắt buộc)', 'laca'))
 			->set_attribute('placeholder', 'VD: /chinh-sach-bao-mat/'),
 
-		Field::make('text', 'newsletter_msg_pending' . currentLanguage(), __('Thông báo: đã gửi email xác nhận', 'laca'))
-			->set_default_value($nlDefaults['newsletter_msg_pending']),
+		Field::make('text', 'newsletter_msg_success' . currentLanguage(), __('Thông báo: đăng ký thành công', 'laca'))
+			->set_default_value($nlDefaults['newsletter_msg_success']),
 		Field::make('text', 'newsletter_msg_exists' . currentLanguage(), __('Thông báo: email đã đăng ký', 'laca'))
 			->set_width(50)
 			->set_default_value($nlDefaults['newsletter_msg_exists']),
@@ -284,8 +284,7 @@ $optionsPage = Container::make('theme_options', __('Laca Theme', 'laca'))
 			->set_default_value($nlDefaults['newsletter_msg_invalid']),
 		Field::make('text', 'newsletter_msg_error' . currentLanguage(), __('Thông báo: lỗi chung', 'laca'))
 			->set_width(50)
-			->set_default_value($nlDefaults['newsletter_msg_error'])
-			->set_help_text(__('Cũng hiện khi website không gửi được email xác nhận (SMTP lỗi).', 'laca')),
+			->set_default_value($nlDefaults['newsletter_msg_error']),
 		Field::make('text', 'newsletter_msg_limit' . currentLanguage(), __('Thông báo: gửi quá nhiều lần', 'laca'))
 			->set_width(50)
 			->set_default_value($nlDefaults['newsletter_msg_limit'])
@@ -294,19 +293,15 @@ $optionsPage = Container::make('theme_options', __('Laca Theme', 'laca'))
 			->set_default_value($nlDefaults['newsletter_msg_captcha'])
 			->set_help_text(__('reCAPTCHA v3 tự bật cho form này khi đã nhập đủ Site Key + Secret Key ở Laca Admin → Google reCAPTCHA.', 'laca')),
 
-		Field::make('separator', 'newsletter_sep_mail', __('Email xác nhận đăng ký', 'laca')),
+		Field::make('separator', 'newsletter_sep_mail', __('Email cảm ơn sau khi đăng ký', 'laca')),
 		Field::make('text', 'newsletter_mail_subject' . currentLanguage(), __('Tiêu đề email', 'laca'))
 			->set_default_value($nlDefaults['newsletter_mail_subject']),
 		Field::make('textarea', 'newsletter_mail_body' . currentLanguage(), __('Nội dung email', 'laca'))
 			->set_rows(4)
 			->set_default_value($nlDefaults['newsletter_mail_body'])
-			->set_help_text(__('Mỗi dòng là 1 đoạn. Nút xác nhận và link huỷ đăng ký được tự thêm bên dưới.', 'laca')),
-		Field::make('text', 'newsletter_mail_button' . currentLanguage(), __('Chữ nút xác nhận', 'laca'))
-			->set_default_value($nlDefaults['newsletter_mail_button']),
+			->set_help_text(__('Mỗi dòng là 1 đoạn. Link huỷ đăng ký được tự thêm ở cuối email.', 'laca')),
 
-		Field::make('separator', 'newsletter_sep_pages', __('Trang sau khi bấm link trong email', 'laca')),
-		Field::make('text', 'newsletter_msg_success' . currentLanguage(), __('Xác nhận thành công', 'laca'))
-			->set_default_value($nlDefaults['newsletter_msg_success']),
+		Field::make('separator', 'newsletter_sep_pages', __('Trang sau khi bấm link huỷ đăng ký trong email', 'laca')),
 		Field::make('text', 'newsletter_page_unsubscribe' . currentLanguage(), __('Hỏi lại trước khi huỷ', 'laca'))
 			->set_width(70)
 			->set_default_value($nlDefaults['newsletter_page_unsubscribe']),
@@ -333,7 +328,7 @@ $optionsPage = Container::make('theme_options', __('Laca Theme', 'laca'))
 				. '<pre style="background:#fff;border:1px solid #d1d5db;border-radius:4px;padding:10px;font-size:12px;overflow:auto;margin:0">'
 				. esc_html("const SECRET = 'doi-thanh-chuoi-bi-mat';\n\n// Mỗi email 1 dòng: đã có thì cập nhật trạng thái, chưa có thì thêm mới.\nfunction doPost(e) {\n  const data = JSON.parse(e.postData.contents);\n  if (data.secret !== SECRET) {\n    return ContentService.createTextOutput('forbidden');\n  }\n  const lock = LockService.getScriptLock();\n  lock.waitLock(10000);\n  try {\n    const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheets()[0];\n    const row = [data.created_at, data.email, data.lang, data.source, data.status, data.updated_at];\n    const last = sheet.getLastRow();\n    const emails = last > 0 ? sheet.getRange(1, 2, last, 1).getValues().flat() : [];\n    const index = emails.indexOf(data.email);\n    if (index >= 0) {\n      sheet.getRange(index + 1, 1, 1, row.length).setValues([row]);\n    } else {\n      sheet.appendRow(row);\n    }\n  } finally {\n    lock.releaseLock();\n  }\n  return ContentService.createTextOutput('ok');\n}")
 				. '</pre>'
-				. '<p style="margin:8px 0 0;font-size:12px;color:#6b7280">Trạng thái: <code>pending</code> = chờ bấm link xác nhận, <code>subscribed</code> = đã đăng ký, <code>unsubscribed</code> = đã huỷ. Sheet chỉ là bản đồng bộ — nếu Sheet lỗi, email vẫn được lưu trong website.</p>'
+				. '<p style="margin:8px 0 0;font-size:12px;color:#6b7280">Trạng thái: <code>subscribed</code> = đã đăng ký, <code>unsubscribed</code> = đã huỷ. Sheet chỉ là bản đồng bộ — nếu Sheet lỗi, email vẫn được lưu trong website.</p>'
 				. '</div>'
 			),
 		Field::make('text', 'newsletter_sheet_webhook', __('URL Apps Script Web App', 'laca'))
@@ -344,7 +339,7 @@ $optionsPage = Container::make('theme_options', __('Laca Theme', 'laca'))
 			->set_width(40),
 
 		Field::make('html', 'newsletter_provider_heading', __('', 'laca'))
-			->set_html('<div style="background:#fefce8;border:1px solid #fde68a;border-radius:6px;padding:14px 16px;margin:24px 0 12px"><p style="margin:0 0 6px;font-weight:600;color:#854d0e">✉️ Dịch vụ gửi newsletter (không bắt buộc)</p><p style="margin:0;font-size:13px;color:#374151">Email đã <strong>xác nhận</strong> sẽ tự được thêm vào danh sách trên Mailchimp hoặc Brevo để bạn gửi newsletter từ đó; khách huỷ trên website thì tự gỡ khỏi danh sách. Có thể dùng song song với Google Sheet. Kết quả đồng bộ gần nhất hiện ở menu <strong>Newsletter</strong>.</p></div>'),
+			->set_html('<div style="background:#fefce8;border:1px solid #fde68a;border-radius:6px;padding:14px 16px;margin:24px 0 12px"><p style="margin:0 0 6px;font-weight:600;color:#854d0e">✉️ Dịch vụ gửi newsletter (không bắt buộc)</p><p style="margin:0;font-size:13px;color:#374151">Email đăng ký mới sẽ tự được thêm vào danh sách trên Mailchimp hoặc Brevo để bạn gửi newsletter từ đó; khách huỷ trên website thì tự gỡ khỏi danh sách. Có thể dùng song song với Google Sheet. Kết quả đồng bộ gần nhất hiện ở menu <strong>Newsletter</strong>.</p></div>'),
 
 		Field::make('select', 'newsletter_provider', __('Dịch vụ', 'laca'))
 			->set_options([

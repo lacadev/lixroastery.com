@@ -8,8 +8,10 @@
  * vẫn không mất. Dùng bảng riêng thay vì CPT để danh sách lớn vẫn nhẹ (không
  * đụng wp_posts/wp_postmeta) và có UNIQUE(email) chặn trùng ở tầng DB.
  *
- * Vòng đời: pending (chờ bấm link xác nhận trong email) → subscribed →
- * unsubscribed (bấm link huỷ, hoặc huỷ từ Mailchimp/Brevo qua webhook).
+ * Vòng đời: subscribed (bấm Subscribe là đăng ký luôn, không cần xác nhận qua
+ * email) → unsubscribed (bấm link huỷ, hoặc huỷ từ Mailchimp/Brevo qua webhook).
+ * `pending` chỉ còn để đọc dữ liệu cũ của bản double opt-in (DB 1.1) — bản
+ * 1.2 đã chuyển hết sang subscribed.
  *
  * @package LacaDevClientChild
  */
@@ -25,9 +27,9 @@ class NewsletterSubscribers
     public const STATUS_UNSUBSCRIBED = 'unsubscribed';
     public const STATUSES = [self::STATUS_PENDING, self::STATUS_SUBSCRIBED, self::STATUS_UNSUBSCRIBED];
 
-    private const DB_VERSION = '1.1';
+    private const DB_VERSION = '1.2';
     private const DB_VERSION_OPTION = 'lix_newsletter_db_version';
-    private const COLUMNS = 'id, email, lang, source_url, status, created_at, confirm_sent_at, confirmed_at, unsubscribed_at';
+    private const COLUMNS = 'id, email, lang, source_url, status, created_at, confirmed_at, unsubscribed_at';
 
     public static function table(): string
     {
@@ -58,9 +60,8 @@ class NewsletterSubscribers
             email varchar(190) NOT NULL,
             lang varchar(10) NOT NULL DEFAULT '',
             source_url varchar(255) NOT NULL DEFAULT '',
-            status varchar(20) NOT NULL DEFAULT 'pending',
+            status varchar(20) NOT NULL DEFAULT 'subscribed',
             created_at datetime NOT NULL,
-            confirm_sent_at datetime DEFAULT NULL,
             confirmed_at datetime DEFAULT NULL,
             unsubscribed_at datetime DEFAULT NULL,
             PRIMARY KEY  (id),
@@ -69,10 +70,10 @@ class NewsletterSubscribers
             KEY created_at (created_at)
         ) {$charset};");
 
-        // Bản 1.0 chưa có xác nhận qua email — email đăng ký từ trước coi như
-        // đã đồng ý (đã tick nhận tin ở form), chuyển thẳng sang subscribed.
-        if ($installed === '1.0') {
-            $wpdb->query("UPDATE {$table} SET status = 'subscribed', confirmed_at = created_at WHERE status = 'pending' AND confirmed_at IS NULL");
+        // Bỏ double opt-in (1.2): email đang "chờ xác nhận" từ bản 1.0/1.1 coi như
+        // đã đăng ký — khách đã chủ động bấm Subscribe ở form.
+        if (in_array($installed, ['1.0', '1.1'], true)) {
+            $wpdb->query("UPDATE {$table} SET status = 'subscribed', confirmed_at = COALESCE(confirmed_at, created_at), unsubscribed_at = NULL WHERE status = 'pending'");
         }
 
         update_option(self::DB_VERSION_OPTION, self::DB_VERSION, false);
@@ -93,12 +94,12 @@ class NewsletterSubscribers
     }
 
     /**
-     * Thêm email mới ở trạng thái pending.
+     * Thêm email mới, đăng ký luôn (subscribed).
      *
      * @return array|null Dòng vừa tạo; null nếu email đã tồn tại (có thể do
      *                    request khác vừa chèn cùng lúc).
      */
-    public static function addPending(string $email, string $lang, string $source_url): ?array
+    public static function add(string $email, string $lang, string $source_url): ?array
     {
         global $wpdb;
         $table = self::table();
@@ -106,11 +107,12 @@ class NewsletterSubscribers
         // INSERT IGNORE + UNIQUE(email): chặn trùng nguyên tử, không bị race
         // khi 2 request cùng email tới gần như đồng thời.
         $wpdb->query($wpdb->prepare(
-            "INSERT IGNORE INTO {$table} (email, lang, source_url, status, created_at) VALUES (%s, %s, %s, %s, %s)",
+            "INSERT IGNORE INTO {$table} (email, lang, source_url, status, created_at, confirmed_at) VALUES (%s, %s, %s, %s, %s, %s)",
             $email,
             $lang,
             $source_url,
-            self::STATUS_PENDING,
+            self::STATUS_SUBSCRIBED,
+            current_time('mysql'),
             current_time('mysql')
         ));
 
@@ -140,12 +142,6 @@ class NewsletterSubscribers
         $wpdb->update(self::table(), $data, ['id' => $id]);
 
         return self::find($id);
-    }
-
-    public static function markConfirmSent(int $id): void
-    {
-        global $wpdb;
-        $wpdb->update(self::table(), ['confirm_sent_at' => current_time('mysql')], ['id' => $id]);
     }
 
     public static function delete(int $id): void

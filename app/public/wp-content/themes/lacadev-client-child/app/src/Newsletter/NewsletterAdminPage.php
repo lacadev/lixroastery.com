@@ -30,7 +30,6 @@ class NewsletterAdminPage
     {
         return [
             NewsletterSubscribers::STATUS_SUBSCRIBED => __('Đã đăng ký', 'laca'),
-            NewsletterSubscribers::STATUS_PENDING => __('Chờ xác nhận', 'laca'),
             NewsletterSubscribers::STATUS_UNSUBSCRIBED => __('Đã huỷ', 'laca'),
         ];
     }
@@ -194,8 +193,8 @@ class NewsletterAdminPage
 
     private function renderSyncStatus(): void
     {
-        // Email xác nhận luôn có (gửi qua SMTP của site); dịch vụ ngoài thì tuỳ cấu hình.
-        $services = ['mail' => __('Email xác nhận (SMTP)', 'laca')];
+        // Email cảm ơn luôn có (gửi qua SMTP của site); dịch vụ ngoài thì tuỳ cấu hình.
+        $services = ['mail' => __('Email cảm ơn (SMTP)', 'laca')];
         if (NewsletterSync::sheetUrl() !== '') {
             $services['sheet'] = 'Google Sheet';
         }

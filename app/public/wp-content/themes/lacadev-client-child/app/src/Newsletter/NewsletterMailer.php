@@ -1,11 +1,13 @@
 <?php
 
 /**
- * Gửi email xác nhận đăng ký Newsletter (double opt-in) qua wp_mail() — tức
- * qua SMTP đã cấu hình ở Laca Admin → SMTP (ThemeSettings::useGmailSmtp()).
+ * Gửi email cảm ơn khi khách đăng ký Newsletter qua wp_mail() — tức qua SMTP
+ * đã cấu hình ở Laca Admin → SMTP (ThemeSettings::useGmailSmtp()). Không cần
+ * xác nhận: bấm Subscribe ở form là đã đăng ký, email chỉ để cảm ơn + có
+ * link huỷ đăng ký.
  *
- * Website chỉ gửi email giao dịch (xác nhận). Newsletter hàng loạt nên gửi
- * từ Mailchimp/Brevo: SMTP Gmail giới hạn ~500 thư/ngày và dễ vào spam.
+ * Website chỉ gửi email giao dịch này. Newsletter hàng loạt nên gửi từ
+ * Mailchimp/Brevo: SMTP Gmail giới hạn ~500 thư/ngày và dễ vào spam.
  *
  * @package LacaDevClientChild
  */
@@ -17,19 +19,26 @@ if (!defined('ABSPATH')) {
 class NewsletterMailer
 {
     /**
+     * Gửi SAU khi đã trả phản hồi cho khách (SMTP mất 1–3 giây) — form hiện
+     * "cảm ơn" ngay, không phải chờ.
+     */
+    public static function queueWelcome(array $subscriber): void
+    {
+        NewsletterSync::afterResponse(static function () use ($subscriber) {
+            self::sendWelcome($subscriber);
+        });
+    }
+
+    /**
      * @return bool true nếu wp_mail() nhận gửi thành công.
      */
-    public static function sendConfirmation(array $subscriber): bool
+    public static function sendWelcome(array $subscriber): bool
     {
         $lang = (string) $subscriber['lang'];
-        $confirm_url = NewsletterEndpoints::url('confirm', $subscriber);
         $unsubscribe_url = NewsletterEndpoints::url('unsubscribe', $subscriber);
 
-        $subject = NewsletterTexts::get('newsletter_mail_subject', $lang);
-        $html = self::renderConfirmation(
+        $html = self::renderWelcome(
             NewsletterTexts::get('newsletter_mail_body', $lang),
-            NewsletterTexts::get('newsletter_mail_button', $lang),
-            $confirm_url,
             $unsubscribe_url,
             NewsletterTexts::get('newsletter_page_unsubscribe_button', $lang),
             $lang
@@ -44,14 +53,9 @@ class NewsletterMailer
             'List-Unsubscribe-Post: List-Unsubscribe=One-Click',
         ];
 
-        $sent = wp_mail($subscriber['email'], $subject, $html, $headers);
+        $sent = wp_mail($subscriber['email'], NewsletterTexts::get('newsletter_mail_subject', $lang), $html, $headers);
 
-        // Chỉ ghi mốc khi gửi được — gửi lỗi thì khách thử lại ngay được,
-        // không bị chặn bởi giới hạn "5 phút/lần" của AJAX handler.
-        if ($sent) {
-            NewsletterSubscribers::markConfirmSent((int) $subscriber['id']);
-        }
-        NewsletterSync::saveStatus('mail', $sent ? true : __('wp_mail() không gửi được email xác nhận — kiểm tra cấu hình SMTP ở Laca Admin → SMTP.', 'laca'));
+        NewsletterSync::saveStatus('mail', $sent ? true : __('wp_mail() không gửi được email cảm ơn — kiểm tra cấu hình SMTP ở Laca Admin → SMTP.', 'laca'));
 
         return $sent;
     }
@@ -61,9 +65,10 @@ class NewsletterMailer
      * bỏ <style> và không hỗ trợ flex/grid. Màu lấy theo $primaryColor /
      * $darkColor của site (_variables.scss) vì email không đọc được SCSS.
      */
-    private static function renderConfirmation(string $body, string $button, string $confirm_url, string $unsubscribe_url, string $unsubscribe_label, string $lang): string
+    private static function renderWelcome(string $body, string $unsubscribe_url, string $unsubscribe_label, string $lang): string
     {
         $site_name = get_bloginfo('name');
+        $home_url = ($lang !== '' && function_exists('pll_home_url')) ? pll_home_url($lang) : home_url('/');
         $paragraphs = array_filter(array_map('trim', explode("\n", $body)));
 
         ob_start();
@@ -77,21 +82,14 @@ class NewsletterMailer
                 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;background:#ffffff;border-top:3px solid #3d5a45;">
                     <tr>
                         <td style="padding:32px 32px 8px;font-family:Arial,Helvetica,sans-serif;font-size:20px;letter-spacing:0.04em;text-transform:uppercase;color:#121212;">
-                            <?php echo esc_html($site_name); ?>
+                            <a href="<?php echo esc_url($home_url); ?>" style="color:#121212;text-decoration:none;"><?php echo esc_html($site_name); ?></a>
                         </td>
                     </tr>
                     <tr>
-                        <td style="padding:8px 32px 0;font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.6;color:#121212;">
+                        <td style="padding:8px 32px 16px;font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.6;color:#121212;">
                             <?php foreach ($paragraphs as $paragraph): ?>
                                 <p style="margin:0 0 16px;"><?php echo esc_html($paragraph); ?></p>
                             <?php endforeach; ?>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td style="padding:8px 32px 32px;">
-                            <a href="<?php echo esc_url($confirm_url); ?>" style="display:inline-block;padding:12px 24px;background:#3d5a45;color:#ffffff;font-family:Arial,Helvetica,sans-serif;font-size:15px;text-decoration:none;">
-                                <?php echo esc_html($button); ?>
-                            </a>
                         </td>
                     </tr>
                 </table>

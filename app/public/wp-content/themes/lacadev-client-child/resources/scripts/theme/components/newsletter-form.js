@@ -76,7 +76,7 @@ const bindNewsletterForm = ( form ) => {
 	}
 
 	const showMessage = ( code ) => {
-		const isError = ! [ 'pending', 'exists' ].includes( code );
+		const isError = ! [ 'subscribed', 'exists' ].includes( code );
 		message.textContent = messages[ code ] || messages.error || '';
 		message.classList.toggle( 'newsletter__msg--error', isError );
 		message.hidden = false;

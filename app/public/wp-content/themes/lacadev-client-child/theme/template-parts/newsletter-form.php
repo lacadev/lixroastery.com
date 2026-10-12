@@ -28,7 +28,7 @@ $nl_consent = (string) getOption('newsletter_consent') !== '' ? NewsletterTexts:
 $nl_privacy_url = (string) getOption('newsletter_privacy_url');
 
 $nl_messages = [
-    'pending' => NewsletterTexts::get('newsletter_msg_pending', $nl_lang),
+    'subscribed' => NewsletterTexts::get('newsletter_msg_success', $nl_lang),
     'exists' => NewsletterTexts::get('newsletter_msg_exists', $nl_lang),
     'invalid' => NewsletterTexts::get('newsletter_msg_invalid', $nl_lang),
     'captcha' => NewsletterTexts::get('newsletter_msg_captcha', $nl_lang),

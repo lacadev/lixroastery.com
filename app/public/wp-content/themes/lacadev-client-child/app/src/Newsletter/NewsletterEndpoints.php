@@ -3,7 +3,8 @@
 /**
  * Link trong email Newsletter + webhook từ Mailchimp/Brevo.
  *
- * - `/?lix_newsletter=confirm&id=..&token=..`     → xác nhận đăng ký (GET).
+ * - `/?lix_newsletter=confirm&id=..&token=..`     → chỉ còn để link trong thư
+ *   xác nhận CŨ (bản double opt-in đã bỏ) không bị lỗi — hiện trang cảm ơn.
  * - `/?lix_newsletter=unsubscribe&id=..&token=..` → GET hiện nút xác nhận,
  *   POST mới huỷ thật. Không huỷ ngay khi GET vì bộ quét link của Outlook/
  *   Gmail/antivirus tự "mở" mọi link trong thư — sẽ huỷ nhầm người dùng.
@@ -98,17 +99,9 @@ class NewsletterEndpoints
         $lang = (string) $subscriber['lang'];
 
         if ($action === 'confirm') {
-            // Đã huỷ thì link xác nhận CŨ không được đăng ký lại (bấm nhầm thư
-            // cũ / bộ quét link tự mở) — muốn quay lại phải nhập form, nhận
-            // thư xác nhận mới (AJAX handler chuyển về pending).
-            if ($subscriber['status'] === NewsletterSubscribers::STATUS_UNSUBSCRIBED) {
-                $this->render('unsubscribed', $lang, $id, $token);
-            }
-            if ($subscriber['status'] === NewsletterSubscribers::STATUS_PENDING) {
-                $subscriber = NewsletterSubscribers::setStatus($id, NewsletterSubscribers::STATUS_SUBSCRIBED);
-                NewsletterSync::queue(NewsletterSubscribers::STATUS_SUBSCRIBED, $subscriber);
-            }
-            $this->render('confirmed', $lang, $id, $token);
+            // Link xác nhận cũ không được đăng ký lại email đã huỷ (bấm nhầm thư
+            // cũ / bộ quét link tự mở) — muốn quay lại thì nhập lại form.
+            $this->render($subscriber['status'] === NewsletterSubscribers::STATUS_UNSUBSCRIBED ? 'unsubscribed' : 'confirmed', $lang, $id, $token);
         }
 
         $is_post = isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] === 'POST';

@@ -4,9 +4,9 @@
  * Newsletter AJAX Handler
  *
  * Nhận email từ form đăng ký ở footer (theme/template-parts/newsletter-form.php),
- * lưu ở trạng thái pending, gửi email xác nhận (NewsletterMailer) rồi giao
- * NewsletterSync đẩy sang Google Sheet (nếu đã cấu hình). Mailchimp/Brevo
- * chỉ nhận email sau khi khách bấm link xác nhận (NewsletterEndpoints).
+ * đăng ký luôn (không cần xác nhận qua email), gửi email cảm ơn
+ * (NewsletterMailer) rồi giao NewsletterSync đẩy sang Google Sheet /
+ * Mailchimp / Brevo (nếu đã cấu hình).
  *
  * Trả về `code` thay vì câu thông báo: câu hiển thị lấy từ Theme Options
  * theo ngôn ngữ trang (in sẵn vào data-* của form), vì request admin-ajax
@@ -65,7 +65,7 @@ class NewsletterAjaxHandler
         // Honeypot: người thật không thấy ô này; bot điền vào thì giả vờ
         // thành công để bot không dò ra cơ chế chặn.
         if (!empty($_POST['website'])) {
-            wp_send_json_success(['code' => 'pending']);
+            wp_send_json_success(['code' => 'subscribed']);
         }
 
         if (function_exists('lacadev_check_rate_limit')) {
@@ -95,38 +95,25 @@ class NewsletterAjaxHandler
         $subscriber = NewsletterSubscribers::findByEmail($email);
 
         if (!$subscriber) {
-            $subscriber = NewsletterSubscribers::addPending($email, $lang, $source_url);
+            $subscriber = NewsletterSubscribers::add($email, $lang, $source_url);
             if (!$subscriber) {
                 // Request khác vừa chèn cùng email trong tích tắc.
-                wp_send_json_success(['code' => 'pending']);
+                wp_send_json_success(['code' => 'exists']);
             }
-            NewsletterSync::queue(NewsletterSubscribers::STATUS_PENDING, $subscriber);
-        } elseif ($subscriber['status'] === NewsletterSubscribers::STATUS_SUBSCRIBED) {
-            wp_send_json_success(['code' => 'exists']);
         } elseif ($subscriber['status'] === NewsletterSubscribers::STATUS_UNSUBSCRIBED) {
-            // Đăng ký lại sau khi huỷ: phải xác nhận lại qua email.
-            $subscriber = NewsletterSubscribers::setStatus((int) $subscriber['id'], NewsletterSubscribers::STATUS_PENDING, ['lang' => $lang]);
-            NewsletterSync::queue(NewsletterSubscribers::STATUS_PENDING, $subscriber);
-        } elseif ($lang !== '' && $subscriber['lang'] !== $lang) {
-            // Đang chờ xác nhận nhưng nhập lại ở trang ngôn ngữ khác → gửi lại
-            // thư theo ngôn ngữ mới, kể cả vừa gửi (không áp giới hạn 5 phút).
-            $subscriber = NewsletterSubscribers::setStatus((int) $subscriber['id'], NewsletterSubscribers::STATUS_PENDING, ['lang' => $lang]);
-        } elseif ($this->sentRecently($subscriber)) {
-            // Vẫn đang chờ xác nhận và vừa gửi thư — không gửi dồn dập.
-            wp_send_json_success(['code' => 'pending']);
+            // Đăng ký lại sau khi huỷ — khách chủ động bấm Subscribe nên đăng ký luôn.
+            $subscriber = NewsletterSubscribers::setStatus((int) $subscriber['id'], NewsletterSubscribers::STATUS_SUBSCRIBED, ['lang' => $lang]);
+        } else {
+            // Đã đăng ký: không gửi lại email cảm ơn.
+            wp_send_json_success(['code' => 'exists']);
         }
 
-        if (!NewsletterMailer::sendConfirmation($subscriber)) {
-            wp_send_json_error(['code' => 'error'], 500);
-        }
+        // Gửi email cảm ơn + đồng bộ sau khi đã trả phản hồi — SMTP lỗi cũng
+        // không ảnh hưởng việc đăng ký (đã lưu DB), admin thấy lỗi ở menu Newsletter.
+        NewsletterMailer::queueWelcome($subscriber);
+        NewsletterSync::queue(NewsletterSubscribers::STATUS_SUBSCRIBED, $subscriber);
 
-        wp_send_json_success(['code' => 'pending']);
-    }
-
-    private function sentRecently(array $subscriber): bool
-    {
-        $sent_at = $subscriber['confirm_sent_at'] ? strtotime($subscriber['confirm_sent_at']) : 0;
-        return $sent_at && (strtotime(current_time('mysql')) - $sent_at) < 5 * MINUTE_IN_SECONDS;
+        wp_send_json_success(['code' => 'subscribed']);
     }
 
     private function verifyRecaptcha(): bool

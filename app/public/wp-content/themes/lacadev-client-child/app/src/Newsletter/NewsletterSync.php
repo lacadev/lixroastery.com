@@ -4,11 +4,11 @@
  * Đồng bộ email Newsletter sang dịch vụ ngoài: Google Sheet (Apps Script),
  * Mailchimp hoặc Brevo — mỗi dịch vụ bật/tắt độc lập trong Theme Options.
  *
- * - Google Sheet: nhận MỌI lần đổi trạng thái (pending/subscribed/
- *   unsubscribed) — Apps Script cập nhật đúng dòng của email đó.
- * - Mailchimp/Brevo: chỉ thêm khi đã xác nhận (subscribed), gỡ khi huỷ.
- *   Website đã tự làm double opt-in nên Mailchimp thêm thẳng "subscribed",
- *   tránh khách nhận 2 email xác nhận.
+ * - Google Sheet: nhận MỌI lần đổi trạng thái (subscribed/unsubscribed) —
+ *   Apps Script cập nhật đúng dòng của email đó.
+ * - Mailchimp/Brevo: thêm khi đăng ký (subscribed), gỡ khi huỷ. Thêm thẳng
+ *   "subscribed" (không bật double opt-in của Mailchimp) vì site không yêu
+ *   cầu xác nhận qua email.
  *
  * Chạy ở hook `shutdown` SAU khi đã trả phản hồi cho khách (finish request),
  * nên khách không phải chờ API ngoài. Không dùng WP-Cron vì site có thể tắt
@@ -28,6 +28,8 @@ class NewsletterSync
     private const STATUS_OPTION = 'lix_newsletter_sync_status';
     private const TIMEOUT = 8;
 
+    private static bool $finished = false;
+
     /**
      * @param string $origin Provider gây ra thay đổi (webhook) — bỏ qua gọi
      *                       ngược lại chính provider đó.
@@ -38,15 +40,30 @@ class NewsletterSync
             return;
         }
 
-        add_action('shutdown', static function () use ($status, $subscriber, $origin) {
-            // Đóng kết nối với trình duyệt trước, rồi mới gọi API ngoài.
-            if (function_exists('litespeed_finish_request')) {
-                litespeed_finish_request();
-            } elseif (function_exists('fastcgi_finish_request')) {
-                fastcgi_finish_request();
+        self::afterResponse(static function () use ($status, $subscriber, $origin) {
+            self::run($status, $subscriber, $origin);
+        });
+    }
+
+    /**
+     * Chạy việc chậm (gọi API ngoài, gửi SMTP) ở `shutdown`, sau khi đã đóng
+     * kết nối với trình duyệt — khách nhận phản hồi ngay, không phải chờ.
+     */
+    public static function afterResponse(callable $callback): void
+    {
+        add_action('shutdown', static function () use ($callback) {
+            // Biến tĩnh của lớp (không dùng `static` trong closure — mỗi closure
+            // có bản riêng): chỉ đóng kết nối 1 lần dù nhiều việc cùng xếp hàng.
+            if (!self::$finished) {
+                self::$finished = true;
+                if (function_exists('litespeed_finish_request')) {
+                    litespeed_finish_request();
+                } elseif (function_exists('fastcgi_finish_request')) {
+                    fastcgi_finish_request();
+                }
             }
 
-            self::run($status, $subscriber, $origin);
+            $callback();
         });
     }
 
@@ -181,9 +198,9 @@ class NewsletterSync
         ];
 
         if ($subscribe) {
-            // PUT theo hash email = "thêm hoặc cập nhật"; khách đã xác nhận
-            // qua email của website nên đặt thẳng subscribed (kể cả người
-            // từng huỷ rồi đăng ký lại).
+            // PUT theo hash email = "thêm hoặc cập nhật"; khách chủ động bấm
+            // Subscribe nên đặt thẳng subscribed (kể cả người từng huỷ rồi
+            // đăng ký lại).
             $body = [
                 'email_address' => $subscriber['email'],
                 'status' => 'subscribed',
@@ -195,7 +212,7 @@ class NewsletterSync
             $response = wp_remote_request($url, $args + ['method' => 'PUT', 'body' => wp_json_encode($body)]);
         } else {
             $response = wp_remote_request($url, $args + ['method' => 'PATCH', 'body' => wp_json_encode(['status' => 'unsubscribed'])]);
-            // Chưa từng có trên Mailchimp (vd huỷ khi còn pending) — không có gì để gỡ.
+            // Chưa từng có trên Mailchimp (vd đăng ký trước khi kết nối) — không có gì để gỡ.
             if (!is_wp_error($response) && (int) wp_remote_retrieve_response_code($response) === 404) {
                 return true;
             }
