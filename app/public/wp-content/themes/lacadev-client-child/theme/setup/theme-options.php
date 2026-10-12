@@ -130,11 +130,7 @@ $optionsPage = Container::make('theme_options', __('Laca Theme', 'laca'))
 				Field::make('text', 'url', __('Đường dẫn', 'laca'))->set_width(50)
 					->set_attribute('placeholder', 'https://…'),
 			])
-			->set_header_template('<% if (name) { %><%- name %><% } %>')
-			->set_default_value([
-				['name' => 'Đăng ký Bộ Công Thương', 'url' => '#'],
-				['name' => 'Đăng ký DMCA', 'url' => '#'],
-			]),
+			->set_header_template('<% if (name) { %><%- name %><% } %>'),
 
 		Field::make('html', 'footer_stats_section_heading', __('', 'laca'))
 			->set_html('<div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:6px;padding:14px 16px;margin:24px 0 12px"><p style="margin:0 0 6px;font-weight:600;color:#166534">📊 Stats Info | Khối chỉ số cố định ở Footer</p><p style="margin:0;font-size:13px;color:#374151">Khối thông tin chỉ số (Stats Info) hiển thị cố định phía trên footer ở tất cả các trang, tương tự XLIII Coffee.</p></div>'),
@@ -183,28 +179,28 @@ $optionsPage = Container::make('theme_options', __('Laca Theme', 'laca'))
 			->set_header_template('<% if (number) { %><%- number %> - <%- label %><% } else if (label) { %><%- label %><% } %>')
 			->set_default_value([
 				[
-					'number'      => '+08',
-					'label'       => 'NĂM KINH NGHIỆM TRONG NGÀNH CÀ PHÊ',
+					'number' => '+08',
+					'label' => 'NĂM KINH NGHIỆM TRONG NGÀNH CÀ PHÊ',
 					'description' => 'Tám năm tích lũy kinh nghiệm trong tuyển chọn nguồn cà phê, cảm quan và dịch vụ đã trở thành nền tảng vận hành của LIX.',
-					'link'        => '',
+					'link' => '',
 				],
 				[
-					'number'      => '+20',
-					'label'       => 'MẠNG LƯỚI ĐỐI TÁC TOÀN CẦU',
+					'number' => '+20',
+					'label' => 'MẠNG LƯỚI ĐỐI TÁC TOÀN CẦU',
 					'description' => 'Được xây dựng từ mạng lưới tám năm của XLIII Coffee, kết nối những mối quan hệ tin cậy xuyên suốt vùng trồng, hoạt động tìm nguồn và hợp tác trong ngành cà phê.',
-					'link'        => '',
+					'link' => '',
 				],
 				[
-					'number'      => '03',
-					'label'       => 'HỆ THỐNG RANG CÀ PHÊ CỐT LÕI',
+					'number' => '03',
+					'label' => 'HỆ THỐNG RANG CÀ PHÊ CỐT LÕI',
 					'description' => 'Origin, Lab và Roastery vận hành như một hệ thống thống nhất, xuyên suốt từ khâu đánh giá cà phê nhân xanh đến rang sản xuất.',
-					'link'        => '',
+					'link' => '',
 				],
 				[
-					'number'      => '04',
-					'label'       => 'ĐIỂM KIỂM SOÁT CHẤT LƯỢNG',
+					'number' => '04',
+					'label' => 'ĐIỂM KIỂM SOÁT CHẤT LƯỢNG',
 					'description' => 'Đánh giá cà phê nhân xanh, giám sát quá trình rang, phân loại sau rang và kiểm định cảm quan giúp duy trì tính nhất quán trong từng chu kỳ sản xuất.',
-					'link'        => '',
+					'link' => '',
 				],
 			]),
 	])
