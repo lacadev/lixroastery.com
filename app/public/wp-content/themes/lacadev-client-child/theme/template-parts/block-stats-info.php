@@ -51,6 +51,29 @@ if ($columns < 1 || $columns > 6) {
     $columns = 4;
 }
 
+$max_width = (int) getOption('footer_stats_max_width');
+if ($max_width < 10 || $max_width > 100) {
+    $max_width = 100;
+}
+
+$content_align = getOption('footer_stats_content_align');
+if (!in_array($content_align, ['left', 'center', 'right'], true)) {
+    $content_align = 'center';
+}
+$margin_map = ['left' => '0 auto 0 0', 'center' => '0 auto', 'right' => '0 0 0 auto'];
+
+$allowed_aligns = ['left', 'center', 'right', 'justify'];
+
+$title_align = getOption('footer_stats_title_align');
+if (!in_array($title_align, $allowed_aligns, true)) {
+    $title_align = 'left';
+}
+
+$description_align = getOption('footer_stats_description_align');
+if (!in_array($description_align, $allowed_aligns, true)) {
+    $description_align = 'justify';
+}
+
 $intro_content  = getOption('footer_stats_intro_content');
 $intro_btn_text = getOption('footer_stats_intro_btn_text');
 $intro_btn_url  = getOption('footer_stats_intro_btn_url');
@@ -80,15 +103,15 @@ if (wp_style_is('block-block-stats-info', 'registered') && !wp_style_is('block-b
             </div>
         <?php endif; ?>
 
-        <div class="block-stats-info__maxwidth" style="--mw-pc:100%;--mw-tablet:100%;--mw-mobile:100%;--align-margin-pc:0 auto;--align-margin-tablet:0 auto;--align-margin-mobile:0 auto;">
+        <div class="block-stats-info__maxwidth" style="--mw-pc:<?php echo esc_attr((string) $max_width); ?>%;--mw-tablet:100%;--mw-mobile:100%;--align-margin-pc:<?php echo esc_attr($margin_map[$content_align]); ?>;--align-margin-tablet:0 auto;--align-margin-mobile:0 auto;">
             <div class="block-stats-info__grid" style="
                 --stats-columns: <?php echo esc_attr((string) $columns); ?>;
-                --stats-title-align-pc: left;
-                --stats-title-align-tablet: left;
-                --stats-title-align-mobile: left;
-                --stats-desc-align-pc: justify;
-                --stats-desc-align-tablet: justify;
-                --stats-desc-align-mobile: justify;
+                --stats-title-align-pc: <?php echo esc_attr($title_align); ?>;
+                --stats-title-align-tablet: <?php echo esc_attr($title_align); ?>;
+                --stats-title-align-mobile: <?php echo esc_attr($title_align); ?>;
+                --stats-desc-align-pc: <?php echo esc_attr($description_align); ?>;
+                --stats-desc-align-tablet: <?php echo esc_attr($description_align); ?>;
+                --stats-desc-align-mobile: <?php echo esc_attr($description_align); ?>;
             ">
                 <?php foreach ($items as $item) :
                     $number = !empty($item['number']) ? esc_html($item['number']) : '';

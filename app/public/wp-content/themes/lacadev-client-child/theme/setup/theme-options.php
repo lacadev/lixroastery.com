@@ -149,6 +149,48 @@ $optionsPage = Container::make('theme_options', __('Laca Theme', 'laca'))
 			])
 			->set_default_value('4'),
 
+		Field::make('select', 'footer_stats_max_width' . currentLanguage(), __('Kích thước tối đa khung (%)', 'laca'))
+			->set_width(50)
+			->set_options([
+				'100' => '100% (Mặc định full-width)',
+				'90'  => '90%',
+				'80'  => '80%',
+				'75'  => '75%',
+				'70'  => '70%',
+				'60'  => '60%',
+				'50'  => '50%',
+			])
+			->set_default_value('100'),
+
+		Field::make('select', 'footer_stats_content_align' . currentLanguage(), __('Vị trí khung', 'laca'))
+			->set_width(50)
+			->set_options([
+				'center' => __('Giữa (Center)', 'laca'),
+				'left'   => __('Trái (Left)', 'laca'),
+				'right'  => __('Phải (Right)', 'laca'),
+			])
+			->set_default_value('center'),
+
+		Field::make('select', 'footer_stats_title_align' . currentLanguage(), __('Căn lề tiêu đề (số + nhãn)', 'laca'))
+			->set_width(50)
+			->set_options([
+				'left'    => __('Trái (Left)', 'laca'),
+				'center'  => __('Giữa (Center)', 'laca'),
+				'right'   => __('Phải (Right)', 'laca'),
+				'justify' => __('Căn đều (Justify)', 'laca'),
+			])
+			->set_default_value('left'),
+
+		Field::make('select', 'footer_stats_description_align' . currentLanguage(), __('Căn lề mô tả', 'laca'))
+			->set_width(50)
+			->set_options([
+				'left'    => __('Trái (Left)', 'laca'),
+				'center'  => __('Giữa (Center)', 'laca'),
+				'right'   => __('Phải (Right)', 'laca'),
+				'justify' => __('Căn đều (Justify)', 'laca'),
+			])
+			->set_default_value('justify'),
+
 		Field::make('textarea', 'footer_stats_intro_content' . currentLanguage(), __('Đoạn văn mở đầu (không bắt buộc)', 'laca'))
 			->set_attribute('placeholder', 'VD: Biến đổi khí hậu, sự đứt gãy chuỗi cung ứng...')
 			->set_help_text(__('Để trống nếu chỉ muốn hiển thị 4 cột chỉ số.', 'laca')),
