@@ -58,6 +58,8 @@ $footer_socials = [
 
 <footer class="footer" role="contentinfo" data-aos="fade-up">
     <div class="container-fluid">
+        <?php get_template_part('template-parts/newsletter-form'); ?>
+
         <hr class="footer__rule" />
 
         <div class="footer__grid">

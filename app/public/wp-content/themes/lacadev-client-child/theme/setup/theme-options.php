@@ -247,6 +247,110 @@ $optionsPage = Container::make('theme_options', __('Laca Theme', 'laca'))
 			]),
 	])
 
+	->add_tab(__('📧 Newsletter', 'laca'), [
+		Field::make('html', 'newsletter_intro', __('', 'laca'))
+			->set_html('<div style="background:#f0f9ff;border:1px solid #bae6fd;border-radius:6px;padding:14px 16px;margin:8px 0"><p style="margin:0 0 8px;font-weight:600;color:#0369a1">🔧 Newsletter ở footer</p><p style="margin:0;font-size:13px;color:#374151">Form đăng ký email hiển thị cố định ở footer mọi trang. Email đăng ký được lưu trong website — xem, tìm và xuất CSV tại menu <strong>Newsletter</strong> bên trái. Kết nối Google Sheet ở cuối tab này nếu muốn có thêm 1 bảng tính tự cập nhật.</p></div>'),
+
+		Field::make('checkbox', 'newsletter_enable' . currentLanguage(), __('Hiển thị form Newsletter ở footer', 'laca'))
+			->set_option_value('yes')
+			->set_default_value(true),
+
+		Field::make('text', 'newsletter_title' . currentLanguage(), __('Tiêu đề', 'laca'))
+			->set_default_value('Connect with our mission - Join the sustainable circle'),
+		Field::make('text', 'newsletter_placeholder' . currentLanguage(), __('Chữ gợi ý trong ô email', 'laca'))
+			->set_width(50)
+			->set_default_value('Your Email Address'),
+		Field::make('text', 'newsletter_button' . currentLanguage(), __('Chữ nút bấm', 'laca'))
+			->set_width(50)
+			->set_default_value('Subscribe'),
+		Field::make('textarea', 'newsletter_consent' . currentLanguage(), __('Dòng đồng ý nhận email', 'laca'))
+			->set_rows(2)
+			->set_default_value('By subscribing, you agree to receive emails from LIX Roastery. You can unsubscribe at any time.')
+			->set_help_text(__('Hiện nhỏ dưới form — cần có theo Nghị định 13/2023 về dữ liệu cá nhân. Để trống để ẩn.', 'laca')),
+		Field::make('text', 'newsletter_privacy_url' . currentLanguage(), __('Link chính sách bảo mật (không bắt buộc)', 'laca'))
+			->set_attribute('placeholder', 'VD: /chinh-sach-bao-mat/'),
+
+		Field::make('text', 'newsletter_msg_success' . currentLanguage(), __('Thông báo: đăng ký thành công', 'laca'))
+			->set_width(50)
+			->set_default_value('Thank you for joining the circle!'),
+		Field::make('text', 'newsletter_msg_exists' . currentLanguage(), __('Thông báo: email đã đăng ký', 'laca'))
+			->set_width(50)
+			->set_default_value('This email is already subscribed.'),
+		Field::make('text', 'newsletter_msg_invalid' . currentLanguage(), __('Thông báo: email không hợp lệ', 'laca'))
+			->set_width(50)
+			->set_default_value('Please enter a valid email address.'),
+		Field::make('text', 'newsletter_msg_error' . currentLanguage(), __('Thông báo: lỗi chung', 'laca'))
+			->set_width(50)
+			->set_default_value('Something went wrong. Please try again.'),
+		Field::make('text', 'newsletter_msg_captcha' . currentLanguage(), __('Thông báo: không qua được reCAPTCHA', 'laca'))
+			->set_default_value('We could not verify your request. Please reload the page and try again.')
+			->set_help_text(__('reCAPTCHA v3 tự bật cho form này khi đã nhập đủ Site Key + Secret Key ở Laca Admin → Google reCAPTCHA.', 'laca')),
+
+		Field::make('html', 'newsletter_sheet_heading', __('', 'laca'))
+			->set_html(
+				'<div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:6px;padding:14px 16px;margin:24px 0 12px">'
+				. '<p style="margin:0 0 6px;font-weight:600;color:#166534">📊 Đồng bộ Google Sheet (không bắt buộc)</p>'
+				. '<ol style="margin:0 0 8px 18px;font-size:13px;color:#374151">'
+				. '<li>Tạo 1 Google Sheet mới, dòng 1 đặt tiêu đề: <code>Thời gian | Email | Ngôn ngữ | Trang đăng ký</code>.</li>'
+				. '<li>Vào <strong>Tiện ích mở rộng → Apps Script</strong>, xoá code mẫu, dán đoạn code bên dưới, đổi <code>SECRET</code> thành 1 chuỗi bí mật bất kỳ.</li>'
+				. '<li>Bấm <strong>Triển khai → Tùy chọn triển khai mới → Ứng dụng web</strong>, "Thực thi dưới dạng": <em>Tôi</em>, "Ai có quyền truy cập": <em>Bất kỳ ai</em>.</li>'
+				. '<li>Dán URL ứng dụng web (dạng <code>https://script.google.com/macros/s/…/exec</code>) và chuỗi bí mật vào 2 ô bên dưới, lưu lại.</li>'
+				. '</ol>'
+				. '<pre style="background:#fff;border:1px solid #d1d5db;border-radius:4px;padding:10px;font-size:12px;overflow:auto;margin:0">'
+				. esc_html("const SECRET = 'doi-thanh-chuoi-bi-mat';\n\nfunction doPost(e) {\n  const data = JSON.parse(e.postData.contents);\n  if (data.secret !== SECRET) {\n    return ContentService.createTextOutput('forbidden');\n  }\n  SpreadsheetApp.getActiveSpreadsheet().getSheets()[0]\n    .appendRow([data.created_at, data.email, data.lang, data.source]);\n  return ContentService.createTextOutput('ok');\n}")
+				. '</pre>'
+				. '<p style="margin:8px 0 0;font-size:12px;color:#6b7280">Sheet chỉ là bản đồng bộ — nếu Sheet lỗi, email vẫn được lưu trong website. Email đăng ký trước khi kết nối không tự chép sang Sheet; dùng nút Xuất CSV ở menu Newsletter rồi dán vào.</p>'
+				. '</div>'
+			),
+		Field::make('text', 'newsletter_sheet_webhook', __('URL Apps Script Web App', 'laca'))
+			->set_width(60)
+			->set_attribute('placeholder', 'https://script.google.com/macros/s/…/exec')
+			->set_help_text(__('Chỉ chấp nhận địa chỉ https://script.google.com/…', 'laca')),
+		Field::make('text', 'newsletter_sheet_secret', __('Chuỗi bí mật (trùng SECRET trong Apps Script)', 'laca'))
+			->set_width(40),
+
+		Field::make('html', 'newsletter_provider_heading', __('', 'laca'))
+			->set_html('<div style="background:#fefce8;border:1px solid #fde68a;border-radius:6px;padding:14px 16px;margin:24px 0 12px"><p style="margin:0 0 6px;font-weight:600;color:#854d0e">✉️ Dịch vụ gửi email marketing (không bắt buộc)</p><p style="margin:0;font-size:13px;color:#374151">Mỗi email đăng ký mới sẽ được thêm vào danh sách trên Mailchimp hoặc Brevo để bạn gửi newsletter từ đó. Có thể dùng song song với Google Sheet. Kết quả đồng bộ gần nhất hiện ở menu <strong>Newsletter</strong>.</p></div>'),
+
+		Field::make('select', 'newsletter_provider', __('Dịch vụ', 'laca'))
+			->set_options([
+				'' => __('Không dùng', 'laca'),
+				'mailchimp' => 'Mailchimp',
+				'brevo' => 'Brevo (Sendinblue)',
+			])
+			->set_default_value(''),
+
+		Field::make('text', 'newsletter_mailchimp_key', __('Mailchimp API key', 'laca'))
+			->set_width(50)
+			->set_attribute('type', 'password')
+			->set_attribute('placeholder', 'xxxxxxxxxxxxxxxx-us21')
+			->set_help_text(__('Mailchimp → Profile → Extras → API keys. Key phải có đuôi dạng "-us21".', 'laca'))
+			->set_conditional_logic([['field' => 'newsletter_provider', 'value' => 'mailchimp']]),
+		Field::make('text', 'newsletter_mailchimp_list', __('Audience ID', 'laca'))
+			->set_width(50)
+			->set_attribute('placeholder', 'VD: a1b2c3d4e5')
+			->set_help_text(__('Audience → Settings → Audience name and defaults → Audience ID.', 'laca'))
+			->set_conditional_logic([['field' => 'newsletter_provider', 'value' => 'mailchimp']]),
+		Field::make('checkbox', 'newsletter_mailchimp_double_optin', __('Gửi email xác nhận trước khi thêm vào danh sách (double opt-in)', 'laca'))
+			->set_option_value('yes')
+			->set_default_value(true)
+			->set_help_text(__('Khuyên dùng: chỉ email bấm xác nhận mới vào danh sách gửi, tránh email giả/gõ nhầm làm hỏng uy tín gửi thư.', 'laca'))
+			->set_conditional_logic([['field' => 'newsletter_provider', 'value' => 'mailchimp']]),
+
+		Field::make('text', 'newsletter_brevo_key', __('Brevo API key', 'laca'))
+			->set_width(50)
+			->set_attribute('type', 'password')
+			->set_attribute('placeholder', 'xkeysib-…')
+			->set_help_text(__('Brevo → SMTP & API → API Keys.', 'laca'))
+			->set_conditional_logic([['field' => 'newsletter_provider', 'value' => 'brevo']]),
+		Field::make('text', 'newsletter_brevo_list', __('List ID', 'laca'))
+			->set_width(50)
+			->set_attribute('type', 'number')
+			->set_attribute('placeholder', 'VD: 3')
+			->set_help_text(__('Contacts → Lists → số ID của danh sách.', 'laca'))
+			->set_conditional_logic([['field' => 'newsletter_provider', 'value' => 'brevo']]),
+	])
+
 	->add_tab(__('☕ Trang sản phẩm | Product Page', 'laca'), [
 		Field::make('html', 'product_page_intro', __('', 'laca'))
 			->set_html('<div style="background:#f0f9ff;border:1px solid #bae6fd;border-radius:6px;padding:14px 16px;margin:8px 0"><p style="margin:0 0 8px;font-weight:600;color:#0369a1">🔧 Trang chi tiết sản phẩm</p><p style="margin:0;font-size:13px;color:#374151">Các nội dung dưới đây dùng chung cho <strong>mọi sản phẩm</strong> (mục "How to use" và "Reviews" ở trang chi tiết sản phẩm) — chỉ cần nhập 1 lần ở đây, không cần lặp lại cho từng sản phẩm.</p></div>'),

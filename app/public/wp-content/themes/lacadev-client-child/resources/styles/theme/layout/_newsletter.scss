@@ -1,0 +1,167 @@
+@use "../abstracts/variables" as *;
+@use "../abstracts/mixin" as *;
+
+$newsletterLineColor: rgba($darkColor, 0.45);
+
+// Tiêu đề và ô email chung hàng 1 để 2 đường gạch chân thẳng hàng; thông báo
+// + dòng đồng ý rơi xuống hàng 2 cột phải — form dùng display:contents để các
+// phần tử con tham gia thẳng vào lưới này.
+.newsletter {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    column-gap: rem(10);
+    margin-bottom: rem(48);
+
+    &__title {
+        grid-row: 1;
+        grid-column: 1;
+        align-self: end;
+        margin: 0;
+        padding-bottom: rem(10);
+        border-bottom: 1px solid $newsletterLineColor;
+        font-family: $subFont;
+        font-weight: $light;
+        line-height: 1.2;
+        color: $darkColor;
+
+        @include resFont(rem(22), rem(30));
+    }
+
+    &__form {
+        display: contents;
+    }
+
+    &__field,
+    &__msg,
+    &__consent {
+        grid-column: 2;
+    }
+
+    &__field {
+        grid-row: 1;
+        align-self: end;
+        display: flex;
+        align-items: center;
+        gap: rem(12);
+        padding-bottom: rem(6);
+        border-bottom: 1px solid $newsletterLineColor;
+        transition: border-color 0.2s ease;
+
+        &:focus-within {
+            border-bottom-color: $primaryColor;
+        }
+    }
+
+    &__input {
+        flex: 1;
+        min-width: 0;
+        padding: rem(6) 0;
+        border: 0;
+        border-radius: 0;
+        background: transparent;
+        font-family: $subFont;
+        font-weight: $light;
+        color: $darkColor;
+        box-shadow: none;
+        appearance: none;
+
+        &::placeholder {
+            color: $darkColor;
+            opacity: 0.75;
+        }
+
+        &:focus {
+            outline: none;
+        }
+
+        &[aria-invalid="true"] {
+            color: $errorColor;
+        }
+
+        @include resFont(rem(14), rem(15));
+    }
+
+    &__btn {
+        flex-shrink: 0;
+        padding: rem(6) 0;
+        border: 0;
+        background: transparent;
+        font-family: $subFont;
+        font-weight: $light;
+        color: $darkColor;
+        cursor: pointer;
+        transition: color 0.2s ease, opacity 0.2s ease;
+
+        &:hover {
+            color: $primaryColor;
+        }
+
+        &:focus-visible {
+            outline: 1px solid $primaryColor;
+            outline-offset: rem(4);
+        }
+
+        &[aria-busy="true"] {
+            opacity: 0.5;
+            cursor: wait;
+        }
+
+        @include resFont(rem(14), rem(15));
+    }
+
+    // Đặt ngoài màn hình thay vì display:none — 1 số bot bỏ qua ô bị ẩn hẳn.
+    &__hp {
+        position: absolute;
+        left: -9999px;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+    }
+
+    &__msg {
+        margin: rem(10) 0 0;
+        font-family: $subFont;
+        color: $primaryColor;
+
+        &--error {
+            color: $errorColor;
+        }
+
+        @include resFont(rem(13), rem(14));
+    }
+
+    &__consent {
+        margin: rem(10) 0 0;
+        font-family: $subFont;
+        font-weight: $light;
+        line-height: 1.5;
+        color: $darkColor;
+        opacity: 0.7;
+
+        a {
+            color: inherit;
+            text-decoration: underline;
+
+            &:hover {
+                color: $primaryColor;
+            }
+        }
+
+        @include resFont(rem(11), rem(12));
+    }
+
+    @include maxWidth($md) {
+        grid-template-columns: 1fr;
+
+        &__field,
+        &__msg,
+        &__consent {
+            grid-column: 1;
+        }
+
+        &__field {
+            grid-row: 2;
+            margin-top: rem(28);
+        }
+    }
+}

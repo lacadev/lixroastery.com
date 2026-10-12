@@ -55,6 +55,14 @@ require_once CHILD_APP_DIR . 'helpers/journal-cat-render.php';
 require_once CHILD_APP_DIR . 'helpers/product-grid-render.php';
 require_once CHILD_APP_DIR . 'helpers/journal-related-products-render.php';
 
+// ── Newsletter ở footer: bảng lưu email + AJAX đăng ký (đồng bộ Google Sheet
+// / Mailchimp / Brevo nếu đã cấu hình) + trang admin xem/xuất CSV — xem
+// theme/footer.php ───────────────────────────────────────────────────────────
+require_once CHILD_APP_DIR . 'src/Newsletter/NewsletterSubscribers.php';
+require_once CHILD_APP_DIR . 'src/Newsletter/NewsletterSync.php';
+require_once CHILD_APP_DIR . 'src/Ajax/NewsletterAjaxHandler.php';
+require_once CHILD_APP_DIR . 'src/Newsletter/NewsletterAdminPage.php';
+
 // ── Danh sách Google Font (subset tiếng Việt) + helper build URL, dùng cho
 // variant "quote" của block Content/Quote (render.php tự enqueue theo lựa
 // chọn admin) ─────────────────────────────────────────────────────────────
