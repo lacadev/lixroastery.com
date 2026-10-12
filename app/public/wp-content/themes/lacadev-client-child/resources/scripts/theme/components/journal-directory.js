@@ -1,76 +1,44 @@
 /**
- * archive-journal.php (/journal) — bấm tab danh mục CẤP 1 sẽ đổi AJAX phần
+ * archive-journal.php (/journal) — bấm tab danh mục CẤP 1 sẽ đổi phần
  * "lưới danh mục con" bên dưới (KHÔNG phải bài viết, xem
- * JournalCatDirectoryAjaxHandler.php + laca_journal_render_category_directory()).
- * Tách riêng khỏi cpt-grid.js vì nội dung trả về khác hẳn (lưới danh mục,
+ * laca_journal_render_category_directory()). Mọi panel đã được render sẵn
+ * ở server nên đổi tab chỉ là ẩn/hiện — tức thì, không AJAX.
+ * Tách riêng khỏi cpt-grid.js vì nội dung khác hẳn (lưới danh mục,
  * không phải lưới bài viết).
  */
 
 function initJournalDirectory( root ) {
-	let config;
-	try {
-		config = JSON.parse( root.dataset.journalDirectoryConfig || '{}' );
-	} catch ( e ) {
-		return;
-	}
-	if ( ! config.action ) {
-		return;
-	}
-
-	let isLoading = false;
-	const directoryEl = root.querySelector( '.journal-directory' );
 	const tabs = root.querySelectorAll( '.block-cpt-grid__tab' );
+	const panels = root.querySelectorAll( '.journal-directory' );
 
-	if ( ! directoryEl || ! tabs.length ) {
+	if ( ! tabs.length || ! panels.length ) {
 		return;
 	}
 
 	tabs.forEach( ( tab ) => {
 		tab.addEventListener( 'click', () => {
-			if ( tab.classList.contains( 'is-active' ) || isLoading ) {
+			if ( tab.classList.contains( 'is-active' ) ) {
 				return;
 			}
 
-			isLoading = true;
-			root.classList.add( 'is-loading' );
+			const slug = tab.dataset.termSlug || '';
 
-			const body = new URLSearchParams( {
-				action: config.action,
-				nonce: config.nonce,
-				taxonomy: config.taxonomy,
-				term_slug: tab.dataset.termSlug || '',
+			tabs.forEach( ( t ) => {
+				const isActive = t === tab;
+				t.classList.toggle( 'is-active', isActive );
+				t.setAttribute( 'aria-selected', isActive ? 'true' : 'false' );
 			} );
 
-			fetch( config.ajaxurl, {
-				method: 'POST',
-				credentials: 'same-origin',
-				headers: {
-					'Content-Type': 'application/x-www-form-urlencoded',
-				},
-				body,
-			} )
-				.then( ( res ) => res.json() )
-				.then( ( json ) => {
-					if ( json && json.success && json.data && json.data.html ) {
-						tabs.forEach( ( t ) =>
-							t.classList.remove( 'is-active' )
-						);
-						tab.classList.add( 'is-active' );
-						directoryEl.innerHTML = json.data.html;
-					}
-				} )
-				.catch( () => {} )
-				.finally( () => {
-					isLoading = false;
-					root.classList.remove( 'is-loading' );
-				} );
+			panels.forEach( ( panel ) => {
+				panel.hidden = panel.dataset.termSlug !== slug;
+			} );
 		} );
 	} );
 }
 
 function initAllJournalDirectories() {
 	document
-		.querySelectorAll( '[data-journal-directory-config]' )
+		.querySelectorAll( '[data-journal-directory]' )
 		.forEach( initJournalDirectory );
 }
 

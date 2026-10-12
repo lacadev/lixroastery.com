@@ -47,9 +47,8 @@ require_once CHILD_APP_DIR . 'helpers/taxonomy-helpers.php';
 require_once CHILD_APP_DIR . 'helpers/cpt-grid-render.php';
 require_once CHILD_APP_DIR . 'src/Ajax/CptGridAjaxHandler.php';
 
-// ── Journal archive: tab danh mục cấp 1 (/journal) + lưới danh mục con AJAX ──
+// ── Journal archive: tab danh mục cấp 1 (/journal) + lưới danh mục con (render sẵn mọi tab) ──
 require_once CHILD_APP_DIR . 'helpers/journal-cat-render.php';
-require_once CHILD_APP_DIR . 'src/Ajax/JournalCatDirectoryAjaxHandler.php';
 
 // ── Card sản phẩm dùng chung giữa block Product Grid và "Sản phẩm liên
 // quan" tự động cuối mỗi bài Journal (single.php) ────────────────────────────

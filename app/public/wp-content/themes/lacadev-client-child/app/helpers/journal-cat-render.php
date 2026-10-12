@@ -1,8 +1,8 @@
 <?php
 /**
  * Render "lưới danh mục con" cho 1 danh mục cha journal-cat — dùng ở
- * theme/archive-journal.php (cấp gốc /journal) và AJAX handler
- * JournalCatDirectoryAjaxHandler (khi bấm đổi tab cấp cha).
+ * theme/archive-journal.php (cấp gốc /journal). Mọi tab được render sẵn
+ * thành panel ẩn/hiện nên đổi tab là tức thì, không cần AJAX.
  *
  * @package LacaDevClientChild
  */
@@ -17,17 +17,21 @@ if (!defined('ABSPATH')) {
  * viết — bấm vào 1 thẻ con sẽ chuyển sang xem bài viết của danh mục đó qua
  * URL taxonomy thật /journal-cat/{con}/).
  *
- * @param WP_Term $term Danh mục cha (journal-cat).
+ * @param WP_Term        $term     Danh mục cha (journal-cat).
+ * @param WP_Term[]|null $children Danh mục con đã query sẵn (tránh N+1 khi
+ *                                 render nhiều panel); null = tự query.
  */
-function laca_journal_render_category_directory(WP_Term $term): void
+function laca_journal_render_category_directory(WP_Term $term, ?array $children = null): void
 {
-    $children = get_terms([
-        'taxonomy'   => $term->taxonomy,
-        'parent'     => $term->term_id,
-        'hide_empty' => false,
-    ]);
-    if (is_wp_error($children)) {
-        $children = [];
+    if (null === $children) {
+        $children = get_terms([
+            'taxonomy'   => $term->taxonomy,
+            'parent'     => $term->term_id,
+            'hide_empty' => false,
+        ]);
+        if (is_wp_error($children)) {
+            $children = [];
+        }
     }
     ?>
     <div class="journal-directory__header">
