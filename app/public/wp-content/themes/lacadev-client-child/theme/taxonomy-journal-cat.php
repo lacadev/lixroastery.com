@@ -94,27 +94,34 @@ $config = [
 <section class="journal-archive">
     <div class="container">
         <h1 class="journal-archive__title"><?php echo esc_html($current_term->name); ?></h1>
-        <?php if ($current_term->description) : ?>
-            <div class="journal-archive__desc"><?php echo wp_kses_post(wpautop($current_term->description)); ?></div>
-        <?php endif; ?>
+        <div class="journal-archive__desc"<?php echo $current_term->description ? '' : ' hidden'; ?>><?php echo wp_kses_post(wpautop($current_term->description)); ?></div>
 
         <div
             class="block-cpt-grid__inner"
             id="<?php echo esc_attr($unique_id); ?>"
             data-cpt-grid-config='<?php echo esc_attr(wp_json_encode($config)); ?>'
+            data-journal-cat-header
         >
             <?php if (count($tabs) > 1) : ?>
                 <div class="block-cpt-grid__tabs-wrap">
                     <div class="block-cpt-grid__tabs">
-                        <?php foreach ($tabs as $tab_term) : ?>
+                        <?php foreach ($tabs as $tab_term) :
+                            $tab_link = get_term_link($tab_term);
+                        ?>
                             <button
                                 type="button"
                                 class="block-cpt-grid__tab<?php echo $tab_term->slug === $active_slug ? ' is-active' : ''; ?>"
                                 data-term-slug="<?php echo esc_attr($tab_term->slug); ?>"
+                                data-term-name="<?php echo esc_attr($tab_term->name); ?>"
+                                data-term-url="<?php echo is_wp_error($tab_link) ? '' : esc_url($tab_link); ?>"
                             ><?php echo esc_html($tab_term->name); ?></button>
                         <?php endforeach; ?>
                     </div>
                 </div>
+                <?php // Mô tả từng tab — journal-directory.js thay vào header khi đổi tab. ?>
+                <?php foreach ($tabs as $tab_term) : ?>
+                    <template data-term-desc="<?php echo esc_attr($tab_term->slug); ?>"><?php echo wp_kses_post(wpautop($tab_term->description)); ?></template>
+                <?php endforeach; ?>
             <?php endif; ?>
 
             <div class="block-cpt-grid__list block-cpt-grid__list--cols-3">

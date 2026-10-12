@@ -125,6 +125,13 @@ function initCptGrid( root ) {
 			tab.classList.add( 'is-active' );
 			activeTermSlug = tab.dataset.termSlug || '';
 			currentPage = 1;
+			// Cho phép template khác (vd. taxonomy-journal-cat.php) đồng bộ
+			// header/URL theo tab vừa chọn mà không phải sửa file này.
+			root.dispatchEvent(
+				new CustomEvent( 'cptgrid:tabchange', {
+					detail: { tab, termSlug: activeTermSlug },
+				} )
+			);
 			fetchGrid( 1, 'replace' ).then( ( data ) =>
 				replaceGrid( data, true )
 			);
