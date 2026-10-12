@@ -31,9 +31,9 @@
         font-family: $subFont;
         text-transform: uppercase;
         letter-spacing: 0.02em;
-        line-height: 1.3;
+        line-height: 1.5;
 
-        @include resFont(rem(18), rem(34));
+        @include resFont(rem(20), rem(32));
     }
 
     &__desc {

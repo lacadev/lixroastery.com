@@ -110,17 +110,15 @@ if (!function_exists('laca_render_journal_related_products')) {
             return;
         }
         ?>
-        <section class="block-product-grid">
-            <div class="container-fluid">
-                <div class="block-product-grid__header">
-                    <h2 class="block-product-grid__title"><?php esc_html_e('RELATED COFFEE BEANS', 'laca'); ?></h2>
-                </div>
-                <hr class="block-product-grid__rule" />
-                <div class="block-product-grid__grid" style="--bpg-columns: 4;">
-                    <?php laca_render_product_grid_cards($products); ?>
-                </div>
+        <section class="block-product-grid container-fluid">
+            <div class="block-product-grid__header">
+                <h2 class="block-product-grid__title"><?php esc_html_e('RELATED COFFEE BEANS', 'laca'); ?></h2>
+            </div>
+            <hr class="block-product-grid__rule" />
+            <div class="block-product-grid__grid" style="--bpg-columns: 4;">
+                <?php laca_render_product_grid_cards($products); ?>
             </div>
         </section>
-        <?php
+                <?php
     }
 }

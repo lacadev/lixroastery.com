@@ -65,7 +65,9 @@ figcaption {
 }
 
 p a,
-.wp-block-list.has-marker a {
+.wp-block-list.has-marker a,
+[class*="__desc"] a,
+[class*="__description"] a {
   color: $primaryColor;
   text-decoration: underline !important;
   text-underline-position: under;

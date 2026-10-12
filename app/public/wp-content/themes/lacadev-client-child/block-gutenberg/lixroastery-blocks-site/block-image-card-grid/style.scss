@@ -130,7 +130,7 @@
         margin: 0 0 1rem;
         text-align: center;
 
-        @include resFont(rem(24), rem(40));
+        @include resFont(rem(20), rem(32));
 
         &--left {
             text-align: left;
