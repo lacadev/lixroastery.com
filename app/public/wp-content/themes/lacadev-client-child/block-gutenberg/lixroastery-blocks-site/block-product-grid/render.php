@@ -118,23 +118,23 @@ if (empty($products)) {
 
 $wrapper_attrs = get_block_wrapper_attributes(['class' => 'block-product-grid']);
 ?>
-<section <?php echo $wrapper_attrs; ?>>
-    <div class="container-fluid">
-        <div class="block-product-grid__maxwidth" style="--mw-pc:<?php echo esc_attr($max_width); ?>%;--mw-tablet:<?php echo esc_attr($max_width_tablet); ?>%;--mw-mobile:<?php echo esc_attr($max_width_mobile); ?>%;--align-margin-pc:<?php echo esc_attr($margin_map[$content_align]); ?>;--align-margin-tablet:<?php echo esc_attr($margin_map[$content_align_tablet]); ?>;--align-margin-mobile:<?php echo esc_attr($margin_map[$content_align_mobile]); ?>;">
-            <div class="block-product-grid__header">
-                <?php if ($section_title): ?>
-                    <h2 class="block-product-grid__title"><?php echo $section_title; ?></h2>
-                <?php endif; ?>
-                <?php if ($view_all_text): ?>
+<section <?php echo $wrapper_attrs; ?> class="container-fluid">
+    <div class="block-product-grid__maxwidth"
+        style="--mw-pc:<?php echo esc_attr($max_width); ?>%;--mw-tablet:<?php echo esc_attr($max_width_tablet); ?>%;--mw-mobile:<?php echo esc_attr($max_width_mobile); ?>%;--align-margin-pc:<?php echo esc_attr($margin_map[$content_align]); ?>;--align-margin-tablet:<?php echo esc_attr($margin_map[$content_align_tablet]); ?>;--align-margin-mobile:<?php echo esc_attr($margin_map[$content_align_mobile]); ?>;">
+        <div class="block-product-grid__header">
+            <?php if ($section_title): ?>
+
+                               <h2 class="block-product-grid__title"><?php echo $section_title; ?></h2>
+            <?php endif; ?>
+            <?php if ($view_all_text): ?>
                     <a class="block-product-grid__view-all"
                         href="<?php echo $view_all_link ?: '#'; ?>"><?php echo $view_all_text; ?></a>
-                <?php endif; ?>
-            </div>
-            <hr class="block-product-grid__rule" />
+            <?php endif; ?>
+        </div>
+        <hr class="block-product-grid__rule" />
 
-            <div class="block-product-grid__grid" style="--bpg-columns: <?php echo esc_attr($columns); ?>;">
-                <?php laca_render_product_grid_cards($products); ?>
-            </div>
+        <div class="block-product-grid__grid" style="--bpg-columns: <?php echo esc_attr($columns); ?>;">
+            <?php laca_render_product_grid_cards($products); ?>
         </div>
     </div>
 </section>

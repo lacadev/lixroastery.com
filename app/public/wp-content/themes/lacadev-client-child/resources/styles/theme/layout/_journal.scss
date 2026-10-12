@@ -56,7 +56,7 @@
         color: $darkColor;
         margin: 0 0 1rem;
 
-        @include resFont(rem(24), rem(36));
+        @include resFont(rem(20), rem(32));
     }
 
     &__desc,
