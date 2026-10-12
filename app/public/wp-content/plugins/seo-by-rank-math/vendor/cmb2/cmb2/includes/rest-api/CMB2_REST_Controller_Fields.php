@@ -164,6 +164,17 @@ class CMB2_REST_Controller_Fields extends CMB2_REST_Controller_Boxes {
 	 * @return WP_Error|boolean
 	 */
 	public function get_item_permissions_check_filter( $can_access = true ) {
+		/*
+		 * Optionally gate the read behind a capability, per the field's declaration,
+		 * falling back to the box's. Passing the field is what makes this per-field:
+		 * the fields collection sets $this->field before each call, so a field the
+		 * current user cannot read is left out of the collection.
+		 */
+		$can_access = $this->maybe_gate_read_by_capability(
+			$can_access,
+			$this->field instanceof CMB2_Field ? $this->field : null
+		);
+
 		/**
 		 * By default, no special permissions needed.
 		 *
@@ -318,9 +329,9 @@ class CMB2_REST_Controller_Fields extends CMB2_REST_Controller_Boxes {
 			? $this->field->remove_data()
 			: $this->field->save_field( $this->request['value'] );
 
-		// If options page, save the $activity options
-		if ( 'options-page' == $this->request['object_type'] ) {
-			$this->field->args[ "value_{$activity}" ] = cmb2_options( $this->request['object_id'] )->set();
+		// If options page, save the $activity options to the validated option key.
+		if ( 'options-page' === $this->rest_box->cmb->object_type() ) {
+			$this->field->args[ "value_{$activity}" ] = cmb2_options( $this->rest_box->cmb->object_id() )->set();
 		}
 
 		return $this->prepare_read_field( $this->field );
