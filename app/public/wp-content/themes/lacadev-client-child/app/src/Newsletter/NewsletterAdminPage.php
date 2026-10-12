@@ -39,6 +39,7 @@ class NewsletterAdminPage
         add_action('admin_menu', [$this, 'registerMenu']);
         add_action('admin_post_lix_newsletter_export', [$this, 'exportCsv']);
         add_action('admin_post_lix_newsletter_delete', [$this, 'deleteSubscriber']);
+        add_action('admin_post_lix_newsletter_resync', [$this, 'resyncSheet']);
     }
 
     public function registerMenu(): void
@@ -84,10 +85,23 @@ class NewsletterAdminPage
                     ? esc_html(sprintf(__('Xuất CSV (%s)', 'laca'), $labels[$status]))
                     : esc_html__('Xuất CSV', 'laca'); ?>
             </a>
+            <?php if (NewsletterSync::sheetUrl() !== ''): ?>
+                <a href="<?php echo esc_url(wp_nonce_url(admin_url('admin-post.php?action=lix_newsletter_resync'), 'lix_newsletter_resync')); ?>" class="page-title-action"
+                    onclick="return confirm('<?php echo esc_js(__('Ghi lại toàn bộ danh sách hiện tại lên Google Sheet (cập nhật trạng thái từng email)?', 'laca')); ?>');"><?php esc_html_e('Đồng bộ lại Google Sheet', 'laca'); ?></a>
+            <?php endif; ?>
             <hr class="wp-header-end">
 
             <?php if (isset($_GET['deleted'])): ?>
-                <div class="notice notice-success is-dismissible"><p><?php esc_html_e('Đã xoá email.', 'laca'); ?></p></div>
+                <div class="notice notice-success is-dismissible"><p><?php esc_html_e('Đã xoá email khỏi website (và gỡ khỏi Google Sheet / Mailchimp / Brevo nếu có kết nối). Email này có thể đăng ký lại từ đầu.', 'laca'); ?></p></div>
+            <?php endif; ?>
+
+            <?php if (isset($_GET['resynced'])): ?>
+                <?php $resync = NewsletterSync::statuses()['sheet'] ?? null; ?>
+                <?php if ($resync && $resync['ok']): ?>
+                    <div class="notice notice-success is-dismissible"><p><?php esc_html_e('Đã đồng bộ lại toàn bộ danh sách lên Google Sheet.', 'laca'); ?></p></div>
+                <?php else: ?>
+                    <div class="notice notice-error"><p><?php echo esc_html($resync['message'] ?? __('Đồng bộ lại thất bại.', 'laca')); ?></p></div>
+                <?php endif; ?>
             <?php endif; ?>
 
             <?php $this->renderSyncStatus(); ?>
@@ -205,6 +219,10 @@ class NewsletterAdminPage
         }
 
         $statuses = NewsletterSync::statuses();
+        // Lỗi lưu DB chỉ hiện khi có xảy ra (AJAX handler ghi lại) — bình thường không cần dòng này.
+        if (isset($statuses['db']) && !$statuses['db']['ok']) {
+            $services = ['db' => __('Lưu email vào website', 'laca')] + $services;
+        }
         echo '<ul>';
         foreach ($services as $key => $label) {
             $status = $statuses[$key] ?? null;
@@ -275,11 +293,28 @@ class NewsletterAdminPage
         }
         check_admin_referer('lix_newsletter_delete_' . $id);
 
-        if ($id) {
+        $subscriber = $id ? NewsletterSubscribers::find($id) : null;
+        if ($subscriber) {
             NewsletterSubscribers::delete($id);
+            // Xoá luôn ở Sheet + ngừng gửi ở Mailchimp/Brevo — nếu không, Sheet
+            // vẫn còn dòng cũ, admin tưởng email chưa bị xoá.
+            NewsletterSync::queue(NewsletterSync::STATUS_DELETED, $subscriber);
         }
 
         wp_safe_redirect(admin_url('admin.php?page=' . self::SLUG . '&deleted=1'));
+        exit;
+    }
+
+    public function resyncSheet(): void
+    {
+        if (!current_user_can($this->capability())) {
+            wp_die(esc_html__('Bạn không có quyền thực hiện thao tác này.', 'laca'), 403);
+        }
+        check_admin_referer('lix_newsletter_resync');
+
+        NewsletterSync::pushSheetBatch(NewsletterSubscribers::query('', 0));
+
+        wp_safe_redirect(admin_url('admin.php?page=' . self::SLUG . '&resynced=1'));
         exit;
     }
 

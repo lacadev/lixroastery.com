@@ -15,6 +15,45 @@ use Carbon_Fields\Field\Field;
 // Câu chữ mặc định của tab Newsletter THEO NGÔN NGỮ đang sửa — dùng chung với lúc hiển thị (NewsletterTexts).
 $nlDefaults = NewsletterTexts::defaults(currentLanguage());
 
+// Code Apps Script mẫu (hiện trong tab Newsletter) — xem NewsletterSync::pushSheet()/pushSheetBatch().
+$nlAppsScript = <<<'JS'
+const SECRET = 'doi-thanh-chuoi-bi-mat';
+
+// Mỗi email 1 dòng: đã có thì cập nhật trạng thái, chưa có thì thêm mới,
+// "deleted" (admin xoá trên website) thì xoá dòng.
+function doPost(e) {
+  const data = JSON.parse(e.postData.contents);
+  if ((data.secret || data.batch_secret) !== SECRET) {
+    return ContentService.createTextOutput('forbidden');
+  }
+  const lock = LockService.getScriptLock();
+  lock.waitLock(30000);
+  try {
+    const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheets()[0];
+    (data.rows || [data]).forEach(function (item) { saveRow(sheet, item); });
+  } finally {
+    lock.releaseLock();
+  }
+  return ContentService.createTextOutput('ok');
+}
+
+function saveRow(sheet, d) {
+  const last = sheet.getLastRow();
+  const emails = last > 0 ? sheet.getRange(1, 2, last, 1).getValues().flat() : [];
+  const index = emails.indexOf(d.email);
+  if (d.status === 'deleted') {
+    if (index >= 0) sheet.deleteRow(index + 1);
+    return;
+  }
+  const row = [d.created_at, d.email, d.lang, d.source, d.status, d.updated_at];
+  if (index >= 0) {
+    sheet.getRange(index + 1, 1, 1, row.length).setValues([row]);
+  } else {
+    sheet.appendRow(row);
+  }
+}
+JS;
+
 $optionsPage = Container::make('theme_options', __('Laca Theme', 'laca'))
 	->set_page_file('app-theme-options.php')
 	->set_page_menu_position(3.1)
@@ -326,9 +365,9 @@ $optionsPage = Container::make('theme_options', __('Laca Theme', 'laca'))
 				. '<li>Dán URL ứng dụng web (dạng <code>https://script.google.com/macros/s/…/exec</code>) và đúng chuỗi <code>SECRET</code> vào 2 ô bên dưới, lưu lại.</li>'
 				. '</ol>'
 				. '<pre style="background:#fff;border:1px solid #d1d5db;border-radius:4px;padding:10px;font-size:12px;overflow:auto;margin:0">'
-				. esc_html("const SECRET = 'doi-thanh-chuoi-bi-mat';\n\n// Mỗi email 1 dòng: đã có thì cập nhật trạng thái, chưa có thì thêm mới.\nfunction doPost(e) {\n  const data = JSON.parse(e.postData.contents);\n  if (data.secret !== SECRET) {\n    return ContentService.createTextOutput('forbidden');\n  }\n  const lock = LockService.getScriptLock();\n  lock.waitLock(10000);\n  try {\n    const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheets()[0];\n    const row = [data.created_at, data.email, data.lang, data.source, data.status, data.updated_at];\n    const last = sheet.getLastRow();\n    const emails = last > 0 ? sheet.getRange(1, 2, last, 1).getValues().flat() : [];\n    const index = emails.indexOf(data.email);\n    if (index >= 0) {\n      sheet.getRange(index + 1, 1, 1, row.length).setValues([row]);\n    } else {\n      sheet.appendRow(row);\n    }\n  } finally {\n    lock.releaseLock();\n  }\n  return ContentService.createTextOutput('ok');\n}")
+				. esc_html($nlAppsScript)
 				. '</pre>'
-				. '<p style="margin:8px 0 0;font-size:12px;color:#6b7280">Trạng thái: <code>subscribed</code> = đã đăng ký, <code>unsubscribed</code> = đã huỷ. Sheet chỉ là bản đồng bộ — nếu Sheet lỗi, email vẫn được lưu trong website.</p>'
+				. '<p style="margin:8px 0 0;font-size:12px;color:#6b7280">Trạng thái: <code>subscribed</code> = đã đăng ký, <code>unsubscribed</code> = đã huỷ; email bị xoá trong menu Newsletter thì dòng cũng bị xoá. Sheet lệch với website (vd đăng ký trước khi kết nối) → bấm <strong>Đồng bộ lại Google Sheet</strong> ở menu Newsletter. Sheet chỉ là bản đồng bộ — nếu Sheet lỗi, email vẫn được lưu trong website.</p>'
 				. '</div>'
 			),
 		Field::make('text', 'newsletter_sheet_webhook', __('URL Apps Script Web App', 'laca'))

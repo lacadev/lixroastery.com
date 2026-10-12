@@ -26,6 +26,8 @@ if (!defined('ABSPATH')) {
 class NewsletterSync
 {
     private const STATUS_OPTION = 'lix_newsletter_sync_status';
+    /** Admin xoá email khỏi danh sách (menu Newsletter) — gửi để Sheet xoá dòng, provider ngừng gửi. */
+    public const STATUS_DELETED = 'deleted';
     private const TIMEOUT = 8;
 
     private static bool $finished = false;
@@ -134,22 +136,78 @@ class NewsletterSync
     }
 
     /**
+     * Gửi 1 lần đổi trạng thái của 1 email. Status `deleted` (admin xoá trong
+     * menu Newsletter) → Apps Script bản mới xoá dòng; bản cũ chỉ ghi chữ
+     * "deleted" vào cột trạng thái — vẫn đúng thông tin, không mất gì.
+     *
      * @return true|string
      */
     private static function pushSheet(string $status, array $subscriber)
     {
+        return self::postSheet(array_merge(
+            ['secret' => (string) carbon_get_theme_option('newsletter_sheet_secret')],
+            self::sheetRow($status, $subscriber)
+        ));
+    }
+
+    /**
+     * Đẩy lại TOÀN BỘ danh sách lên Sheet (nút "Đồng bộ lại" ở menu
+     * Newsletter) — dùng khi Sheet lệch với website, vd email chuyển trạng
+     * thái lúc nâng cấp DB (không qua sync) hoặc đăng ký trước khi kết nối.
+     * Gửi theo lô 200 dòng/request để không bị timeout.
+     *
+     * Bí mật gửi ở key `batch_secret` (không phải `secret`): Apps Script bản
+     * CŨ không biết đọc `rows` nên sẽ trả 'forbidden' thay vì ghi dòng rỗng.
+     *
+     * @param array[] $subscribers
+     * @return true|string
+     */
+    public static function pushSheetBatch(array $subscribers)
+    {
+        if (self::sheetUrl() === '') {
+            return __('Chưa cấu hình URL Apps Script.', 'laca');
+        }
+
+        foreach (array_chunk($subscribers, 200) as $chunk) {
+            $result = self::postSheet([
+                'batch_secret' => (string) carbon_get_theme_option('newsletter_sheet_secret'),
+                'rows' => array_map(static fn(array $row): array => self::sheetRow((string) $row['status'], $row), $chunk),
+            ]);
+
+            if ($result !== true) {
+                $result = $result === __('Chuỗi bí mật không khớp với SECRET trong Apps Script.', 'laca')
+                    ? __('Apps Script chưa hỗ trợ đồng bộ lại — dán lại đoạn code mới ở Laca Theme → Newsletter rồi tạo phiên bản triển khai mới (hoặc chuỗi bí mật không khớp).', 'laca')
+                    : $result;
+                self::saveStatus('sheet', $result);
+                return $result;
+            }
+        }
+
+        self::saveStatus('sheet', true);
+        return true;
+    }
+
+    private static function sheetRow(string $status, array $subscriber): array
+    {
+        return [
+            'email' => $subscriber['email'],
+            'lang' => $subscriber['lang'],
+            'source' => $subscriber['source_url'],
+            'status' => $status,
+            'created_at' => $subscriber['created_at'],
+            'updated_at' => current_time('Y-m-d H:i:s'),
+        ];
+    }
+
+    /**
+     * @return true|string
+     */
+    private static function postSheet(array $payload)
+    {
         $response = wp_remote_post(self::sheetUrl(), [
-            'timeout' => self::TIMEOUT,
+            'timeout' => 30,
             'headers' => ['Content-Type' => 'application/json'],
-            'body' => wp_json_encode([
-                'secret' => (string) carbon_get_theme_option('newsletter_sheet_secret'),
-                'email' => $subscriber['email'],
-                'lang' => $subscriber['lang'],
-                'source' => $subscriber['source_url'],
-                'status' => $status,
-                'created_at' => $subscriber['created_at'],
-                'updated_at' => current_time('Y-m-d H:i:s'),
-            ]),
+            'body' => wp_json_encode($payload),
         ]);
 
         if (is_wp_error($response)) {

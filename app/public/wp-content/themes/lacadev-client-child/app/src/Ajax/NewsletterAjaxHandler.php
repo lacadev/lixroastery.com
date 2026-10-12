@@ -97,8 +97,14 @@ class NewsletterAjaxHandler
         if (!$subscriber) {
             $subscriber = NewsletterSubscribers::add($email, $lang, $source_url);
             if (!$subscriber) {
-                // Request khác vừa chèn cùng email trong tích tắc.
-                wp_send_json_success(['code' => 'exists']);
+                // Chỉ báo "đã đăng ký" khi email THẬT SỰ có trong DB (request
+                // khác vừa chèn cùng lúc) — còn lại là lỗi DB, không được che đi.
+                if (NewsletterSubscribers::findByEmail($email)) {
+                    wp_send_json_success(['code' => 'exists']);
+                }
+                global $wpdb;
+                NewsletterSync::saveStatus('db', sprintf('Không lưu được email: %s', $wpdb->last_error ?: 'lỗi không rõ'));
+                wp_send_json_error(['code' => 'error'], 500);
             }
         } elseif ($subscriber['status'] === NewsletterSubscribers::STATUS_UNSUBSCRIBED) {
             // Đăng ký lại sau khi huỷ — khách chủ động bấm Subscribe nên đăng ký luôn.
