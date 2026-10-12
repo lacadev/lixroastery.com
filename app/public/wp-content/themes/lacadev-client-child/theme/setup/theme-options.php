@@ -282,6 +282,9 @@ $optionsPage = Container::make('theme_options', __('Laca Theme', 'laca'))
 		Field::make('text', 'newsletter_msg_error' . currentLanguage(), __('Thông báo: lỗi chung', 'laca'))
 			->set_width(50)
 			->set_default_value('Something went wrong. Please try again.'),
+		Field::make('text', 'newsletter_msg_limit' . currentLanguage(), __('Thông báo: gửi quá nhiều lần', 'laca'))
+			->set_default_value('Too many attempts. Please try again in a few minutes.')
+			->set_help_text(__('Mỗi IP được gửi tối đa 5 lần trong 10 phút.', 'laca')),
 		Field::make('text', 'newsletter_msg_captcha' . currentLanguage(), __('Thông báo: không qua được reCAPTCHA', 'laca'))
 			->set_default_value('We could not verify your request. Please reload the page and try again.')
 			->set_help_text(__('reCAPTCHA v3 tự bật cho form này khi đã nhập đủ Site Key + Secret Key ở Laca Admin → Google reCAPTCHA.', 'laca')),

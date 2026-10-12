@@ -32,6 +32,7 @@ $nl_messages = [
     'exists' => $nl_text('newsletter_msg_exists', 'This email is already subscribed.'),
     'invalid' => $nl_text('newsletter_msg_invalid', 'Please enter a valid email address.'),
     'captcha' => $nl_text('newsletter_msg_captcha', 'We could not verify your request. Please reload the page and try again.'),
+    'limit' => $nl_text('newsletter_msg_limit', 'Too many attempts. Please try again in a few minutes.'),
     'error' => $nl_text('newsletter_msg_error', 'Something went wrong. Please try again.'),
 ];
 

@@ -19,11 +19,15 @@ const getRecaptchaToken = ( form ) => {
 	} );
 };
 
+// Form có <input name="action"> (WP cần để route admin-ajax) → `form.action`
+// trả về chính input đó thay vì URL — phải đọc thẳng thuộc tính của thẻ form.
+const getEndpoint = ( form ) => form.getAttribute( 'action' );
+
 const postForm = async ( form ) => {
 	const body = new FormData( form );
 	body.set( 'recaptcha_token', await getRecaptchaToken( form ) );
 
-	const response = await fetch( form.action, {
+	const response = await fetch( getEndpoint( form ), {
 		method: 'POST',
 		body,
 		credentials: 'same-origin',
@@ -40,7 +44,7 @@ const refreshNonce = async ( form ) => {
 	const body = new FormData();
 	body.append( 'action', 'lix_newsletter_nonce' );
 
-	const response = await fetch( form.action, {
+	const response = await fetch( getEndpoint( form ), {
 		method: 'POST',
 		body,
 		credentials: 'same-origin',
@@ -113,7 +117,9 @@ const bindNewsletterForm = ( form ) => {
 				}
 			}
 
-			const code = result.data?.code || 'error';
+			// 429 = vượt giới hạn gửi (lacadev_check_rate_limit), body không có code.
+			const code =
+				status === 429 ? 'limit' : result.data?.code || 'error';
 			showMessage( code );
 
 			if ( result.success ) {
