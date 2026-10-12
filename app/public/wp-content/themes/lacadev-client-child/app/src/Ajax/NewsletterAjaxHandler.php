@@ -4,8 +4,9 @@
  * Newsletter AJAX Handler
  *
  * Nhận email từ form đăng ký ở footer (theme/template-parts/newsletter-form.php),
- * lưu vào bảng NewsletterSubscribers rồi giao NewsletterSync đẩy sang Google
- * Sheet / Mailchimp / Brevo (nếu đã cấu hình).
+ * lưu ở trạng thái pending, gửi email xác nhận (NewsletterMailer) rồi giao
+ * NewsletterSync đẩy sang Google Sheet (nếu đã cấu hình). Mailchimp/Brevo
+ * chỉ nhận email sau khi khách bấm link xác nhận (NewsletterEndpoints).
  *
  * Trả về `code` thay vì câu thông báo: câu hiển thị lấy từ Theme Options
  * theo ngôn ngữ trang (in sẵn vào data-* của form), vì request admin-ajax
@@ -64,7 +65,7 @@ class NewsletterAjaxHandler
         // Honeypot: người thật không thấy ô này; bot điền vào thì giả vờ
         // thành công để bot không dò ra cơ chế chặn.
         if (!empty($_POST['website'])) {
-            wp_send_json_success(['code' => 'subscribed']);
+            wp_send_json_success(['code' => 'pending']);
         }
 
         if (function_exists('lacadev_check_rate_limit')) {
@@ -91,13 +92,41 @@ class NewsletterAjaxHandler
         // Chỉ nhận URL nội bộ của site — referer từ domain lạ bị bỏ trống.
         $source_url = substr(wp_validate_redirect(esc_url_raw((string) wp_get_raw_referer()), ''), 0, 255);
 
-        if (!NewsletterSubscribers::add($email, $lang, $source_url)) {
+        $subscriber = NewsletterSubscribers::findByEmail($email);
+
+        if (!$subscriber) {
+            $subscriber = NewsletterSubscribers::addPending($email, $lang, $source_url);
+            if (!$subscriber) {
+                // Request khác vừa chèn cùng email trong tích tắc.
+                wp_send_json_success(['code' => 'pending']);
+            }
+            NewsletterSync::queue(NewsletterSubscribers::STATUS_PENDING, $subscriber);
+        } elseif ($subscriber['status'] === NewsletterSubscribers::STATUS_SUBSCRIBED) {
             wp_send_json_success(['code' => 'exists']);
+        } elseif ($subscriber['status'] === NewsletterSubscribers::STATUS_UNSUBSCRIBED) {
+            // Đăng ký lại sau khi huỷ: phải xác nhận lại qua email.
+            $subscriber = NewsletterSubscribers::setStatus((int) $subscriber['id'], NewsletterSubscribers::STATUS_PENDING, ['lang' => $lang]);
+            NewsletterSync::queue(NewsletterSubscribers::STATUS_PENDING, $subscriber);
+        } elseif ($lang !== '' && $subscriber['lang'] !== $lang) {
+            // Đang chờ xác nhận nhưng nhập lại ở trang ngôn ngữ khác → gửi lại
+            // thư theo ngôn ngữ mới, kể cả vừa gửi (không áp giới hạn 5 phút).
+            $subscriber = NewsletterSubscribers::setStatus((int) $subscriber['id'], NewsletterSubscribers::STATUS_PENDING, ['lang' => $lang]);
+        } elseif ($this->sentRecently($subscriber)) {
+            // Vẫn đang chờ xác nhận và vừa gửi thư — không gửi dồn dập.
+            wp_send_json_success(['code' => 'pending']);
         }
 
-        NewsletterSync::queue($email, $lang, $source_url);
+        if (!NewsletterMailer::sendConfirmation($subscriber)) {
+            wp_send_json_error(['code' => 'error'], 500);
+        }
 
-        wp_send_json_success(['code' => 'subscribed']);
+        wp_send_json_success(['code' => 'pending']);
+    }
+
+    private function sentRecently(array $subscriber): bool
+    {
+        $sent_at = $subscriber['confirm_sent_at'] ? strtotime($subscriber['confirm_sent_at']) : 0;
+        return $sent_at && (strtotime(current_time('mysql')) - $sent_at) < 5 * MINUTE_IN_SECONDS;
     }
 
     private function verifyRecaptcha(): bool

@@ -11,32 +11,30 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-// Chưa từng lưu tab thì Carbon Fields trả default (true) → vẫn hiện.
-if (!getOption('newsletter_enable')) {
+// Chưa từng lưu tab thì Carbon Fields trả default (true) → vẫn hiện. Ẩn trên
+// chính trang xác nhận/huỷ đăng ký (NewsletterEndpoints) cho khỏi lạc lõng.
+if (!getOption('newsletter_enable') || NewsletterEndpoints::$rendering) {
     return;
 }
 
-$nl_text = static function (string $key, string $fallback): string {
-    $value = getOption($key);
-    return is_string($value) && trim($value) !== '' ? $value : $fallback;
-};
+$nl_lang = function_exists('pll_current_language') ? (string) pll_current_language() : '';
 
-$nl_title = $nl_text('newsletter_title', 'Connect with our mission - Join the sustainable circle');
-$nl_placeholder = $nl_text('newsletter_placeholder', 'Your Email Address');
-$nl_button = $nl_text('newsletter_button', 'Subscribe');
-$nl_consent = (string) getOption('newsletter_consent');
+$nl_title = NewsletterTexts::get('newsletter_title', $nl_lang);
+$nl_placeholder = NewsletterTexts::get('newsletter_placeholder', $nl_lang);
+$nl_button = NewsletterTexts::get('newsletter_button', $nl_lang);
+// Admin xoá trắng ô này (getOption() rỗng) là ẩn dòng đồng ý; còn lại lấy qua
+// NewsletterTexts để ra đúng ngôn ngữ.
+$nl_consent = (string) getOption('newsletter_consent') !== '' ? NewsletterTexts::get('newsletter_consent', $nl_lang) : '';
 $nl_privacy_url = (string) getOption('newsletter_privacy_url');
 
 $nl_messages = [
-    'subscribed' => $nl_text('newsletter_msg_success', 'Thank you for joining the circle!'),
-    'exists' => $nl_text('newsletter_msg_exists', 'This email is already subscribed.'),
-    'invalid' => $nl_text('newsletter_msg_invalid', 'Please enter a valid email address.'),
-    'captcha' => $nl_text('newsletter_msg_captcha', 'We could not verify your request. Please reload the page and try again.'),
-    'limit' => $nl_text('newsletter_msg_limit', 'Too many attempts. Please try again in a few minutes.'),
-    'error' => $nl_text('newsletter_msg_error', 'Something went wrong. Please try again.'),
+    'pending' => NewsletterTexts::get('newsletter_msg_pending', $nl_lang),
+    'exists' => NewsletterTexts::get('newsletter_msg_exists', $nl_lang),
+    'invalid' => NewsletterTexts::get('newsletter_msg_invalid', $nl_lang),
+    'captcha' => NewsletterTexts::get('newsletter_msg_captcha', $nl_lang),
+    'limit' => NewsletterTexts::get('newsletter_msg_limit', $nl_lang),
+    'error' => NewsletterTexts::get('newsletter_msg_error', $nl_lang),
 ];
-
-$nl_lang = function_exists('pll_current_language') ? (string) pll_current_language() : '';
 
 // Laca_Recaptcha (parent) đọc key qua getOption() — có hậu tố ngôn ngữ — nên
 // có thể không enqueue script dù key đã nhập. Tự enqueue cùng handle để không

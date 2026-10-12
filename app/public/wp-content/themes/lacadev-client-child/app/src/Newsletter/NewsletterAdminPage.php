@@ -1,8 +1,8 @@
 <?php
 
 /**
- * Trang admin "Newsletter": xem danh sách email đăng ký ở footer, tìm kiếm,
- * xoá và xuất CSV (mở được bằng Excel / Google Sheets).
+ * Trang admin "Newsletter": xem danh sách email đăng ký ở footer theo trạng
+ * thái, tìm kiếm, xoá và xuất CSV (mở được bằng Excel / Google Sheets).
  *
  * @package LacaDevClientChild
  */
@@ -24,6 +24,15 @@ class NewsletterAdminPage
     private function capability(): string
     {
         return class_exists('WooCommerce') ? 'manage_woocommerce' : 'manage_options';
+    }
+
+    private function statusLabels(): array
+    {
+        return [
+            NewsletterSubscribers::STATUS_SUBSCRIBED => __('Đã đăng ký', 'laca'),
+            NewsletterSubscribers::STATUS_PENDING => __('Chờ xác nhận', 'laca'),
+            NewsletterSubscribers::STATUS_UNSUBSCRIBED => __('Đã huỷ', 'laca'),
+        ];
     }
 
     public function __construct()
@@ -52,37 +61,60 @@ class NewsletterAdminPage
             return;
         }
 
+        $labels = $this->statusLabels();
         $search = isset($_GET['s']) ? sanitize_text_field(wp_unslash($_GET['s'])) : '';
+        $status = isset($_GET['status']) ? sanitize_key(wp_unslash($_GET['status'])) : '';
+        if (!isset($labels[$status])) {
+            $status = '';
+        }
         $paged = max(1, isset($_GET['paged']) ? absint($_GET['paged']) : 1);
-        $total = NewsletterSubscribers::count($search);
-        $rows = NewsletterSubscribers::query($search, self::PER_PAGE, ($paged - 1) * self::PER_PAGE);
+
+        $counts = NewsletterSubscribers::countByStatus();
+        $total = NewsletterSubscribers::count($search, $status);
+        $rows = NewsletterSubscribers::query($search, self::PER_PAGE, ($paged - 1) * self::PER_PAGE, $status);
         $total_pages = (int) ceil($total / self::PER_PAGE);
 
-        $export_url = wp_nonce_url(admin_url('admin-post.php?action=lix_newsletter_export'), 'lix_newsletter_export');
+        $page_url = admin_url('admin.php?page=' . self::SLUG);
+        $export_url = wp_nonce_url(add_query_arg(['action' => 'lix_newsletter_export', 'status' => $status], admin_url('admin-post.php')), 'lix_newsletter_export');
         ?>
         <div class="wrap">
             <h1 class="wp-heading-inline"><?php esc_html_e('Newsletter — Email đăng ký', 'laca'); ?></h1>
-            <a href="<?php echo esc_url($export_url); ?>" class="page-title-action"><?php esc_html_e('Xuất CSV', 'laca'); ?></a>
+            <a href="<?php echo esc_url($export_url); ?>" class="page-title-action">
+                <?php echo $status
+                    /* translators: %s: tên trạng thái */
+                    ? esc_html(sprintf(__('Xuất CSV (%s)', 'laca'), $labels[$status]))
+                    : esc_html__('Xuất CSV', 'laca'); ?>
+            </a>
             <hr class="wp-header-end">
 
             <?php if (isset($_GET['deleted'])): ?>
                 <div class="notice notice-success is-dismissible"><p><?php esc_html_e('Đã xoá email.', 'laca'); ?></p></div>
             <?php endif; ?>
 
-            <p>
-                <?php
-                printf(
-                    /* translators: %s: số email */
-                    esc_html__('Tổng cộng: %s email.', 'laca'),
-                    '<strong>' . esc_html(number_format_i18n($total)) . '</strong>'
-                );
-                ?>
-            </p>
-
             <?php $this->renderSyncStatus(); ?>
+
+            <ul class="subsubsub">
+                <li>
+                    <a href="<?php echo esc_url($page_url); ?>" class="<?php echo $status === '' ? 'current' : ''; ?>">
+                        <?php esc_html_e('Tất cả', 'laca'); ?> <span class="count">(<?php echo esc_html(number_format_i18n($counts['all'])); ?>)</span>
+                    </a> |
+                </li>
+                <?php
+                $last = array_key_last($labels);
+                foreach ($labels as $key => $label): ?>
+                    <li>
+                        <a href="<?php echo esc_url(add_query_arg('status', $key, $page_url)); ?>" class="<?php echo $status === $key ? 'current' : ''; ?>">
+                            <?php echo esc_html($label); ?> <span class="count">(<?php echo esc_html(number_format_i18n($counts[$key])); ?>)</span>
+                        </a><?php echo $key !== $last ? ' |' : ''; ?>
+                    </li>
+                <?php endforeach; ?>
+            </ul>
 
             <form method="get">
                 <input type="hidden" name="page" value="<?php echo esc_attr(self::SLUG); ?>">
+                <?php if ($status): ?>
+                    <input type="hidden" name="status" value="<?php echo esc_attr($status); ?>">
+                <?php endif; ?>
                 <p class="search-box">
                     <label class="screen-reader-text" for="lix-newsletter-search"><?php esc_html_e('Tìm email', 'laca'); ?></label>
                     <input type="search" id="lix-newsletter-search" name="s" value="<?php echo esc_attr($search); ?>">
@@ -94,17 +126,19 @@ class NewsletterAdminPage
                 <thead>
                     <tr>
                         <th scope="col"><?php esc_html_e('Email', 'laca'); ?></th>
-                        <th scope="col" style="width:90px"><?php esc_html_e('Ngôn ngữ', 'laca'); ?></th>
+                        <th scope="col" style="width:120px"><?php esc_html_e('Trạng thái', 'laca'); ?></th>
+                        <th scope="col" style="width:80px"><?php esc_html_e('Ngôn ngữ', 'laca'); ?></th>
                         <th scope="col"><?php esc_html_e('Trang đăng ký', 'laca'); ?></th>
-                        <th scope="col" style="width:160px"><?php esc_html_e('Thời gian', 'laca'); ?></th>
-                        <th scope="col" style="width:80px"><span class="screen-reader-text"><?php esc_html_e('Thao tác', 'laca'); ?></span></th>
+                        <th scope="col" style="width:140px"><?php esc_html_e('Đăng ký lúc', 'laca'); ?></th>
+                        <th scope="col" style="width:140px"><?php esc_html_e('Cập nhật trạng thái', 'laca'); ?></th>
+                        <th scope="col" style="width:60px"><span class="screen-reader-text"><?php esc_html_e('Thao tác', 'laca'); ?></span></th>
                     </tr>
                 </thead>
                 <tbody>
                     <?php if (empty($rows)): ?>
                         <tr>
-                            <td colspan="5">
-                                <?php echo $search !== ''
+                            <td colspan="7">
+                                <?php echo ($search !== '' || $status !== '')
                                     ? esc_html__('Không tìm thấy email nào khớp.', 'laca')
                                     : esc_html__('Chưa có email nào đăng ký.', 'laca'); ?>
                             </td>
@@ -115,9 +149,11 @@ class NewsletterAdminPage
                                 admin_url('admin-post.php?action=lix_newsletter_delete&id=' . absint($row['id'])),
                                 'lix_newsletter_delete_' . absint($row['id'])
                             );
+                            $changed_at = $row['status'] === NewsletterSubscribers::STATUS_UNSUBSCRIBED ? $row['unsubscribed_at'] : $row['confirmed_at'];
                             ?>
                             <tr>
                                 <td><a href="mailto:<?php echo esc_attr($row['email']); ?>"><?php echo esc_html($row['email']); ?></a></td>
+                                <td><?php echo esc_html($labels[$row['status']] ?? $row['status']); ?></td>
                                 <td><?php echo esc_html($row['lang'] ? strtoupper($row['lang']) : '—'); ?></td>
                                 <td>
                                     <?php if ($row['source_url']): ?>
@@ -127,6 +163,7 @@ class NewsletterAdminPage
                                     <?php endif; ?>
                                 </td>
                                 <td><?php echo esc_html(mysql2date('H:i d/m/Y', $row['created_at'])); ?></td>
+                                <td><?php echo esc_html($changed_at ? mysql2date('H:i d/m/Y', $changed_at) : '—'); ?></td>
                                 <td>
                                     <a href="<?php echo esc_url($delete_url); ?>" class="submitdelete"
                                         onclick="return confirm('<?php echo esc_js(__('Xoá email này khỏi danh sách?', 'laca')); ?>');"><?php esc_html_e('Xoá', 'laca'); ?></a>
@@ -157,7 +194,8 @@ class NewsletterAdminPage
 
     private function renderSyncStatus(): void
     {
-        $services = [];
+        // Email xác nhận luôn có (gửi qua SMTP của site); dịch vụ ngoài thì tuỳ cấu hình.
+        $services = ['mail' => __('Email xác nhận (SMTP)', 'laca')];
         if (NewsletterSync::sheetUrl() !== '') {
             $services['sheet'] = 'Google Sheet';
         }
@@ -167,21 +205,16 @@ class NewsletterAdminPage
             $services['brevo'] = 'Brevo';
         }
 
-        if (empty($services)) {
-            echo '<p>' . esc_html__('Chưa kết nối dịch vụ ngoài nào (Google Sheet / Mailchimp / Brevo) — cấu hình ở Laca Theme → Newsletter.', 'laca') . '</p>';
-            return;
-        }
-
         $statuses = NewsletterSync::statuses();
         echo '<ul>';
         foreach ($services as $key => $label) {
             $status = $statuses[$key] ?? null;
             if (!$status) {
-                $text = __('đã kết nối, chưa có lần đồng bộ nào.', 'laca');
+                $text = __('chưa có lần gửi/đồng bộ nào.', 'laca');
                 $color = '#646970';
             } elseif ($status['ok']) {
                 /* translators: %s: thời gian */
-                $text = sprintf(__('đồng bộ thành công lúc %s.', 'laca'), mysql2date('H:i d/m/Y', $status['time']));
+                $text = sprintf(__('lần gần nhất thành công lúc %s.', 'laca'), mysql2date('H:i d/m/Y', $status['time']));
                 $color = '#00a32a';
             } else {
                 /* translators: 1: thời gian, 2: thông báo lỗi */
@@ -206,17 +239,28 @@ class NewsletterAdminPage
         }
         check_admin_referer('lix_newsletter_export');
 
+        // Xuất theo đúng tab đang xem — vd chỉ "Đã đăng ký" để import vào Mailchimp/Brevo.
+        $status = isset($_GET['status']) ? sanitize_key(wp_unslash($_GET['status'])) : '';
+
         nocache_headers();
         header('Content-Type: text/csv; charset=utf-8');
-        header('Content-Disposition: attachment; filename="newsletter-' . gmdate('Y-m-d') . '.csv"');
+        header('Content-Disposition: attachment; filename="newsletter-' . ($status ? $status . '-' : '') . gmdate('Y-m-d') . '.csv"');
 
         $out = fopen('php://output', 'w');
         // BOM để Excel nhận đúng UTF-8.
         fwrite($out, "\xEF\xBB\xBF");
-        fputcsv($out, ['Email', 'Language', 'Source', 'Subscribed at']);
+        fputcsv($out, ['Email', 'Status', 'Language', 'Source', 'Subscribed at', 'Confirmed at', 'Unsubscribed at']);
 
-        foreach (NewsletterSubscribers::query('', 0) as $row) {
-            fputcsv($out, array_map([$this, 'csvSafe'], [$row['email'], $row['lang'], $row['source_url'], $row['created_at']]));
+        foreach (NewsletterSubscribers::query('', 0, 0, $status) as $row) {
+            fputcsv($out, array_map([$this, 'csvSafe'], [
+                $row['email'],
+                $row['status'],
+                $row['lang'],
+                $row['source_url'],
+                $row['created_at'],
+                $row['confirmed_at'],
+                $row['unsubscribed_at'],
+            ]));
         }
 
         fclose($out);
@@ -244,8 +288,9 @@ class NewsletterAdminPage
      * Chặn CSV formula injection: ô bắt đầu bằng = + - @ bị Excel/Sheets
      * hiểu là công thức (email hợp lệ vẫn có thể bắt đầu bằng các ký tự này).
      */
-    private function csvSafe(string $value): string
+    private function csvSafe(?string $value): string
     {
+        $value = (string) $value;
         return preg_match('/^[=+\-@\t\r]/', $value) ? "'" . $value : $value;
     }
 }

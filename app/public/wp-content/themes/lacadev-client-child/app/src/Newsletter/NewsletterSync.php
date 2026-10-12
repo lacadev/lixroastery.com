@@ -4,8 +4,14 @@
  * Đồng bộ email Newsletter sang dịch vụ ngoài: Google Sheet (Apps Script),
  * Mailchimp hoặc Brevo — mỗi dịch vụ bật/tắt độc lập trong Theme Options.
  *
- * Chạy ở hook `shutdown` SAU khi đã trả JSON cho khách (finish request), nên
- * khách không phải chờ API ngoài. Không dùng WP-Cron vì site có thể tắt
+ * - Google Sheet: nhận MỌI lần đổi trạng thái (pending/subscribed/
+ *   unsubscribed) — Apps Script cập nhật đúng dòng của email đó.
+ * - Mailchimp/Brevo: chỉ thêm khi đã xác nhận (subscribed), gỡ khi huỷ.
+ *   Website đã tự làm double opt-in nên Mailchimp thêm thẳng "subscribed",
+ *   tránh khách nhận 2 email xác nhận.
+ *
+ * Chạy ở hook `shutdown` SAU khi đã trả phản hồi cho khách (finish request),
+ * nên khách không phải chờ API ngoài. Không dùng WP-Cron vì site có thể tắt
  * wp-cron (Laca Admin có mục Cron URL) — khi đó sync sẽ không bao giờ chạy.
  * Kết quả lần gọi gần nhất của từng dịch vụ lưu vào option để trang admin
  * Newsletter hiển thị, admin biết ngay khi API key hết hạn/sai.
@@ -23,15 +29,16 @@ class NewsletterSync
     private const TIMEOUT = 8;
 
     /**
-     * Gọi từ AJAX handler ngay sau khi lưu email mới vào DB.
+     * @param string $origin Provider gây ra thay đổi (webhook) — bỏ qua gọi
+     *                       ngược lại chính provider đó.
      */
-    public static function queue(string $email, string $lang, string $source_url): void
+    public static function queue(string $status, ?array $subscriber, string $origin = ''): void
     {
-        if (!self::hasAnyService()) {
+        if (!$subscriber || !self::hasAnyService()) {
             return;
         }
 
-        add_action('shutdown', static function () use ($email, $lang, $source_url) {
+        add_action('shutdown', static function () use ($status, $subscriber, $origin) {
             // Đóng kết nối với trình duyệt trước, rồi mới gọi API ngoài.
             if (function_exists('litespeed_finish_request')) {
                 litespeed_finish_request();
@@ -39,7 +46,7 @@ class NewsletterSync
                 fastcgi_finish_request();
             }
 
-            self::run($email, $lang, $source_url);
+            self::run($status, $subscriber, $origin);
         });
     }
 
@@ -48,17 +55,22 @@ class NewsletterSync
         return self::sheetUrl() !== '' || self::provider() !== '';
     }
 
-    public static function run(string $email, string $lang, string $source_url): void
+    public static function run(string $status, array $subscriber, string $origin = ''): void
     {
         if (self::sheetUrl() !== '') {
-            self::saveStatus('sheet', self::pushSheet($email, $lang, $source_url));
+            self::saveStatus('sheet', self::pushSheet($status, $subscriber));
         }
 
         $provider = self::provider();
+        if ($provider === '' || $provider === $origin || $status === NewsletterSubscribers::STATUS_PENDING) {
+            return;
+        }
+
+        $subscribe = $status === NewsletterSubscribers::STATUS_SUBSCRIBED;
         if ($provider === 'mailchimp') {
-            self::saveStatus('mailchimp', self::pushMailchimp($email, $lang));
+            self::saveStatus('mailchimp', self::pushMailchimp($subscriber, $subscribe));
         } elseif ($provider === 'brevo') {
-            self::saveStatus('brevo', self::pushBrevo($email, $lang));
+            self::saveStatus('brevo', self::pushBrevo($subscriber, $subscribe));
         }
     }
 
@@ -91,19 +103,35 @@ class NewsletterSync
     }
 
     /**
-     * @return true|string true nếu thành công, chuỗi lỗi nếu thất bại.
+     * @param true|string $result true nếu thành công, chuỗi lỗi nếu thất bại.
      */
-    private static function pushSheet(string $email, string $lang, string $source_url)
+    public static function saveStatus(string $service, $result): void
+    {
+        $status = self::statuses();
+        $status[$service] = [
+            'ok' => $result === true,
+            'message' => $result === true ? '' : sanitize_text_field((string) $result),
+            'time' => current_time('mysql'),
+        ];
+        update_option(self::STATUS_OPTION, $status, false);
+    }
+
+    /**
+     * @return true|string
+     */
+    private static function pushSheet(string $status, array $subscriber)
     {
         $response = wp_remote_post(self::sheetUrl(), [
             'timeout' => self::TIMEOUT,
             'headers' => ['Content-Type' => 'application/json'],
             'body' => wp_json_encode([
                 'secret' => (string) carbon_get_theme_option('newsletter_sheet_secret'),
-                'email' => $email,
-                'lang' => $lang,
-                'source' => $source_url,
-                'created_at' => current_time('Y-m-d H:i:s'),
+                'email' => $subscriber['email'],
+                'lang' => $subscriber['lang'],
+                'source' => $subscriber['source_url'],
+                'status' => $status,
+                'created_at' => $subscriber['created_at'],
+                'updated_at' => current_time('Y-m-d H:i:s'),
             ]),
         ]);
 
@@ -131,7 +159,7 @@ class NewsletterSync
     /**
      * @return true|string
      */
-    private static function pushMailchimp(string $email, string $lang)
+    private static function pushMailchimp(array $subscriber, bool $subscribe)
     {
         $api_key = trim((string) carbon_get_theme_option('newsletter_mailchimp_key'));
         $list_id = trim((string) carbon_get_theme_option('newsletter_mailchimp_list'));
@@ -143,29 +171,35 @@ class NewsletterSync
             return __('Thiếu hoặc sai API key / Audience ID Mailchimp.', 'laca');
         }
 
-        $double_optin = (bool) carbon_get_theme_option('newsletter_mailchimp_double_optin');
-        $body = [
-            'email_address' => $email,
-            // status_if_new: không ghi đè trạng thái của người đã huỷ đăng ký trước đó.
-            'status_if_new' => $double_optin ? 'pending' : 'subscribed',
+        $url = sprintf('https://%s.api.mailchimp.com/3.0/lists/%s/members/%s', $dc, $list_id, md5($subscriber['email']));
+        $args = [
+            'timeout' => self::TIMEOUT,
+            'headers' => [
+                'Authorization' => 'Basic ' . base64_encode('lix:' . $api_key),
+                'Content-Type' => 'application/json',
+            ],
         ];
-        if ($lang !== '') {
-            $body['language'] = $lang;
-        }
 
-        // PUT theo hash email = "thêm nếu chưa có", gọi lại không bị lỗi trùng.
-        $response = wp_remote_request(
-            sprintf('https://%s.api.mailchimp.com/3.0/lists/%s/members/%s', $dc, $list_id, md5($email)),
-            [
-                'method' => 'PUT',
-                'timeout' => self::TIMEOUT,
-                'headers' => [
-                    'Authorization' => 'Basic ' . base64_encode('lix:' . $api_key),
-                    'Content-Type' => 'application/json',
-                ],
-                'body' => wp_json_encode($body),
-            ]
-        );
+        if ($subscribe) {
+            // PUT theo hash email = "thêm hoặc cập nhật"; khách đã xác nhận
+            // qua email của website nên đặt thẳng subscribed (kể cả người
+            // từng huỷ rồi đăng ký lại).
+            $body = [
+                'email_address' => $subscriber['email'],
+                'status' => 'subscribed',
+                'status_if_new' => 'subscribed',
+            ];
+            if ($subscriber['lang'] !== '') {
+                $body['language'] = $subscriber['lang'];
+            }
+            $response = wp_remote_request($url, $args + ['method' => 'PUT', 'body' => wp_json_encode($body)]);
+        } else {
+            $response = wp_remote_request($url, $args + ['method' => 'PATCH', 'body' => wp_json_encode(['status' => 'unsubscribed'])]);
+            // Chưa từng có trên Mailchimp (vd huỷ khi còn pending) — không có gì để gỡ.
+            if (!is_wp_error($response) && (int) wp_remote_retrieve_response_code($response) === 404) {
+                return true;
+            }
+        }
 
         return self::checkJsonResponse($response, 'detail');
     }
@@ -173,7 +207,7 @@ class NewsletterSync
     /**
      * @return true|string
      */
-    private static function pushBrevo(string $email, string $lang)
+    private static function pushBrevo(array $subscriber, bool $subscribe)
     {
         $api_key = trim((string) carbon_get_theme_option('newsletter_brevo_key'));
         $list_id = absint(carbon_get_theme_option('newsletter_brevo_list'));
@@ -182,22 +216,33 @@ class NewsletterSync
             return __('Thiếu API key hoặc List ID Brevo.', 'laca');
         }
 
-        $body = [
-            'email' => $email,
-            'listIds' => [$list_id],
-            // Email đã có trong Brevo thì chỉ thêm vào list, không báo lỗi trùng.
-            'updateEnabled' => true,
-        ];
-
-        $response = wp_remote_post('https://api.brevo.com/v3/contacts', [
+        $args = [
             'timeout' => self::TIMEOUT,
             'headers' => [
                 'api-key' => $api_key,
                 'Content-Type' => 'application/json',
                 'Accept' => 'application/json',
             ],
-            'body' => wp_json_encode($body),
-        ]);
+        ];
+
+        if ($subscribe) {
+            // updateEnabled: email đã có trong Brevo thì chỉ thêm vào list.
+            $response = wp_remote_post('https://api.brevo.com/v3/contacts', $args + [
+                'body' => wp_json_encode([
+                    'email' => $subscriber['email'],
+                    'listIds' => [$list_id],
+                    'updateEnabled' => true,
+                ]),
+            ]);
+        } else {
+            $response = wp_remote_request('https://api.brevo.com/v3/contacts/' . rawurlencode($subscriber['email']), $args + [
+                'method' => 'PUT',
+                'body' => wp_json_encode(['unlinkListIds' => [$list_id]]),
+            ]);
+            if (!is_wp_error($response) && (int) wp_remote_retrieve_response_code($response) === 404) {
+                return true;
+            }
+        }
 
         return self::checkJsonResponse($response, 'message');
     }
@@ -221,19 +266,5 @@ class NewsletterSync
         $message = is_array($data) && !empty($data[$error_key]) ? (string) $data[$error_key] : '';
 
         return trim(sprintf('HTTP %d %s', $code, $message));
-    }
-
-    /**
-     * @param true|string $result
-     */
-    private static function saveStatus(string $service, $result): void
-    {
-        $status = self::statuses();
-        $status[$service] = [
-            'ok' => $result === true,
-            'message' => $result === true ? '' : sanitize_text_field((string) $result),
-            'time' => current_time('mysql'),
-        ];
-        update_option(self::STATUS_OPTION, $status, false);
     }
 }

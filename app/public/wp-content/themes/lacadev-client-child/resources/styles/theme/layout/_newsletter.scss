@@ -165,3 +165,78 @@ $newsletterLineColor: rgba($darkColor, 0.45);
         }
     }
 }
+
+// Trang sau khi bấm link trong email (xác nhận / huỷ) — NewsletterEndpoints::render().
+.newsletter-page {
+    padding-top: rem(120);
+    padding-bottom: rem(120);
+
+    &__box {
+        max-width: rem(560);
+        margin: 0 auto;
+        text-align: center;
+    }
+
+    &__title {
+        margin: 0 0 rem(20);
+        font-family: $subFont;
+        font-weight: $light;
+        line-height: 1.2;
+        color: $darkColor;
+
+        @include resFont(rem(28), rem(40));
+    }
+
+    &__text {
+        margin: 0 0 rem(32);
+        font-family: $subFont;
+        font-weight: $light;
+        line-height: 1.6;
+        color: $darkColor;
+
+        @include resFont(rem(15), rem(17));
+    }
+
+    &__btn {
+        margin-bottom: rem(24);
+        padding: rem(12) rem(32);
+        border: 1px solid $primaryColor;
+        background: $primaryColor;
+        font-family: $subFont;
+        color: $lightColor;
+        cursor: pointer;
+        transition: background-color 0.2s ease, color 0.2s ease;
+
+        &:hover {
+            background: transparent;
+            color: $primaryColor;
+        }
+
+        &:focus-visible {
+            outline: 1px solid $primaryColor;
+            outline-offset: rem(4);
+        }
+
+        @include resFont(rem(14), rem(15));
+    }
+
+    &__home {
+        display: block;
+        font-family: $subFont;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        color: $darkColor;
+        text-decoration: underline;
+
+        &:hover {
+            color: $primaryColor;
+        }
+
+        @include resFont(rem(12), rem(13));
+    }
+
+    @include maxWidth($sm) {
+        padding-top: rem(64);
+        padding-bottom: rem(64);
+    }
+}

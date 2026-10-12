@@ -12,6 +12,13 @@ if (!defined('ABSPATH')) {
 if (!function_exists('laca_page_starts_with_top_hero')) {
     function laca_page_starts_with_top_hero(): bool
     {
+        // Trang xác nhận/huỷ Newsletter chạy trên URL trang chủ nhưng KHÔNG in
+        // nội dung trang chủ (không có hero) — header overlay chữ trắng sẽ
+        // biến mất trên nền trắng.
+        if (class_exists('NewsletterEndpoints') && NewsletterEndpoints::$rendering) {
+            return false;
+        }
+
         static $result = null;
         if ($result !== null) {
             return $result;
