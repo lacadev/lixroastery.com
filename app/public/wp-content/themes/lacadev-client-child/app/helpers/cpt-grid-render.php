@@ -47,11 +47,8 @@ function laca_cpt_grid_render_card(int $post_id, string $taxonomy = ''): void
     <article class="block-cpt-grid__card">
         <a class="block-cpt-grid__card-link" href="<?php echo esc_url($url); ?>">
             <div class="block-cpt-grid__card-thumb">
-                <?php if (has_post_thumbnail($post_id)) : ?>
-                    <?php echo get_the_post_thumbnail($post_id, 'large', ['loading' => 'lazy', 'alt' => esc_attr($title)]); ?>
-                <?php else : ?>
-                    <div class="block-cpt-grid__card-thumb-placeholder"></div>
-                <?php endif; ?>
+                <?php // Chưa có ảnh đại diện → helper tự lấy "Hình ảnh mặc định" trong Theme Options. ?>
+                <?php echo getResponsivePostThumbnail($post_id, 'large', ['loading' => 'lazy', 'alt' => esc_attr($title)]); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
             </div>
             <div class="block-cpt-grid__card-body">
                 <?php if ($term_name || $date) : ?>

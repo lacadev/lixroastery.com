@@ -40,8 +40,24 @@ function getFieldImageUrl($name, $w, $h) {
     return getImageUrlById(get_field($name,'option'), $w, $h);
 }
 
+/**
+ * ID ảnh mặc định trong Theme Options. Field "default_image" thường đăng ký
+ * KHÔNG kèm hậu tố ngôn ngữ, nhưng getOption() luôn nối currentLanguage()
+ * (Polylang cũng define ICL_LANGUAGE_CODE) → thử key theo ngôn ngữ trước,
+ * rỗng thì đọc key gốc.
+ *
+ * @return int
+ */
+function getDefaultImageId() {
+    $id = getOption('default_image');
+    if (empty($id) && function_exists('carbon_get_theme_option')) {
+        $id = carbon_get_theme_option('default_image');
+    }
+    return (int) $id;
+}
+
 function getPostThumbnailUrl($postId, $width = null, $height = null) {
-    $defaultImage = getImageUrlById(getOption('default_image'), $width, $height);
+    $defaultImage = getImageUrlById(getDefaultImageId(), $width, $height);
     
     // If no default_image option is set, use theme default image
     if (empty($defaultImage)) {

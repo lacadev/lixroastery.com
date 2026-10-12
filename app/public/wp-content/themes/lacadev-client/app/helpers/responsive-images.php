@@ -69,7 +69,7 @@ function getResponsivePostThumbnail($post_id = null, $size = 'mobile', $attr = [
     
     if (!$image_id) {
         // Return default image if set in Theme Options
-        $default_id = getOption('default_image');
+        $default_id = getDefaultImageId();
         if ($default_id) {
             return wp_get_attachment_image($default_id, $size, false, $attr);
         }
