@@ -135,6 +135,78 @@ $optionsPage = Container::make('theme_options', __('Laca Theme', 'laca'))
 				['name' => 'Đăng ký Bộ Công Thương', 'url' => '#'],
 				['name' => 'Đăng ký DMCA', 'url' => '#'],
 			]),
+
+		Field::make('html', 'footer_stats_section_heading', __('', 'laca'))
+			->set_html('<div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:6px;padding:14px 16px;margin:24px 0 12px"><p style="margin:0 0 6px;font-weight:600;color:#166534">📊 Stats Info | Khối chỉ số cố định ở Footer</p><p style="margin:0;font-size:13px;color:#374151">Khối thông tin chỉ số (Stats Info) hiển thị cố định phía trên footer ở tất cả các trang, tương tự XLIII Coffee.</p></div>'),
+
+		Field::make('checkbox', 'footer_stats_enable' . currentLanguage(), __('Hiển thị Stats Info ở footer', 'laca'))
+			->set_option_value('yes')
+			->set_default_value(true)
+			->set_width(50),
+
+		Field::make('select', 'footer_stats_columns' . currentLanguage(), __('Số lượng cột / hàng', 'laca'))
+			->set_width(50)
+			->set_options([
+				'4' => '4 cột',
+				'3' => '3 cột',
+				'2' => '2 cột',
+			])
+			->set_default_value('4'),
+
+		Field::make('textarea', 'footer_stats_intro_content' . currentLanguage(), __('Đoạn văn mở đầu (không bắt buộc)', 'laca'))
+			->set_attribute('placeholder', 'VD: Biến đổi khí hậu, sự đứt gãy chuỗi cung ứng...')
+			->set_help_text(__('Để trống nếu chỉ muốn hiển thị 4 cột chỉ số.', 'laca')),
+
+		Field::make('text', 'footer_stats_intro_btn_text' . currentLanguage(), __('Chữ nút bấm (không bắt buộc)', 'laca'))
+			->set_width(50)
+			->set_attribute('placeholder', 'VD: MANIFESTO'),
+
+		Field::make('text', 'footer_stats_intro_btn_url' . currentLanguage(), __('Link nút bấm', 'laca'))
+			->set_width(50)
+			->set_attribute('placeholder', 'VD: /vi/manifesto/'),
+
+		Field::make('complex', 'footer_stats_items' . currentLanguage(), __('Danh sách chỉ số', 'laca'))
+			->set_layout('tabbed-vertical')
+			->add_fields([
+				Field::make('text', 'number', __('Chỉ số (Số)', 'laca'))
+					->set_width(30)
+					->set_attribute('placeholder', 'VD: +08, +20, 03...'),
+				Field::make('text', 'label', __('Tiêu đề / Nhãn', 'laca'))
+					->set_width(35)
+					->set_attribute('placeholder', 'VD: NĂM KINH NGHIỆM TRONG NGÀNH CÀ PHÊ'),
+				Field::make('text', 'link', __('Đường dẫn (URL)', 'laca'))
+					->set_width(35)
+					->set_attribute('placeholder', 'https://… (không bắt buộc)'),
+				Field::make('textarea', 'description', __('Mô tả chi tiết', 'laca'))
+					->set_attribute('placeholder', 'VD: Tám năm tích lũy kinh nghiệm...'),
+			])
+			->set_header_template('<% if (number) { %><%- number %> - <%- label %><% } else if (label) { %><%- label %><% } %>')
+			->set_default_value([
+				[
+					'number'      => '+08',
+					'label'       => 'NĂM KINH NGHIỆM TRONG NGÀNH CÀ PHÊ',
+					'description' => 'Tám năm tích lũy kinh nghiệm trong tuyển chọn nguồn cà phê, cảm quan và dịch vụ đã trở thành nền tảng vận hành của LIX.',
+					'link'        => '',
+				],
+				[
+					'number'      => '+20',
+					'label'       => 'MẠNG LƯỚI ĐỐI TÁC TOÀN CẦU',
+					'description' => 'Được xây dựng từ mạng lưới tám năm của XLIII Coffee, kết nối những mối quan hệ tin cậy xuyên suốt vùng trồng, hoạt động tìm nguồn và hợp tác trong ngành cà phê.',
+					'link'        => '',
+				],
+				[
+					'number'      => '03',
+					'label'       => 'HỆ THỐNG RANG CÀ PHÊ CỐT LÕI',
+					'description' => 'Origin, Lab và Roastery vận hành như một hệ thống thống nhất, xuyên suốt từ khâu đánh giá cà phê nhân xanh đến rang sản xuất.',
+					'link'        => '',
+				],
+				[
+					'number'      => '04',
+					'label'       => 'ĐIỂM KIỂM SOÁT CHẤT LƯỢNG',
+					'description' => 'Đánh giá cà phê nhân xanh, giám sát quá trình rang, phân loại sau rang và kiểm định cảm quan giúp duy trì tính nhất quán trong từng chu kỳ sản xuất.',
+					'link'        => '',
+				],
+			]),
 	])
 
 	->add_tab(__('☕ Trang sản phẩm | Product Page', 'laca'), [
