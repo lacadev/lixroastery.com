@@ -43,8 +43,23 @@ $footer_links_col1 = is_array($footer_links_col1) ? $footer_links_col1 : [];
 $footer_links_col2 = getOption('footer_links_col2');
 $footer_links_col2 = is_array($footer_links_col2) ? $footer_links_col2 : [];
 $footer_badges = getOption('footer_badges');
+if (empty($footer_badges) && function_exists('carbon_get_theme_option')) {
+    $fallback_badges = carbon_get_theme_option('footer_badges')
+        ?: (carbon_get_theme_option('footer_badgesen') ?: carbon_get_theme_option('footer_badgesvi'));
+    if (!empty($fallback_badges)) {
+        $footer_badges = $fallback_badges;
+    }
+}
 $footer_badges = is_array($footer_badges) ? $footer_badges : [];
-$footer_dmca_badge = getOption('footer_dmca_badge');
+
+// Lấy DMCA badge: ưu tiên global option (không phân biệt ngôn ngữ), fallback theo ngôn ngữ
+$footer_dmca_badge = carbon_get_theme_option('footer_dmca_badge');
+if (empty($footer_dmca_badge)) {
+    $footer_dmca_badge = getOption('footer_dmca_badge');
+}
+if (empty($footer_dmca_badge) && function_exists('carbon_get_theme_option')) {
+    $footer_dmca_badge = carbon_get_theme_option('footer_dmca_badgeen') ?: carbon_get_theme_option('footer_dmca_badgevi');
+}
 
 $footer_socials = [
     'facebook' => getOption('facebook'),
