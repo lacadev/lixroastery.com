@@ -45,9 +45,6 @@ $footer_links_col2 = is_array($footer_links_col2) ? $footer_links_col2 : [];
 $footer_badges = getOption('footer_badges');
 $footer_badges = is_array($footer_badges) ? $footer_badges : [];
 $footer_dmca_badge = getOption('footer_dmca_badge');
-if ($footer_dmca_badge === false || $footer_dmca_badge === null) {
-    $footer_dmca_badge = '<a href="//www.dmca.com/Protection/Status.aspx?ID=e5f8aab7-df4f-4ed8-ac70-b5bcca0c2867" title="DMCA.com Protection Status" class="dmca-badge"><img src="https://images.dmca.com/Badges/dmca_protected_sml_120m.png?ID=e5f8aab7-df4f-4ed8-ac70-b5bcca0c2867" alt="DMCA.com Protection Status" /></a>' . "\n" . '<script src="https://images.dmca.com/Badges/DMCABadgeHelper.min.js"></script>';
-}
 
 $footer_socials = [
     'facebook' => getOption('facebook'),

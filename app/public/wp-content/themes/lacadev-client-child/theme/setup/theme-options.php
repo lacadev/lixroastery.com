@@ -177,7 +177,7 @@ $optionsPage = Container::make('theme_options', __('Laca Theme', 'laca'))
 		Field::make('textarea', 'footer_dmca_badge', __('Huy hiệu DMCA / Mã nhúng chứng nhận (HTML)', 'laca'))
 			->set_width(50)
 			->set_attribute('rows', 6)
-			->set_help_text(__('Mã nhúng HTML huy hiệu DMCA hoặc chứng nhận (thẻ &lt;a&gt;, &lt;img&gt;, &lt;script&gt;...). Để trống nếu không sử dụng.')),
+			->set_help_text(__('Mã nhúng HTML huy hiệu DMCA hoặc chứng nhận', 'laca')),
 
 		Field::make('html', 'footer_stats_section_heading', __('', 'laca'))
 			->set_html('<div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:6px;padding:14px 16px;margin:24px 0 12px"><p style="margin:0 0 6px;font-weight:600;color:#166534">📊 Stats Info | Khối chỉ số cố định ở Footer</p><p style="margin:0;font-size:13px;color:#374151">Khối thông tin chỉ số (Stats Info) hiển thị cố định phía trên footer ở tất cả các trang, tương tự XLIII Coffee.</p></div>'),
