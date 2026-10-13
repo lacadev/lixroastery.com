@@ -74,9 +74,25 @@ body.menu-open {
             background: #fff;
         }
 
+        .header__logo-img--white {
+            display: block;
+        }
+
+        .header__logo-img--default:not(.header__logo-img--only) {
+            display: none;
+        }
+
         &.is-scrolled {
             position: sticky;
             background: #fff;
+
+            .header__logo-img--white:not(.header__logo-img--only) {
+                display: none;
+            }
+
+            .header__logo-img--default {
+                display: block;
+            }
 
             .header__menu-list > .menu-item > a {
                 color: $darkColor;
@@ -210,6 +226,18 @@ body.menu-open {
         display: block;
         max-height: 32px;
         width: auto;
+
+        &--white {
+            display: none;
+        }
+
+        &--default {
+            display: block;
+        }
+
+        &--only {
+            display: block !important;
+        }
     }
 
     &__logo-text {

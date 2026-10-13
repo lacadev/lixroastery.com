@@ -91,11 +91,25 @@ if (!defined('ABSPATH')) {
 								<?php
 								$logo_id = carbon_get_theme_option('logo');
 								$logo_url = $logo_id ? wp_get_attachment_image_url($logo_id, 'full') : '';
-								if ($logo_url):
+								$logo_white_id = carbon_get_theme_option('logo_white');
+								$logo_white_url = $logo_white_id ? wp_get_attachment_image_url($logo_white_id, 'full') : '';
+								$has_both_logos = $logo_url && $logo_white_url;
+
+								if ($logo_url || $logo_white_url):
+									if ($logo_url):
+										?>
+										<img src="<?php echo esc_url($logo_url); ?>"
+											class="header__logo-img header__logo-img--default<?php echo !$has_both_logos ? ' header__logo-img--only' : ''; ?>"
+											alt="<?php echo esc_attr(get_bloginfo('name')); ?>">
+									<?php endif;
+									if ($logo_white_url):
+										?>
+										<img src="<?php echo esc_url($logo_white_url); ?>"
+											class="header__logo-img header__logo-img--white<?php echo !$has_both_logos ? ' header__logo-img--only' : ''; ?>"
+											alt="<?php echo esc_attr(get_bloginfo('name')); ?>">
+									<?php endif;
+								else:
 									?>
-									<img src="<?php echo esc_url($logo_url); ?>" class="header__logo-img"
-										alt="<?php echo esc_attr(get_bloginfo('name')); ?>">
-								<?php else: ?>
 									<span class="header__logo-text"><?php bloginfo('name'); ?></span>
 								<?php endif; ?>
 							</a>

@@ -61,10 +61,12 @@ $optionsPage = Container::make('theme_options', __('Laca Theme', 'laca'))
 		Field::make('html', 'branding_intro', __('', 'laca'))
 			->set_html('<div style="background:#f0f9ff;border:1px solid #bae6fd;border-radius:6px;padding:14px 16px;margin:8px 0"><p style="margin:0 0 8px;font-weight:600;color:#0369a1">🔧 Thương hiệu</p><p style="margin:0;font-size:13px;color:#374151">Thiết lập màu sắc và logo dùng chung cho toàn bộ website. Các màu và logo ở đây sẽ hiển thị đồng bộ trên mọi trang, mọi giao diện của site.</p></div>'),
 
-		Field::make('image', 'logo', __('Logo', 'laca'))
-			->set_width(33.33),
-		Field::make('image', 'logo_footer', __('Logo Footer', 'laca'))
-			->set_width(33.33),
+		Field::make('image', 'logo', __('Logo chính (mặc định / tối)', 'laca'))
+			->set_width(33.33)
+			->set_help_text(__('Hiển thị trên nền sáng hoặc khi cuộn trang', 'laca')),
+		Field::make('image', 'logo_white', __('Logo trắng', 'laca'))
+			->set_width(33.33)
+			->set_help_text(__('Hiển thị trên nền tối / Top Hero', 'laca')),
 		Field::make('image', 'default_image', __('Default image | Hình ảnh mặc định', 'laca'))
 			->set_width(33.33),
 	])
