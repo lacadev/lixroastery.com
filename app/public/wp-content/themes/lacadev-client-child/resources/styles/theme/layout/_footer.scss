@@ -70,6 +70,17 @@
         }
     }
 
+    &__dmca {
+        margin-top: 0.7rem;
+
+        img {
+            display: inline-block;
+            vertical-align: middle;
+            max-width: 100%;
+            height: auto;
+        }
+    }
+
     &__socials {
         display: flex;
         justify-content: flex-end;

@@ -174,6 +174,11 @@ $optionsPage = Container::make('theme_options', __('Laca Theme', 'laca'))
 			])
 			->set_header_template('<% if (name) { %><%- name %><% } %>'),
 
+		Field::make('textarea', 'footer_dmca_badge' . currentLanguage(), __('Huy hiệu DMCA / Mã nhúng chứng nhận (HTML)', 'laca'))
+			->set_width(50)
+			->set_attribute('rows', 6)
+			->set_help_text(__('Mã nhúng HTML huy hiệu DMCA hoặc chứng nhận (thẻ &lt;a&gt;, &lt;img&gt;, &lt;script&gt;...). Để trống nếu không sử dụng.', 'laca')),
+
 		Field::make('html', 'footer_stats_section_heading', __('', 'laca'))
 			->set_html('<div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:6px;padding:14px 16px;margin:24px 0 12px"><p style="margin:0 0 6px;font-weight:600;color:#166534">📊 Stats Info | Khối chỉ số cố định ở Footer</p><p style="margin:0;font-size:13px;color:#374151">Khối thông tin chỉ số (Stats Info) hiển thị cố định phía trên footer ở tất cả các trang, tương tự XLIII Coffee.</p></div>'),
 
@@ -195,12 +200,12 @@ $optionsPage = Container::make('theme_options', __('Laca Theme', 'laca'))
 			->set_width(50)
 			->set_options([
 				'100' => '100% (Mặc định full-width)',
-				'90'  => '90%',
-				'80'  => '80%',
-				'75'  => '75%',
-				'70'  => '70%',
-				'60'  => '60%',
-				'50'  => '50%',
+				'90' => '90%',
+				'80' => '80%',
+				'75' => '75%',
+				'70' => '70%',
+				'60' => '60%',
+				'50' => '50%',
 			])
 			->set_default_value('100'),
 
@@ -208,17 +213,17 @@ $optionsPage = Container::make('theme_options', __('Laca Theme', 'laca'))
 			->set_width(50)
 			->set_options([
 				'center' => __('Giữa (Center)', 'laca'),
-				'left'   => __('Trái (Left)', 'laca'),
-				'right'  => __('Phải (Right)', 'laca'),
+				'left' => __('Trái (Left)', 'laca'),
+				'right' => __('Phải (Right)', 'laca'),
 			])
 			->set_default_value('center'),
 
 		Field::make('select', 'footer_stats_title_align' . currentLanguage(), __('Căn lề tiêu đề (số + nhãn)', 'laca'))
 			->set_width(50)
 			->set_options([
-				'left'    => __('Trái (Left)', 'laca'),
-				'center'  => __('Giữa (Center)', 'laca'),
-				'right'   => __('Phải (Right)', 'laca'),
+				'left' => __('Trái (Left)', 'laca'),
+				'center' => __('Giữa (Center)', 'laca'),
+				'right' => __('Phải (Right)', 'laca'),
 				'justify' => __('Căn đều (Justify)', 'laca'),
 			])
 			->set_default_value('left'),
@@ -226,9 +231,9 @@ $optionsPage = Container::make('theme_options', __('Laca Theme', 'laca'))
 		Field::make('select', 'footer_stats_description_align' . currentLanguage(), __('Căn lề mô tả', 'laca'))
 			->set_width(50)
 			->set_options([
-				'left'    => __('Trái (Left)', 'laca'),
-				'center'  => __('Giữa (Center)', 'laca'),
-				'right'   => __('Phải (Right)', 'laca'),
+				'left' => __('Trái (Left)', 'laca'),
+				'center' => __('Giữa (Center)', 'laca'),
+				'right' => __('Phải (Right)', 'laca'),
 				'justify' => __('Căn đều (Justify)', 'laca'),
 			])
 			->set_default_value('justify'),
