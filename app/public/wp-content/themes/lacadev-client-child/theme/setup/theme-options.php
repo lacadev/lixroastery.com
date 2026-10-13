@@ -176,7 +176,7 @@ $optionsPage = Container::make('theme_options', __('Laca Theme', 'laca'))
 
 		Field::make('textarea', 'footer_dmca_badge', __('Huy hiệu DMCA / Mã nhúng chứng nhận (HTML)', 'laca'))
 			->set_width(50)
-			->set_attribute('rows', 6)
+			->set_rows(6)
 			->set_help_text(__('Mã nhúng HTML huy hiệu DMCA hoặc chứng nhận', 'laca')),
 
 		Field::make('html', 'footer_stats_section_heading', __('', 'laca'))
