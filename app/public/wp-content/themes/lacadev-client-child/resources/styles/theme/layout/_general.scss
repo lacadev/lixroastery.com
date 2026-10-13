@@ -41,6 +41,16 @@ body:not(.home) main#main_content {
   }
 }
 
+// Mọi block custom tự gắn .container-fluid; khi bị đặt trong 1 container-fluid
+// khác (single.php bọc the_content, block Container, block Tabs...) thì padding
+// cộng dồn làm block tụt vào trong, lệch lề với header/footer. Chỉ lớp ngoài
+// cùng giữ padding. Specificity 2 class + !important để thắng rule ở trên
+// ở mọi breakpoint.
+.container-fluid .container-fluid {
+  padding-right: 0 !important;
+  padding-left: 0 !important;
+}
+
 h1.page-title {
     text-transform: uppercase;
     font-size: rem(30);
