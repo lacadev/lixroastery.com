@@ -20,7 +20,7 @@ final class Notifier
         }
 
         // Hoạt động quản trị → vòng đệm để đối chiếu khi có lỗi fatal (ghi ngay, kể cả tin gửi trễ).
-        if (Settings::CHANNEL_AUDIT === $channel || str_starts_with($event, 'file.editor')) {
+        if ((Settings::CHANNEL_AUDIT === $channel && 'update.available' !== $event) || str_starts_with($event, 'file.editor')) {
             ActivityLog::record((string) ($embed->toArray()['title'] ?? $event), Context::actor());
         }
 

@@ -13,6 +13,7 @@ use App\Features\DiscordHub\Monitors\LoginMonitor;
 use App\Features\DiscordHub\Monitors\PostMonitor;
 use App\Features\DiscordHub\Monitors\SettingsMonitor;
 use App\Features\DiscordHub\Monitors\SystemMonitor;
+use App\Features\DiscordHub\Monitors\UpdateAvailableMonitor;
 use App\Features\DiscordHub\Monitors\UpdateMonitor;
 use App\Features\DiscordHub\Monitors\UserMonitor;
 
@@ -53,7 +54,7 @@ final class DiscordHub
         $this->safely('fatal', fn () => (new FatalErrorMonitor())->register());
         $this->safely('dispatcher', fn () => Dispatcher::register());
 
-        foreach ([PostMonitor::class, CommentMonitor::class, UserMonitor::class, LoginMonitor::class, FormMonitor::class, FileEditorMonitor::class, UpdateMonitor::class, ContentMonitor::class, SettingsMonitor::class, SystemMonitor::class] as $monitor) {
+        foreach ([PostMonitor::class, CommentMonitor::class, UserMonitor::class, LoginMonitor::class, FormMonitor::class, FileEditorMonitor::class, UpdateMonitor::class, ContentMonitor::class, SettingsMonitor::class, SystemMonitor::class, UpdateAvailableMonitor::class] as $monitor) {
             $this->safely($monitor, fn () => (new $monitor())->register());
         }
 
