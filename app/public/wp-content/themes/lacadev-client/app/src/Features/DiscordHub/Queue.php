@@ -84,7 +84,11 @@ final class Queue
      *
      * @param string|null $dedupeKey Sự kiện cùng key khi đang chờ gửi sẽ gộp thành 1 dòng (hits+1).
      */
-    public static function push(string $channel, array $embed, ?string $dedupeKey = null): bool
+    /**
+     * @param int  $delay   Giây hoãn gửi — dùng để gom nhiều lần lưu liên tiếp thành 1 tin.
+     * @param bool $replace Trùng dedupe_key thì thay payload bằng bản mới nhất (thay vì giữ bản đầu).
+     */
+    public static function push(string $channel, array $embed, ?string $dedupeKey = null, int $delay = 0, bool $replace = false): bool
     {
         if (!self::ensureSchema()) {
             return false;
@@ -107,13 +111,14 @@ final class Queue
         }
 
         $now = time();
+        $availableAt = $now + max(0, $delay);
         if (null === $dedupeKey) {
             $result = $wpdb->query(
                 $wpdb->prepare(
                     "INSERT INTO {$table} (channel, dedupe_key, payload, available_at, created_at) VALUES (%s, NULL, %s, %d, %d)",
                     $channel,
                     $payload,
-                    $now,
+                    $availableAt,
                     $now
                 )
             );
@@ -121,11 +126,11 @@ final class Queue
             $result = $wpdb->query(
                 $wpdb->prepare(
                     "INSERT INTO {$table} (channel, dedupe_key, payload, available_at, created_at) VALUES (%s, %s, %s, %d, %d)
-                    ON DUPLICATE KEY UPDATE hits = hits + 1",
+                    ON DUPLICATE KEY UPDATE hits = hits + 1" . ($replace ? ', payload = VALUES(payload)' : ''),
                     $channel,
                     substr($channel . ':' . $dedupeKey, 0, 191),
                     $payload,
-                    $now,
+                    $availableAt,
                     $now
                 )
             );

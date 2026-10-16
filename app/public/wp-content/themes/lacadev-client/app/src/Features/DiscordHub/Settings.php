@@ -23,7 +23,7 @@ final class Settings
         ],
         self::CHANNEL_AUDIT => [
             'label' => 'Audit — hoạt động',
-            'hint' => 'Kênh #tensite-audit: bài viết đổi trạng thái, bình luận, user mới/xoá/đổi quyền.',
+            'hint' => 'Kênh #tensite-audit: ai làm gì — đăng/sửa/xoá nội dung, lưu cài đặt, bật/tắt plugin, đổi theme/menu, bình luận, user mới/xoá/đổi quyền.',
         ],
         self::CHANNEL_SECURITY => [
             'label' => 'Security — cảnh báo',

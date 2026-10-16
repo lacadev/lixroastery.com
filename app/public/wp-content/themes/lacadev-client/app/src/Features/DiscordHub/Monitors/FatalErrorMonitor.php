@@ -2,6 +2,7 @@
 
 namespace App\Features\DiscordHub\Monitors;
 
+use App\Features\DiscordHub\ActivityLog;
 use App\Features\DiscordHub\Dispatcher;
 use App\Features\DiscordHub\Embed;
 use App\Features\DiscordHub\I18n;
@@ -78,6 +79,16 @@ final class FatalErrorMonitor
                     false,
                     true
                 );
+
+            // "Ai vừa làm gì" ngay trước lỗi — thường chính là nguyên nhân (bật plugin, lưu cài đặt, sửa code…).
+            $recent = ActivityLog::since(15 * MINUTE_IN_SECONDS);
+            if ($recent) {
+                $lines = [];
+                foreach (array_slice($recent, 0, 8) as $item) {
+                    $lines[] = wp_date('H:i', (int) $item['t']) . ' · ' . Embed::escape($item['actor']) . ' · ' . Embed::escape($item['title']);
+                }
+                $embed->field(I18n::t('🕵️ Hoạt động 15 phút trước lỗi', '🕵️ Activity in the 15 minutes before'), Embed::truncate(implode("\n", $lines), Embed::LIMIT_FIELD_VALUE), false, true);
+            }
 
             Notifier::send(Settings::CHANNEL_SECURITY, 'php.fatal', $embed, 'fatal:' . md5($file . ':' . $line . ':' . $message));
 

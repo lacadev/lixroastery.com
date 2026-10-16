@@ -5,11 +5,14 @@ namespace App\Features\DiscordHub;
 use App\Features\DiscordHub\FileWatch\DeployReceiver;
 use App\Features\DiscordHub\FileWatch\Scanner;
 use App\Features\DiscordHub\Monitors\CommentMonitor;
+use App\Features\DiscordHub\Monitors\ContentMonitor;
 use App\Features\DiscordHub\Monitors\FatalErrorMonitor;
 use App\Features\DiscordHub\Monitors\FileEditorMonitor;
 use App\Features\DiscordHub\Monitors\FormMonitor;
 use App\Features\DiscordHub\Monitors\LoginMonitor;
 use App\Features\DiscordHub\Monitors\PostMonitor;
+use App\Features\DiscordHub\Monitors\SettingsMonitor;
+use App\Features\DiscordHub\Monitors\SystemMonitor;
 use App\Features\DiscordHub\Monitors\UpdateMonitor;
 use App\Features\DiscordHub\Monitors\UserMonitor;
 
@@ -24,24 +27,33 @@ final class DiscordHub
      * Sự cố thật 16/10/2026: FTP deploy đang ghi đè dở 1 file monitor → "Class not found"
      * ném ra từ boot() → fatal toàn site cho tới khi upload xong.
      */
+    // Gọi boot() 2 lần sẽ đăng ký hook 2 lần → mỗi sự kiện báo trùng. Tách 2 cờ: lần gọi
+    // đầu có thể chưa có kênh nào (chưa đăng ký monitor) — lần gọi sau vẫn phải đăng ký được.
+    private static bool $adminBooted = false;
+    private static bool $monitorsBooted = false;
+
     public function boot(): void
     {
-        $this->safely('admin', function () {
-            if (is_admin()) {
-                (new AdminPage())->register();
-            }
-        });
+        if (!self::$adminBooted) {
+            self::$adminBooted = true;
+            $this->safely('admin', function () {
+                if (is_admin()) {
+                    (new AdminPage())->register();
+                }
+            });
+        }
 
         // Chưa cấu hình kênh nào / đang tắt → không đăng ký hook nào (zero overhead).
-        if (!$this->safely('settings', fn () => Settings::isEnabled() && Settings::hasAnyChannel())) {
+        if (self::$monitorsBooted || !$this->safely('settings', fn () => Settings::isEnabled() && Settings::hasAnyChannel())) {
             return;
         }
+        self::$monitorsBooted = true;
 
         // Đăng ký bắt fatal TRƯỚC các monitor khác để báo được cả lỗi xảy ra sau đó.
         $this->safely('fatal', fn () => (new FatalErrorMonitor())->register());
         $this->safely('dispatcher', fn () => Dispatcher::register());
 
-        foreach ([PostMonitor::class, CommentMonitor::class, UserMonitor::class, LoginMonitor::class, FormMonitor::class, FileEditorMonitor::class, UpdateMonitor::class] as $monitor) {
+        foreach ([PostMonitor::class, CommentMonitor::class, UserMonitor::class, LoginMonitor::class, FormMonitor::class, FileEditorMonitor::class, UpdateMonitor::class, ContentMonitor::class, SettingsMonitor::class, SystemMonitor::class] as $monitor) {
             $this->safely($monitor, fn () => (new $monitor())->register());
         }
 
