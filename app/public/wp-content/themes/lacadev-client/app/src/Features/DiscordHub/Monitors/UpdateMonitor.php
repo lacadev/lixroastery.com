@@ -87,7 +87,7 @@ final class UpdateMonitor
             ->field(I18n::t('Thực hiện bởi', 'Performed by'), Context::actor())
             ->field(I18n::t('Nguồn', 'Origin'), Context::origin());
 
-        Notifier::send(Settings::CHANNEL_AUDIT, 'update.' . $type, $embed);
+        Notifier::send(Settings::updatesChannel(), 'update.' . $type, $embed);
     }
 
     /**

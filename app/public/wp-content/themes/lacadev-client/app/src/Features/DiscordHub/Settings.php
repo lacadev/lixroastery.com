@@ -15,6 +15,7 @@ final class Settings
     public const CHANNEL_LEADS = 'leads';
     public const CHANNEL_AUDIT = 'audit';
     public const CHANNEL_SECURITY = 'security';
+    public const CHANNEL_UPDATES = 'updates';
 
     public const CHANNELS = [
         self::CHANNEL_LEADS => [
@@ -28,6 +29,10 @@ final class Settings
         self::CHANNEL_SECURITY => [
             'label' => 'Security — cảnh báo',
             'hint' => 'Kênh #tensite-security: brute-force, tạo/nâng quyền admin, spam tăng đột biến, lỗi nghiêm trọng (PHP fatal error).',
+        ],
+        self::CHANNEL_UPDATES => [
+            'label' => 'Updates — cập nhật',
+            'hint' => 'Kênh #tensite-updates (tuỳ chọn): có bản cập nhật core/plugin/theme mới, tổng hợp hằng tuần các bản còn chờ, cập nhật đã cài. Bỏ trống = gửi vào kênh Audit.',
         ],
     ];
 
@@ -97,6 +102,14 @@ final class Settings
     public static function isEnvironmentAllowed(): bool
     {
         return 'production' === wp_get_environment_type() || (bool) self::all()['allow_non_production'];
+    }
+
+    /**
+     * Kênh cho thông báo cập nhật: kênh Updates riêng nếu đã cấu hình, không thì Audit.
+     */
+    public static function updatesChannel(): string
+    {
+        return self::hasChannel(self::CHANNEL_UPDATES) ? self::CHANNEL_UPDATES : self::CHANNEL_AUDIT;
     }
 
     public static function canSend(string $channel): bool

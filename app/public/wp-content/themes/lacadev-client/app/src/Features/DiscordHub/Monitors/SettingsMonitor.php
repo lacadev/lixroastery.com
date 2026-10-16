@@ -23,7 +23,7 @@ final class SettingsMonitor
     private const IGNORE_PATTERN = '/^(?:_site_transient_|_transient_|cron$|rewrite_rules$|recently_edited$|recently_activated$|uninstall_plugins$|can_compress_scripts$|db_upgraded$|fresh_site$|active_plugins$|theme_mods_|auto_core_update_|auto_updater\.lock$|core_updater\.lock$|user_count$|action_scheduler|as_|wp_force_deactivated_plugins$|_wp_suggested_policy|finished_|laca_discord_(?!hub$|hub_webhooks$)|laca_dh_|_laca_tracker_|_transient|.*_children$|.*_lock$|.*_last_run$|.*_timestamp$|.*_version$|.*_db_version$|.*_rewrite_rules_flushed$)/i';
 
     /** Tên option/khoá con chứa bí mật → chỉ báo "đã đổi", không gửi giá trị. */
-    private const SECRET_PATTERN = '/(key|secret|token|passw|pwd|salt|auth|private|license|webhook|credential|client_id)/i';
+    private const SECRET_PATTERN = '/(key|secret|token|passw|pwd|salt|auth|private|license|webhook|credential|client_id|login_slug|login_url|admin_slug)/i';
 
     private const LIST_LIMIT = 15;
 
@@ -136,7 +136,7 @@ final class SettingsMonitor
 
             $embed = Embed::make(sprintf(I18n::t('⚙️ Lưu cài đặt (%1$d thay đổi)', '⚙️ Settings saved (%1$d changes)'), $total), Embed::COLOR_WARNING)
                 ->description(implode("\n", $lines), true)
-                ->field(I18n::t('Trang', 'Screen'), $this->screen())
+                ->field(I18n::t('Trang', 'Screen'), $this->screen(), true, true)
                 ->field(I18n::t('Thực hiện bởi', 'Performed by'), Context::actor())
                 ->codeField('IP', Context::clientIp());
 
