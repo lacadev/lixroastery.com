@@ -111,6 +111,7 @@ class LacaAdminMenuOrganizer
             'icon' => 'dashicons-portfolio',
             'items' => [
                 'laca-project-notifications',
+                'laca-discord-hub',
             ],
         ],
         'marketing' => [
@@ -491,6 +492,7 @@ class LacaAdminMenuOrganizer
             'lacadev-block-categories' => 'Block Categories',
             'laca-tracker' => '📡 Tracker',
             'laca-project-notifications' => 'LacaDev PM & Bots',
+            'laca-discord-hub' => 'Discord Hub',
             'laca-exit-popup' => 'Exit Popup',
             'laca-chatbot' => 'Chatbot',
         ];

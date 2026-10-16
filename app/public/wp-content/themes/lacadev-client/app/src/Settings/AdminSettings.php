@@ -438,6 +438,7 @@ class AdminSettings
 			'laca-block-sync',
 			'lacadev-block-categories',
 			'laca-tracker',
+			'laca-discord-hub',
 		]);
 	}
 

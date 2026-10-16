@@ -195,7 +195,7 @@ class ContactFormAjaxHandler
         try {
             // Dữ liệu luôn được lưu TRƯỚC, không phụ thuộc email gửi được hay
             // không (tránh mất submission chỉ vì SMTP lỗi tạm thời).
-            ContactFormTable::insertSubmission($formId, $data, $ip);
+            $submissionId = ContactFormTable::insertSubmission($formId, $data, $ip);
 
             // Trả về đúng trạng thái THẬT (trước đây luôn báo "thành công" dù
             // wp_mail() lỗi, người gửi không biết tin nhắn có tới nơi hay
@@ -203,6 +203,9 @@ class ContactFormAjaxHandler
             // submission trong màn hình quản trị — chỉ cảnh báo người gửi để
             // họ có thể liên hệ lại qua kênh khác nếu cần.
             $emailSent = ContactFormEmailService::sendAll($form, $data, $ip, $lang);
+
+            // Cho Discord Hub (và tích hợp khác) nhận lead — bắn cả khi email lỗi.
+            do_action('laca_contact_form_submitted', $form, $fields, $data, $submissionId, $emailSent);
         } catch (\Throwable $e) {
             error_log('[ContactForm] handleSubmit() lỗi khi lưu DB/gửi email: ' . $e->getMessage() . ' tại ' . $e->getFile() . ':' . $e->getLine());
             wp_send_json_error([
