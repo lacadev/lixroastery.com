@@ -2,11 +2,15 @@
 
 namespace App\Features\DiscordHub;
 
+use App\Features\DiscordHub\FileWatch\DeployReceiver;
+use App\Features\DiscordHub\FileWatch\Scanner;
 use App\Features\DiscordHub\Monitors\CommentMonitor;
 use App\Features\DiscordHub\Monitors\FatalErrorMonitor;
+use App\Features\DiscordHub\Monitors\FileEditorMonitor;
 use App\Features\DiscordHub\Monitors\FormMonitor;
 use App\Features\DiscordHub\Monitors\LoginMonitor;
 use App\Features\DiscordHub\Monitors\PostMonitor;
+use App\Features\DiscordHub\Monitors\UpdateMonitor;
 use App\Features\DiscordHub\Monitors\UserMonitor;
 
 /**
@@ -37,9 +41,20 @@ final class DiscordHub
         $this->safely('fatal', fn () => (new FatalErrorMonitor())->register());
         $this->safely('dispatcher', fn () => Dispatcher::register());
 
-        foreach ([PostMonitor::class, CommentMonitor::class, UserMonitor::class, LoginMonitor::class, FormMonitor::class] as $monitor) {
+        foreach ([PostMonitor::class, CommentMonitor::class, UserMonitor::class, LoginMonitor::class, FormMonitor::class, FileEditorMonitor::class, UpdateMonitor::class] as $monitor) {
             $this->safely($monitor, fn () => (new $monitor())->register());
         }
+
+        $this->safely('file-watch', function () {
+            if (Settings::fileWatchEnabled()) {
+                (new Scanner())->register();
+            } elseif (wp_next_scheduled(Scanner::CRON_HOOK)) {
+                Scanner::unschedule();
+            }
+            if (null !== Settings::deployKeyMeta()) {
+                (new DeployReceiver())->register();
+            }
+        });
 
         if (defined('WP_CLI') && WP_CLI) {
             $this->safely('cli', fn () => \WP_CLI::add_command('laca-discord', CliCommand::class));

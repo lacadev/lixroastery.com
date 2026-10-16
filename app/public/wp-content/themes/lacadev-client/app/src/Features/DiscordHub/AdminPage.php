@@ -2,6 +2,8 @@
 
 namespace App\Features\DiscordHub;
 
+use App\Features\DiscordHub\FileWatch\DeployReceiver;
+use App\Features\DiscordHub\FileWatch\Scanner;
 use App\Settings\AdminSettings;
 
 /**
@@ -18,6 +20,7 @@ final class AdminPage
     private const CAP = 'manage_options';
     private const ACTION = 'laca_discord_hub_save';
     private const NOTICE_KEY = 'laca_dh_notice_';
+    private const NEW_KEY = 'laca_dh_newkey_';
 
     public function register(): void
     {
@@ -78,6 +81,7 @@ final class AdminPage
 
         $postTypes = array_map('sanitize_key', (array) wp_unslash($_POST['post_types'] ?? []));
         $settings['post_types'] = array_values(array_filter($postTypes, 'post_type_exists'));
+        $settings['file_watch'] = !empty($_POST['file_watch']);
 
         Settings::save($settings);
 
@@ -110,6 +114,25 @@ final class AdminPage
                 : ['error', sprintf('Kênh "%s": lưu thất bại.', $info['label'])];
         }
 
+        if (!Settings::fileWatchEnabled()) {
+            Scanner::unschedule();
+        }
+
+        if ('generate' === sanitize_key(wp_unslash($_POST['deploy_key_action'] ?? ''))) {
+            $key = WebhookVault::isAvailable() ? Settings::generateDeployKey() : null;
+            if (null === $key) {
+                $notices[] = ['error', 'Không tạo được deploy key (thiếu AUTH_KEY/SECURE_AUTH_KEY hoặc OpenSSL).'];
+            } else {
+                // Key dạng rõ chỉ nằm trong transient ≤ 60 giây và bị xoá ngay khi trang hiển thị 1 lần.
+                set_transient(self::NEW_KEY . get_current_user_id(), $key, MINUTE_IN_SECONDS);
+                $notices[] = ['success', 'Đã tạo deploy key mới — key cũ (nếu có) hết hiệu lực. Chép key bên dưới sang GitHub Secret NGAY, key sẽ không hiện lại.'];
+            }
+        }
+
+        if (!empty($_POST['fim_scan'])) {
+            $notices[] = $this->runScan();
+        }
+
         $testChannel = sanitize_key(wp_unslash($_POST['test_channel'] ?? ''));
         if (isset(Settings::CHANNELS[$testChannel])) {
             $notices[] = $this->runTest($testChannel);
@@ -120,6 +143,26 @@ final class AdminPage
         set_transient(self::NOTICE_KEY . get_current_user_id(), $notices, MINUTE_IN_SECONDS);
         wp_safe_redirect(add_query_arg('page', self::MENU_SLUG, admin_url('admin.php')));
         exit;
+    }
+
+    /**
+     * @return array{0:string,1:string}
+     */
+    private function runScan(): array
+    {
+        if (!Settings::fileWatchEnabled()) {
+            return ['error', 'Giám sát file đang tắt, hoặc kênh Security chưa có webhook.'];
+        }
+        $r = Scanner::run();
+        Dispatcher::flush();
+
+        return match ($r['status']) {
+            'baseline' => ['success', sprintf('Đã tạo baseline %d file trong %ss. Từ giờ mọi thay đổi ngoài luồng sẽ được báo.', $r['files'], $r['seconds'])],
+            'ok' => ['success', sprintf('Quét xong %d file trong %ss: %d thêm, %d sửa, %d xoá ngoài luồng%s.', $r['files'], $r['seconds'], $r['added'], $r['modified'], $r['deleted'], ($r['added'] + $r['modified'] + $r['deleted']) ? ' — đã báo về kênh Security' : '')],
+            'deploy-in-progress' => ['warning', 'Đang có deploy chạy — tạm hoãn quét để không báo nhầm.'],
+            'locked' => ['warning', 'Một lượt quét khác đang chạy, thử lại sau ít phút.'],
+            default => ['warning', 'Không quét được (giám sát file tắt hoặc không tạo được bảng dữ liệu).'],
+        };
     }
 
     /**
@@ -172,6 +215,10 @@ final class AdminPage
         $settings = Settings::all();
         $notices = get_transient(self::NOTICE_KEY . get_current_user_id()) ?: [];
         delete_transient(self::NOTICE_KEY . get_current_user_id());
+        $newDeployKey = (string) get_transient(self::NEW_KEY . get_current_user_id());
+        delete_transient(self::NEW_KEY . get_current_user_id());
+        $fimState = get_option(Scanner::STATE_OPTION, []);
+        $deployMeta = Settings::deployKeyMeta();
         $env = wp_get_environment_type();
         $postTypes = get_post_types(['public' => true], 'objects');
         unset($postTypes['attachment']);
@@ -332,6 +379,53 @@ final class AdminPage
                     </tr>
                 </table>
 
+                <h2>Giám sát file &amp; deploy</h2>
+                <table class="form-table" role="presentation">
+                    <tr>
+                        <th scope="row">Giám sát file</th>
+                        <td>
+                            <label><input type="checkbox" name="file_watch" value="1" <?php checked($settings['file_watch']); ?>> Quét file code mỗi 15 phút</label>
+                            <p class="description">Phát hiện file theme/plugin/file gốc bị thêm, sửa, xoá <strong>ngoài luồng</strong> (cPanel File Manager, FTP, SSH, mã độc) và file thực thi trong uploads → báo về kênh Security. Thay đổi từ Git deploy, Theme/Plugin File Editor và cập nhật trong WP được tự nhận diện, không báo nhầm.</p>
+                            <p>
+                                <?php if (!empty($fimState['at'])) : ?>
+                                    <?php echo esc_html(sprintf('Lần quét gần nhất: %s — %d file, %ss.', wp_date('d/m/Y H:i', (int) $fimState['at']), (int) $fimState['files'], $fimState['seconds'])); ?>
+                                <?php else : ?>
+                                    Chưa quét lần nào. Lần quét đầu tiên chỉ ghi nhận baseline, không báo thay đổi.
+                                <?php endif; ?>
+                            </p>
+                            <button type="submit" name="fim_scan" value="1" class="button">Lưu &amp; quét ngay</button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Deploy key (GitHub Actions)</th>
+                        <td>
+                            <?php if ('' !== $newDeployKey) : ?>
+                                <div class="laca-dh-newkey">
+                                    <p><strong>Deploy key mới — chỉ hiện 1 lần, chép ngay:</strong></p>
+                                    <label for="laca-dh-newkey" class="screen-reader-text">Deploy key mới</label>
+                                    <input type="text" id="laca-dh-newkey" class="large-text code" readonly value="<?php echo esc_attr($newDeployKey); ?>">
+                                </div>
+                            <?php endif; ?>
+                            <p>
+                                <?php if ($deployMeta) : ?>
+                                    <span class="laca-dh-badge laca-dh-badge--ok">Đã tạo</span>
+                                    <?php echo esc_html(sprintf('lúc %s bởi %s', wp_date('d/m/Y H:i', (int) $deployMeta['updated_at']), (string) $deployMeta['updated_by'])); ?>
+                                <?php else : ?>
+                                    <span class="laca-dh-badge laca-dh-badge--empty">Chưa tạo</span>
+                                <?php endif; ?>
+                            </p>
+                            <button type="submit" name="deploy_key_action" value="generate" class="button"><?php echo esc_html($deployMeta ? 'Tạo key mới (key cũ hết hiệu lực)' : 'Tạo deploy key'); ?></button>
+                            <p class="description">GitHub Actions dùng key này báo cho site biết lần deploy và danh sách file đã đẩy lên, để giám sát file không coi đó là sửa ngoài luồng. Trong GitHub repo → Settings → Secrets and variables → Actions, tạo:</p>
+                            <ul class="laca-dh-list">
+                                <li><code>LACA_DEPLOY_KEY</code> — key ở trên</li>
+                                <li><code>DISCORD_DEPLOY_WEBHOOK</code> — Webhook URL của kênh Discord nhận thông báo deploy (vd <code>#tensite-deploy</code>)</li>
+                                <li>Variable <code>SITE_URL</code> — <code><?php echo esc_html(untrailingslashit(home_url())); ?></code></li>
+                            </ul>
+                            <p class="description">Endpoint: <code><?php echo esc_html(admin_url('admin-ajax.php?action=' . DeployReceiver::ACTION)); ?></code></p>
+                        </td>
+                    </tr>
+                </table>
+
                 <?php submit_button('Lưu thay đổi'); ?>
             </form>
 
@@ -361,6 +455,9 @@ final class AdminPage
             .laca-dh-last--error { color: #b32d2e; }
             .laca-dh-last--ok { color: #00701a; }
             .laca-dh-remove { display: inline-block; margin-top: 6px; color: #b32d2e; }
+            .laca-dh-newkey { margin: 0 0 12px; padding: 12px; border: 1px solid #00a32a; background: #edfaef; border-radius: 4px; }
+            .laca-dh-newkey p { margin-top: 0; }
+            .laca-dh-list { list-style: disc; margin-left: 20px; }
             .laca-dh-check { display: inline-block; margin: 0 16px 6px 0; }
             @media (max-width: 782px) {
                 .laca-dh-channels thead { display: none; }

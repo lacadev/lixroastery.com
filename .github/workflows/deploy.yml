@@ -4,12 +4,65 @@ on:
   push:
     branches: [main, master]
 
+# Không cho 2 lần deploy chạy chồng nhau (FTP ghi đè lẫn nhau + manifest giám sát file lệch).
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+env:
+  # Repository variable SITE_URL (Settings → Secrets and variables → Actions → Variables).
+  SITE_URL: ${{ vars.SITE_URL || 'https://lixroastery.com' }}
+  # Thiếu secret nào thì bước tương ứng tự bỏ qua — không làm hỏng deploy.
+  DISCORD_DEPLOY_WEBHOOK: ${{ secrets.DISCORD_DEPLOY_WEBHOOK }}
+  LACA_DEPLOY_KEY: ${{ secrets.LACA_DEPLOY_KEY }}
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # cần lịch sử để liệt kê file thay đổi so với lần push trước
+
+      - name: Liệt kê file thay đổi
+        id: changes
+        env:
+          BEFORE: ${{ github.event.before }}
+        run: |
+          if [ -z "$BEFORE" ] || [ "$BEFORE" = "0000000000000000000000000000000000000000" ] || ! git cat-file -e "${BEFORE}^{commit}" 2>/dev/null; then
+            BEFORE="$(git rev-parse HEAD~1 2>/dev/null || git hash-object -t tree /dev/null)"
+          fi
+          git diff --name-status --no-renames "$BEFORE" HEAD > "$RUNNER_TEMP/changes.txt"
+          echo "count=$(wc -l < "$RUNNER_TEMP/changes.txt" | tr -d ' ')" >> "$GITHUB_OUTPUT"
+
+      # Chặn deploy nếu có file PHP lỗi cú pháp — 1 lỗi gõ nhầm là đủ làm sập cả site
+      # (hosting đang chạy PHP 8.3).
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          coverage: none
+
+      - name: Kiểm tra cú pháp PHP
+        id: phplint
+        run: |
+          # php -l in "No syntax errors detected" khi ổn; còn lại (Parse error / Errors parsing) là lỗi.
+          find app/public/wp-content/themes -name '*.php' -not -path '*/node_modules/*' -not -path '*/vendor/*' -print0 \
+            | xargs -0 -n1 -P4 sh -c 'php -d display_errors=stdout -d log_errors=0 -l "$0" || true' 2>&1 \
+            | grep -vE '^No syntax errors detected|^$' \
+            | sed 's#app/public/##g' > "$RUNNER_TEMP/php-lint.txt" || true
+          if [ -s "$RUNNER_TEMP/php-lint.txt" ]; then
+            cat "$RUNNER_TEMP/php-lint.txt"
+            exit 1
+          fi
+
+      - name: Báo site bắt đầu deploy
+        if: env.LACA_DEPLOY_KEY != ''
+        continue-on-error: true
+        run: |
+          jq -n --arg run "${{ github.run_id }}" --arg sha "${{ github.sha }}" '{phase: "start", run_id: $run, commit: $sha}' > "$RUNNER_TEMP/start.json"
+          bash .github/scripts/laca-deploy-notify.sh "$RUNNER_TEMP/start.json"
 
       # dist/ (CSS/JS/fonts/images đã compile của theme) và
       # block-gutenberg/**/build (JS/CSS đã compile của từng block) đều bị
@@ -43,6 +96,7 @@ jobs:
         run: yarn build:blocks
 
       - name: Deploy Theme & Plugins
+        id: ftp
         uses: SamKirkland/FTP-Deploy-Action@v4.3.4
         with:
           server: ${{ secrets.FTP_SERVER }}
@@ -101,3 +155,122 @@ jobs:
             wp-login.php
             xmlrpc.php
             index.php
+
+      # Gửi hash SHA-256 của mọi file code vừa đẩy lên để giám sát file trên site biết
+      # đây là thay đổi "do deploy". Danh sách đuôi file phải khớp FileWatch\Scope::CODE_EXTENSIONS.
+      - name: Báo site danh sách file đã deploy
+        id: manifest
+        if: success() && env.LACA_DEPLOY_KEY != ''
+        continue-on-error: true
+        env:
+          COMMIT_MSG: ${{ github.event.head_commit.message }}
+          AUTHOR: ${{ github.event.head_commit.author.name || github.actor }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          cd app/public
+          find wp-content/themes -type f -not -path '*/node_modules/*' -not -name '*.md' \
+            \( -name '*.php' -o -name '*.phtml' -o -name '*.phar' -o -name '*.pht' -o -name '*.php[3-8]' \
+               -o -name '*.inc' -o -name '*.js' -o -name '*.ini' -o -name '*.sh' -o -name '*.py' -o -name '*.pl' \
+               -o -name '*.cgi' -o -name '.htaccess' -o -name '.user.ini' \) -print0 \
+            | xargs -0 sha256sum \
+            | jq -R -n '[inputs | capture("^(?<h>[0-9a-f]{64}) [ *](?<p>.+)$") | {(.p): .h}] | add // {}' > "$RUNNER_TEMP/files.json"
+          roots="$(find wp-content/themes -mindepth 1 -maxdepth 1 -type d | jq -R -s 'split("\n") | map(select(length > 0))')"
+          jq -n \
+            --slurpfile files "$RUNNER_TEMP/files.json" \
+            --argjson roots "$roots" \
+            --arg run "${{ github.run_id }}" --arg sha "${{ github.sha }}" \
+            --arg author "$AUTHOR" --arg msg "$COMMIT_MSG" --arg url "$RUN_URL" \
+            '{phase: "finish", run_id: $run, commit: $sha, author: $author, message: $msg, run_url: $url, roots: $roots, files: $files[0]}' \
+            > "$RUNNER_TEMP/finish.json"
+          echo "Manifest: $(jq '.files | length' "$RUNNER_TEMP/finish.json") file"
+          bash "$GITHUB_WORKSPACE/.github/scripts/laca-deploy-notify.sh" "$RUNNER_TEMP/finish.json" | tee "$RUNNER_TEMP/finish-response.json"
+
+      - name: Kiểm tra site sau deploy
+        id: health
+        if: success()
+        run: |
+          : > "$RUNNER_TEMP/health.txt"
+          bad=0
+          for path in "/" "/wp-login.php"; do
+            code="$(curl -s -o "$RUNNER_TEMP/page.html" -w '%{http_code}' -A 'Mozilla/5.0 (LacaDeploy healthcheck)' --max-time 30 "${SITE_URL%/}${path}?deploy_check=${{ github.run_id }}" || echo 000)"
+            if [ "$code" -ge 500 ] || [ "$code" = "000" ] || grep -qiE 'critical error|Fatal error|There has been a critical' "$RUNNER_TEMP/page.html"; then
+              echo "❌ ${path} → HTTP ${code}" >> "$RUNNER_TEMP/health.txt"
+              bad=1
+            else
+              echo "✅ ${path} → HTTP ${code}" >> "$RUNNER_TEMP/health.txt"
+            fi
+          done
+          cat "$RUNNER_TEMP/health.txt"
+          exit "$bad"
+
+      - name: Thông báo Discord
+        if: always() && env.DISCORD_DEPLOY_WEBHOOK != ''
+        env:
+          COMMIT_MSG: ${{ github.event.head_commit.message }}
+          AUTHOR: ${{ github.event.head_commit.author.name || github.actor }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          COMMIT_URL: ${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}
+          LINT: ${{ steps.phplint.outcome }}
+          FTP: ${{ steps.ftp.outcome }}
+          HEALTH: ${{ steps.health.outcome }}
+          MANIFEST: ${{ steps.manifest.outcome }}
+          JOB: ${{ job.status }}
+        run: |
+          if [ "$LINT" = "failure" ]; then
+            title="⛔ Chặn deploy: lỗi cú pháp PHP / Deploy blocked: PHP syntax error"; color=15158332
+          elif [ "$FTP" = "failure" ]; then
+            title="❌ Deploy thất bại / Deploy failed"; color=15158332
+          elif [ "$HEALTH" = "failure" ]; then
+            title="🔥 Deploy xong nhưng site đang lỗi / Deployed but site is DOWN"; color=15158332
+          elif [ "$JOB" = "success" ]; then
+            title="✅ Deploy thành công / Deploy succeeded"; color=3066993
+          elif [ "$JOB" = "cancelled" ]; then
+            title="⏹️ Deploy bị huỷ / Deploy cancelled"; color=9807270
+          else
+            title="❌ Deploy lỗi ở bước build / Deploy failed during build"; color=15158332
+          fi
+
+          # Danh sách file thay đổi trong commit (gọn tối đa 25 dòng).
+          total="$(wc -l < "$RUNNER_TEMP/changes.txt" 2>/dev/null | tr -d ' ' || echo 0)"
+          files="$(head -n 25 "$RUNNER_TEMP/changes.txt" 2>/dev/null | sed -E 's#^A\t#➕ #; s#^M\t#✏️ #; s#^D\t#🗑️ #; s#^[A-Z]+\t#• #; s#app/public/##' || true)"
+          if [ "${total:-0}" -gt 25 ]; then files="${files}"$'\n'"… +$((total - 25)) file"; fi
+
+          extra=""
+          if [ -s "$RUNNER_TEMP/php-lint.txt" ]; then
+            extra="$(head -c 900 "$RUNNER_TEMP/php-lint.txt")"
+          fi
+          health="$(cat "$RUNNER_TEMP/health.txt" 2>/dev/null || true)"
+          monitor="—"
+          if [ "$MANIFEST" = "success" ]; then
+            monitor="$(jq -r '"✅ " + ((.data.matched // 0) | tostring) + " file ghi nhận" + (if ((.data.mismatched // []) | length) > 0 then " · ⚠️ " + ((.data.mismatched | length) | tostring) + " file lệch" else "" end)' "$RUNNER_TEMP/finish-response.json" 2>/dev/null || echo "?")"
+          elif [ "$MANIFEST" = "failure" ]; then
+            monitor="⚠️ Không gửi được manifest tới site"
+          fi
+
+          jq -n \
+            --arg title "$title" --argjson color "$color" \
+            --arg msg "$(printf '%s' "$COMMIT_MSG" | head -c 300)" \
+            --arg author "$AUTHOR" --arg sha "${GITHUB_SHA:0:7}" \
+            --arg run "$RUN_URL" --arg commit "$COMMIT_URL" --arg site "$SITE_URL" \
+            --arg files "${files:-—}" --arg total "${total:-0}" \
+            --arg lint "$extra" --arg health "${health:-—}" --arg monitor "$monitor" \
+            '{
+              username: "Laca Deploy",
+              allowed_mentions: {parse: []},
+              embeds: [{
+                title: $title, url: $run, color: $color,
+                description: ("**" + $msg + "**"),
+                fields: ([
+                  {name: "Commit", value: ("[`" + $sha + "`](" + $commit + ")"), inline: true},
+                  {name: "Người push / Pushed by", value: $author, inline: true},
+                  {name: "Site", value: $site, inline: true},
+                  {name: ("File thay đổi / Changed files (" + $total + ")"), value: ("```\n" + ($files | .[0:950]) + "\n```"), inline: false},
+                  {name: "Kiểm tra site / Health check", value: $health, inline: true},
+                  {name: "Giám sát file / File monitor", value: $monitor, inline: true}
+                ] + (if $lint != "" then [{name: "Lỗi PHP / PHP errors", value: ("```\n" + $lint + "\n```"), inline: false}] else [] end)),
+                footer: {text: "GitHub Actions"},
+                timestamp: (now | todate)
+              }]
+            }' > "$RUNNER_TEMP/discord.json"
+
+          curl -sS --fail-with-body --max-time 30 -H "Content-Type: application/json" --data-binary @"$RUNNER_TEMP/discord.json" "$DISCORD_DEPLOY_WEBHOOK" || echo "::warning::Không gửi được thông báo Discord"

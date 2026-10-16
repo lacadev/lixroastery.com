@@ -49,6 +49,19 @@ final class CliCommand
     }
 
     /**
+     * Quét giám sát file ngay (lần đầu = tạo baseline).
+     *
+     * ## EXAMPLES
+     *     wp laca-discord scan
+     */
+    public function scan(): void
+    {
+        $r = FileWatch\Scanner::run();
+        \WP_CLI::log(wp_json_encode($r));
+        $this->flush();
+    }
+
+    /**
      * Gửi toàn bộ hàng đợi ngay.
      */
     public function flush(): void

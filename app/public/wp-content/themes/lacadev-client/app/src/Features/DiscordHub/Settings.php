@@ -52,8 +52,13 @@ final class Settings
         'allow_non_production' => false,
         'post_types' => ['post'],
         'language' => 'both',
+        'file_watch' => true,
+        'deploy_key' => [],
         'channels' => [],
     ];
+
+    /** Khoá trong SECRETS_OPTION của deploy key (không trùng tên kênh). */
+    private const DEPLOY_KEY_SLOT = '_deploy_key';
 
     private static ?array $settings = null;
 
@@ -203,6 +208,51 @@ final class Settings
     {
         $header = (string) self::all()['ip_header'];
         return isset(self::IP_HEADERS[$header]) ? $header : '';
+    }
+
+    public static function fileWatchEnabled(): bool
+    {
+        return self::isEnabled() && (bool) self::all()['file_watch'] && self::hasChannel(self::CHANNEL_SECURITY);
+    }
+
+    /**
+     * Tạo deploy key mới cho GitHub Actions. Trả về key dạng rõ DUY NHẤT 1 lần để admin
+     * chép sang GitHub Secret — sau đó chỉ lưu bản mã hoá, không xem lại được.
+     */
+    public static function generateDeployKey(): ?string
+    {
+        $key = 'lacadep_' . bin2hex(random_bytes(24));
+        $blob = WebhookVault::encrypt($key, 'deploy-key');
+        if (null === $blob) {
+            return null;
+        }
+
+        $secrets = get_option(self::SECRETS_OPTION, []);
+        $secrets = is_array($secrets) ? $secrets : [];
+        $secrets[self::DEPLOY_KEY_SLOT] = $blob;
+        update_option(self::SECRETS_OPTION, $secrets, false);
+
+        $settings = self::all();
+        $settings['deploy_key'] = ['updated_at' => time(), 'updated_by' => wp_get_current_user()->user_login ?: 'system'];
+        self::save($settings);
+        return $key;
+    }
+
+    public static function deployKey(): ?string
+    {
+        $secrets = get_option(self::SECRETS_OPTION, []);
+        $blob = is_array($secrets) ? (string) ($secrets[self::DEPLOY_KEY_SLOT] ?? '') : '';
+        $key = '' !== $blob ? WebhookVault::decrypt($blob, 'deploy-key') : null;
+        return (null !== $key && str_starts_with($key, 'lacadep_')) ? $key : null;
+    }
+
+    /**
+     * @return array{updated_at:int,updated_by:string}|null
+     */
+    public static function deployKeyMeta(): ?array
+    {
+        $meta = self::all()['deploy_key'];
+        return is_array($meta) && !empty($meta['updated_at']) ? $meta : null;
     }
 
     public static function language(): string
