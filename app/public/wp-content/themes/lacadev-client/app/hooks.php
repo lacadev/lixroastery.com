@@ -247,6 +247,9 @@ add_action('after_setup_theme', function () {
     if (class_exists('\App\Settings\Security\UserEnumerationGuard')) {
         (new \App\Settings\Security\UserEnumerationGuard())->register();
     }
+    if (class_exists('\App\Settings\Security\CoreInfoFileCleanup')) {
+        (new \App\Settings\Security\CoreInfoFileCleanup())->register();
+    }
 }, 15);
 
 /**

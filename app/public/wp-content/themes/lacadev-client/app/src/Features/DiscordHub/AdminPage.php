@@ -3,6 +3,7 @@
 namespace App\Features\DiscordHub;
 
 use App\Features\DiscordHub\FileWatch\DeployReceiver;
+use App\Features\DiscordHub\Monitors\CronHealthMonitor;
 use App\Features\DiscordHub\FileWatch\Scanner;
 use App\Settings\AdminSettings;
 
@@ -387,6 +388,36 @@ final class AdminPage
                                 <?php endif; ?>
                             </p>
                             <button type="submit" name="fim_scan" value="1" class="button">Lưu &amp; quét ngay</button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Lịch chạy (cron)</th>
+                        <td>
+                            <?php
+                            $cronLast = (int) get_option(CronHealthMonitor::LAST_RUN_OPTION, 0);
+                            $overdue = CronHealthMonitor::overdueCount();
+                            ?>
+                            <p>
+                                <?php if (CronHealthMonitor::usesRealCron()) : ?>
+                                    <span class="laca-dh-badge laca-dh-badge--ok">Cron thật (cPanel)</span>
+                                <?php else : ?>
+                                    <span class="laca-dh-badge laca-dh-badge--empty">WP-Cron theo lượt truy cập</span>
+                                <?php endif; ?>
+                                <?php echo esc_html($cronLast ? sprintf('Lần chạy cuối: %s.', wp_date('d/m/Y H:i', $cronLast)) : 'Chưa ghi nhận lần chạy nào.'); ?>
+                                <?php if ($overdue > 0) : ?>
+                                    <strong class="laca-dh-last--error"><?php echo esc_html(sprintf('%d sự kiện quá hạn chưa chạy.', $overdue)); ?></strong>
+                                <?php endif; ?>
+                            </p>
+                            <?php if (!CronHealthMonitor::usesRealCron()) : ?>
+                                <p class="description">WP-Cron chỉ chạy khi có khách vào web (và bắt khách đó chờ). Chuyển sang cron thật để quét file, kiểm tra cập nhật, tin sửa bài và lịch WooCommerce chạy đúng giờ. Làm <strong>đúng thứ tự</strong>:</p>
+                                <ol class="laca-dh-list">
+                                    <li>cPanel → <strong>Cron Jobs</strong> → Common Settings: <em>Once Per Five Minutes</em>, Command:<br><input type="text" class="large-text code" readonly value="<?php echo esc_attr(CronHealthMonitor::suggestedCommand()); ?>" aria-label="Lệnh cron cPanel"></li>
+                                    <li>Đợi 5–10 phút, tải lại trang này: "Lần chạy cuối" phải cập nhật.</li>
+                                    <li>Thêm vào <code>wp-config.php</code> (trên dòng <code>/* That's all, stop editing! */</code>): <code>define( 'DISABLE_WP_CRON', true );</code></li>
+                                </ol>
+                            <?php else : ?>
+                                <p class="description">Cron cPanel không chạy quá 2 giờ → cảnh báo về kênh Security.</p>
+                            <?php endif; ?>
                         </td>
                     </tr>
                     <tr>
