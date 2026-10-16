@@ -27,7 +27,7 @@ final class Settings
         ],
         self::CHANNEL_SECURITY => [
             'label' => 'Security — cảnh báo',
-            'hint' => 'Kênh #tensite-security: brute-force, tạo/nâng quyền admin, spam tăng đột biến.',
+            'hint' => 'Kênh #tensite-security: brute-force, tạo/nâng quyền admin, spam tăng đột biến, lỗi nghiêm trọng (PHP fatal error).',
         ],
     ];
 
@@ -51,6 +51,7 @@ final class Settings
         'ip_header' => '',
         'allow_non_production' => false,
         'post_types' => ['post'],
+        'language' => 'both',
         'channels' => [],
     ];
 
@@ -202,6 +203,12 @@ final class Settings
     {
         $header = (string) self::all()['ip_header'];
         return isset(self::IP_HEADERS[$header]) ? $header : '';
+    }
+
+    public static function language(): string
+    {
+        $language = (string) self::all()['language'];
+        return isset(I18n::LANGUAGES[$language]) ? $language : 'both';
     }
 
     /**

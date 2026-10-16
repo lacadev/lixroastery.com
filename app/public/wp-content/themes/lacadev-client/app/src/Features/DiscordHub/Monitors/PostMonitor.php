@@ -2,6 +2,7 @@
 
 namespace App\Features\DiscordHub\Monitors;
 
+use App\Features\DiscordHub\I18n;
 use App\Features\DiscordHub\Settings;
 use App\Features\DiscordHub\Context;
 use App\Features\DiscordHub\Embed;
@@ -50,19 +51,19 @@ final class PostMonitor
             $this->color($new)
         );
 
-        $title = '' !== trim($post->post_title) ? $post->post_title : '(không tiêu đề)';
+        $title = '' !== trim($post->post_title) ? $post->post_title : I18n::t('(không tiêu đề)', '(no title)');
         $link  = 'publish' === $new ? get_permalink($post) : get_edit_post_link($post->ID, 'raw');
 
         $embed->description('**' . Embed::escape($title) . '**', true)
             ->url((string) $link)
-            ->field('Tác giả', (string) get_the_author_meta('display_name', (int) $post->post_author))
-            ->field('Thực hiện bởi', Context::actor())
-            ->field('Nguồn', Context::origin())
+            ->field(I18n::t('Tác giả', 'Author'), (string) get_the_author_meta('display_name', (int) $post->post_author))
+            ->field(I18n::t('Thực hiện bởi', 'Performed by'), Context::actor())
+            ->field(I18n::t('Nguồn', 'Origin'), Context::origin())
             ->field('ID', (string) $post->ID);
 
         $edit = get_edit_post_link($post->ID, 'raw');
         if ($edit) {
-            $embed->field('Quản trị', Embed::link('Mở trình sửa', $edit), true, true);
+            $embed->field(I18n::t('Quản trị', 'Admin'), Embed::link(I18n::t('Mở trình sửa', 'Open editor'), $edit), true, true);
         }
 
         Notifier::send(Settings::CHANNEL_AUDIT, 'post.transition', $embed);
@@ -70,8 +71,17 @@ final class PostMonitor
 
     private function statusLabel(string $status): string
     {
-        if ('new' === $status) {
-            return 'Mới';
+        $known = [
+            'new' => ['Mới', 'New'],
+            'draft' => ['Bản nháp', 'Draft'],
+            'pending' => ['Chờ duyệt', 'Pending review'],
+            'future' => ['Đã lên lịch', 'Scheduled'],
+            'private' => ['Riêng tư', 'Private'],
+            'publish' => ['Đã xuất bản', 'Published'],
+            'trash' => ['Thùng rác', 'Trash'],
+        ];
+        if (isset($known[$status])) {
+            return I18n::t(...$known[$status]);
         }
         $object = get_post_status_object($status);
         return $object && !empty($object->label) ? (string) $object->label : $status;

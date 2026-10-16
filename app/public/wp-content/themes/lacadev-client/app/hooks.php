@@ -242,8 +242,13 @@ add_action('init', function () {
  * ngay đầu request (xác thực Application Password qua REST).
  */
 add_action('after_setup_theme', function () {
-    if (class_exists('\App\Features\DiscordHub\DiscordHub')) {
-        (new \App\Features\DiscordHub\DiscordHub())->boot();
+    // Tính năng phụ: file đang upload dở khi deploy (ParseError/Class not found) không được làm sập site.
+    try {
+        if (class_exists('\App\Features\DiscordHub\DiscordHub')) {
+            (new \App\Features\DiscordHub\DiscordHub())->boot();
+        }
+    } catch (\Throwable $e) {
+        error_log('[laca-discord-hub] Không khởi động được: ' . $e->getMessage());
     }
 }, 20);
 

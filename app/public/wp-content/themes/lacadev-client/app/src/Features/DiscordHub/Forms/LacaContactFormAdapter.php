@@ -2,6 +2,8 @@
 
 namespace App\Features\DiscordHub\Forms;
 
+use App\Features\DiscordHub\I18n;
+
 /**
  * Form liên hệ có sẵn của theme (Laca Admin → Form Liên Hệ, shortcode [laca_contact_form]).
  * Hook `laca_contact_form_submitted` bắn trong ContactFormAjaxHandler::handleSubmit()
@@ -28,7 +30,7 @@ final class LacaContactFormAdapter implements FormAdapter
                 $lead->entryId = $submissionId ? (string) (int) $submissionId : '';
                 $lead->pageUrl = (string) wp_get_referer();
                 if (!$emailSent) {
-                    $lead->warning = 'Email thông báo GỬI THẤT BẠI — kiểm tra SMTP. Submission vẫn đã lưu trong Laca Admin → Form Liên Hệ.';
+                    $lead->warning = I18n::block('Email thông báo GỬI THẤT BẠI — kiểm tra SMTP. Submission vẫn đã lưu trong Laca Admin → Form Liên Hệ.', 'Notification email FAILED — check SMTP. The submission is still saved in Laca Admin → Contact Forms.');
                 }
 
                 $emit($lead);

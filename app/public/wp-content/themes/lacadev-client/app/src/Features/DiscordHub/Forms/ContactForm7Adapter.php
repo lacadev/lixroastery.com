@@ -2,6 +2,8 @@
 
 namespace App\Features\DiscordHub\Forms;
 
+use App\Features\DiscordHub\I18n;
+
 /**
  * Contact Form 7.
  *
@@ -40,7 +42,7 @@ final class ContactForm7Adapter implements FormAdapter
                 }
                 $lead->pageUrl = (string) $submission->get_meta('url');
                 if ('mail_failed' === $status) {
-                    $lead->warning = 'Email thông báo GỬI THẤT BẠI — Discord có thể là nơi duy nhất nhận được lead này. Kiểm tra SMTP.';
+                    $lead->warning = I18n::block('Email thông báo GỬI THẤT BẠI — Discord có thể là nơi duy nhất nhận được lead này. Kiểm tra SMTP.', 'Notification email FAILED — Discord may be the only place this lead arrived. Check SMTP.');
                 }
 
                 $emit($lead);

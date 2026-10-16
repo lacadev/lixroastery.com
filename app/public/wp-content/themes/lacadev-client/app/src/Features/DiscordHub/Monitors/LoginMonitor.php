@@ -2,6 +2,7 @@
 
 namespace App\Features\DiscordHub\Monitors;
 
+use App\Features\DiscordHub\I18n;
 use App\Features\DiscordHub\Settings;
 use App\Features\DiscordHub\Context;
 use App\Features\DiscordHub\Embed;
@@ -65,18 +66,18 @@ final class LoginMonitor
 
         $valid = array_values(array_filter($state['users'], 'username_exists'));
         $embed = Embed::make(
-            sprintf('🚨 Brute-force: %d lần đăng nhập sai từ 1 IP', $count),
+            sprintf(I18n::t('🚨 Brute-force: %1$d lần đăng nhập sai từ 1 IP', '🚨 Brute-force: %1$d failed logins from one IP'), $count),
             Embed::COLOR_DANGER
         )
             ->codeField('IP', $ip)
-            ->field('Quốc gia', Context::country() ?? 'N/A (Bot tra GeoIP)')
-            ->field('Kênh', Context::origin())
-            ->field('Thời gian', sprintf('%d lần trong %d giây', $count, max(1, $now - (int) $state['start'])))
-            ->field('Username bị dò', Embed::code(implode(', ', $state['users'])), false, true)
+            ->field(I18n::t('Quốc gia', 'Country'), Context::country() ?? 'N/A')
+            ->field(I18n::t('Kênh', 'Via'), Context::origin())
+            ->field(I18n::t('Thời gian', 'Window'), sprintf(I18n::t('%1$d lần trong %2$d giây', '%1$d attempts in %2$d s'), $count, max(1, $now - (int) $state['start'])))
+            ->field(I18n::t('Username bị dò', 'Targeted usernames'), Embed::code(implode(', ', $state['users'])), false, true)
             ->codeField('User-Agent', Context::userAgent(), false);
 
         if ($valid) {
-            $embed->field('⚠️ Username TỒN TẠI đang bị dò', Embed::code(implode(', ', $valid)), false, true);
+            $embed->field(I18n::t('⚠️ Username TỒN TẠI đang bị dò', '⚠️ EXISTING usernames targeted'), Embed::code(implode(', ', $valid)), false, true);
         }
 
         Notifier::send(Settings::CHANNEL_SECURITY, 'login.bruteforce', $embed, 'bf:' . md5($ip) . ':' . $count);
@@ -99,12 +100,12 @@ final class LoginMonitor
             return;
         }
 
-        $embed = Embed::make('🚨 Quản trị viên đăng nhập THÀNH CÔNG từ IP đang brute-force', Embed::COLOR_DANGER)
-            ->description('Có thể tài khoản đã bị dò ra mật khẩu. Kiểm tra ngay, đổi mật khẩu và huỷ phiên đăng nhập nếu không phải chính chủ.', true)
+        $embed = Embed::make(I18n::t('🚨 Quản trị viên đăng nhập THÀNH CÔNG từ IP đang brute-force', '🚨 Admin logged in SUCCESSFULLY from a brute-forcing IP'), Embed::COLOR_DANGER)
+            ->description(I18n::block('Có thể tài khoản đã bị dò ra mật khẩu. Kiểm tra ngay, đổi mật khẩu và huỷ phiên đăng nhập nếu không phải chính chủ.', 'The password may have been guessed. Check now, change the password and destroy sessions if this was not the owner.'), true)
             ->codeField('Username', $user->user_login)
             ->codeField('IP', $ip)
-            ->field('Số lần sai trước đó', (string) (int) $state['count'])
-            ->field('Quản trị', Embed::link('Xem user', admin_url('user-edit.php?user_id=' . (int) $user->ID)), true, true);
+            ->field(I18n::t('Số lần sai trước đó', 'Previous failed attempts'), (string) (int) $state['count'])
+            ->field(I18n::t('Quản trị', 'Admin'), Embed::link(I18n::t('Xem user', 'View user'), admin_url('user-edit.php?user_id=' . (int) $user->ID)), true, true);
 
         Notifier::send(Settings::CHANNEL_SECURITY, 'login.suspicious_success', $embed);
     }

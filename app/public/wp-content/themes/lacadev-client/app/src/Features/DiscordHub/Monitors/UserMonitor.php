@@ -2,6 +2,7 @@
 
 namespace App\Features\DiscordHub\Monitors;
 
+use App\Features\DiscordHub\I18n;
 use App\Features\DiscordHub\Settings;
 use App\Features\DiscordHub\Context;
 use App\Features\DiscordHub\Embed;
@@ -67,16 +68,16 @@ final class UserMonitor
 
         $isAdmin = $this->isPrivileged($user->roles, array_keys(array_filter((array) $user->caps)));
         $embed   = Embed::make(
-            $isAdmin ? '🚨 Tài khoản QUẢN TRỊ mới được tạo' : '👤 Tài khoản mới',
+            $isAdmin ? I18n::t('🚨 Tài khoản QUẢN TRỊ mới được tạo', '🚨 New ADMINISTRATOR account created') : I18n::t('👤 Tài khoản mới', '👤 New user account'),
             $isAdmin ? Embed::COLOR_DANGER : Embed::COLOR_INFO
         )
             ->codeField('Username', $user->user_login)
             ->codeField('Email', $user->user_email)
-            ->field('Vai trò', $this->roleNames($user->roles))
-            ->field('Thực hiện bởi', Context::actor())
-            ->field('Nguồn', Context::origin())
+            ->field(I18n::t('Vai trò', 'Role'), $this->roleNames($user->roles))
+            ->field(I18n::t('Thực hiện bởi', 'Performed by'), Context::actor())
+            ->field(I18n::t('Nguồn', 'Origin'), Context::origin())
             ->codeField('IP', Context::clientIp())
-            ->field('Quản trị', Embed::link('Xem user', admin_url('user-edit.php?user_id=' . (int) $user->ID)), true, true);
+            ->field(I18n::t('Quản trị', 'Admin'), Embed::link(I18n::t('Xem user', 'View user'), admin_url('user-edit.php?user_id=' . (int) $user->ID)), true, true);
 
         Notifier::send($isAdmin ? Settings::CHANNEL_SECURITY : Settings::CHANNEL_AUDIT, 'user.register', $embed);
     }
@@ -97,18 +98,18 @@ final class UserMonitor
 
         $wasAdmin = $this->isPrivileged($user->roles, []);
         $embed    = Embed::make(
-            $wasAdmin ? '🗑️ Tài khoản QUẢN TRỊ bị xoá' : '🗑️ Tài khoản bị xoá',
+            $wasAdmin ? I18n::t('🗑️ Tài khoản QUẢN TRỊ bị xoá', '🗑️ ADMINISTRATOR account deleted') : I18n::t('🗑️ Tài khoản bị xoá', '🗑️ User account deleted'),
             $wasAdmin ? Embed::COLOR_DANGER : Embed::COLOR_WARNING
         )
             ->codeField('Username', $user->user_login)
             ->codeField('Email', $user->user_email)
-            ->field('Vai trò', $this->roleNames($user->roles))
-            ->field('Thực hiện bởi', Context::actor())
-            ->field('Nguồn', Context::origin());
+            ->field(I18n::t('Vai trò', 'Role'), $this->roleNames($user->roles))
+            ->field(I18n::t('Thực hiện bởi', 'Performed by'), Context::actor())
+            ->field(I18n::t('Nguồn', 'Origin'), Context::origin());
 
         if ($reassign) {
             $target = get_userdata((int) $reassign);
-            $embed->field('Chuyển bài cho', $target ? $target->user_login : '#' . (int) $reassign);
+            $embed->field(I18n::t('Chuyển bài cho', 'Content reassigned to'), $target ? $target->user_login : '#' . (int) $reassign);
         }
 
         Notifier::send($wasAdmin ? Settings::CHANNEL_SECURITY : Settings::CHANNEL_AUDIT, 'user.delete', $embed);
@@ -123,10 +124,10 @@ final class UserMonitor
         if (!$user) {
             return;
         }
-        $embed = Embed::make('🚨 Cấp quyền SUPER ADMIN (Multisite)', Embed::COLOR_DANGER)
+        $embed = Embed::make(I18n::t('🚨 Cấp quyền SUPER ADMIN (Multisite)', '🚨 SUPER ADMIN granted (Multisite)'), Embed::COLOR_DANGER)
             ->codeField('Username', $user->user_login)
-            ->field('Thực hiện bởi', Context::actor())
-            ->field('Nguồn', Context::origin())
+            ->field(I18n::t('Thực hiện bởi', 'Performed by'), Context::actor())
+            ->field(I18n::t('Nguồn', 'Origin'), Context::origin())
             ->codeField('IP', Context::clientIp());
         Notifier::send(Settings::CHANNEL_SECURITY, 'user.super_admin', $embed);
     }
@@ -205,22 +206,22 @@ final class UserMonitor
 
             $user  = get_userdata($snap['user_id']);
             $embed = Embed::make(
-                $escalation ? '🚨 Leo thang đặc quyền: user được cấp quyền quản trị' : '🔑 Thay đổi vai trò người dùng',
+                $escalation ? I18n::t('🚨 Leo thang đặc quyền: user được cấp quyền quản trị', '🚨 Privilege escalation: user granted admin rights') : I18n::t('🔑 Thay đổi vai trò người dùng', '🔑 User role changed'),
                 $escalation ? Embed::COLOR_DANGER : Embed::COLOR_WARNING
             )
                 ->codeField('Username', $user ? $user->user_login : '#' . $snap['user_id'])
-                ->field('Trước', $this->roleNames(array_values(array_filter($beforeKeys, $isRole))))
-                ->field('Sau', $this->roleNames(array_values(array_filter($afterKeys, $isRole))));
+                ->field(I18n::t('Trước', 'Before'), $this->roleNames(array_values(array_filter($beforeKeys, $isRole))))
+                ->field(I18n::t('Sau', 'After'), $this->roleNames(array_values(array_filter($afterKeys, $isRole))));
 
             if ($addedCaps) {
-                $embed->field('Capability cấp trực tiếp', Embed::code(implode(', ', $addedCaps)), false, true);
+                $embed->field(I18n::t('Capability cấp trực tiếp', 'Directly granted capabilities'), Embed::code(implode(', ', $addedCaps)), false, true);
             }
             if (is_multisite() && preg_match('/(\d+)_capabilities$/', $snap['key'], $m)) {
                 $embed->field('Site ID', $m[1]);
             }
 
-            $embed->field('Thực hiện bởi', Context::actor())
-                ->field('Nguồn', Context::origin())
+            $embed->field(I18n::t('Thực hiện bởi', 'Performed by'), Context::actor())
+                ->field(I18n::t('Nguồn', 'Origin'), Context::origin())
                 ->codeField('IP', Context::clientIp());
 
             Notifier::send($escalation ? Settings::CHANNEL_SECURITY : Settings::CHANNEL_AUDIT, 'user.role_change', $embed);
@@ -246,7 +247,7 @@ final class UserMonitor
     private function roleNames(array $roles): string
     {
         if (!$roles) {
-            return '(không có)';
+            return I18n::t('(không có)', '(none)');
         }
         $names = wp_roles()->get_names();
         return implode(

@@ -2,6 +2,7 @@
 
 namespace App\Features\DiscordHub\Monitors;
 
+use App\Features\DiscordHub\I18n;
 use App\Features\DiscordHub\Settings;
 use App\Features\DiscordHub\Context;
 use App\Features\DiscordHub\Embed;
@@ -53,19 +54,19 @@ final class CommentMonitor
         $postTitle = $post ? get_the_title($post) : '#' . $comment->comment_post_ID;
 
         $embed = Embed::make(
-            $isPending ? '💬 Bình luận mới — chờ duyệt' : '💬 Bình luận mới',
+            $isPending ? I18n::t('💬 Bình luận mới — chờ duyệt', '💬 New comment — awaiting moderation') : I18n::t('💬 Bình luận mới', '💬 New comment'),
             $isPending ? Embed::COLOR_WARNING : Embed::COLOR_INFO
         )
             ->description(wp_trim_words((string) $comment->comment_content, 80, '…'))
             ->url((string) get_comment_link($comment))
-            ->field('Tác giả', (string) $comment->comment_author)
+            ->field(I18n::t('Tác giả', 'Author'), (string) $comment->comment_author)
             ->codeField('Email', (string) $comment->comment_author_email)
             ->codeField('IP', (string) $comment->comment_author_IP)
-            ->field('Bài viết', $post ? Embed::link($postTitle, (string) get_permalink($post)) : Embed::escape($postTitle), false, true)
+            ->field(I18n::t('Bài viết', 'Post'), $post ? Embed::link($postTitle, (string) get_permalink($post)) : Embed::escape($postTitle), false, true)
             ->field(
-                'Quản trị',
-                Embed::link('Duyệt / Sửa', admin_url('comment.php?action=editcomment&c=' . (int) $comment->comment_ID))
-                    . ' · ' . Embed::link('Hàng chờ duyệt', admin_url('edit-comments.php?comment_status=moderated')),
+                I18n::t('Quản trị', 'Admin'),
+                Embed::link(I18n::t('Duyệt / Sửa', 'Approve / Edit'), admin_url('comment.php?action=editcomment&c=' . (int) $comment->comment_ID))
+                    . ' · ' . Embed::link(I18n::t('Hàng chờ duyệt', 'Moderation queue'), admin_url('edit-comments.php?comment_status=moderated')),
                 false,
                 true
             );
@@ -94,10 +95,10 @@ final class CommentMonitor
             return;
         }
 
-        $embed = Embed::make('🚨 Bình luận spam tăng đột biến', Embed::COLOR_DANGER)
-            ->description(sprintf('Hơn **%d** bình luận chờ duyệt/spam trong %d phút.', $threshold, (int) ($window / 60)), true)
-            ->codeField('IP gần nhất', Context::clientIp())
-            ->field('Quản trị', Embed::link('Hàng chờ duyệt', admin_url('edit-comments.php?comment_status=moderated')), true, true);
+        $embed = Embed::make(I18n::t('🚨 Bình luận spam tăng đột biến', '🚨 Comment spam surge'), Embed::COLOR_DANGER)
+            ->description(sprintf(I18n::block('Hơn **%1$d** bình luận chờ duyệt/spam trong %2$d phút.', 'More than **%1$d** pending/spam comments in %2$d minutes.'), $threshold, (int) ($window / 60)), true)
+            ->codeField(I18n::t('IP gần nhất', 'Latest IP'), Context::clientIp())
+            ->field(I18n::t('Quản trị', 'Admin'), Embed::link(I18n::t('Hàng chờ duyệt', 'Moderation queue'), admin_url('edit-comments.php?comment_status=moderated')), true, true);
 
         Notifier::send(Settings::CHANNEL_SECURITY, 'comment.surge', $embed, 'comment-surge:' . $state['start']);
     }

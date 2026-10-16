@@ -2,6 +2,7 @@
 
 namespace App\Features\DiscordHub\Monitors;
 
+use App\Features\DiscordHub\I18n;
 use App\Features\DiscordHub\Settings;
 use App\Features\DiscordHub\Context;
 use App\Features\DiscordHub\Embed;
@@ -85,24 +86,24 @@ final class FormMonitor
             $extras[] = $field;
         }
 
-        $embed = Embed::make('📬 Lead mới — ' . $lead->formName, Embed::COLOR_LEAD);
+        $embed = Embed::make(I18n::t('📬 Lead mới', '📬 New lead') . ' — ' . $lead->formName, Embed::COLOR_LEAD);
 
         if (null !== $roles['message']) {
             $embed->description($roles['message']);
         }
-        $embed->field('Họ tên', (string) $roles['name'])
-            ->field('Số điện thoại', null !== $roles['phone'] ? Embed::code($roles['phone']) : '—', true, true)
+        $embed->field(I18n::t('Họ tên', 'Name'), (string) $roles['name'])
+            ->field(I18n::t('Số điện thoại', 'Phone'), null !== $roles['phone'] ? Embed::code($roles['phone']) : '—', true, true)
             ->field('Email', null !== $roles['email'] ? Embed::code($roles['email']) : '—', true, true);
 
         foreach (array_slice($extras, 0, self::MAX_EXTRA_FIELDS) as $field) {
             $embed->field($field['label'], $field['value'], Embed::length($field['value']) < 40);
         }
         if (count($extras) > self::MAX_EXTRA_FIELDS) {
-            $embed->field('…', sprintf('còn %d field khác', count($extras) - self::MAX_EXTRA_FIELDS), false);
+            $embed->field('…', sprintf(I18n::t('còn %1$d field khác', '%1$d more fields'), count($extras) - self::MAX_EXTRA_FIELDS), false);
         }
 
         $page = Embed::safeUrl($lead->pageUrl);
-        $embed->field('Nguồn trang', '' !== $page ? Embed::link($this->shortUrl($page), $page) : '—', false, true)
+        $embed->field(I18n::t('Nguồn trang', 'Source page'), '' !== $page ? Embed::link($this->shortUrl($page), $page) : '—', false, true)
             ->field('Plugin', $lead->source)
             ->codeField('IP', Context::clientIp());
 
@@ -110,7 +111,7 @@ final class FormMonitor
             $embed->field('Entry ID', $lead->entryId);
         }
         if ('' !== $lead->warning) {
-            $embed->field('⚠️ Cảnh báo', $lead->warning, false);
+            $embed->field(I18n::t('⚠️ Cảnh báo', '⚠️ Warning'), $lead->warning, false);
         }
 
         // Người dùng bấm submit 2 lần / bot gửi lại y hệt → gộp thành 1 tin (×N) khi còn đang chờ gửi.

@@ -95,8 +95,8 @@ final class Queue
 
         $pending = (int) $wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM {$table} WHERE channel = %s", $channel));
         if ($pending >= self::MAX_PENDING_PER_CHANNEL) {
-            $embed     = Embed::make('⚠️ Hàng đợi quá tải — đang bỏ bớt sự kiện', Embed::COLOR_DANGER)
-                ->description('Kênh **' . $channel . '** nhận quá nhiều sự kiện cùng lúc (spam form/brute-force?). Các sự kiện vượt ngưỡng ' . self::MAX_PENDING_PER_CHANNEL . ' đã bị bỏ, chỉ đếm số lượng.', true)
+            $embed     = Embed::make(I18n::t('⚠️ Hàng đợi quá tải — đang bỏ bớt sự kiện', '⚠️ Queue overloaded — dropping events'), Embed::COLOR_DANGER)
+                ->description(sprintf(I18n::block('Kênh **%1$s** nhận quá nhiều sự kiện cùng lúc (spam form/brute-force?). Các sự kiện vượt ngưỡng %2$d đã bị bỏ, chỉ đếm số lượng.', 'Channel **%1$s** is receiving too many events at once (form spam/brute-force?). Events above %2$d were dropped and only counted.'), $channel, self::MAX_PENDING_PER_CHANNEL), true)
                 ->toArray();
             $dedupeKey = 'overflow:' . $channel;
         }

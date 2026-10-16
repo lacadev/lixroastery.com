@@ -47,9 +47,9 @@ final class AdminPage
 
     public static function testEmbed(string $channel): Embed
     {
-        return Embed::make('✅ Discord Hub — kết nối thành công', Embed::COLOR_SUCCESS)
-            ->description('Kênh **' . Embed::escape(Settings::CHANNELS[$channel]['label'] ?? $channel) . '** đã nhận được thông báo từ website.', true)
-            ->field('Người gửi thử', Context::actor())
+        return Embed::make(I18n::t('✅ Discord Hub — kết nối thành công', '✅ Discord Hub — connected'), Embed::COLOR_SUCCESS)
+            ->description(sprintf(I18n::block('Kênh **%1$s** đã nhận được thông báo từ website.', 'Channel **%1$s** is receiving notifications from the website.'), Embed::escape(Settings::CHANNELS[$channel]['label'] ?? $channel)), true)
+            ->field(I18n::t('Người gửi thử', 'Sent by'), Context::actor())
             ->field('WordPress', get_bloginfo('version'))
             ->field('PHP', PHP_VERSION);
     }
@@ -69,6 +69,9 @@ final class AdminPage
         $settings['enabled'] = !empty($_POST['enabled']);
         $settings['allow_non_production'] = !empty($_POST['allow_non_production']);
         $settings['site_name'] = mb_substr(sanitize_text_field(wp_unslash($_POST['site_name'] ?? '')), 0, 80);
+
+        $language = sanitize_key(wp_unslash($_POST['language'] ?? ''));
+        $settings['language'] = isset(I18n::LANGUAGES[$language]) ? $language : 'both';
 
         $ipHeader = sanitize_text_field(wp_unslash($_POST['ip_header'] ?? ''));
         $settings['ip_header'] = isset(Settings::IP_HEADERS[$ipHeader]) ? $ipHeader : '';
@@ -188,6 +191,13 @@ final class AdminPage
                 <div class="notice notice-<?php echo esc_attr($notice[0]); ?> is-dismissible"><p><?php echo esc_html($notice[1]); ?></p></div>
             <?php endforeach; ?>
 
+            <?php if (!Settings::isEnvironmentAllowed()) : ?>
+                <div class="notice notice-error">
+                    <p><strong>Đang KHÔNG gửi thông báo nào:</strong> <code>WP_ENVIRONMENT_TYPE</code> = <code><?php echo esc_html($env); ?></code> (không phải <code>production</code>).
+                    Nếu đây là site thật, sửa dòng <code>define( 'WP_ENVIRONMENT_TYPE', ... )</code> trong <code>wp-config.php</code> thành <code>'production'</code> (hoặc xoá dòng đó); nếu là site thử nghiệm, tick "Cho phép gửi khi không phải production" bên dưới.</p>
+                </div>
+            <?php endif; ?>
+
             <?php if (!WebhookVault::isAvailable()) : ?>
                 <div class="notice notice-error"><p>Không thể mã hoá webhook: <code>wp-config.php</code> chưa có <code>AUTH_KEY</code>/<code>SECURE_AUTH_KEY</code> hợp lệ hoặc PHP thiếu OpenSSL. Tạo salt mới tại api.wordpress.org/secret-key/1.1/salt/.</p></div>
             <?php endif; ?>
@@ -273,6 +283,17 @@ final class AdminPage
                             <input type="text" id="laca-dh-site-name" name="site_name" class="regular-text" maxlength="80"
                                 value="<?php echo esc_attr($settings['site_name']); ?>" placeholder="<?php echo esc_attr(wp_specialchars_decode(get_bloginfo('name'), ENT_QUOTES)); ?>">
                             <p class="description">Tên website hiện trên mỗi tin Discord. Để trống = dùng tên site.</p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row"><label for="laca-dh-language">Ngôn ngữ thông báo</label></th>
+                        <td>
+                            <select id="laca-dh-language" name="language">
+                                <?php foreach (I18n::LANGUAGES as $value => $label) : ?>
+                                    <option value="<?php echo esc_attr($value); ?>" <?php selected(Settings::language(), $value); ?>><?php echo esc_html($label); ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                            <p class="description">Ngôn ngữ của tin nhắn gửi lên Discord. Song ngữ: tiêu đề và tên trường dạng "Tiếng Việt / English", đoạn mô tả có thêm dòng tiếng Anh in nghiêng.</p>
                         </td>
                     </tr>
                     <tr>

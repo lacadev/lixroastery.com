@@ -64,8 +64,9 @@ final class Dispatcher
      * Gửi toàn bộ kênh đang có hàng chờ trong giới hạn thời gian.
      *
      * @param callable|null $logger
+     * @param float|null    $budget Giây tối đa (mặc định TIME_BUDGET) — lúc fatal error cần ngắn hơn.
      */
-    public static function flush($logger = null): void
+    public static function flush($logger = null, ?float $budget = null): void
     {
         if (!Settings::isEnabled() || !Settings::isEnvironmentAllowed()) {
             return;
@@ -78,7 +79,7 @@ final class Dispatcher
             return;
         }
 
-        $deadline = microtime(true) + (float) apply_filters('laca_discord_hub/flush_time_budget', self::TIME_BUDGET);
+        $deadline = microtime(true) + ($budget ?? (float) apply_filters('laca_discord_hub/flush_time_budget', self::TIME_BUDGET));
         $sender   = new DiscordWebhookSender(is_callable($logger) ? $logger : null);
 
         try {

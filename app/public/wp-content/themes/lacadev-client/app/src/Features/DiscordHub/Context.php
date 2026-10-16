@@ -62,7 +62,7 @@ final class Context
         if (wp_doing_cron()) {
             return 'WP-Cron';
         }
-        return 'Khách (chưa đăng nhập)';
+        return I18n::t('Khách (chưa đăng nhập)', 'Guest (not logged in)');
     }
 
     /**
