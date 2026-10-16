@@ -27,6 +27,33 @@ final class LoginMonitor
         add_action('wp_login_failed', [$this, 'onLoginFailed'], 10, 1);
         add_action('application_password_failed_authentication', [$this, 'onAppPasswordFailed'], 10, 0);
         add_action('wp_login', [$this, 'onLogin'], 10, 2);
+        add_action('laca_login_guard_lockout', [$this, 'onLockout'], 10, 4);
+    }
+
+    /**
+     * IP bị App\Settings\Security\LoginGuard khoá.
+     *
+     * @param string $ip
+     * @param int    $duration giây
+     * @param int    $strikes  số lần bị khoá trong 24h
+     * @param string $username username của lần thử cuối
+     */
+    public function onLockout($ip, $duration, $strikes, $username): void
+    {
+        $minutes = (int) round((int) $duration / MINUTE_IN_SECONDS);
+        $embed = Embed::make(
+            sprintf(I18n::t('🔒 Đã khoá IP %1$s trong %2$s', '🔒 IP %1$s locked for %2$s'), (string) $ip, $minutes >= 60 ? (int) round($minutes / 60) . 'h' : $minutes . "'"),
+            Embed::COLOR_DANGER
+        )
+            ->description(I18n::block(
+                'Đăng nhập sai quá nhiều lần → IP bị chặn đăng nhập (kể cả đúng mật khẩu) cho tới khi hết hạn.',
+                'Too many failed logins → this IP cannot log in (even with the right password) until the lock expires.'
+            ), true)
+            ->codeField('IP', (string) $ip)
+            ->field(I18n::t('Lần bị khoá (24h)', 'Lockouts (24h)'), (string) (int) $strikes)
+            ->codeField(I18n::t('Username thử cuối', 'Last username tried'), (string) $username)
+            ->field(I18n::t('Kênh', 'Via'), Context::origin());
+        Notifier::send(Settings::CHANNEL_SECURITY, 'login.lockout', $embed);
     }
 
     public function onAppPasswordFailed(): void

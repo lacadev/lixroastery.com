@@ -76,9 +76,6 @@ final class AdminPage
         $language = sanitize_key(wp_unslash($_POST['language'] ?? ''));
         $settings['language'] = isset(I18n::LANGUAGES[$language]) ? $language : 'both';
 
-        $ipHeader = sanitize_text_field(wp_unslash($_POST['ip_header'] ?? ''));
-        $settings['ip_header'] = isset(Settings::IP_HEADERS[$ipHeader]) ? $ipHeader : '';
-
         $postTypes = array_map('sanitize_key', (array) wp_unslash($_POST['post_types'] ?? []));
         $settings['post_types'] = array_values(array_filter($postTypes, 'post_type_exists'));
         $settings['file_watch'] = !empty($_POST['file_watch']);
@@ -344,14 +341,10 @@ final class AdminPage
                         </td>
                     </tr>
                     <tr>
-                        <th scope="row"><label for="laca-dh-ip-header">IP thật của khách</label></th>
+                        <th scope="row">IP thật của khách</th>
                         <td>
-                            <select id="laca-dh-ip-header" name="ip_header">
-                                <?php foreach (Settings::IP_HEADERS as $value => $label) : ?>
-                                    <option value="<?php echo esc_attr($value); ?>" <?php selected($settings['ip_header'], $value); ?>><?php echo esc_html($label); ?></option>
-                                <?php endforeach; ?>
-                            </select>
-                            <p class="description">Chỉ chọn Cloudflare khi site <strong>thật sự</strong> chạy sau Cloudflare — nếu không, kẻ tấn công giả được IP. Bật Cloudflare thì cảnh báo brute-force có thêm quốc gia.</p>
+                            <p><?php echo esc_html(\App\Helpers\ClientIp::isBehindCloudflare() ? 'Site đang chạy sau Cloudflare — lấy IP từ CF-Connecting-IP.' : 'Site KHÔNG chạy sau Cloudflare — lấy IP từ REMOTE_ADDR.'); ?></p>
+                            <p class="description">Tự nhận diện: chỉ tin header Cloudflare khi kết nối thật sự đến từ IP của Cloudflare, nên không thể bị giả IP.</p>
                         </td>
                     </tr>
                     <tr>

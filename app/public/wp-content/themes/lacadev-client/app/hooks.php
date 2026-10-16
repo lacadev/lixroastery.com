@@ -237,6 +237,19 @@ add_action('init', function () {
 });
 
 /**
+ * Chống brute-force (khoá IP sau nhiều lần đăng nhập sai) + chặn dò username.
+ * Đăng ký vô điều kiện, sớm (trước khi wp-login.php/XML-RPC xác thực), độc lập với Discord Hub.
+ */
+add_action('after_setup_theme', function () {
+    if (class_exists('\App\Settings\Security\LoginGuard')) {
+        (new \App\Settings\Security\LoginGuard())->register();
+    }
+    if (class_exists('\App\Settings\Security\UserEnumerationGuard')) {
+        (new \App\Settings\Security\UserEnumerationGuard())->register();
+    }
+}, 15);
+
+/**
  * Discord Hub — đẩy lead/hoạt động/cảnh báo bảo mật về Discord (Laca Admin → Discord Hub).
  * Boot ở after_setup_theme (sớm hơn init) vì một số sự kiện cần bắt có thể xảy ra
  * ngay đầu request (xác thực Application Password qua REST).

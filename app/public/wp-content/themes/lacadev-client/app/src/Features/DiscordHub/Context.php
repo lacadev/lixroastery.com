@@ -2,43 +2,27 @@
 
 namespace App\Features\DiscordHub;
 
+use App\Helpers\ClientIp;
+
 /**
  * Thông tin ngữ cảnh của request hiện tại: IP, actor, kênh gọi (REST/AJAX/XML-RPC...).
  */
 final class Context
 {
     /**
-     * IP client. Mặc định chỉ tin REMOTE_ADDR; header proxy (X-Forwarded-For,
-     * CF-Connecting-IP) bị giả mạo dễ dàng nên chỉ dùng khi được khai báo rõ
-     * trong Laca Admin → Discord Hub.
+     * IP thật của client — xem App\Helpers\ClientIp (chỉ tin header Cloudflare khi request thật sự đi qua Cloudflare).
      */
     public static function clientIp(): string
     {
-        $header = Settings::ipHeader();
-        if ('' !== $header) {
-            if (!empty($_SERVER[$header])) {
-                $candidate = trim(explode(',', sanitize_text_field(wp_unslash($_SERVER[$header])))[0]);
-                if (filter_var($candidate, FILTER_VALIDATE_IP)) {
-                    return $candidate;
-                }
-            }
-        }
-
-        $remote = isset($_SERVER['REMOTE_ADDR']) ? sanitize_text_field(wp_unslash($_SERVER['REMOTE_ADDR'])) : '';
-        return filter_var($remote, FILTER_VALIDATE_IP) ? $remote : 'unknown';
+        return ClientIp::get();
     }
 
     /**
-     * Quốc gia lấy từ header Cloudflare (không gọi GeoIP API trong request —
-     * việc đó thuộc về Bot ở Phase 3). Chỉ tin header khi site nằm sau Cloudflare.
+     * Quốc gia từ Cloudflare (null nếu site không chạy sau Cloudflare).
      */
     public static function country(): ?string
     {
-        if ('HTTP_CF_CONNECTING_IP' !== Settings::ipHeader()) {
-            return null;
-        }
-        $code = isset($_SERVER['HTTP_CF_IPCOUNTRY']) ? strtoupper(sanitize_key(wp_unslash($_SERVER['HTTP_CF_IPCOUNTRY']))) : '';
-        return preg_match('/^[A-Z]{2}$/', $code) ? $code : null;
+        return ClientIp::country();
     }
 
     public static function userAgent(): string

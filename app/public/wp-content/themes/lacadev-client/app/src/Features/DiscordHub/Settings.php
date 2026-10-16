@@ -40,15 +40,9 @@ final class Settings
      */
     public const WEBHOOK_PATTERN = '#^https://(?:(?:canary|ptb)\.)?discord(?:app)?\.com/api/(?:v\d+/)?webhooks/\d{17,20}/[A-Za-z0-9_\-]{20,}$#';
 
-    public const IP_HEADERS = [
-        '' => 'REMOTE_ADDR (mặc định, an toàn)',
-        'HTTP_CF_CONNECTING_IP' => 'Cloudflare (CF-Connecting-IP)',
-    ];
-
     private const DEFAULTS = [
         'enabled' => true,
         'site_name' => '',
-        'ip_header' => '',
         'allow_non_production' => false,
         'post_types' => ['post'],
         'language' => 'both',
@@ -202,12 +196,6 @@ final class Settings
     {
         $host = wp_parse_url(home_url(), PHP_URL_HOST);
         return is_string($host) ? $host : 'wordpress';
-    }
-
-    public static function ipHeader(): string
-    {
-        $header = (string) self::all()['ip_header'];
-        return isset(self::IP_HEADERS[$header]) ? $header : '';
     }
 
     public static function fileWatchEnabled(): bool

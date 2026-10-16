@@ -1219,15 +1219,7 @@ class ContactFormAjaxHandler
 
     private static function getClientIp(): string
     {
-        $keys = ['HTTP_CF_CONNECTING_IP', 'HTTP_X_FORWARDED_FOR', 'HTTP_CLIENT_IP', 'REMOTE_ADDR'];
-        foreach ($keys as $key) {
-            if (!empty($_SERVER[$key])) {
-                $ip = trim(explode(',', $_SERVER[$key])[0]);
-                if (filter_var($ip, FILTER_VALIDATE_IP)) {
-                    return $ip;
-                }
-            }
-        }
-        return 'unknown';
+        // Không đọc X-Forwarded-For / CF-Connecting-IP trực tiếp — client tự gửi được (giả IP).
+        return \App\Helpers\ClientIp::get();
     }
 }
