@@ -53,11 +53,30 @@ class NewsletterMailer
             'List-Unsubscribe-Post: List-Unsubscribe=One-Click',
         ];
 
+        // Thư chỉ có HTML (thiếu bản chữ thường) bị Gmail/Outlook cộng điểm
+        // spam — gắn thêm AltBody để PHPMailer gửi multipart/alternative.
+        // Hook chỉ sống trong đúng lần gửi này, không ảnh hưởng email khác.
+        $alt_body = self::renderPlainText(NewsletterTexts::get('newsletter_mail_body', $lang), $unsubscribe_url, NewsletterTexts::get('newsletter_page_unsubscribe_button', $lang));
+        $set_alt_body = static function ($phpmailer) use ($alt_body) {
+            $phpmailer->AltBody = $alt_body;
+        };
+        add_action('phpmailer_init', $set_alt_body);
         $sent = wp_mail($subscriber['email'], NewsletterTexts::get('newsletter_mail_subject', $lang), $html, $headers);
+        remove_action('phpmailer_init', $set_alt_body);
 
         NewsletterSync::saveStatus('mail', $sent ? true : __('wp_mail() không gửi được email cảm ơn — kiểm tra cấu hình SMTP ở Laca Admin → SMTP.', 'laca'));
 
         return $sent;
+    }
+
+    private static function renderPlainText(string $body, string $unsubscribe_url, string $unsubscribe_label): string
+    {
+        $paragraphs = array_filter(array_map('trim', explode("\n", $body)));
+
+        return get_bloginfo('name') . "\n\n"
+            . implode("\n\n", $paragraphs) . "\n\n"
+            . "--\n"
+            . $unsubscribe_label . ': ' . $unsubscribe_url . "\n";
     }
 
     /**
