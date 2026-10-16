@@ -31,7 +31,6 @@ final class DiscordWebhookSender
     private $logger;
 
     public function __construct(?callable $logger = null)
-
     {
         $state        = get_option(self::STATE_OPTION, []);
         $this->state  = is_array($state) ? $state : [];
@@ -104,7 +103,7 @@ final class DiscordWebhookSender
         $this->recordSend($channel, $response);
 
         if (is_wp_error($response)) {
-            $this->log("Lỗi mạng ({$channel}): " . $response->get_error_message());
+            $this->recordError($channel, 'Máy chủ không kết nối được tới Discord: ' . $response->get_error_message() . ' — hosting có thể đang chặn kết nối ra ngoài tới discord.com.');
             $this->retryLater($batch['rows']);
             return true;
         }
@@ -113,6 +112,7 @@ final class DiscordWebhookSender
 
         if ($code >= 200 && $code < 300) {
             Queue::delete($batch['ids']);
+            $this->recordOk($channel);
             $this->log(sprintf('Đã gửi %d embed → %s', count($batch['ids']), $channel));
             return true;
         }
@@ -126,9 +126,10 @@ final class DiscordWebhookSender
         }
 
         if (in_array($code, [401, 403, 404], true)) {
-            $this->block($channel, HOUR_IN_SECONDS);
-            Queue::release($batch['ids'], time() + HOUR_IN_SECONDS, true);
-            $this->fail("Webhook kênh {$channel} trả HTTP {$code} (bị xoá hoặc sai token?) — tạm khoá 1 giờ.");
+            [$message, $lockSeconds] = $this->explainRejection($code, (string) wp_remote_retrieve_body($response));
+            $this->block($channel, $lockSeconds);
+            Queue::release($batch['ids'], time() + $lockSeconds, true);
+            $this->recordError($channel, $message);
             return false;
         }
 
@@ -148,14 +149,88 @@ final class DiscordWebhookSender
                 return true;
             }
             Queue::delete($batch['ids']);
-            $this->fail("Discord từ chối embed (HTTP 400) kênh {$channel}: " . substr((string) wp_remote_retrieve_body($response), 0, 300));
+            $this->recordError($channel, 'Discord từ chối nội dung tin (HTTP 400): ' . substr((string) wp_remote_retrieve_body($response), 0, 300));
             return true;
         }
 
         // 5xx và mã khác: lỗi tạm thời → backoff.
-        $this->log("HTTP {$code} trên kênh {$channel} — sẽ thử lại.");
+        $this->recordError($channel, "Discord trả HTTP {$code} — sẽ tự thử lại.");
         $this->retryLater($batch['rows']);
         return true;
+    }
+
+    /**
+     * Phân biệt "webhook hỏng" (phải dán lại) với "Cloudflare của Discord chặn IP hosting"
+     * (không phải lỗi webhook — dán lại vô ích). Shared hosting hay dính trường hợp 2.
+     *
+     * @return array{0:string,1:int} [thông báo cho admin, số giây khoá kênh]
+     */
+    private function explainRejection(int $code, string $body): array
+    {
+        $json = json_decode($body, true);
+        $apiCode = is_array($json) ? (int) ($json['code'] ?? 0) : 0;
+
+        if (404 === $code || 10015 === $apiCode) {
+            return ['Webhook không còn tồn tại (đã bị xoá trên Discord). Tạo webhook mới và dán lại.', HOUR_IN_SECONDS];
+        }
+        if (401 === $code || 50027 === $apiCode) {
+            return ['Sai token webhook. Sao chép lại Webhook URL từ Discord và dán lại.', HOUR_IN_SECONDS];
+        }
+        if (!is_array($json)) {
+            $cf = preg_match('/error code:?\s*(\d{4})/i', $body, $m) ? ' (Cloudflare ' . $m[1] . ')' : '';
+            return ["Cloudflare của Discord chặn IP máy chủ hosting{$cf} — không phải lỗi webhook. Liên hệ nhà cung cấp hosting về việc IP bị Discord/Cloudflare chặn.", 15 * MINUTE_IN_SECONDS];
+        }
+
+        return ['Discord từ chối (HTTP ' . $code . '): ' . substr((string) ($json['message'] ?? $body), 0, 200), HOUR_IN_SECONDS];
+    }
+
+    /**
+     * Kết quả gần nhất của 1 kênh — để admin thấy lỗi thật thay vì chỉ "Đã kết nối".
+     *
+     * @return array{ok_at:int,error:string,error_at:int}
+     */
+    public static function lastResult(string $channel): array
+    {
+        $state = get_option(self::STATE_OPTION, []);
+        $s = is_array($state) ? (array) ($state[$channel] ?? []) : [];
+        return [
+            'ok_at' => (int) ($s['last_ok_at'] ?? 0),
+            'error' => (string) ($s['last_error'] ?? ''),
+            'error_at' => (int) ($s['last_error_at'] ?? 0),
+        ];
+    }
+
+    /**
+     * Gỡ khoá kênh + cho sự kiện đang chờ gửi lại ngay — dùng khi admin vừa dán
+     * webhook mới hoặc bấm gửi thử (khoá cũ có thể do webhook cũ hỏng).
+     */
+    public static function resetChannel(string $channel): void
+    {
+        $state = get_option(self::STATE_OPTION, []);
+        if (is_array($state) && isset($state[$channel])) {
+            unset($state[$channel]['blocked_until'], $state[$channel]['bucket_remaining'], $state[$channel]['bucket_reset_at']);
+            update_option(self::STATE_OPTION, $state, false);
+        }
+        Queue::makeReady($channel);
+    }
+
+    private function recordOk(string $channel): void
+    {
+        $s = $this->channelState($channel);
+        $s['last_ok_at'] = time();
+        $s['last_error'] = '';
+        $this->saveChannelState($channel, $s);
+    }
+
+    private function recordError(string $channel, string $message): void
+    {
+        // Thông báo lỗi có thể chứa URL request — không để token webhook lọt ra admin/log.
+        $message = (string) preg_replace('#webhooks/\S+#', 'webhooks/***', $message);
+        $s = $this->channelState($channel);
+        $s['last_error'] = $message;
+        $s['last_error_at'] = time();
+        $this->saveChannelState($channel, $s);
+        $this->fail("[{$channel}] {$message}");
     }
 
     /**
@@ -316,7 +391,6 @@ final class DiscordWebhookSender
     }
 
     private function block(string $channel, float $seconds): void
-
     {
         $s                  = $this->channelState($channel);
         $s['blocked_until'] = max((float) $s['blocked_until'], microtime(true) + $seconds);
@@ -353,14 +427,12 @@ final class DiscordWebhookSender
     }
 
     private function saveChannelState(string $channel, array $s): void
-
     {
         $this->state[$channel] = $s;
         update_option(self::STATE_OPTION, $this->state, false);
     }
 
     private function log(string $message): void
-
     {
         if ($this->logger) {
             call_user_func($this->logger, $message);
@@ -368,7 +440,6 @@ final class DiscordWebhookSender
     }
 
     private function fail(string $message): void
-
     {
         error_log('[laca-discord-hub] ' . $message); // phpcs:ignore WordPress.PHP.DevelopmentFunctions
         $this->log($message);

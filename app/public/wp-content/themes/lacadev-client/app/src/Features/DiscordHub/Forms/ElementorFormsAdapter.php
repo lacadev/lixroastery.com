@@ -8,7 +8,6 @@ namespace App\Features\DiscordHub\Forms;
 final class ElementorFormsAdapter implements FormAdapter
 {
     public function register(callable $emit): void
-
     {
         add_action(
             'elementor_pro/forms/new_record',

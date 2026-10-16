@@ -26,7 +26,6 @@ final class Lead
     public $warning = '';
 
     public function __construct(string $source, string $formName)
-
     {
         $this->source   = $source;
         $this->formName = $formName;

@@ -27,20 +27,17 @@ final class Dispatcher
     private static $dirty = false;
 
     public static function register(): void
-
     {
         add_action(self::CRON_HOOK, [self::class, 'flush']);
         add_action('shutdown', [self::class, 'onShutdown'], PHP_INT_MAX);
     }
 
     public static function markDirty(): void
-
     {
         self::$dirty = true;
     }
 
     public static function onShutdown(): void
-
     {
         if (!self::$dirty) {
             return;

@@ -12,7 +12,6 @@ final class FluentFormsAdapter implements FormAdapter
     private $seen = [];
 
     public function register(callable $emit): void
-
     {
         $handler = function ($insertId, $formData, $form) use ($emit) {
             $insertId = (int) $insertId;
@@ -47,7 +46,6 @@ final class FluentFormsAdapter implements FormAdapter
     }
 
     private function guessType(string $key): string
-
     {
         if (false !== strpos($key, 'email')) {
             return 'email';

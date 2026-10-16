@@ -27,14 +27,12 @@ final class Queue
     private static $ready = null;
 
     public static function table(): string
-
     {
         global $wpdb;
         return $wpdb->prefix . 'laca_discord_queue';
     }
 
     public static function ensureSchema(): bool
-
     {
         if (null !== self::$ready) {
             return self::$ready;
@@ -254,15 +252,23 @@ final class Queue
     }
 
     public static function purgeExpired(): int
-
     {
         global $wpdb;
         $table = self::table();
         return (int) $wpdb->query($wpdb->prepare("DELETE FROM {$table} WHERE created_at < %d AND claimed_until < %d", time() - self::MAX_AGE, time()));
     }
 
-    public static function dropChannel(string $channel): int
+    public static function makeReady(string $channel): void
+    {
+        if (!self::ensureSchema()) {
+            return;
+        }
+        global $wpdb;
+        $table = self::table();
+        $wpdb->query($wpdb->prepare("UPDATE {$table} SET available_at = %d WHERE channel = %s AND claimed_until < %d", time(), $channel, time()));
+    }
 
+    public static function dropChannel(string $channel): int
     {
         global $wpdb;
         $table = self::table();

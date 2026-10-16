@@ -42,7 +42,6 @@ final class Context
     }
 
     public static function userAgent(): string
-
     {
         $ua = isset($_SERVER['HTTP_USER_AGENT']) ? sanitize_text_field(wp_unslash($_SERVER['HTTP_USER_AGENT'])) : '';
         return '' !== $ua ? $ua : '—';

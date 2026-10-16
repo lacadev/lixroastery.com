@@ -22,7 +22,6 @@ final class LoginMonitor
     const MAX_USERNAMES = 10;
 
     public function register(): void
-
     {
         add_action('wp_login_failed', [$this, 'onLoginFailed'], 10, 1);
         add_action('application_password_failed_authentication', [$this, 'onAppPasswordFailed'], 10, 0);
@@ -30,7 +29,6 @@ final class LoginMonitor
     }
 
     public function onAppPasswordFailed(): void
-
     {
         $user = isset($_SERVER['PHP_AUTH_USER']) ? sanitize_user(wp_unslash($_SERVER['PHP_AUTH_USER'])) : '';
         $this->onLoginFailed($user);

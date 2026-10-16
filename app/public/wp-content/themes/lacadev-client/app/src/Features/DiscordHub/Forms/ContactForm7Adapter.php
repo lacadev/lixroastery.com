@@ -12,7 +12,6 @@ namespace App\Features\DiscordHub\Forms;
 final class ContactForm7Adapter implements FormAdapter
 {
     public function register(callable $emit): void
-
     {
         add_action(
             'wpcf7_submit',

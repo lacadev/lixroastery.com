@@ -16,7 +16,6 @@ final class PostMonitor
     const IGNORED_STATUSES = ['auto-draft', 'inherit'];
 
     public function register(): void
-
     {
         add_action('transition_post_status', [$this, 'onTransition'], 10, 3);
     }
@@ -70,7 +69,6 @@ final class PostMonitor
     }
 
     private function statusLabel(string $status): string
-
     {
         if ('new' === $status) {
             return 'Mới';
@@ -80,14 +78,12 @@ final class PostMonitor
     }
 
     private function typeLabel(string $type): string
-
     {
         $object = get_post_type_object($type);
         return $object ? (string) $object->labels->singular_name : $type;
     }
 
     private function color(string $status): int
-
     {
         switch ($status) {
             case 'publish':

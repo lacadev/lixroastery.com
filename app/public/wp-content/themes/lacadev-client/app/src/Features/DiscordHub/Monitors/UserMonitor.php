@@ -42,7 +42,6 @@ final class UserMonitor
     private $skip = [];
 
     public function register(): void
-
     {
         add_action('user_register', [$this, 'onRegister'], 10, 1);
         add_action('delete_user', [$this, 'onDelete'], 10, 3);
@@ -160,7 +159,6 @@ final class UserMonitor
     }
 
     private function snapshot(int $userId, string $metaKey): void
-
     {
         global $wpdb;
         if (!$userId || !preg_match('/^' . preg_quote($wpdb->base_prefix, '/') . '(\d+_)?capabilities$/', $metaKey)) {
@@ -179,7 +177,6 @@ final class UserMonitor
     }
 
     public function flushRoleChanges(): void
-
     {
         foreach ($this->snapshots as $snap) {
             if (isset($this->skip[$snap['user_id']])) {

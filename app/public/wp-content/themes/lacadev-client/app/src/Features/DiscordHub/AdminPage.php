@@ -141,19 +141,21 @@ final class AdminPage
             return ['error', sprintf('Kênh "%s": webhook đã lưu không giải mã được (salt trong wp-config đã đổi?). Dán lại Webhook URL.', $label)];
         }
 
+        // Admin chủ động thử → gỡ khoá cũ (có thể do webhook cũ hỏng) để thử thật ngay.
+        DiscordWebhookSender::resetChannel($channel);
+        $start = time();
         Notifier::send($channel, 'test', self::testEmbed($channel));
+        Dispatcher::flush();
 
-        $log = [];
-        Dispatcher::flush(static function ($message) use (&$log) {
-            $log[] = (string) $message;
-        });
-
-        $pending = Queue::stats()[$channel] ?? 0;
-        if (0 === $pending && !preg_grep('/429|HTTP|Lỗi|Bỏ|không/u', $log)) {
+        $result = DiscordWebhookSender::lastResult($channel);
+        if ($result['error'] !== '' && $result['error_at'] >= $start) {
+            return ['error', sprintf('Gửi thử kênh "%s" thất bại: %s', $label, $result['error'])];
+        }
+        if ($result['ok_at'] >= $start) {
             return ['success', sprintf('Đã gửi tin thử tới kênh "%s" — kiểm tra Discord.', $label)];
         }
 
-        return ['error', sprintf('Gửi thử kênh "%s" chưa thành công: %s', $label, $log ? end($log) : 'không rõ lỗi, sẽ tự thử lại sau.')];
+        return ['warning', sprintf('Kênh "%s": tin thử đang chờ trong hàng đợi (đang bị giới hạn tốc độ), sẽ tự gửi sau.', $label)];
     }
 
     // ── Giao diện ─────────────────────────────────────────────────────────────
@@ -222,6 +224,17 @@ final class AdminPage
                                     <?php if ($status['updated_at']) : ?>
                                         <p class="description">
                                             <?php echo esc_html(sprintf('Cập nhật %s bởi %s', wp_date('d/m/Y H:i', $status['updated_at']), $status['updated_by'])); ?>
+                                        </p>
+                                    <?php endif; ?>
+                                    <?php
+                                    $last = DiscordWebhookSender::lastResult($channel);
+                                    if ('' !== $last['error'] && $last['error_at'] >= $last['ok_at']) : ?>
+                                        <p class="laca-dh-last laca-dh-last--error">
+                                            <?php echo esc_html(sprintf('Lỗi lúc %s: %s', wp_date('d/m H:i', $last['error_at']), $last['error'])); ?>
+                                        </p>
+                                    <?php elseif ($last['ok_at']) : ?>
+                                        <p class="laca-dh-last laca-dh-last--ok">
+                                            <?php echo esc_html('Gửi thành công lúc ' . wp_date('d/m H:i', $last['ok_at'])); ?>
                                         </p>
                                     <?php endif; ?>
                                 </td>
@@ -323,6 +336,9 @@ final class AdminPage
             .laca-dh-badge--ok { background: #edfaef; color: #00701a; }
             .laca-dh-badge--error { background: #fcf0f1; color: #b32d2e; }
             .laca-dh-badge--empty { background: #f0f0f1; color: #50575e; }
+            .laca-dh-last { margin: 6px 0 0; font-size: 12px; }
+            .laca-dh-last--error { color: #b32d2e; }
+            .laca-dh-last--ok { color: #00701a; }
             .laca-dh-remove { display: inline-block; margin-top: 6px; color: #b32d2e; }
             .laca-dh-check { display: inline-block; margin: 0 16px 6px 0; }
             @media (max-width: 782px) {

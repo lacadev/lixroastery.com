@@ -147,6 +147,7 @@ final class Settings
         ];
         self::save($settings);
         unset(self::$urls[$channel]);
+        DiscordWebhookSender::resetChannel($channel);
         return true;
     }
 

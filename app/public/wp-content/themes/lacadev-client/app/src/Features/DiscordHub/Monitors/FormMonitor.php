@@ -36,7 +36,6 @@ final class FormMonitor
     ];
 
     public function register(): void
-
     {
         // init: child theme đã load xong nên kịp add filter laca_discord_hub/form_adapters. Submit form luôn xảy ra sau init.
         add_action('init', [$this, 'registerAdapters'], 1);
@@ -44,7 +43,6 @@ final class FormMonitor
     }
 
     public function registerAdapters(): void
-
     {
         $adapters = apply_filters(
             'laca_discord_hub/form_adapters',
@@ -142,7 +140,6 @@ final class FormMonitor
     }
 
     private function shortUrl(string $url): string
-
     {
         $path = (string) wp_parse_url($url, PHP_URL_PATH);
         return '' !== $path && '/' !== $path ? Embed::truncate(urldecode($path), 80) : Settings::siteHost();

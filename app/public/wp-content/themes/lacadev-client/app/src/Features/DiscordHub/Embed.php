@@ -30,7 +30,6 @@ final class Embed
     private $data;
 
     private function __construct(string $title, int $color)
-
     {
         $this->data = [
             'title'  => self::truncate(self::clean($title), self::LIMIT_TITLE),
@@ -40,7 +39,6 @@ final class Embed
     }
 
     public static function make(string $title, int $color): self
-
     {
         return new self($title, $color);
     }
@@ -58,7 +56,6 @@ final class Embed
     }
 
     public function url(string $url): self
-
     {
         $url = self::safeUrl($url);
         if ('' !== $url) {
@@ -101,7 +98,6 @@ final class Embed
     }
 
     public function toArray(): array
-
     {
         $embed           = $this->data;
         $embed['author'] = ['name' => self::truncate(self::clean(Settings::siteName()), self::LIMIT_AUTHOR)];
@@ -146,7 +142,6 @@ final class Embed
     }
 
     public static function code(string $text): string
-
     {
         $text = str_replace('`', "\u{02CB}", self::clean($text));
         $text = str_replace("\n", ' ', $text);
@@ -167,14 +162,12 @@ final class Embed
     }
 
     public static function safeUrl(string $url): string
-
     {
         $url = esc_url_raw(trim($url), ['http', 'https']);
         return ('' !== $url && strlen($url) <= 2048) ? $url : '';
     }
 
     public static function truncate(string $text, int $limit): string
-
     {
         if (self::length($text) <= $limit) {
             return $text;
@@ -185,7 +178,6 @@ final class Embed
     }
 
     public static function length(string $text): int
-
     {
         return function_exists('mb_strlen') ? mb_strlen($text, 'UTF-8') : strlen($text);
     }

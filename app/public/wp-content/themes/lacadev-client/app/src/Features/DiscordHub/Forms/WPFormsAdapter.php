@@ -8,7 +8,6 @@ namespace App\Features\DiscordHub\Forms;
 final class WPFormsAdapter implements FormAdapter
 {
     public function register(callable $emit): void
-
     {
         add_action(
             'wpforms_process_complete',

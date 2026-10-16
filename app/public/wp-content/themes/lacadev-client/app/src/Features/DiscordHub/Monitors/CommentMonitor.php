@@ -19,7 +19,6 @@ final class CommentMonitor
     const SURGE_KEY = 'laca_dh_comment_surge';
 
     public function register(): void
-
     {
         add_action('comment_post', [$this, 'onCommentPost'], 10, 3);
     }
