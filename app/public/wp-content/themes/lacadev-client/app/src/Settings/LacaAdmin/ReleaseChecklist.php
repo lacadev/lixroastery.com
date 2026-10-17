@@ -449,7 +449,14 @@ final class ReleaseChecklist
                     ['id' => 'backup', 'title' => 'Sao lưu tự động ra ngoài hosting', 'type' => 'manual', 'high' => true,
                         'guide' => 'JetBackup (cPanel) hoặc UpdraftPlus → Google Drive, chạy hằng ngày, giữ ≥ 7 bản. Thử khôi phục 1 lần để chắc bản sao lưu dùng được.'],
                     ['id' => 'email_dns', 'title' => 'Tên miền có SPF và DMARC (mail không vào spam)', 'type' => 'auto', 'high' => true,
-                        'guide' => 'Thêm bản ghi TXT ở DNS: SPF ("v=spf1 include:… ~all" theo nhà cung cấp mail/SMTP) và DMARC ("_dmarc", "v=DMARC1; p=none; rua=mailto:…"), bật DKIM ở cPanel → Email Deliverability. Thiếu thì mail lead/đơn hàng hay rơi vào spam.',
+                        'guide' => 'SPF khai báo máy chủ nào được gửi mail @tên miền, DMARC dặn Gmail/Outlook xử lý mail giả mạo ra sao. Thiếu hoặc sai thì mail @tên miền dễ vào spam và dễ bị giả mạo. Sửa ở nơi quản lý DNS THẬT của tên miền (xem nameserver bằng: dig NS tenmien.com) — sửa ở chỗ khác không có tác dụng.',
+                        'steps' => [
+                            'SPF — mỗi tên miền CHỈ ĐƯỢC CÓ 1 bản ghi TXT bắt đầu bằng `v=spf1`. Có 2 bản là SPF hỏng (permerror), tương đương không có → gộp tất cả vào 1 bản rồi xoá bản thừa.',
+                            'Thêm/sửa SPF: Type `TXT` · Name `@` (hoặc để trống / ghi tenmien.com) · TXT data `v=spf1 a mx include:<SPF của nhà cung cấp mail> ~all`. Gửi qua Google Workspace thì thêm `include:_spf.google.com`.',
+                            'Thêm DMARC: Type `TXT` · Name `_dmarc` · TXT data `v=DMARC1; p=none; rua=mailto:<email nhận báo cáo>`. Chạy ổn 2–4 tuần thì nâng `p=quarantine`.',
+                            'DKIM: cPanel → Email Deliverability → bấm Repair/Install cho tên miền (cPanel tự tạo bản ghi `default._domainkey`). Dùng email hosting/Google Workspace thì lấy bản ghi DKIM ở trang quản trị của họ.',
+                            'Lưu ý: ô Name là TÊN bản ghi (@ hoặc _dmarc), không phải nội dung. Nội dung `v=spf1…` / `v=DMARC1…` dán vào ô TXT data. DNS cập nhật sau 5 phút – vài giờ; checklist tra lại 1 lần/ngày.',
+                        ],
                         'check' => static function () {
                             $domain = self::mailDomain();
                             if (preg_match('/(^localhost$|\.(local|test|localhost|invalid)$)|^[^.]+$/', $domain)) {
@@ -458,14 +465,30 @@ final class ReleaseChecklist
                             // KHÔNG tra DNS lúc hiển thị trang: dns_get_record() không có timeout, DNS chậm là
                             // treo cả Laca Admin (đo được 120 giây với tên miền .local). Tra nền qua WP-Cron.
                             $cached = get_transient(self::DNS_TRANSIENT . md5($domain));
-                            if (!is_array($cached)) {
+                            if (!is_array($cached) || !isset($cached['spf_count'])) {
                                 if (!wp_next_scheduled(self::DNS_HOOK)) {
                                     wp_schedule_single_event(time(), self::DNS_HOOK);
                                 }
                                 return [false, 'Đang tra DNS nền — tải lại trang sau ít phút'];
                             }
-                            $missing = array_keys(array_filter(['SPF' => !$cached['spf'], 'DMARC' => !$cached['dmarc']]));
-                            return $missing ? [false, $domain . ' thiếu ' . implode(', ', $missing)] : [true, $domain . ' có SPF + DMARC'];
+                            $problems = [];
+                            if (0 === $cached['spf_count']) {
+                                $problems[] = 'thiếu SPF';
+                            } elseif ($cached['spf_count'] > 1) {
+                                $problems[] = 'có ' . $cached['spf_count'] . ' bản ghi SPF (phải gộp còn 1)';
+                            }
+                            if (!$cached['dmarc']) {
+                                $problems[] = 'thiếu DMARC';
+                            }
+                            $detail = $domain . ($problems ? ': ' . implode(', ', $problems) : ' có SPF + DMARC hợp lệ')
+                                . ' · DKIM (default): ' . ($cached['dkim'] ? 'có' : 'chưa thấy');
+                            // Gửi SMTP bằng Gmail cá nhân thì mail của site mang tên miền gmail.com → DNS tên
+                            // miền không ảnh hưởng mail site, chỉ bảo vệ hộp thư @tên miền.
+                            $smtpUser = function_exists('carbon_get_theme_option') ? (string) carbon_get_theme_option('smtp_username') : '';
+                            if (str_ends_with(strtolower($smtpUser), '@gmail.com')) {
+                                $detail .= ' · Lưu ý: site đang gửi mail qua Gmail cá nhân nên bản ghi này chỉ bảo vệ hộp thư @' . $domain . ', không ảnh hưởng mail của web';
+                            }
+                            return [!$problems, $detail];
                         }],
                     ['id' => 'unused_code', 'title' => 'Xoá plugin/theme không dùng', 'type' => 'auto',
                         'guide' => 'Plugin/theme đã tắt vẫn nằm trên server và vẫn bị khai thác được nếu có lỗ hổng. Xoá hẳn những gì không dùng (giữ lại parent + child theme đang chạy).',
@@ -516,6 +539,14 @@ final class ReleaseChecklist
         return (array) apply_filters('laca_release_checklist_groups', $groups);
     }
 
+    /**
+     * Escape rồi đổi `...` thành <code> để giá trị cần copy (tên bản ghi, nội dung TXT) nổi bật.
+     */
+    private static function inlineCode(string $text): string
+    {
+        return (string) preg_replace('/`([^`]+)`/', '<code>$1</code>', esc_html($text));
+    }
+
     private static function mailDomain(): string
     {
         return (string) preg_replace('/^www\./', '', (string) wp_parse_url(home_url(), PHP_URL_HOST));
@@ -527,16 +558,21 @@ final class ReleaseChecklist
     public static function refreshDns(): void
     {
         $domain = self::mailDomain();
-        $txt = static function (string $host, string $prefix): bool {
+        $txt = static function (string $host, string $prefix): int {
             $records = function_exists('dns_get_record') ? @dns_get_record($host, DNS_TXT) : [];
+            $count = 0;
             foreach ((array) $records as $r) {
                 if (str_starts_with(strtolower((string) ($r['txt'] ?? '')), $prefix)) {
-                    return true;
+                    $count++;
                 }
             }
-            return false;
+            return $count;
         };
-        set_transient(self::DNS_TRANSIENT . md5($domain), ['spf' => $txt($domain, 'v=spf1'), 'dmarc' => $txt('_dmarc.' . $domain, 'v=dmarc1')], DAY_IN_SECONDS);
+        set_transient(self::DNS_TRANSIENT . md5($domain), [
+            'spf_count' => $txt($domain, 'v=spf1'),
+            'dmarc'     => $txt('_dmarc.' . $domain, 'v=dmarc1') > 0,
+            'dkim'      => $txt('default._domainkey.' . $domain, 'v=dkim1') > 0,
+        ], DAY_IN_SECONDS);
     }
 
     // ── Trạng thái ────────────────────────────────────────────────────────────
@@ -752,6 +788,13 @@ final class ReleaseChecklist
                 </summary>
                 <div class="laca-rc__body">
                     <p class="laca-rc__guide"><?php echo esc_html((string) $item['guide']); ?></p>
+                    <?php if (!empty($item['steps'])) : ?>
+                        <ol class="laca-rc__steps">
+                            <?php foreach ((array) $item['steps'] as $step) : ?>
+                                <li><?php echo self::inlineCode((string) $step); // phpcs:ignore WordPress.Security.EscapeOutput -- escape bên trong ?></li>
+                            <?php endforeach; ?>
+                        </ol>
+                    <?php endif; ?>
                     <?php if ('' !== $item['detail']) : ?>
                         <p class="laca-rc__state is-<?php echo esc_attr($status); ?>"><?php echo esc_html('Hiện tại: ' . $item['detail']); ?></p>
                     <?php endif; ?>
@@ -858,6 +901,9 @@ final class ReleaseChecklist
             .laca-rc__badge.is-danger { background: #fcf0f1; color: #b32d2e; }
             .laca-rc__body { padding: 0 0 16px; }
             .laca-rc__guide { margin: 0; font-size: 13px; line-height: 1.6; color: var(--rc-muted); max-width: 72ch; text-wrap: pretty; }
+            .laca-rc__steps { margin: 8px 0 0; padding-left: 20px; font-size: 13px; line-height: 1.6; color: var(--rc-muted); max-width: 72ch; }
+            .laca-rc__steps li { margin: 0 0 6px; }
+            .laca-rc__steps code { font-size: 12px; padding: 1px 5px; border-radius: 4px; background: #f0f0f1; color: #1d2327; word-break: break-word; }
             .laca-rc__state { margin: 8px 0 0; font-size: 12px; }
             .laca-rc__state.is-fail { color: var(--rc-danger); }
             .laca-rc__state.is-done { color: var(--rc-success); }
