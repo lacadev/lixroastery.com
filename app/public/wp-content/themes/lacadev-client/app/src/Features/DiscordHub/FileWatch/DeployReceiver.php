@@ -21,6 +21,8 @@ use App\Features\DiscordHub\Settings;
 final class DeployReceiver
 {
     public const ACTION = 'laca_discord_hub_deploy';
+    /** Thời điểm deploy cuối ký đúng HMAC (checklist dùng để xác nhận GitHub Secrets). */
+    public const LAST_DEPLOY_OPTION = 'laca_dh_last_deploy';
     private const MAX_SKEW = 300;
     private const MAX_BODY = 4 * MB_IN_BYTES;
     private const LIST_LIMIT = 15;
@@ -50,6 +52,7 @@ final class DeployReceiver
             wp_send_json_success(['message' => 'Deploy start recorded']);
         }
         if ('finish' === $phase) {
+            update_option(self::LAST_DEPLOY_OPTION, time(), false);
             wp_send_json_success($this->finish($payload));
         }
 
