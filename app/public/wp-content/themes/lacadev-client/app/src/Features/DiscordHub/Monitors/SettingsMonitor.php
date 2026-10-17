@@ -20,7 +20,7 @@ use App\Features\DiscordHub\Settings;
 final class SettingsMonitor
 {
     /** Option ghi tự động / nội bộ — không phải người dùng đổi cài đặt. */
-    private const IGNORE_PATTERN = '/^(?:_site_transient_|_transient_|cron$|rewrite_rules$|recently_edited$|recently_activated$|uninstall_plugins$|can_compress_scripts$|db_upgraded$|fresh_site$|active_plugins$|theme_mods_|auto_core_update_|auto_updater\.lock$|core_updater\.lock$|user_count$|action_scheduler|as_|wp_force_deactivated_plugins$|_wp_suggested_policy|finished_|laca_discord_(?!hub$|hub_webhooks$)|laca_dh_|_laca_tracker_|_transient|.*_children$|.*_lock$|.*_last_run$|.*_timestamp$|.*_version$|.*_db_version$|.*_rewrite_rules_flushed$)/i';
+    private const IGNORE_PATTERN = '/^(?:_site_transient_|_transient_|cron$|rewrite_rules$|recently_edited$|recently_activated$|uninstall_plugins$|can_compress_scripts$|db_upgraded$|fresh_site$|active_plugins$|theme_mods_|auto_core_update_|auto_updater\.lock$|core_updater\.lock$|user_count$|action_scheduler|as_|wp_force_deactivated_plugins$|_wp_suggested_policy|finished_|laca_discord_(?!hub$|hub_webhooks$)|laca_dh_|laca_release_checklist_|_laca_tracker_|_transient|.*_children$|.*_lock$|.*_last_run$|.*_timestamp$|.*_version$|.*_db_version$|.*_rewrite_rules_flushed$)/i';
 
     /** Tên option/khoá con chứa bí mật → chỉ báo "đã đổi", không gửi giá trị. */
     private const SECRET_PATTERN = '/(key|secret|token|passw|pwd|salt|auth|private|license|webhook|credential|client_id|login_slug|login_url|admin_slug)/i';

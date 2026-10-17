@@ -1,0 +1,863 @@
+<?php
+
+namespace App\Settings\LacaAdmin;
+
+use App\Settings\AdminSettings;
+
+/**
+ * Checklist phát hành production — khối đầu trang Laca Admin (chỉ Super User thấy).
+ *
+ * Mỗi mục: tiêu đề, hướng dẫn, link tới chỗ cài đặt. Mục `auto` tự kiểm từ cấu hình thật
+ * (không tick tay được — trạng thái là kết quả đo); mục `manual` tick tay, lưu ai/lúc nào.
+ * Mục `skippable` đánh dấu "Không áp dụng" được, không tính vào tiến độ.
+ *
+ * Dùng chung mọi site của theme. Child theme thêm/bớt mục qua filter
+ * `laca_release_checklist_groups` (cùng cấu trúc với groups()).
+ *
+ * Không JS: accordion là <details>/<summary>, ô tick là nút submit form (admin-post + nonce).
+ */
+final class ReleaseChecklist
+{
+    private const STATE_OPTION = 'laca_release_checklist_state';
+    private const ACTION = 'laca_release_checklist';
+    public const DNS_HOOK = 'laca_release_checklist_dns';
+    private const DNS_TRANSIENT = 'laca_rc_dns_';
+
+    public function register(): void
+    {
+        add_action('all_admin_notices', [$this, 'render'], 20);
+        add_action('admin_post_' . self::ACTION, [$this, 'handle']);
+    }
+
+    private static function canManage(): bool
+    {
+        $user = wp_get_current_user();
+        return current_user_can('manage_options') && $user->exists()
+            && in_array($user->user_login, AdminSettings::getSuperUserLogins(), true);
+    }
+
+    // ── Danh sách mục ─────────────────────────────────────────────────────────
+
+    /**
+     * @return array<int,array{key:string,title:string,items:array<int,array>}>
+     */
+    public static function groups(): array
+    {
+        $sec = static fn (string $tab) => admin_url('admin.php?page=laca-security&tab=' . $tab);
+        $dh = admin_url('admin.php?page=laca-discord-hub');
+
+        $groups = [
+            [
+                'key' => 'laca',
+                'title' => 'Laca Admin',
+                'items' => [
+                    ['id' => 'laca_brand', 'title' => 'Màu admin & logo trang đăng nhập', 'type' => 'manual',
+                        'guide' => 'Tab ADMIN COLOR và LOGIN ngay bên dưới: chọn màu thương hiệu, tải logo cho trang đăng nhập.',
+                        'url' => admin_url('admin.php?page=laca-admin')],
+                    ['id' => 'smtp', 'title' => 'SMTP gửi mail & gửi thử', 'type' => 'manual', 'high' => true,
+                        'guide' => 'Tab SMTP: nhập máy chủ mail của khách rồi gửi một form liên hệ thử. Email Log phải ghi "Đã gửi" — không có SMTP, mail lead hay rơi vào spam hoặc mất.',
+                        'url' => admin_url('admin.php?page=laca-email-log')],
+                    ['id' => 'mail_domain', 'title' => 'Mail gửi đi bằng hộp thư tên miền riêng', 'type' => 'auto',
+                        'guide' => 'Tab SMTP: dùng hộp thư theo tên miền (vd info@tenmien.com — email hosting hoặc Google Workspace) thay vì Gmail cá nhân. Mail tự động gửi bằng Gmail miễn phí hay bị chấm spam, giới hạn ~500 mail/ngày, và không hưởng SPF/DKIM/DMARC của tên miền.',
+                        'url' => admin_url('admin.php?page=laca-admin'),
+                        'check' => static function () {
+                            if (get_option('_use_smtp') !== 'yes') {
+                                return [false, 'Chưa bật SMTP — mail gửi bằng hàm mail() của hosting'];
+                            }
+                            $user = (string) get_option('_smtp_username');
+                            $domain = strtolower((string) substr(strrchr($user, '@') ?: '', 1));
+                            $free = ['gmail.com', 'googlemail.com', 'yahoo.com', 'yahoo.com.vn', 'outlook.com', 'hotmail.com', 'live.com', 'icloud.com'];
+                            return in_array($domain, $free, true) ? [false, 'Đang gửi bằng ' . $user . ' (hộp thư miễn phí)'] : [true, 'Gửi bằng ' . $user];
+                        }],
+                    ['id' => 'maintenance_off', 'title' => 'Tắt chế độ bảo trì', 'type' => 'auto', 'high' => true,
+                        'guide' => 'Tab ADMIN: bỏ chọn "Bảo trì". Khi bật, khách chỉ thấy trang bảo trì (HTTP 503).',
+                        'url' => admin_url('admin.php?page=laca-admin'),
+                        'check' => static fn () => get_option('_is_maintenance') === 'yes' ? [false, 'Đang BẬT bảo trì'] : [true, 'Đang tắt']],
+                    ['id' => 'admin_email', 'title' => 'Email quản trị là hộp thư có người đọc', 'type' => 'auto', 'high' => true,
+                        'guide' => 'Settings → General → Administration Email Address. WordPress gửi link khôi phục khi site lỗi nghiêm trọng (Recovery Mode) và cảnh báo bảo mật tới địa chỉ này — để email dev/test thì không ai nhận.',
+                        'url' => admin_url('options-general.php'),
+                        'check' => static function () {
+                            $email = (string) get_option('admin_email');
+                            $domain = strtolower((string) substr(strrchr($email, '@') ?: '', 1));
+                            $bad = '' === $domain || preg_match('/(^|\.)(example\.(com|org|net)|test|local|localhost|invalid)$/', $domain);
+                            return [!$bad && is_email($email), '' !== $email ? $email : 'Chưa đặt'];
+                        }],
+                    ['id' => 'timezone', 'title' => 'Múi giờ đúng (Asia/Ho_Chi_Minh)', 'type' => 'auto',
+                        'guide' => 'Settings → General → Timezone: chọn "Ho Chi Minh" (theo thành phố, không theo UTC+7) — sai múi giờ thì bài hẹn giờ, đơn hàng, log và thông báo Discord lệch giờ.',
+                        'url' => admin_url('options-general.php'),
+                        'check' => static function () {
+                            $tz = (string) get_option('timezone_string');
+                            if ('' !== $tz) {
+                                return [true, $tz];
+                            }
+                            $offset = (float) get_option('gmt_offset');
+                            return [false, 'UTC' . ($offset >= 0 ? '+' : '') . $offset . ' (nên chọn theo thành phố để tự xử lý giờ chuẩn)'];
+                        }],
+                    ['id' => 'theme_info', 'title' => 'Thông tin liên hệ, mạng xã hội, logo website', 'type' => 'manual',
+                        'guide' => 'Laca Theme: hotline, email, địa chỉ, link mạng xã hội, logo — kiểm tra lại header và footer ngoài trang.',
+                        'url' => admin_url('admin.php?page=app-theme-options.php')],
+                ],
+            ],
+            [
+                'key' => 'wpconfig',
+                'title' => 'wp-config.php',
+                'items' => [
+                    ['id' => 'env_production', 'title' => 'WP_ENVIRONMENT_TYPE là production', 'type' => 'auto', 'high' => true,
+                        'guide' => 'Sửa (hoặc xoá) dòng define( \'WP_ENVIRONMENT_TYPE\', … ) thành \'production\'. Để "local" thì Discord Hub chặn mọi thông báo và reCAPTCHA bị bỏ qua.',
+                        'check' => static fn () => ['production' === wp_get_environment_type(), wp_get_environment_type()]],
+                    ['id' => 'debug_off', 'title' => 'Tắt debug (WP_DEBUG, display_errors)', 'type' => 'auto', 'high' => true,
+                        'guide' => 'define( \'WP_DEBUG\', false ); — debug bật có thể in lỗi kèm đường dẫn server ra cho khách.',
+                        'check' => static function () {
+                            $display = ini_get('display_errors');
+                            $displayOn = $display && !in_array(strtolower((string) $display), ['off', '0', ''], true);
+                            $debug = defined('WP_DEBUG') && WP_DEBUG;
+                            return [!$debug && !$displayOn, ($debug ? 'WP_DEBUG đang bật' : 'WP_DEBUG tắt') . ' · display_errors ' . ($displayOn ? 'BẬT' : 'tắt')];
+                        }],
+                    ['id' => 'debug_log', 'title' => 'Tắt ghi debug.log', 'type' => 'auto',
+                        'guide' => 'define( \'WP_DEBUG_LOG\', false ); sau khi kiểm tra xong. File debug.log phình to theo thời gian và có thể chứa đường dẫn, câu truy vấn, dữ liệu khách.',
+                        'check' => static function () {
+                            $log = defined('WP_DEBUG_LOG') ? WP_DEBUG_LOG : false;
+                            return $log ? [false, 'Đang ghi ' . (is_string($log) ? $log : 'wp-content/debug.log')] : [true, 'Không ghi'];
+                        }],
+                    ['id' => 'salts', 'title' => 'Salt key là chuỗi riêng của site', 'type' => 'auto', 'high' => true,
+                        'guide' => 'Lấy bộ mới tại api.wordpress.org/secret-key/1.1/salt/ và thay 8 dòng AUTH_KEY…NONCE_SALT. Salt mặc định/dùng chung = cookie đăng nhập giả được.',
+                        'check' => static function () {
+                            $keys = ['AUTH_KEY', 'SECURE_AUTH_KEY', 'LOGGED_IN_KEY', 'NONCE_KEY'];
+                            foreach ($keys as $k) {
+                                $v = defined($k) ? (string) constant($k) : '';
+                                if (strlen($v) < 32 || str_contains($v, 'put your unique phrase')) {
+                                    return [false, $k . ' chưa đặt hoặc còn mặc định'];
+                                }
+                            }
+                            return [true, 'Đã đặt riêng'];
+                        }],
+                    ['id' => 'file_edit', 'title' => 'Tắt Theme/Plugin File Editor', 'type' => 'auto',
+                        'guide' => 'define( \'DISALLOW_FILE_EDIT\', true ); — code chỉ sửa qua Git, kẻ chiếm được admin không chèn mã độc từ trình duyệt được.',
+                        'check' => static fn () => (defined('DISALLOW_FILE_EDIT') && DISALLOW_FILE_EDIT) ? [true, 'Đã tắt'] : [false, 'File Editor còn bật']],
+                    ['id' => 'config_perms', 'title' => 'Quyền file wp-config.php 400/440/600', 'type' => 'auto',
+                        'guide' => 'cPanel File Manager → wp-config.php → Permissions: 440 (hoặc 400/600 tuỳ hosting). Quyền 644 cho mọi tài khoản trên cùng server đọc được mật khẩu database và salt key.',
+                        'check' => static function () {
+                            $file = is_file(ABSPATH . 'wp-config.php') ? ABSPATH . 'wp-config.php' : dirname(ABSPATH) . '/wp-config.php';
+                            if (!is_file($file)) {
+                                return [false, 'Không tìm thấy wp-config.php'];
+                            }
+                            $perms = fileperms($file) & 0777;
+                            return [0 === ($perms & 0004), sprintf('%o', $perms) . (($perms & 0004) ? ' (ai cũng đọc được)' : '')];
+                        }],
+                    ['id' => 'db_prefix', 'title' => 'Tiền tố database khác "wp_"', 'type' => 'auto', 'skippable' => true,
+                        'guide' => 'Chỉ cản bot SQL injection đoán sẵn tên bảng — lợi ích thấp, rủi ro cao nếu đổi sai (phải đổi cả wp_user_roles, usermeta và wp-config cùng lúc). Làm khi site mới, có backup, giờ ít khách; hoặc đánh dấu không áp dụng.',
+                        'check' => static function () {
+                            global $wpdb;
+                            return ['wp_' !== $wpdb->base_prefix, $wpdb->base_prefix];
+                        }],
+                    ['id' => 'real_cron', 'title' => 'Cron thật (cPanel) thay WP-Cron', 'type' => 'auto',
+                        'guide' => 'Làm theo dòng "Lịch chạy (cron)" ở Discord Hub: thêm cron cPanel trước, thấy chạy rồi mới thêm DISABLE_WP_CRON.',
+                        'url' => $dh,
+                        'check' => static function () {
+                            if (!(defined('DISABLE_WP_CRON') && DISABLE_WP_CRON)) {
+                                return [false, 'Đang dùng WP-Cron theo lượt truy cập'];
+                            }
+                            $last = (int) get_option('laca_dh_cron_last_run', 0);
+                            if ($last && time() - $last > 2 * HOUR_IN_SECONDS) {
+                                return [false, 'Cron cPanel không chạy từ ' . wp_date('d/m H:i', $last)];
+                            }
+                            return [true, $last ? 'Chạy lần cuối ' . wp_date('d/m H:i', $last) : 'Đã bật'];
+                        }],
+                ],
+            ],
+            [
+                'key' => 'security',
+                'title' => 'Bảo mật & đăng nhập',
+                'items' => [
+                    ['id' => 'custom_login', 'title' => 'URL đăng nhập ẩn, khó đoán', 'type' => 'auto', 'high' => true,
+                        'guide' => 'Đặt slug ngẫu nhiên (vd "cua-hang-7k3q"), tránh "tensite-login" — bot thử các kiểu đó đầu tiên.',
+                        'url' => $sec('login'),
+                        'check' => static function () {
+                            $slug = (string) get_option('laca_login_slug', '');
+                            return ('' !== $slug && get_option('laca_enable_custom_login', 0)) ? [true, 'Đã bật'] : [false, '/wp-login.php còn mở'];
+                        }],
+                    ['id' => 'twofa', 'title' => 'Bật 2FA cho tài khoản quản trị', 'type' => 'auto', 'high' => true,
+                        'guide' => 'Lớp chặn duy nhất còn hiệu lực khi mật khẩu bị lộ. Bật rồi yêu cầu mọi admin quét mã.',
+                        'url' => $sec('2fa'),
+                        'check' => static fn () => get_option('laca_2fa_master_enabled', 0) ? [true, 'Đang bật'] : [false, 'Chưa bật']],
+                    ['id' => 'no_admin_user', 'title' => 'Không có tài khoản tên "admin"', 'type' => 'auto', 'high' => true,
+                        'guide' => 'Tạo tài khoản mới tên khác, chuyển bài viết sang rồi xoá "admin" — đây là username bot dò đầu tiên.',
+                        'url' => admin_url('users.php'),
+                        'check' => static fn () => username_exists('admin') ? [false, 'Còn user "admin"'] : [true, 'Không có']],
+                    ['id' => 'registration', 'title' => 'Đăng ký tài khoản không cấp quyền cao', 'type' => 'auto', 'high' => true,
+                        'guide' => 'Settings → General: nếu không cần cho khách tự đăng ký thì bỏ "Anyone can register"; nếu cần (WooCommerce), "New User Default Role" phải là Subscriber/Customer. Vai trò mặc định cao = ai đăng ký cũng thành biên tập viên/admin.',
+                        'url' => admin_url('options-general.php'),
+                        'check' => static function () {
+                            $open = (bool) get_option('users_can_register');
+                            $role = (string) get_option('default_role');
+                            $safe = in_array($role, ['subscriber', 'customer'], true);
+                            return [!$open || $safe, ($open ? 'Đang mở đăng ký' : 'Đăng ký đóng') . ' · vai trò mặc định: ' . $role];
+                        }],
+                    ['id' => 'xmlrpc', 'title' => 'Tắt XML-RPC', 'type' => 'auto',
+                        'guide' => 'XML-RPC cho thử hàng trăm mật khẩu trong một request. Tắt trong Laca Admin → ADMIN.',
+                        'check' => static fn () => apply_filters('xmlrpc_enabled', true) ? [false, 'Còn bật'] : [true, 'Đã tắt']],
+                    ['id' => 'recaptcha', 'title' => 'reCAPTCHA cho form liên hệ', 'type' => 'auto', 'skippable' => true,
+                        'guide' => 'Nhập Site Key / Secret Key (reCAPTCHA v3) và bật cho form liên hệ để chặn spam lead.',
+                        'url' => admin_url('admin.php?page=laca-recaptcha'),
+                        'check' => static function () {
+                            $on = function_exists('carbon_get_theme_option') && carbon_get_theme_option('enable_recaptcha_contact');
+                            $key = function_exists('carbon_get_theme_option') && carbon_get_theme_option('recaptcha_site_key');
+                            return [$on && $key, $on ? ($key ? 'Đang bật' : 'Bật nhưng thiếu Site Key') : 'Chưa bật'];
+                        }],
+                    ['id' => 'uploads_php', 'title' => 'Chặn chạy PHP trong thư mục uploads', 'type' => 'auto',
+                        'guide' => 'Tạo file wp-content/uploads/.htaccess với nội dung: <FilesMatch "\.(php|phtml|phar|php[0-9])$"> Require all denied </FilesMatch> — kẻ tấn công lỡ upload được webshell cũng không chạy được (giám sát file vẫn báo).',
+                        'check' => static function () {
+                            $uploads = wp_get_upload_dir();
+                            $ht = trailingslashit((string) $uploads['basedir']) . '.htaccess';
+                            $content = is_file($ht) ? (string) file_get_contents($ht) : '';
+                            $ok = '' !== $content && preg_match('/php/i', $content) && preg_match('/deny|denied|-\s*\[F/i', $content);
+                            return [(bool) $ok, $ok ? 'Đã chặn' : ('' === $content ? 'Chưa có uploads/.htaccess' : '.htaccess có nhưng chưa chặn PHP')];
+                        }],
+                    ['id' => 'comments', 'title' => 'Bình luận: tắt hoặc phải duyệt', 'type' => 'auto', 'skippable' => true,
+                        'guide' => 'Settings → Discussion: site không dùng bình luận thì bỏ "Allow people to submit comments"; có dùng thì bật "Comment must be manually approved" — chặn spam link độc hiện công khai.',
+                        'url' => admin_url('options-discussion.php'),
+                        'check' => static function () {
+                            $open = 'open' === get_option('default_comment_status');
+                            $moderated = (bool) get_option('comment_moderation');
+                            return [!$open || $moderated, $open ? ($moderated ? 'Mở, phải duyệt' : 'Mở, KHÔNG cần duyệt') : 'Đã tắt'];
+                        }],
+                    ['id' => 'roles', 'title' => 'Mỗi tài khoản đúng vai trò', 'type' => 'manual', 'high' => true,
+                        'guide' => 'Người chỉ viết bài → Editor, không phải Administrator. Xoá tài khoản không còn dùng, đổi mật khẩu mạnh cho tài khoản bàn giao.',
+                        'url' => admin_url('users.php')],
+                ],
+            ],
+            [
+                'key' => 'cache',
+                'title' => 'Cache & hiệu năng',
+                'items' => [
+                    ['id' => 'lscache_on', 'title' => 'LiteSpeed Cache đang bật', 'type' => 'auto', 'high' => true,
+                        'guide' => 'Cài và bật plugin LiteSpeed Cache, bật "Enable Cache" ở Cache → Cache.',
+                        'url' => admin_url('admin.php?page=litespeed-cache'),
+                        'check' => static function () {
+                            if (!defined('LSCWP_V')) {
+                                return [false, 'Chưa cài / chưa kích hoạt plugin'];
+                            }
+                            return get_option('litespeed.conf.cache') ? [true, 'Đang bật'] : [false, 'Plugin có nhưng cache đang tắt'];
+                        }],
+                    ['id' => 'home_cached', 'title' => 'Trang chủ thực sự được cache', 'type' => 'manual', 'high' => true,
+                        'guide' => 'Mở trang chủ ở tab ẩn danh 2 lần → F12 → Network → bấm request đầu → header "x-litespeed-cache: hit". Thấy "no-cache" là có thành phần đang tắt cache, trang chủ chậm gấp 2–3 lần.'],
+                    ['id' => 'optimize', 'title' => 'Không bật trùng tối ưu ảnh/CSS-JS của LiteSpeed', 'type' => 'auto',
+                        'guide' => 'Theme đã tự: chuyển ảnh upload sang WebP + tạo cỡ mobile/tablet (srcset), lazy-load, CSS/JS build sẵn đã nén, defer JS, inline critical CSS. Vì vậy KHÔNG bật thêm trong LiteSpeed: CSS/JS Minify, CSS/JS Combine, JS Defer/Delay, Image WebP — xử lý 2 lần dễ vỡ giao diện. Server cần GD/Imagick hỗ trợ WebP để theme chuyển được ảnh.',
+                        'url' => admin_url('admin.php?page=litespeed-page_optm'),
+                        'check' => static function () {
+                            $problems = [];
+                            if (!function_exists('imagewebp')) {
+                                $problems[] = 'server thiếu GD WebP (ảnh upload không được chuyển)';
+                            }
+                            if (defined('LSCWP_V')) {
+                                $dupes = [
+                                    'optm-css_min' => 'CSS Minify', 'optm-css_comb' => 'CSS Combine',
+                                    'optm-js_min' => 'JS Minify', 'optm-js_comb' => 'JS Combine',
+                                    'optm-js_defer' => 'JS Defer/Delay', 'img_optm-webp' => 'Image WebP',
+                                ];
+                                foreach ($dupes as $key => $label) {
+                                    if (get_option('litespeed.conf.' . $key)) {
+                                        $problems[] = 'LiteSpeed đang bật ' . $label;
+                                    }
+                                }
+                            }
+                            return $problems ? [false, implode(' · ', $problems)] : [true, 'Theme tự tối ưu, LiteSpeed không bật trùng'];
+                        }],
+                    ['id' => 'critical_css', 'title' => 'Có critical CSS trên server', 'type' => 'auto',
+                        'guide' => 'GitHub Actions KHÔNG tạo được critical.css (cần site đang chạy). Trên máy: bật site Local, chạy "yarn critical" trong child theme, rồi upload dist/styles/critical.css lên hosting. Thiếu file này trang vẫn chạy nhưng hiển thị chậm hơn (chờ tải hết theme.css).',
+                        'check' => static function () {
+                            // style.css nằm trong theme/ → dist/ ở thư mục cha (giống assets.php).
+                            $file = dirname(get_stylesheet_directory()) . '/dist/styles/critical.css';
+                            return is_file($file) ? [true, 'Có (' . size_format((int) filesize($file)) . ', ' . wp_date('d/m/Y', (int) filemtime($file)) . ')'] : [false, 'Chưa có dist/styles/critical.css'];
+                        }],
+                    ['id' => 'object_cache', 'title' => 'Object cache (Redis / Memcached)', 'type' => 'auto', 'skippable' => true,
+                        'guide' => 'Nếu hosting hỗ trợ: LiteSpeed Cache → Cache → Object, chọn Redis/LSMCD. Giảm truy vấn DB rõ rệt với WooCommerce.',
+                        'check' => static fn () => wp_using_ext_object_cache() ? [true, 'Đang dùng'] : [false, 'Chưa bật']],
+                ],
+            ],
+            [
+                'key' => 'woocommerce',
+                'title' => 'WooCommerce',
+                'when' => static fn () => class_exists('WooCommerce'),
+                'items' => [
+                    ['id' => 'woo_coming_soon', 'title' => 'Tắt chế độ "Coming soon" của cửa hàng', 'type' => 'auto', 'high' => true,
+                        'guide' => 'WooCommerce → Settings → Site visibility: chọn "Live". Để "Coming soon" thì khách chỉ thấy trang sắp ra mắt, không mua được hàng.',
+                        'url' => admin_url('admin.php?page=wc-settings&tab=site-visibility'),
+                        'check' => static fn () => 'yes' === get_option('woocommerce_coming_soon') ? [false, 'Đang ở chế độ Coming soon'] : [true, 'Live']],
+                    ['id' => 'woo_pages', 'title' => 'Trang Cửa hàng / Giỏ hàng / Thanh toán / Tài khoản', 'type' => 'auto', 'high' => true,
+                        'guide' => 'WooCommerce → Settings → Advanced → Page setup: gán đủ 4 trang và các trang đó phải đang xuất bản.',
+                        'url' => admin_url('admin.php?page=wc-settings&tab=advanced'),
+                        'check' => static function () {
+                            $missing = [];
+                            foreach (['shop' => 'Cửa hàng', 'cart' => 'Giỏ hàng', 'checkout' => 'Thanh toán', 'myaccount' => 'Tài khoản'] as $page => $label) {
+                                $id = function_exists('wc_get_page_id') ? (int) wc_get_page_id($page) : 0;
+                                if ($id <= 0 || 'publish' !== get_post_status($id)) {
+                                    $missing[] = $label;
+                                }
+                            }
+                            return $missing ? [false, 'Thiếu/chưa xuất bản: ' . implode(', ', $missing)] : [true, 'Đủ 4 trang'];
+                        }],
+                    ['id' => 'woo_payment_live', 'title' => 'Cổng thanh toán ở chế độ thật (Live)', 'type' => 'manual', 'high' => true,
+                        'guide' => 'WooCommerce → Settings → Payments: PayPal tắt Sandbox và kết nối tài khoản Live; chuyển khoản/COD nhập đúng số tài khoản, hướng dẫn. Tắt mọi cổng không dùng.',
+                        'url' => admin_url('admin.php?page=wc-settings&tab=checkout')],
+                    ['id' => 'woo_store_info', 'title' => 'Thông tin cửa hàng, tiền tệ, vận chuyển, email đơn hàng', 'type' => 'manual',
+                        'guide' => 'Settings → General: địa chỉ, tiền tệ VND (0 số lẻ). Shipping: vùng và phí giao hàng. Emails: "New order" gửi tới email người xử lý đơn.',
+                        'url' => admin_url('admin.php?page=wc-settings')],
+                    ['id' => 'woo_test_order', 'title' => 'Đặt thử 1 đơn hàng thật từ đầu tới cuối', 'type' => 'manual', 'high' => true,
+                        'guide' => 'Ở tab ẩn danh: thêm vào giỏ → thanh toán bằng cổng thật (số tiền nhỏ) → khách nhận email xác nhận, cửa hàng nhận email đơn mới → hoàn tiền/huỷ đơn thử.'],
+                    ['id' => 'woo_scheduler', 'title' => 'Hàng đợi tác vụ WooCommerce không bị ứ', 'type' => 'auto',
+                        'guide' => 'Tools → Scheduled Actions → Pending. Nhiều tác vụ quá hạn = cron không chạy: email, đồng bộ tồn kho, gia hạn… bị treo. Xem mục "Cron thật".',
+                        'url' => admin_url('admin.php?page=wc-status&tab=action-scheduler&status=pending'),
+                        'check' => static function () {
+                            global $wpdb;
+                            $table = $wpdb->prefix . 'actionscheduler_actions';
+                            if ($wpdb->get_var($wpdb->prepare('SHOW TABLES LIKE %s', $table)) !== $table) {
+                                return [true, 'Chưa có hàng đợi'];
+                            }
+                            $late = (int) $wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM {$table} WHERE status = 'pending' AND scheduled_date_gmt < %s", gmdate('Y-m-d H:i:s', time() - HOUR_IN_SECONDS))); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+                            return [$late <= 20, $late . ' tác vụ quá hạn > 1 giờ'];
+                        }],
+                ],
+            ],
+            [
+                'key' => 'polylang',
+                'title' => 'Đa ngôn ngữ (Polylang)',
+                'when' => static fn () => function_exists('pll_languages_list'),
+                'items' => [
+                    ['id' => 'pll_translations', 'title' => 'Đã dịch trang chính, menu và chuỗi giao diện', 'type' => 'manual',
+                        'guide' => 'Languages → Translations (chuỗi theme/plugin), mỗi trang chính có bản dịch, mỗi ngôn ngữ có menu riêng. Kiểm tra chuyển ngôn ngữ ở header không ra trang 404.',
+                        'url' => admin_url('admin.php?page=mlang_strings')],
+                    // Không tự kiểm được: code không biết khách muốn ngôn ngữ nào làm gốc → tick tay, hiện giá trị hiện tại.
+                    ['id' => 'pll_default', 'title' => 'Ngôn ngữ mặc định đúng', 'type' => 'manual',
+                        'guide' => 'Hiện tại: ' . (function_exists('pll_default_language') ? (string) pll_default_language('name') : '?') . '. Languages: đặt ngôn ngữ chính của khách hàng làm mặc định — ngôn ngữ này nằm ở URL gốc và được Google ưu tiên.',
+                        'url' => admin_url('admin.php?page=mlang')],
+                ],
+            ],
+            [
+                'key' => 'wordfence',
+                'title' => 'Wordfence',
+                'when' => static fn () => defined('WORDFENCE_VERSION'),
+                'items' => [
+                    ['id' => 'wf_firewall', 'title' => 'Firewall ở chế độ Extended Protection', 'type' => 'manual',
+                        'guide' => 'Wordfence → Firewall → Optimize the Wordfence Firewall, làm theo hướng dẫn (tải .user.ini) tới khi báo "Extended Protection".',
+                        'url' => admin_url('admin.php?page=WordfenceWAF')],
+                    ['id' => 'wf_login', 'title' => 'Giới hạn đăng nhập & chặn username không tồn tại', 'type' => 'manual',
+                        'guide' => 'All Options → Brute Force Protection: khoá sau 5 lần sai, "Immediately lock out invalid usernames".',
+                        'url' => admin_url('admin.php?page=WordfenceOptions')],
+                    ['id' => 'wf_alerts', 'title' => 'Email cảnh báo & lịch quét', 'type' => 'manual',
+                        'guide' => 'All Options → Email Alert Preferences: email của bạn; Scan Scheduling: tự động hằng ngày.',
+                        'url' => admin_url('admin.php?page=WordfenceOptions')],
+                    ['id' => 'wf_premium', 'title' => 'Nhập license key (nếu có)', 'type' => 'manual', 'skippable' => true,
+                        'guide' => 'Dashboard → License: dán key Premium để có rule firewall và IP chặn theo thời gian thực.',
+                        'url' => admin_url('admin.php?page=Wordfence')],
+                ],
+            ],
+            [
+                'key' => 'discord',
+                'title' => 'Discord Hub & giám sát',
+                'when' => static fn () => class_exists('\App\Features\DiscordHub\Settings'),
+                'items' => [
+                    ['id' => 'dh_webhooks', 'title' => 'Webhook Leads / Audit / Security đã kết nối', 'type' => 'auto', 'high' => true,
+                        'guide' => 'Dán webhook từng kênh rồi bấm "Lưu & gửi thử" — dòng nào báo lỗi thì xử lý theo nội dung lỗi.',
+                        'url' => $dh,
+                        'check' => static function () {
+                            $missing = [];
+                            foreach (['leads', 'audit', 'security'] as $ch) {
+                                if ('ok' !== \App\Features\DiscordHub\Settings::channelStatus($ch)['state']) {
+                                    $missing[] = $ch;
+                                } elseif ('' !== \App\Features\DiscordHub\DiscordWebhookSender::lastResult($ch)['error']) {
+                                    $missing[] = $ch . ' (lỗi gửi)';
+                                }
+                            }
+                            return $missing ? [false, 'Chưa xong: ' . implode(', ', $missing)] : [true, 'Đủ 3 kênh, gửi OK'];
+                        }],
+                    ['id' => 'dh_fim', 'title' => 'Giám sát file đã có baseline', 'type' => 'auto',
+                        'guide' => 'Bật "Giám sát file" và bấm "Lưu & quét ngay" một lần để ghi nhận trạng thái gốc.',
+                        'url' => $dh,
+                        'check' => static function () {
+                            $state = get_option('laca_dh_fim_state', []);
+                            return !empty($state['at']) ? [true, 'Quét lần cuối ' . wp_date('d/m H:i', (int) $state['at'])] : [false, 'Chưa quét lần nào'];
+                        }],
+                    ['id' => 'dh_deploy', 'title' => 'Deploy key + GitHub Secrets', 'type' => 'manual', 'skippable' => true,
+                        'guide' => 'Tạo deploy key ở Discord Hub, thêm LACA_DEPLOY_KEY và DISCORD_DEPLOY_WEBHOOK vào GitHub → Settings → Secrets. Bỏ qua nếu site không deploy bằng GitHub Actions.',
+                        'url' => $dh],
+                ],
+            ],
+            [
+                'key' => 'seo',
+                'title' => 'SEO & nội dung',
+                'items' => [
+                    ['id' => 'blog_public', 'title' => 'Không chặn Google index', 'type' => 'auto', 'high' => true,
+                        'guide' => 'Settings → Reading: BỎ chọn "Discourage search engines". Lỗi rất hay quên sau khi chuyển từ bản dev lên.',
+                        'url' => admin_url('options-reading.php'),
+                        'check' => static fn () => get_option('blog_public') ? [true, 'Cho phép index'] : [false, 'Đang CHẶN Google']],
+                    ['id' => 'permalinks', 'title' => 'Đường dẫn tĩnh (permalink) đẹp', 'type' => 'auto',
+                        'guide' => 'Settings → Permalinks: chọn "Post name".',
+                        'url' => admin_url('options-permalink.php'),
+                        'check' => static fn () => '' !== (string) get_option('permalink_structure') ? [true, (string) get_option('permalink_structure')] : [false, 'Đang dùng ?p=123']],
+                    ['id' => 'sample_content', 'title' => 'Đã xoá nội dung mẫu', 'type' => 'auto',
+                        'guide' => 'Xoá bài "Hello world!", trang "Sample Page" và bình luận mẫu.',
+                        'url' => admin_url('edit.php'),
+                        'check' => static function () {
+                            $left = [];
+                            if (get_page_by_path('hello-world', OBJECT, 'post')) {
+                                $left[] = 'Hello world';
+                            }
+                            if (get_page_by_path('sample-page', OBJECT, 'page')) {
+                                $left[] = 'Sample Page';
+                            }
+                            return $left ? [false, 'Còn: ' . implode(', ', $left)] : [true, 'Không còn'];
+                        }],
+                    ['id' => 'site_icon', 'title' => 'Có favicon (biểu tượng site)', 'type' => 'auto',
+                        'guide' => 'Appearance → Customize → Site Identity → Site Icon (ảnh vuông ≥ 512px).',
+                        'url' => admin_url('customize.php?autofocus[section]=title_tagline'),
+                        'check' => static fn () => has_site_icon() ? [true, 'Đã có'] : [false, 'Chưa có']],
+                    ['id' => 'privacy_page', 'title' => 'Có trang Chính sách bảo mật', 'type' => 'auto', 'skippable' => true,
+                        'guide' => 'Settings → Privacy: tạo/chọn trang và gắn link ở footer. Site có form thu SĐT/email khách cần thông báo cách dùng dữ liệu (Nghị định 13/2023 về dữ liệu cá nhân).',
+                        'url' => admin_url('options-privacy.php'),
+                        'check' => static function () {
+                            $id = (int) get_option('wp_page_for_privacy_policy');
+                            return ($id && 'publish' === get_post_status($id)) ? [true, get_the_title($id)] : [false, 'Chưa có trang đang xuất bản'];
+                        }],
+                    ['id' => 'analytics', 'title' => 'Gắn Google Analytics / Tag Manager', 'type' => 'manual', 'skippable' => true,
+                        'guide' => 'Gắn mã GA4 hoặc GTM (Laca Admin → Header scripts hoặc Rank Math → Analytics), kiểm tra Realtime có lượt truy cập của chính bạn.'],
+                    ['id' => 'seo_plugin', 'title' => 'Sitemap, tắt author archive, Search Console', 'type' => 'manual',
+                        'guide' => 'Rank Math: bật Sitemap, Titles & Meta → Authors → tắt Author Archives (tránh lộ username), gửi sitemap lên Google Search Console.',
+                        'url' => admin_url('admin.php?page=rank-math')],
+                ],
+            ],
+            [
+                'key' => 'ops',
+                'title' => 'Sao lưu & vận hành',
+                'items' => [
+                    ['id' => 'https', 'title' => 'Site chạy HTTPS', 'type' => 'auto', 'high' => true,
+                        'guide' => 'Bật AutoSSL trong cPanel, đổi "WordPress Address" và "Site Address" sang https://.',
+                        'url' => admin_url('options-general.php'),
+                        'check' => static fn () => str_starts_with(home_url(), 'https://') ? [true, 'HTTPS'] : [false, 'Đang dùng http://']],
+                    ['id' => 'backup', 'title' => 'Sao lưu tự động ra ngoài hosting', 'type' => 'manual', 'high' => true,
+                        'guide' => 'JetBackup (cPanel) hoặc UpdraftPlus → Google Drive, chạy hằng ngày, giữ ≥ 7 bản. Thử khôi phục 1 lần để chắc bản sao lưu dùng được.'],
+                    ['id' => 'email_dns', 'title' => 'Tên miền có SPF và DMARC (mail không vào spam)', 'type' => 'auto', 'high' => true,
+                        'guide' => 'Thêm bản ghi TXT ở DNS: SPF ("v=spf1 include:… ~all" theo nhà cung cấp mail/SMTP) và DMARC ("_dmarc", "v=DMARC1; p=none; rua=mailto:…"), bật DKIM ở cPanel → Email Deliverability. Thiếu thì mail lead/đơn hàng hay rơi vào spam.',
+                        'check' => static function () {
+                            $domain = self::mailDomain();
+                            if (preg_match('/(^localhost$|\.(local|test|localhost|invalid)$)|^[^.]+$/', $domain)) {
+                                return [false, $domain . ' là tên miền nội bộ — chỉ kiểm tra được trên site thật'];
+                            }
+                            // KHÔNG tra DNS lúc hiển thị trang: dns_get_record() không có timeout, DNS chậm là
+                            // treo cả Laca Admin (đo được 120 giây với tên miền .local). Tra nền qua WP-Cron.
+                            $cached = get_transient(self::DNS_TRANSIENT . md5($domain));
+                            if (!is_array($cached)) {
+                                if (!wp_next_scheduled(self::DNS_HOOK)) {
+                                    wp_schedule_single_event(time(), self::DNS_HOOK);
+                                }
+                                return [false, 'Đang tra DNS nền — tải lại trang sau ít phút'];
+                            }
+                            $missing = array_keys(array_filter(['SPF' => !$cached['spf'], 'DMARC' => !$cached['dmarc']]));
+                            return $missing ? [false, $domain . ' thiếu ' . implode(', ', $missing)] : [true, $domain . ' có SPF + DMARC'];
+                        }],
+                    ['id' => 'unused_code', 'title' => 'Xoá plugin/theme không dùng', 'type' => 'auto',
+                        'guide' => 'Plugin/theme đã tắt vẫn nằm trên server và vẫn bị khai thác được nếu có lỗ hổng. Xoá hẳn những gì không dùng (giữ lại parent + child theme đang chạy).',
+                        'url' => admin_url('plugins.php?plugin_status=inactive'),
+                        'check' => static function () {
+                            if (!function_exists('get_plugins')) {
+                                require_once ABSPATH . 'wp-admin/includes/plugin.php';
+                            }
+                            $inactive = array_diff(array_keys(get_plugins()), (array) get_option('active_plugins', []));
+                            $themes = array_diff(array_keys(wp_get_themes()), array_unique([get_stylesheet(), get_template()]));
+                            $parts = [];
+                            if ($inactive) {
+                                $parts[] = count($inactive) . ' plugin đang tắt';
+                            }
+                            if ($themes) {
+                                $parts[] = 'theme thừa: ' . implode(', ', $themes);
+                            }
+                            return $parts ? [false, implode(' · ', $parts)] : [true, 'Không có'];
+                        }],
+                    ['id' => 'uptime', 'title' => 'Giám sát uptime từ bên ngoài', 'type' => 'manual', 'skippable' => true,
+                        'guide' => 'Thêm site vào Uptime Kuma / BetterStack / UptimeRobot (kiểm tra 1–5 phút/lần, gửi cảnh báo về Discord). Discord Hub chỉ báo được khi site còn chạy PHP — site sập hẳn thì cần công cụ bên ngoài.'],
+                    ['id' => 'php_version', 'title' => 'PHP 8.1 trở lên', 'type' => 'auto',
+                        'guide' => 'cPanel → MultiPHP Manager: chọn PHP 8.2/8.3.',
+                        'check' => static fn () => [version_compare(PHP_VERSION, '8.1', '>='), 'PHP ' . PHP_VERSION]],
+                    ['id' => 'updates_fresh', 'title' => 'Không có bản cập nhật chờ quá 30 ngày', 'type' => 'auto',
+                        'guide' => 'Xem tin "Tổng hợp tuần" ở kênh Discord Updates, sao lưu rồi cập nhật.',
+                        'url' => admin_url('update-core.php'),
+                        'check' => static function () {
+                            $tracked = get_option('laca_dh_updates_notified', []);
+                            $oldest = 0;
+                            foreach ((array) $tracked as $info) {
+                                if (is_array($info) && !empty($info['since'])) {
+                                    $oldest = max($oldest, (int) floor((time() - (int) $info['since']) / DAY_IN_SECONDS));
+                                }
+                            }
+                            return $oldest > 30 ? [false, 'Có bản chờ ' . $oldest . ' ngày'] : [true, $tracked ? 'Lâu nhất ' . $oldest . ' ngày' : 'Không có bản chờ'];
+                        }],
+                    ['id' => 'info_files', 'title' => 'Đã xoá readme.html / license.txt', 'type' => 'auto',
+                        'guide' => 'Tự xoá khi admin vào wp-admin và sau mỗi lần cập nhật core. Còn file thì hosting chặn quyền ghi — xoá tay qua File Manager.',
+                        'check' => static function () {
+                            $left = class_exists('\App\Settings\Security\CoreInfoFileCleanup') ? \App\Settings\Security\CoreInfoFileCleanup::remaining() : [];
+                            return $left ? [false, 'Còn: ' . implode(', ', $left)] : [true, 'Đã xoá'];
+                        }],
+                ],
+            ],
+        ];
+
+        return (array) apply_filters('laca_release_checklist_groups', $groups);
+    }
+
+    private static function mailDomain(): string
+    {
+        return (string) preg_replace('/^www\./', '', (string) wp_parse_url(home_url(), PHP_URL_HOST));
+    }
+
+    /**
+     * Chạy nền (WP-Cron): tra bản ghi SPF/DMARC, lưu 1 ngày.
+     */
+    public static function refreshDns(): void
+    {
+        $domain = self::mailDomain();
+        $txt = static function (string $host, string $prefix): bool {
+            $records = function_exists('dns_get_record') ? @dns_get_record($host, DNS_TXT) : [];
+            foreach ((array) $records as $r) {
+                if (str_starts_with(strtolower((string) ($r['txt'] ?? '')), $prefix)) {
+                    return true;
+                }
+            }
+            return false;
+        };
+        set_transient(self::DNS_TRANSIENT . md5($domain), ['spf' => $txt($domain, 'v=spf1'), 'dmarc' => $txt('_dmarc.' . $domain, 'v=dmarc1')], DAY_IN_SECONDS);
+    }
+
+    // ── Trạng thái ────────────────────────────────────────────────────────────
+
+    private static function state(): array
+    {
+        $state = get_option(self::STATE_OPTION, []);
+        return is_array($state) ? $state : [];
+    }
+
+    /**
+     * Gắn trạng thái hiện tại cho từng mục: done | todo | fail | skipped.
+     *
+     * @return array{groups:array,total:int,done:int,fail:int,todo:int,skipped:int}
+     */
+    public static function evaluate(): array
+    {
+        $state = self::state();
+        $out = ['groups' => [], 'total' => 0, 'done' => 0, 'fail' => 0, 'todo' => 0, 'skipped' => 0];
+
+        foreach (self::groups() as $group) {
+            if (isset($group['when']) && is_callable($group['when']) && !call_user_func($group['when'])) {
+                continue;
+            }
+            $items = [];
+            foreach ((array) $group['items'] as $item) {
+                $id = (string) $item['id'];
+                $saved = $state[$id] ?? [];
+                $item['meta'] = $saved;
+                $item['detail'] = '';
+
+                if (($saved['status'] ?? '') === 'skipped' && !empty($item['skippable'])) {
+                    $item['status'] = 'skipped';
+                } elseif ('auto' === $item['type'] && isset($item['check']) && is_callable($item['check'])) {
+                    try {
+                        [$ok, $detail] = call_user_func($item['check']);
+                    } catch (\Throwable $e) {
+                        [$ok, $detail] = [false, 'Không kiểm được: ' . $e->getMessage()];
+                    }
+                    $item['status'] = $ok ? 'done' : 'fail';
+                    $item['detail'] = (string) $detail;
+                } else {
+                    $item['status'] = ($saved['status'] ?? '') === 'done' ? 'done' : 'todo';
+                }
+
+                $out[$item['status']]++;
+                if ('skipped' !== $item['status']) {
+                    $out['total']++;
+                }
+                $items[] = $item;
+            }
+            $group['items'] = $items;
+            $out['groups'][] = $group;
+        }
+        return $out;
+    }
+
+    // ── Lưu thao tác tick ─────────────────────────────────────────────────────
+
+    public function handle(): void
+    {
+        if (!self::canManage()) {
+            wp_die(esc_html__('Bạn không có quyền thực hiện thao tác này.', 'laca'), '', ['response' => 403]);
+        }
+        check_admin_referer(self::ACTION);
+
+        $id = sanitize_key(wp_unslash($_POST['item'] ?? ''));
+        $op = sanitize_key(wp_unslash($_POST['op'] ?? ''));
+
+        $known = [];
+        foreach (self::groups() as $group) {
+            foreach ((array) $group['items'] as $item) {
+                $known[(string) $item['id']] = $item;
+            }
+        }
+
+        if (isset($known[$id])) {
+            $item = $known[$id];
+            $state = self::state();
+            $stamp = ['by' => wp_get_current_user()->user_login, 'at' => time()];
+
+            if ('done' === $op && 'manual' === $item['type']) {
+                $state[$id] = ['status' => 'done'] + $stamp;
+            } elseif ('skip' === $op && !empty($item['skippable'])) {
+                $state[$id] = ['status' => 'skipped'] + $stamp;
+            } elseif (in_array($op, ['undo', 'unskip'], true)) {
+                unset($state[$id]);
+            }
+            update_option(self::STATE_OPTION, $state, false);
+        }
+
+        wp_safe_redirect(admin_url('admin.php?page=laca-admin') . '#rc-' . $id);
+        exit;
+    }
+
+    // ── Giao diện ─────────────────────────────────────────────────────────────
+
+    public function render(): void
+    {
+        if ('laca-admin' !== sanitize_key(wp_unslash($_GET['page'] ?? '')) || !self::canManage()) {
+            return;
+        }
+
+        $r = self::evaluate();
+        $doneCount = $r['done'];
+        $total = max(1, $r['total']);
+        $percent = (int) round($doneCount / $total * 100);
+        $allDone = $r['done'] === $r['total'];
+
+        // Mục mở sẵn = việc nên làm tiếp: lỗi ĐO ĐƯỢC đang tồn tại (tự kiểm chưa đạt) trước việc chưa tick,
+        // mục quan trọng trước mục thường.
+        $openId = '';
+        foreach ([['fail', true], ['todo', true], ['fail', false], ['todo', false]] as [$wantStatus, $wantHigh]) {
+            foreach ($r['groups'] as $group) {
+                foreach ($group['items'] as $item) {
+                    if ('' === $openId && $wantStatus === $item['status'] && (bool) ($item['high'] ?? false) === $wantHigh) {
+                        $openId = $item['id'];
+                    }
+                }
+            }
+        }
+        $highLeft = 0;
+        foreach ($r['groups'] as $group) {
+            foreach ($group['items'] as $item) {
+                if (!empty($item['high']) && in_array($item['status'], ['fail', 'todo'], true)) {
+                    $highLeft++;
+                }
+            }
+        }
+        ?>
+        <section class="laca-rc<?php echo $allDone ? ' is-complete' : ''; ?>" aria-labelledby="laca-rc-title">
+            <header class="laca-rc__head">
+                <div class="laca-rc__head-row">
+                    <h2 id="laca-rc-title" class="laca-rc__title"><?php echo esc_html($allDone ? 'Sẵn sàng production' : 'Checklist phát hành production'); ?></h2>
+                    <span class="laca-rc__count"><?php echo esc_html(sprintf('%d / %d mục', $doneCount, $r['total'])); ?></span>
+                </div>
+                <div class="laca-rc__bar" role="progressbar" aria-label="Tiến độ checklist" aria-valuemin="0" aria-valuemax="100" aria-valuenow="<?php echo esc_attr((string) $percent); ?>">
+                    <span style="width: <?php echo esc_attr((string) $percent); ?>%"></span>
+                </div>
+                <p class="laca-rc__summary">
+                    <?php if ($allDone) : ?>
+                        Mọi mục đã đạt. Mục tự kiểm sẽ tự báo lại nếu cấu hình bị đổi.
+                    <?php else : ?>
+                        <?php if ($highLeft) : ?>
+                            <strong class="laca-rc__danger"><?php echo esc_html(sprintf('%d mục quan trọng chưa xong', $highLeft)); ?></strong> ·
+                        <?php endif; ?>
+                        <?php echo esc_html(sprintf('%d tự kiểm chưa đạt · %d chưa tick', $r['fail'], $r['todo'])); ?>
+                        <?php if ($r['skipped']) : ?>
+                            <?php echo esc_html(sprintf(' · %d không áp dụng', $r['skipped'])); ?>
+                        <?php endif; ?>
+                    <?php endif; ?>
+                </p>
+            </header>
+
+            <?php foreach ($r['groups'] as $group) :
+                $gDone = count(array_filter($group['items'], static fn ($i) => 'done' === $i['status']));
+                $gTotal = count(array_filter($group['items'], static fn ($i) => 'skipped' !== $i['status']));
+                $gComplete = $gDone === $gTotal;
+                // Chỉ mở nhóm chứa việc tiếp theo — mở hết thì khối cao ~2.200px, đẩy các tab cài đặt xuống tận cuối trang.
+                $gOpen = in_array($openId, array_column($group['items'], 'id'), true);
+                ?>
+                <details class="laca-rc__group" <?php echo $gOpen ? 'open' : ''; ?>>
+                    <summary class="laca-rc__group-head">
+                        <span class="laca-rc__group-title"><?php echo esc_html($group['title']); ?></span>
+                        <span class="laca-rc__group-count<?php echo $gComplete ? ' is-complete' : ''; ?>"><?php echo esc_html(sprintf('%d/%d', $gDone, $gTotal)); ?></span>
+                        <?php echo self::icon('chevron'); // phpcs:ignore WordPress.Security.EscapeOutput ?>
+                    </summary>
+                    <ul class="laca-rc__list">
+                        <?php foreach ($group['items'] as $item) {
+                            $this->renderItem($item, $item['id'] === $openId);
+                        } ?>
+                    </ul>
+                </details>
+            <?php endforeach; ?>
+        </section>
+        <?php
+        $this->printStyles();
+    }
+
+    private function renderItem(array $item, bool $open): void
+    {
+        $status = $item['status'];
+        $isAuto = 'auto' === $item['type'];
+        $title = (string) $item['title'];
+        $meta = (array) ($item['meta'] ?? []);
+        ?>
+        <li class="laca-rc__item is-<?php echo esc_attr($status); ?>" id="rc-<?php echo esc_attr($item['id']); ?>">
+            <div class="laca-rc__mark">
+                <?php if ($isAuto && 'skipped' !== $status) : ?>
+                    <span class="laca-rc__circle is-<?php echo esc_attr($status); ?>" role="img" aria-label="<?php echo esc_attr('done' === $status ? 'Tự kiểm: đạt' : 'Tự kiểm: chưa đạt'); ?>">
+                        <?php echo self::icon('done' === $status ? 'check' : 'x'); // phpcs:ignore WordPress.Security.EscapeOutput ?>
+                    </span>
+                <?php else :
+                    $op = ['done' => 'undo', 'skipped' => 'unskip'][$status] ?? 'done';
+                    $label = ['done' => 'Bỏ đánh dấu xong: ', 'skipped' => 'Bỏ "không áp dụng": '][$status] ?? 'Đánh dấu xong: ';
+                    ?>
+                    <?php $this->openForm($item['id'], $op); ?>
+                        <button type="submit" class="laca-rc__tick" aria-label="<?php echo esc_attr($label . $title); ?>">
+                            <span class="laca-rc__circle is-<?php echo esc_attr($status); ?> is-button"><?php echo 'todo' === $status ? '' : self::icon('skipped' === $status ? 'minus' : 'check'); // phpcs:ignore WordPress.Security.EscapeOutput ?></span>
+                        </button>
+                    </form>
+                <?php endif; ?>
+            </div>
+            <details class="laca-rc__detail" <?php echo $open ? 'open' : ''; ?>>
+                <summary class="laca-rc__item-head">
+                    <span class="laca-rc__item-text">
+                        <span class="laca-rc__item-title"><?php echo esc_html($title); ?></span>
+                        <?php if (!empty($item['high']) && in_array($status, ['fail', 'todo'], true)) : ?>
+                            <span class="laca-rc__badge is-danger">Quan trọng</span>
+                        <?php endif; ?>
+                    </span>
+                    <?php echo self::icon('chevron'); // phpcs:ignore WordPress.Security.EscapeOutput ?>
+                </summary>
+                <div class="laca-rc__body">
+                    <p class="laca-rc__guide"><?php echo esc_html((string) $item['guide']); ?></p>
+                    <?php if ('' !== $item['detail']) : ?>
+                        <p class="laca-rc__state is-<?php echo esc_attr($status); ?>"><?php echo esc_html('Hiện tại: ' . $item['detail']); ?></p>
+                    <?php endif; ?>
+                    <?php
+                    $canSkip = !empty($item['skippable']) && in_array($status, ['todo', 'fail'], true);
+                    if (!empty($item['url']) || ('manual' === $item['type'] && 'todo' === $status) || $canSkip) :
+                    ?>
+                    <div class="laca-rc__actions">
+                        <?php if (!empty($item['url'])) : ?>
+                            <a class="button" href="<?php echo esc_url((string) $item['url']); ?>">Mở cài đặt</a>
+                        <?php endif; ?>
+                        <?php if ('manual' === $item['type'] && 'todo' === $status) : ?>
+                            <?php $this->openForm($item['id'], 'done'); ?>
+                                <button type="submit" class="button button-primary">Đánh dấu đã xong</button>
+                            </form>
+                        <?php endif; ?>
+                        <?php if ($canSkip) : ?>
+                            <?php $this->openForm($item['id'], 'skip'); ?>
+                                <button type="submit" class="button-link laca-rc__skip">Không áp dụng cho site này</button>
+                            </form>
+                        <?php endif; ?>
+                    </div>
+                    <?php endif; ?>
+                    <?php if (!empty($meta['by']) && in_array($status, ['done', 'skipped'], true)) : ?>
+                        <p class="laca-rc__meta"><?php echo esc_html(sprintf('%s bởi %s · %s', 'skipped' === $status ? 'Đánh dấu không áp dụng' : 'Đánh dấu xong', $meta['by'], wp_date('d/m/Y H:i', (int) $meta['at']))); ?></p>
+                    <?php endif; ?>
+                </div>
+            </details>
+        </li>
+        <?php
+    }
+
+    private function openForm(string $id, string $op): void
+    {
+        ?>
+        <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" class="laca-rc__form">
+            <input type="hidden" name="action" value="<?php echo esc_attr(self::ACTION); ?>">
+            <input type="hidden" name="item" value="<?php echo esc_attr($id); ?>">
+            <input type="hidden" name="op" value="<?php echo esc_attr($op); ?>">
+            <?php wp_nonce_field(self::ACTION); ?>
+        <?php
+    }
+
+    /**
+     * Icon nét (lucide) inline — admin không có bộ icon chung ngoài dashicons.
+     */
+    private static function icon(string $name): string
+    {
+        $paths = [
+            'check' => '<path d="M20 6 9 17l-5-5"/>',
+            'x' => '<path d="M18 6 6 18"/><path d="m6 6 12 12"/>',
+            'minus' => '<path d="M5 12h14"/>',
+            'chevron' => '<path d="m6 9 6 6 6-6"/>',
+        ];
+        $class = 'chevron' === $name ? 'laca-rc__chevron' : 'laca-rc__icon';
+        return '<svg class="' . $class . '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' . $paths[$name] . '</svg>';
+    }
+
+    private function printStyles(): void
+    {
+        ?>
+        <style>
+            .laca-rc { --rc-primary: var(--primary-color-ad, #566a7f); --rc-danger: #d63638; --rc-success: #007017; --rc-border: var(--laca-border, #e8ecf0); --rc-muted: var(--laca-text-muted, #646970); --rc-text: var(--laca-text-main, #1d2327);
+                margin: 16px 20px 8px 2px; background: #fff; border: 1px solid var(--rc-border); border-radius: 8px; color: var(--rc-text); }
+            .laca-rc__head { padding: 16px 20px 14px; border-bottom: 1px solid var(--rc-border); }
+            .laca-rc__head-row { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+            .laca-rc__title { margin: 0; font-size: 15px; font-weight: 600; line-height: 1.4; }
+            .laca-rc__count { font-size: 13px; color: var(--rc-muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
+            .laca-rc__bar { height: 6px; margin-top: 10px; border-radius: 999px; background: #f0f0f1; overflow: hidden; }
+            .laca-rc__bar span { display: block; height: 100%; border-radius: inherit; background: var(--rc-primary); }
+            .laca-rc.is-complete .laca-rc__bar span { background: var(--rc-success); }
+            .laca-rc__summary { margin: 8px 0 0; font-size: 13px; color: var(--rc-muted); }
+            .laca-rc__danger { color: var(--rc-danger); font-weight: 600; }
+            .laca-rc__group + .laca-rc__group { border-top: 1px solid var(--rc-border); }
+            .laca-rc summary { list-style: none; cursor: pointer; }
+            .laca-rc summary::-webkit-details-marker { display: none; }
+            .laca-rc summary:focus-visible { outline: 2px solid var(--rc-primary); outline-offset: -2px; border-radius: 4px; }
+            .laca-rc__group-head { display: flex; align-items: center; gap: 8px; padding: 12px 20px; }
+            .laca-rc__group-title { font-size: 12px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; color: var(--rc-muted); }
+            .laca-rc__group-count { font-size: 12px; color: var(--rc-muted); font-variant-numeric: tabular-nums; }
+            .laca-rc__group-count.is-complete { color: var(--rc-success); font-weight: 600; }
+            .laca-rc__chevron { width: 16px; height: 16px; margin-left: auto; flex-shrink: 0; color: var(--rc-muted); transition: transform .15s; }
+            details[open] > summary .laca-rc__chevron { transform: rotate(180deg); }
+            .laca-rc__list { margin: 0 0 8px; padding: 0; list-style: none; }
+            .laca-rc__item { display: flex; gap: 12px; align-items: flex-start; margin: 0; padding: 0 20px; }
+            .laca-rc__item + .laca-rc__item { border-top: 1px solid #f0f0f1; }
+            .laca-rc__mark { flex-shrink: 0; padding: 12px 0; }
+            .laca-rc__form { margin: 0; display: inline; }
+            .laca-rc__circle { display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; padding: 0; border-radius: 50%; box-sizing: border-box; color: #fff; }
+            .laca-rc__tick { display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; margin: -4px; padding: 0; border: 0; border-radius: 50%; background: none; cursor: pointer; }
+            .laca-rc__tick:hover .laca-rc__circle.is-todo { background: #f0f0f1; }
+            .laca-rc__tick:focus-visible { outline: 2px solid var(--rc-primary); outline-offset: 0; }
+            .laca-rc__circle.is-todo { border: 1.5px dashed #8c8f94; }
+            .laca-rc__circle.is-done { background: var(--rc-success); border: 0; }
+            .laca-rc__circle.is-fail { border: 1.5px solid var(--rc-danger); color: var(--rc-danger); }
+            .laca-rc__circle.is-skipped { background: #dcdcde; border: 0; color: #50575e; }
+            .laca-rc__icon { width: 12px; height: 12px; }
+            .laca-rc__detail { flex: 1; min-width: 0; }
+            .laca-rc__item-head { display: flex; align-items: center; gap: 8px; padding: 12px 0; min-height: 20px; }
+            .laca-rc__item-text { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; min-width: 0; }
+            .laca-rc__item-title { font-size: 14px; font-weight: 500; line-height: 20px; }
+            .laca-rc__item.is-done .laca-rc__item-title, .laca-rc__item.is-skipped .laca-rc__item-title { color: var(--rc-muted); }
+            .laca-rc__badge { flex-shrink: 0; padding: 1px 8px; border-radius: 999px; background: #f0f0f1; color: #50575e; font-size: 12px; line-height: 18px; }
+            .laca-rc__badge.is-danger { background: #fcf0f1; color: #b32d2e; }
+            .laca-rc__body { padding: 0 0 16px; }
+            .laca-rc__guide { margin: 0; font-size: 13px; line-height: 1.6; color: var(--rc-muted); max-width: 72ch; text-wrap: pretty; }
+            .laca-rc__state { margin: 8px 0 0; font-size: 12px; }
+            .laca-rc__state.is-fail { color: var(--rc-danger); }
+            .laca-rc__state.is-done { color: var(--rc-success); }
+            .laca-rc__actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; margin-top: 12px; }
+            .laca-rc__skip { display: inline-flex; align-items: center; min-height: 28px; font-size: 13px; color: var(--rc-muted) !important; }
+            .laca-rc__meta { margin: 10px 0 0; font-size: 12px; color: var(--rc-muted); }
+            @media (max-width: 782px) {
+                .laca-rc { margin: 12px 10px 8px 0; }
+                .laca-rc__head, .laca-rc__group-head { padding-left: 16px; padding-right: 16px; }
+                .laca-rc__item { padding: 0 16px; }
+            }
+        </style>
+        <?php
+    }
+}

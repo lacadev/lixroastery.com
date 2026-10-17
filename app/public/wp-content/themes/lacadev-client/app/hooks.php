@@ -37,6 +37,17 @@ add_action('init', function () {
 });
 
 /**
+ * Checklist phát hành production — đầu trang Laca Admin (chỉ Super User).
+ */
+add_action('init', function () {
+    if (is_admin() && class_exists('\App\Settings\LacaAdmin\ReleaseChecklist')) {
+        (new \App\Settings\LacaAdmin\ReleaseChecklist())->register();
+    }
+});
+// Tra DNS (SPF/DMARC) chạy nền qua WP-Cron — request cron không phải is_admin() nên đăng ký riêng.
+add_action('laca_release_checklist_dns', ['\App\Settings\LacaAdmin\ReleaseChecklist', 'refreshDns']);
+
+/**
  * Xếp mọi custom post type (tĩnh lẫn tạo qua Dynamic CPT) nằm liền kề
  * ngay sau "Laca Theme" trong sidebar, thay vì rải rác theo menu_position.
  */
