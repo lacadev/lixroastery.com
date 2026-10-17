@@ -44,7 +44,7 @@ if ($nl_recaptcha_key !== '' && !wp_script_is('google-recaptcha', 'enqueued')) {
     wp_enqueue_script('google-recaptcha', 'https://www.google.com/recaptcha/api.js?render=' . rawurlencode($nl_recaptcha_key), [], null, true);
 }
 ?>
-<section class="newsletter" aria-labelledby="newsletter-title">
+<section class="newsletter container-fluid" aria-labelledby="newsletter-title">
     <h2 id="newsletter-title" class="newsletter__title"><?php echo esc_html($nl_title); ?></h2>
 
     <form class="newsletter__form" action="<?php echo esc_url(admin_url('admin-ajax.php')); ?>" method="post" novalidate

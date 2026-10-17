@@ -59,7 +59,6 @@ $newsletterLineColor: rgba($darkColor, 0.45);
         border: 0;
         border-radius: 0;
         background: transparent;
-        font-family: $subFont;
         font-weight: $light;
         color: $darkColor;
         box-shadow: none;
@@ -86,7 +85,6 @@ $newsletterLineColor: rgba($darkColor, 0.45);
         padding: rem(6) 0;
         border: 0;
         background: transparent;
-        font-family: $subFont;
         font-weight: $light;
         color: $darkColor;
         cursor: pointer;
@@ -132,7 +130,6 @@ $newsletterLineColor: rgba($darkColor, 0.45);
 
     &__consent {
         margin: rem(10) 0 0;
-        font-family: $subFont;
         font-weight: $light;
         line-height: 1.5;
         color: $darkColor;

@@ -70,12 +70,11 @@ $footer_socials = [
     'zalo' => getOption('zalo'),
 ];
 ?>
+<?php get_template_part('template-parts/newsletter-form'); ?>
 <?php get_template_part('template-parts/block-stats-info'); ?>
 
 <footer class="footer" role="contentinfo" data-aos="fade-up">
     <div class="container-fluid">
-        <?php get_template_part('template-parts/newsletter-form'); ?>
-
         <hr class="footer__rule" />
 
         <div class="footer__grid">
