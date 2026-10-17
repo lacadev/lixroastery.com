@@ -1259,8 +1259,13 @@ class AdminSettings
 						->set_width(25)
 						->set_default_value(true),
 
-					Field::make('text', 'recaptcha_score', __('Điểm tối thiểu (0.0 - 1.0)', 'laca'))
+					Field::make('checkbox', 'enable_recaptcha_contact', __('Kích hoạt cho Form liên hệ', 'laca'))
 						->set_width(25)
+						->set_default_value(true)
+						->set_help_text('Form tạo ở Laca Admin → Contact Form (shortcode [laca_contact_form]).'),
+
+					Field::make('text', 'recaptcha_score', __('Điểm tối thiểu (0.0 - 1.0)', 'laca'))
+						->set_width(50)
 						->set_default_value('0.5')
 						->set_attribute('type', 'number')
 						->set_attribute('step', '0.1')

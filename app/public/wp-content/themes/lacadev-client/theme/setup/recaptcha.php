@@ -2,7 +2,7 @@
 /**
  * Google reCAPTCHA v3 Integration
  *
- * Handles invisible reCAPTCHA for Login, Register, and Comments.
+ * Bảo vệ Đăng nhập, Đăng ký, Bình luận và Form liên hệ (shortcode laca_contact_form).
  *
  * @package LaCaDev
  */
@@ -13,95 +13,131 @@ if (!defined('ABSPATH')) {
 
 class Laca_Recaptcha {
 
+    public const HANDLE = 'google-recaptcha';
+    public const ACTION_FORM = 'submit';
+    public const ACTION_CONTACT = 'contact';
+
     private $site_key;
     private $secret_key;
     private $score_threshold;
     private $expected_hostname;
 
+    /**
+     * Đọc cấu hình trang Laca Admin → Google reCAPTCHA.
+     *
+     * KHÔNG dùng getOption(): hàm đó nối hậu tố ngôn ngữ (vd "recaptcha_site_keyen") trong
+     * khi các field này đăng ký không hậu tố → trên site Polylang mọi giá trị đọc ra rỗng và
+     * reCAPTCHA tắt hoàn toàn dù admin đã nhập đủ key.
+     */
+    public static function config(): array {
+        $get = static function ($key) {
+            return function_exists('carbon_get_theme_option') ? carbon_get_theme_option($key) : null;
+        };
+        // Ô number ở trình duyệt tiếng Việt có thể gửi "0,5".
+        $score = str_replace(',', '.', trim((string) $get('recaptcha_score')));
+
+        return [
+            'site_key'   => trim((string) $get('recaptcha_site_key')),
+            'secret_key' => trim((string) $get('recaptcha_secret_key')),
+            'score'      => is_numeric($score) ? max(0.0, min(1.0, (float) $score)) : 0.5,
+            'login'      => (bool) $get('enable_recaptcha_login'),
+            'register'   => (bool) $get('enable_recaptcha_register'),
+            'comment'    => (bool) $get('enable_recaptcha_comment'),
+            'contact'    => (bool) $get('enable_recaptcha_contact'),
+        ];
+    }
+
+    /**
+     * @param string $form login|register|comment|contact
+     */
+    public static function isEnabledFor(string $form): bool {
+        $config = self::config();
+        return $config['site_key'] !== '' && $config['secret_key'] !== '' && !empty($config[$form]);
+    }
+
+    /**
+     * Nạp script Google theo nhu cầu: chỉ trang nào thật sự có form cần bảo vệ mới tải
+     * api.js (~150 KB), không làm chậm mọi trang. Gọi được cả sau wp_enqueue_scripts
+     * (shortcode, comment_form) — WP tự in script đăng ký muộn ở footer.
+     */
+    public static function enqueue(): void {
+        if (wp_script_is(self::HANDLE, 'registered')) {
+            wp_enqueue_script(self::HANDLE);
+        }
+    }
+
     public function __construct() {
-        $this->site_key = getOption('recaptcha_site_key');
-        $this->secret_key = getOption('recaptcha_secret_key');
-        $this->score_threshold = (float) getOption('recaptcha_score') ?: 0.5;
+        $config = self::config();
+        $this->site_key = $config['site_key'];
+        $this->secret_key = $config['secret_key'];
+        $this->score_threshold = $config['score'];
         $this->expected_hostname = strtolower((string) wp_parse_url(home_url('/'), PHP_URL_HOST));
 
-        // Skip if keys are missing
-        if (empty($this->site_key) || empty($this->secret_key)) {
+        if ($this->site_key === '' || $this->secret_key === '') {
             return;
         }
 
-        // Frontend Scripts
-        add_action('login_enqueue_scripts', [$this, 'enqueue_scripts']);
-        add_action('wp_enqueue_scripts', [$this, 'enqueue_scripts']);
+        add_action('wp_enqueue_scripts', [$this, 'register_script'], 5);
+        add_action('login_enqueue_scripts', [$this, 'register_script'], 5);
 
-        // Login Integration
-        if (getOption('enable_recaptcha_login')) {
+        if ($config['login']) {
             add_action('login_form', [$this, 'print_hidden_field']);
             add_filter('authenticate', [$this, 'verify_login'], 30, 3);
         }
 
-        // Register Integration
-        if (getOption('enable_recaptcha_register')) {
+        if ($config['register']) {
             add_action('register_form', [$this, 'print_hidden_field']);
             add_filter('registration_errors', [$this, 'verify_registration'], 10, 3);
         }
 
-        // Comment Integration
-        if (getOption('enable_recaptcha_comment')) {
+        if ($config['comment']) {
             add_action('comment_form', [$this, 'print_hidden_field']);
             add_filter('preprocess_comment', [$this, 'verify_comment']);
         }
+
+        if ($config['contact']) {
+            add_filter('laca_verify_recaptcha', [$this, 'verify_contact'], 10, 2);
+        }
     }
 
-    /**
-     * Enqueue Google reCAPTCHA Script
-     */
-    public function enqueue_scripts() {
-        wp_enqueue_script('google-recaptcha', 'https://www.google.com/recaptcha/api.js?render=' . $this->site_key, [], null, false);
-        
-        $script = "
-            document.addEventListener('DOMContentLoaded', function() {
-                var forms = document.querySelectorAll('#loginform, #registerform, #commentform');
-                
-                grecaptcha.ready(function() {
-                    grecaptcha.execute('" . $this->site_key . "', {action: 'submit'}).then(function(token) {
-                        var inputs = document.querySelectorAll('.laca-recaptcha-response');
-                        inputs.forEach(function(input) {
-                            input.value = token;
-                        });
-                    });
-                });
-                
-                // Refresh token every 90s to avoid expiration
-                setInterval(function(){
-                    grecaptcha.ready(function() {
-                        grecaptcha.execute('" . $this->site_key . "', {action: 'submit'}).then(function(token) {
-                            var inputs = document.querySelectorAll('.laca-recaptcha-response');
-                            inputs.forEach(function(input) {
-                                input.value = token;
-                            });
-                        });
-                    });
-                }, 90000);
-            });
-        ";
+    public function register_script() {
+        // in_footer: script có thể được enqueue muộn (trong shortcode/comment_form).
+        wp_register_script(self::HANDLE, 'https://www.google.com/recaptcha/api.js?render=' . rawurlencode($this->site_key), [], null, true);
 
-        wp_add_inline_script('google-recaptcha', $script);
-        
-        // Ensure standard WP handles the nonce for this script via a filter if needed, 
-        // but since we are in a custom theme setup, we can also manually add it to the tag.
-        add_filter('script_loader_tag', function($tag, $handle) {
-            if ($handle === 'google-recaptcha' && defined('LACA_CSP_NONCE')) {
-                return str_replace('<script ', '<script nonce="' . LACA_CSP_NONCE . '" ', $tag);
-            }
-            return $tag;
-        }, 10, 2);
+        // Form tải lại trang (đăng nhập/đăng ký/bình luận): điền token sẵn và làm mới mỗi
+        // 90s (token sống 2 phút). Form AJAX (liên hệ) tự lấy token mới lúc bấm gửi qua
+        // window.lacaRecaptcha.execute() vì token chỉ dùng được 1 lần.
+        $script = 'window.lacaRecaptcha = {'
+            . 'siteKey: ' . wp_json_encode($this->site_key) . ','
+            . 'execute: function (action) { return new Promise(function (resolve) {'
+            . '  if (!window.grecaptcha) { resolve(""); return; }'
+            // Key sai tên miền / Google chậm: không để nút Gửi quay mãi, server sẽ báo lỗi rõ.
+            . '  setTimeout(function () { resolve(""); }, 8000);'
+            . '  grecaptcha.ready(function () { grecaptcha.execute(window.lacaRecaptcha.siteKey, {action: action}).then(resolve, function () { resolve(""); }); });'
+            . '}); }'
+            . '};'
+            . '(function () {'
+            . '  function fill() {'
+            . '    var inputs = document.querySelectorAll("input.laca-recaptcha-response[data-recaptcha-refresh]");'
+            . '    if (!inputs.length) { return; }'
+            . '    window.lacaRecaptcha.execute(' . wp_json_encode(self::ACTION_FORM) . ').then(function (token) { inputs.forEach(function (input) { input.value = token; }); });'
+            . '  }'
+            . '  if (document.readyState === "loading") { document.addEventListener("DOMContentLoaded", fill); } else { fill(); }'
+            . '  setInterval(fill, 90000);'
+            . '})();';
+        wp_add_inline_script(self::HANDLE, $script);
+
+        if (did_action('login_enqueue_scripts')) {
+            self::enqueue();
+        }
     }
 
     /**
      * Print hidden input field
      */
     public function print_hidden_field() {
-        echo '<input type="hidden" name="laca_recaptcha_response" class="laca-recaptcha-response" value="">';
+        self::enqueue();
+        echo '<input type="hidden" name="laca_recaptcha_response" class="laca-recaptcha-response" data-recaptcha-refresh value="">';
         echo '<input type="text" name="laca_hp_email" class="laca-hp-email" value="" autocomplete="off" tabindex="-1" aria-hidden="true" style="position:absolute;left:-9999px;opacity:0;pointer-events:none;">';
         echo '<input type="hidden" name="laca_form_ts" value="' . esc_attr((string) time()) . '">';
     }
@@ -109,17 +145,20 @@ class Laca_Recaptcha {
     /**
      * Verify Token Logic
      */
-    private function verify_token($token, $expected_action = 'submit') {
+    private function verify_token($token, $expected_action = self::ACTION_FORM) {
         if (empty($token)) {
             return new WP_Error('recaptcha_error', __('Vui lòng tải lại trang để xác thực reCAPTCHA.', 'laca'));
         }
 
+        $remote_ip = class_exists(\App\Helpers\ClientIp::class) ? \App\Helpers\ClientIp::get() : ($_SERVER['REMOTE_ADDR'] ?? '');
+
         $response = wp_remote_post('https://www.google.com/recaptcha/api/siteverify', [
+            'timeout' => 10,
             'body' => [
-                'secret' => $this->secret_key,
+                'secret'   => $this->secret_key,
                 'response' => $token,
-                'remoteip' => $_SERVER['REMOTE_ADDR']
-            ]
+                'remoteip' => $remote_ip,
+            ],
         ]);
 
         if (is_wp_error($response)) {
@@ -137,7 +176,7 @@ class Laca_Recaptcha {
             return new WP_Error('recaptcha_error', __('Xác thực reCAPTCHA thất bại. Bạn có phải là robot?', 'laca'));
         }
 
-        if (empty($result['score']) || !is_numeric($result['score']) || (float) $result['score'] < $this->score_threshold) {
+        if (!isset($result['score']) || !is_numeric($result['score']) || (float) $result['score'] < $this->score_threshold) {
              return new WP_Error('recaptcha_low_score', __('Hệ thống nghi ngờ bạn là robot. Điểm tín nhiệm thấp.', 'laca'));
         }
 
@@ -188,13 +227,21 @@ class Laca_Recaptcha {
      * Validate Login
      */
     public function verify_login($user, $username, $password) {
+        // Chỉ form wp-login.php (field "log"). wp-login.php gọi wp_signon() cả khi chỉ MỞ
+        // trang → không chặn ở đây sẽ hiện lỗi ngay lúc vào trang; form đăng nhập
+        // WooCommerce / XML-RPC / Application Password không có token nên cũng bỏ qua.
+        if (!isset($_POST['log'])) {
+            return $user;
+        }
+
         $context_check = $this->validate_submission_context();
         if (is_wp_error($context_check)) {
             return $context_check;
         }
 
         $token = isset($_POST['laca_recaptcha_response']) ? sanitize_text_field(wp_unslash($_POST['laca_recaptcha_response'])) : '';
-        $verify = $this->verify_token($token, 'submit');
+        $verify = $this->verify_token($token, self::ACTION_FORM);
+
         if (is_wp_error($verify)) {
             return $verify;
         }
@@ -213,7 +260,8 @@ class Laca_Recaptcha {
         }
 
         $token = isset($_POST['laca_recaptcha_response']) ? sanitize_text_field(wp_unslash($_POST['laca_recaptcha_response'])) : '';
-        $verify = $this->verify_token($token, 'submit');
+        $verify = $this->verify_token($token, self::ACTION_FORM);
+
         if (is_wp_error($verify)) {
             $errors->add('recaptcha_error', $verify->get_error_message());
         }
@@ -232,16 +280,29 @@ class Laca_Recaptcha {
             }
 
             $token = isset($_POST['laca_recaptcha_response']) ? sanitize_text_field(wp_unslash($_POST['laca_recaptcha_response'])) : '';
-            $verify = $this->verify_token($token, 'submit');
+            $verify = $this->verify_token($token, self::ACTION_FORM);
+
             if (is_wp_error($verify)) {
                 wp_die($verify->get_error_message());
             }
         }
         return $commentdata;
     }
+
+    /**
+     * Validate Contact Form (filter laca_verify_recaptcha của ContactFormAjaxHandler).
+     *
+     * @param true|WP_Error $result
+     * @param string        $token
+     * @return true|WP_Error
+     */
+    public function verify_contact($result, $token) {
+        if (is_wp_error($result)) {
+            return $result;
+        }
+        return $this->verify_token(sanitize_text_field(wp_unslash((string) $token)), self::ACTION_CONTACT);
+    }
 }
-
-
 
 add_action('init', function() {
     new Laca_Recaptcha();

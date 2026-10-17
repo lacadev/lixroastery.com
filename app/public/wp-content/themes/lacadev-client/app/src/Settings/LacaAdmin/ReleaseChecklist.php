@@ -196,13 +196,25 @@ final class ReleaseChecklist
                     ['id' => 'xmlrpc', 'title' => 'Tắt XML-RPC', 'type' => 'auto',
                         'guide' => 'XML-RPC cho thử hàng trăm mật khẩu trong một request. Tắt trong Laca Admin → ADMIN.',
                         'check' => static fn () => apply_filters('xmlrpc_enabled', true) ? [false, 'Còn bật'] : [true, 'Đã tắt']],
-                    ['id' => 'recaptcha', 'title' => 'reCAPTCHA cho form liên hệ', 'type' => 'auto', 'skippable' => true,
-                        'guide' => 'Nhập Site Key / Secret Key (reCAPTCHA v3) và bật cho form liên hệ để chặn spam lead.',
+                    ['id' => 'recaptcha', 'title' => 'reCAPTCHA chống spam (đăng nhập, form liên hệ)', 'type' => 'auto', 'skippable' => true,
+                        'guide' => 'Tạo key reCAPTCHA v3 cho đúng tên miền production, nhập Site Key / Secret Key và tick Đăng nhập + Form liên hệ. Sau khi lưu: mở trang liên hệ, gửi thử 1 lần và đăng xuất/đăng nhập lại để chắc key đúng tên miền.',
                         'url' => admin_url('admin.php?page=laca-recaptcha'),
                         'check' => static function () {
-                            $on = function_exists('carbon_get_theme_option') && carbon_get_theme_option('enable_recaptcha_contact');
-                            $key = function_exists('carbon_get_theme_option') && carbon_get_theme_option('recaptcha_site_key');
-                            return [$on && $key, $on ? ($key ? 'Đang bật' : 'Bật nhưng thiếu Site Key') : 'Chưa bật'];
+                            if (!class_exists('Laca_Recaptcha')) {
+                                return [false, 'Chưa nạp module reCAPTCHA'];
+                            }
+                            $c = \Laca_Recaptcha::config();
+                            if ('' === $c['site_key'] || '' === $c['secret_key']) {
+                                return [false, '' === $c['site_key'] ? 'Thiếu Site Key' : 'Thiếu Secret Key'];
+                            }
+                            $labels = ['login' => 'Đăng nhập', 'register' => 'Đăng ký', 'comment' => 'Bình luận', 'contact' => 'Form liên hệ'];
+                            $on = array_values(array_intersect_key($labels, array_filter(array_intersect_key($c, $labels))));
+                            $ok = $c['login'] && $c['contact'];
+                            $detail = $on ? 'Đang bảo vệ: ' . implode(', ', $on) : 'Có key nhưng chưa bật form nào';
+                            if (!$ok) {
+                                $detail .= ' · cần bật ' . implode(' + ', array_values(array_intersect_key($labels, array_filter(['login' => !$c['login'], 'contact' => !$c['contact']]))));
+                            }
+                            return [$ok, $detail . sprintf(' · điểm tối thiểu %.1f', $c['score'])];
                         }],
                     ['id' => 'uploads_php', 'title' => 'Chặn chạy PHP trong thư mục uploads', 'type' => 'auto',
                         'guide' => 'Tạo file wp-content/uploads/.htaccess với nội dung: <FilesMatch "\.(php|phtml|phar|php[0-9])$"> Require all denied </FilesMatch> — kẻ tấn công lỡ upload được webshell cũng không chạy được (giám sát file vẫn báo).',

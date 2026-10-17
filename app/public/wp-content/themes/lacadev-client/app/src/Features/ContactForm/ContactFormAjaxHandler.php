@@ -173,9 +173,8 @@ class ContactFormAjaxHandler
         }
 
         // 3.5. Verify reCAPTCHA
-        $isRecaptchaEnabled = function_exists('getOption') ? getOption('enable_recaptcha_contact') : false;
-        if ($isRecaptchaEnabled) {
-            $token  = $_POST['laca_recaptcha_response'] ?? '';
+        if (class_exists('Laca_Recaptcha') && \Laca_Recaptcha::isEnabledFor('contact')) {
+            $token  = sanitize_text_field(wp_unslash($_POST['laca_recaptcha_response'] ?? ''));
             $verify = apply_filters('laca_verify_recaptcha', true, $token);
             if (is_wp_error($verify)) {
                 wp_send_json_error(['message' => $verify->get_error_message()], 400);
@@ -269,6 +268,11 @@ class ContactFormAjaxHandler
             add_action('wp_footer', [__CLASS__, 'printInlineCss'], 5);
         }
 
+        $recaptchaEnabled = class_exists('Laca_Recaptcha') && \Laca_Recaptcha::isEnabledFor('contact');
+        if ($recaptchaEnabled) {
+            \Laca_Recaptcha::enqueue();
+        }
+
         ob_start();
         ?>
         <?php if ($scopedCss): ?>
@@ -280,8 +284,8 @@ class ContactFormAjaxHandler
                 <input type="hidden" name="form_id" value="<?php echo esc_attr($formId); ?>">
                 <input type="hidden" name="action" value="laca_cf_submit">
                 <input type="hidden" name="_lang" value="<?php echo esc_attr(function_exists('pll_current_language') ? (pll_current_language() ?: '') : ''); ?>">
-                <?php if (function_exists('getOption') && getOption('enable_recaptcha_contact')): ?>
-                    <input type="hidden" name="laca_recaptcha_response" class="laca-recaptcha-response" value="">
+                <?php if ($recaptchaEnabled): ?>
+                    <input type="hidden" name="laca_recaptcha_response" value="">
                 <?php endif; ?>
 
                 <?php if ($isRowBased): ?>
@@ -409,6 +413,7 @@ class ContactFormAjaxHandler
             const MSG_FIELD_REQUIRED = <?php echo wp_json_encode(__('Trường này', 'laca') . ' ' . $popup['msg_field_required_suffix']); ?>;
             const MSG_INVALID_EMAIL  = <?php echo wp_json_encode($popup['msg_invalid_email_suffix']); ?>;
             const MSG_INVALID_PHONE  = <?php echo wp_json_encode($popup['msg_invalid_phone_suffix']); ?>;
+            const RECAPTCHA_ACTION   = <?php echo wp_json_encode(class_exists('Laca_Recaptcha') ? \Laca_Recaptcha::ACTION_CONTACT : 'contact'); ?>;
             const MSG_FORM_EMPTY     = <?php echo wp_json_encode($popup['msg_form_empty'] ?? __('Vui lòng nhập hoặc chọn ít nhất một thông tin trước khi gửi.', 'laca')); ?>;
 
             // Wait for DOM + theme.js to expose window.Swal
@@ -624,10 +629,20 @@ class ContactFormAjaxHandler
                     btnText.hidden = true;
                     btnLoad.hidden = false;
 
-                    fetch(AJAX_URL, {
-                        method: 'POST',
-                        credentials: 'same-origin',
-                        body: new FormData(formEl),
+                    // Token reCAPTCHA chỉ dùng 1 lần và sống 2 phút → lấy mới ngay lúc gửi.
+                    const tokenInput = formEl.querySelector('input[name="laca_recaptcha_response"]');
+                    const getToken = (tokenInput && window.lacaRecaptcha)
+                        ? window.lacaRecaptcha.execute(RECAPTCHA_ACTION)
+                        : Promise.resolve('');
+
+                    getToken
+                    .then(function(token) {
+                        if (tokenInput) tokenInput.value = token;
+                        return fetch(AJAX_URL, {
+                            method: 'POST',
+                            credentials: 'same-origin',
+                            body: new FormData(formEl),
+                        });
                     })
                     .then(function(res) { return res.json(); })
                     .then(function(json) {
