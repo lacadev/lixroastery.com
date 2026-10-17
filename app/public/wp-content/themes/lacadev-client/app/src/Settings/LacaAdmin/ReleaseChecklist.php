@@ -664,7 +664,7 @@ final class ReleaseChecklist
             update_option(self::STATE_OPTION, $state, false);
         }
 
-        wp_safe_redirect(admin_url('admin.php?page=laca-admin') . '#rc-' . $id);
+        wp_safe_redirect(add_query_arg('rc', $id, admin_url('admin.php?page=laca-admin')) . '#rc-' . $id);
         exit;
     }
 
@@ -682,18 +682,9 @@ final class ReleaseChecklist
         $percent = (int) round($doneCount / $total * 100);
         $allDone = $r['done'] === $r['total'];
 
-        // Mục mở sẵn = việc nên làm tiếp: lỗi ĐO ĐƯỢC đang tồn tại (tự kiểm chưa đạt) trước việc chưa tick,
-        // mục quan trọng trước mục thường.
-        $openId = '';
-        foreach ([['fail', true], ['todo', true], ['fail', false], ['todo', false]] as [$wantStatus, $wantHigh]) {
-            foreach ($r['groups'] as $group) {
-                foreach ($group['items'] as $item) {
-                    if ('' === $openId && $wantStatus === $item['status'] && (bool) ($item['high'] ?? false) === $wantHigh) {
-                        $openId = $item['id'];
-                    }
-                }
-            }
-        }
+        // Mặc định đóng hết. Chỉ khi vừa tick/bỏ qua 1 mục (redirect kèm ?rc=) mới mở lại nhóm đó
+        // để không mất chỗ đang làm.
+        $openId = sanitize_key(wp_unslash($_GET['rc'] ?? ''));
         $highLeft = 0;
         foreach ($r['groups'] as $group) {
             foreach ($group['items'] as $item) {
@@ -731,10 +722,10 @@ final class ReleaseChecklist
                 $gDone = count(array_filter($group['items'], static fn ($i) => 'done' === $i['status']));
                 $gTotal = count(array_filter($group['items'], static fn ($i) => 'skipped' !== $i['status']));
                 $gComplete = $gDone === $gTotal;
-                // Chỉ mở nhóm chứa việc tiếp theo — mở hết thì khối cao ~2.200px, đẩy các tab cài đặt xuống tận cuối trang.
-                $gOpen = in_array($openId, array_column($group['items'], 'id'), true);
+                $gOpen = '' !== $openId && in_array($openId, array_column($group['items'], 'id'), true);
+                // name chung = accordion độc quyền do trình duyệt xử lý: mở nhóm này thì nhóm đang mở tự đóng.
                 ?>
-                <details class="laca-rc__group" <?php echo $gOpen ? 'open' : ''; ?>>
+                <details class="laca-rc__group" name="laca-rc-group" <?php echo $gOpen ? 'open' : ''; ?>>
                     <summary class="laca-rc__group-head">
                         <span class="laca-rc__group-title"><?php echo esc_html($group['title']); ?></span>
                         <span class="laca-rc__group-count<?php echo $gComplete ? ' is-complete' : ''; ?>"><?php echo esc_html(sprintf('%d/%d', $gDone, $gTotal)); ?></span>
@@ -742,7 +733,7 @@ final class ReleaseChecklist
                     </summary>
                     <ul class="laca-rc__list">
                         <?php foreach ($group['items'] as $item) {
-                            $this->renderItem($item, $item['id'] === $openId);
+                            $this->renderItem($item, false);
                         } ?>
                     </ul>
                 </details>
@@ -776,7 +767,7 @@ final class ReleaseChecklist
                     </form>
                 <?php endif; ?>
             </div>
-            <details class="laca-rc__detail" <?php echo $open ? 'open' : ''; ?>>
+            <details class="laca-rc__detail" name="laca-rc-item" <?php echo $open ? 'open' : ''; ?>>
                 <summary class="laca-rc__item-head">
                     <span class="laca-rc__item-text">
                         <span class="laca-rc__item-title"><?php echo esc_html($title); ?></span>
