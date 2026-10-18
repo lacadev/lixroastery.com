@@ -1,0 +1,46 @@
+﻿== Changelog ==
+
+= 5.4.10.5 =
+* Improved compatibility with WP 7.0
+* Updated Freemius SDK
+
+= 5.4.10.4 =
+* Improved rating payload validation.
+* Fixed PHP error
+
+= 5.4.10.3 =
+* Upgraded freemiums SDK
+
+= 5.4.10.2 =
+* Fixed security issue where any shortcode could be parsed.
+
+= 5.4.10.1 =
+* Fixed security issue where any shortcode could be parsed.
+
+= 5.4.10 =
+* Fixed security issue where any shortcode could be parsed.
+
+= 5.4.9 =
+* Upgraded Freemius SDK.
+
+= 5.4.8 =
+* Fixed bug where rating didn't work with posts with quotation mark in title.
+
+= 5.4.7 =
+* Upgraded Freemius to 2.6.2
+* Improved PHP 8 compatibility.
+
+= 5.x =
+- [View Changelog](https://github.com/kamalkhan/kk-star-ratings/blob/master/CHANGELOG.md)
+
+= 4.x =
+[Archived](https://github.com/kamalkhan/kk-star-ratings/blob/master/.github/CHANGELOG-v4.md)
+
+= 3.x =
+[Archived](https://github.com/kamalkhan/kk-star-ratings/blob/master/.github/CHANGELOG-v3.md)
+
+= 2.x =
+[Archived](https://github.com/kamalkhan/kk-star-ratings/blob/master/.github/CHANGELOG-v2.md)
+
+= 1.x =
+[Archived](https://github.com/kamalkhan/kk-star-ratings/blob/master/.github/CHANGELOG-v1.md)
