@@ -20,7 +20,11 @@ $is_journal = get_post_type() === 'journal';
 			<?php if ($is_journal && function_exists('laca_journal_render_content')): ?>
 				<?php laca_journal_render_content($post_id); ?>
 			<?php else: ?>
-				<?php theContent(); ?>
+				<?php
+				// the_content() thay cho theContent() của parent — theContent() bọc
+				// wp_kses_post() lên output đã render, xoá <style> của block Tabs.
+				the_content();
+				?>
 			<?php endif; ?>
 		</div>
 

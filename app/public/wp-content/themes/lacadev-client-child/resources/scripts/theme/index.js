@@ -10,6 +10,7 @@ import './components/cpt-grid.js';
 import './components/journal-directory.js';
 import './components/floating-contact.js';
 import './components/share-popup.js';
+import './components/journal-toc.js';
 import { initMobileMenu } from './components/mobile-menu.js';
 import { initSearchPopup } from './components/search-popup.js';
 import { initCartPopup } from './components/cart-popup.js';

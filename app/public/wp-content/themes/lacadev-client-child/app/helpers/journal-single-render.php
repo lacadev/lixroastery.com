@@ -171,7 +171,7 @@ if (!function_exists('laca_journal_render_toc')) {
 
 if (!function_exists('laca_journal_render_content')) {
     /**
-     * Thay cho theContent() ở single Journal: chèn mục lục ngay SAU block đầu
+     * Thay cho the_content() ở single Journal: chèn mục lục ngay SAU block đầu
      * tiên (block mở bài chứa tiêu đề + sapo, tương đương vị trí mục lục dưới
      * tiêu đề/mô tả ở XLIII), đề mục lấy từ các h2 nằm sau vị trí đó.
      */
@@ -201,8 +201,10 @@ if (!function_exists('laca_journal_render_content')) {
 
         $html = apply_filters('the_content', $raw);
         $html = str_replace(']]>', ']]&gt;', $html);
-        // Giữ đúng hành vi theContent() của parent.
-        $html = wp_kses_post($html);
+        // KHÔNG wp_kses_post() lên output đã render — kses xoá <style>/<script>/<link>
+        // mà block tự in ra (vd block Tabs in <style> ẩn panel → lộ CSS thành chữ)
+        // và cắt cả inline style hợp lệ. Nội dung đã được kses lúc lưu bài với
+        // user không có unfiltered_html, giống hệt the_content() của core.
 
         if ($html === '') {
             echo esc_html__('Dữ liệu đang được cập nhật', 'laca');
@@ -215,7 +217,7 @@ if (!function_exists('laca_journal_render_content')) {
             $html = $before . laca_journal_render_toc($items, laca_journal_column_style($post_id)) . $after;
         }
 
-        // Nội dung đã qua wp_kses_post ở trên; mục lục tự escape từng giá trị.
+        // Output chuẩn của the_content; mục lục tự escape từng giá trị.
         echo $html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
     }
 }
