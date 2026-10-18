@@ -296,6 +296,40 @@ $optionsPage = Container::make('theme_options', __('Laca Theme', 'laca'))
 			]),
 	])
 
+	->add_tab(__('📰 Journal', 'laca'), [
+		Field::make('html', 'journal_single_intro', __('', 'laca'))
+			->set_html('<div style="background:#f0f9ff;border:1px solid #bae6fd;border-radius:6px;padding:14px 16px;margin:8px 0"><p style="margin:0 0 8px;font-weight:600;color:#0369a1">🔧 Chi tiết bài Journal</p><p style="margin:0;font-size:13px;color:#374151">Mục lục (tự lấy từ các tiêu đề H2 trong bài), bình chọn sao, tác giả, chia sẻ, Google News, bài viết liên quan và tag ở cuối mỗi bài Journal. Ô chữ để trống sẽ dùng câu mặc định theo ngôn ngữ. Tác giả / Google News để trống thì ẩn phần đó.</p></div>'),
+
+		Field::make('separator', 'journal_sep_texts', __('Câu chữ', 'laca')),
+		Field::make('text', 'journal_toc_title' . currentLanguage(), __('Tiêu đề mục lục', 'laca'))
+			->set_width(33.33)
+			->set_attribute('placeholder', 'Mục lục'),
+		Field::make('text', 'journal_share_label' . currentLanguage(), __('Chữ "Chia sẻ"', 'laca'))
+			->set_width(33.33)
+			->set_attribute('placeholder', 'Chia sẻ'),
+		Field::make('text', 'journal_related_title' . currentLanguage(), __('Tiêu đề bài viết liên quan', 'laca'))
+			->set_width(33.33)
+			->set_attribute('placeholder', 'Bài viết liên quan'),
+
+		Field::make('separator', 'journal_sep_author', __('Tác giả', 'laca')),
+		Field::make('text', 'journal_author_prefix' . currentLanguage(), __('Chữ đứng trước', 'laca'))
+			->set_width(33.33)
+			->set_attribute('placeholder', 'Thực hiện bởi:'),
+		Field::make('text', 'journal_author_name' . currentLanguage(), __('Tên tác giả / nhóm tác giả', 'laca'))
+			->set_width(33.33),
+		Field::make('text', 'journal_author_url' . currentLanguage(), __('Link trang tác giả', 'laca'))
+			->set_width(33.33)
+			->set_attribute('type', 'url'),
+
+		Field::make('separator', 'journal_sep_gg_news', __('Google News', 'laca')),
+		Field::make('text', 'journal_gg_news_url' . currentLanguage(), __('Link Google News', 'laca'))
+			->set_width(50)
+			->set_attribute('type', 'url'),
+		Field::make('image', 'journal_gg_news_image' . currentLanguage(), __('Ảnh nút Google News', 'laca'))
+			->set_width(50)
+			->set_help_text(__('Hiển thị rộng tối đa 180px.', 'laca')),
+	])
+
 	->add_tab(__('📧 Newsletter', 'laca'), [
 		Field::make('html', 'newsletter_intro', __('', 'laca'))
 			->set_html('<div style="background:#f0f9ff;border:1px solid #bae6fd;border-radius:6px;padding:14px 16px;margin:8px 0"><p style="margin:0 0 8px;font-weight:600;color:#0369a1">🔧 Newsletter ở footer</p><p style="margin:0;font-size:13px;color:#374151">Khách nhập email ở footer và bấm Subscribe là <strong>đăng ký luôn</strong>, không cần xác nhận. Website gửi 1 <strong>email cảm ơn</strong> (qua SMTP ở Laca Admin → SMTP), cuối email có link <strong>huỷ đăng ký</strong>. Xem danh sách theo trạng thái và xuất CSV tại menu <strong>Newsletter</strong> bên trái.</p></div>'),

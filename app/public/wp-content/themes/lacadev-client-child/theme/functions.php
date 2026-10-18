@@ -66,6 +66,10 @@ add_action('after_setup_theme', function () {
     // cho post type "journal" — xem app/helpers/journal-related-products-render.php.
     require_once CHILD_THEME_SETUP_DIR . 'journal_related_products_meta.php';
 
+    // Meta box "Mục lục & bài viết liên quan" cho post type "journal" — xem
+    // app/helpers/journal-single-render.php.
+    require_once CHILD_THEME_SETUP_DIR . 'journal_single_meta.php';
+
 }, 20); // priority 20 — sau parent (10)
 
 // =============================================================================

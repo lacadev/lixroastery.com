@@ -55,6 +55,18 @@ require_once CHILD_APP_DIR . 'helpers/journal-cat-render.php';
 require_once CHILD_APP_DIR . 'helpers/product-grid-render.php';
 require_once CHILD_APP_DIR . 'helpers/journal-related-products-render.php';
 
+// ── Chi tiết bài Journal: mục lục tự động + bình chọn/chia sẻ/bài liên quan/tag ──
+require_once CHILD_APP_DIR . 'helpers/journal-single-render.php';
+
+// kk-star-ratings không có bản dịch tiếng Việt — legend "{count} {votes}"
+// cần hiện "31 bình chọn" giống XLIII.
+add_filter('ngettext_kk-star-ratings', function ($translation, $single, $plural) {
+    if ($single === 'vote' && currentLanguage() !== 'en') {
+        return 'bình chọn';
+    }
+    return $translation;
+}, 10, 3);
+
 // ── Newsletter ở footer: bảng lưu email + AJAX đăng ký (đồng bộ Google Sheet
 // / Mailchimp / Brevo nếu đã cấu hình) + trang admin xem/xuất CSV — xem
 // theme/footer.php ───────────────────────────────────────────────────────────

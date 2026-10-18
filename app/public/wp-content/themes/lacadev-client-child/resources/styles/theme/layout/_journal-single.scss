@@ -1,0 +1,243 @@
+@use "../abstracts/variables.scss" as *;
+@use "../abstracts/mixin.scss" as *;
+
+// Chi tiết bài Journal — mục lục + phần cuối bài (app/helpers/journal-single-render.php).
+// Số đo lấy đúng theo bản đã compile của XLIII (html 62.5% → 1.6rem = 16px).
+
+// Độ rộng cột = maxWidth của block đầu tiên trong bài (set qua --mw-* inline).
+%journal-column {
+  max-width: var(--mw-pc, 50%);
+  margin: 0 auto;
+
+  @include maxWidth($md) {
+    max-width: var(--mw-tablet, 100%);
+  }
+
+  @include maxWidth($sm) {
+    max-width: var(--mw-mobile, 100%);
+  }
+}
+
+// Header sticky đè lên đề mục khi bấm link trong mục lục.
+.single-post__content h2[id] {
+  scroll-margin-top: rem(110);
+}
+
+.journal-toc {
+  margin-top: rem(30);
+  margin-bottom: rem(30);
+  color: $darkColor;
+
+  &__maxwidth {
+    @extend %journal-column;
+  }
+
+  &__title {
+    margin: 0 0 rem(15);
+    font-size: rem(24);
+    font-weight: $semiBold;
+    line-height: 1.5;
+  }
+
+  &__list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  &__link {
+    color: inherit;
+    font-size: rem(16);
+    font-weight: $semiBold;
+    line-height: 1.8;
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+}
+
+.journal-footer {
+  margin-top: rem(30);
+  margin-bottom: rem(50);
+  color: $darkColor;
+  line-height: 1.8;
+
+  &__maxwidth {
+    @extend %journal-column;
+  }
+
+  &__row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    column-gap: rem(30);
+
+    &--share {
+      margin-top: rem(32);
+
+      @include maxWidth($md) {
+        row-gap: rem(20);
+      }
+    }
+  }
+
+  &__rating {
+    .kk-star-ratings {
+      margin: 0;
+    }
+
+    // Plugin dùng .75rem — XLIII base 10px nên thực tế là 7.5px.
+    .kksr-legend {
+      margin-right: rem(7.5);
+      margin-left: rem(7.5);
+    }
+  }
+
+  &__author {
+    font-size: rem(15);
+    text-align: right;
+
+    @include maxWidth($sm) {
+      margin-top: rem(30);
+      width: 100%;
+      text-align: left;
+    }
+  }
+
+  &__author-link {
+    color: inherit;
+    font-weight: $bold;
+    text-decoration: none;
+    border-bottom: 1px dashed $darkColor;
+  }
+
+  &__share {
+    display: flex;
+    align-items: center;
+    column-gap: rem(30);
+  }
+
+  &__share-label {
+    font-size: rem(16);
+    font-weight: $bold;
+  }
+
+  &__share-list {
+    margin: 0;
+    padding: 0;
+    display: flex;
+    column-gap: rem(30);
+    list-style: none;
+  }
+
+  &__share-link {
+    width: rem(30);
+    height: rem(30);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid $darkColor;
+    border-radius: 50%;
+    transition: background-color 0.25s linear;
+
+    svg {
+      width: rem(19.2);
+      height: rem(19.2);
+      fill: $darkColor;
+      transition: fill 0.25s linear;
+    }
+
+    &:hover,
+    &:focus-visible {
+      background-color: $darkColor;
+
+      svg {
+        fill: $lightColor;
+      }
+    }
+  }
+
+  &__gg-news {
+    display: block;
+    line-height: 0;
+
+    @include maxWidth($md) {
+      width: 100%;
+    }
+  }
+
+  &__gg-news-img {
+    width: 100%;
+    max-width: rem(180);
+    height: auto;
+  }
+
+  &__related {
+    margin-top: rem(50);
+  }
+
+  &__related-title {
+    margin: 0 0 rem(22);
+    padding-top: rem(50);
+    font-family: $mainFont;
+    font-size: rem(17);
+    font-weight: $medium;
+    line-height: 1.5;
+    text-transform: uppercase;
+    border-top: 1px solid $darkColor;
+
+    @include maxWidth($sm) {
+      padding-top: rem(30);
+    }
+  }
+
+  &__related-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  &__related-item {
+    margin-bottom: rem(15);
+    font-size: rem(16);
+  }
+
+  &__related-link {
+    color: inherit;
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+
+  &__tags {
+    margin: rem(30) 0 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: rem(20);
+    list-style: none;
+  }
+
+  &__tag {
+    padding: rem(3) rem(15);
+    display: block;
+    color: inherit;
+    font-size: rem(14);
+    text-decoration: none;
+    text-transform: uppercase;
+    border: 2px solid $darkColor;
+    border-radius: rem(30);
+    transition: background-color 0.25s linear, color 0.25s linear;
+
+    &:hover,
+    &:focus-visible {
+      background-color: $darkColor;
+      color: $lightColor;
+    }
+  }
+}
