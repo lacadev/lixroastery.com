@@ -164,6 +164,12 @@ export default function Edit( { attributes, setAttributes } ) {
 		heightMode,
 		minHeight,
 		fullBleed,
+		parallax,
+		parallaxStrength,
+		zoomIn,
+		textReveal,
+		scrollDarken,
+		scrollDarkenMax,
 	} = attributes;
 
 	const setByDevice = ( key ) => ( device, value ) =>
@@ -347,6 +353,90 @@ export default function Edit( { attributes, setAttributes } ) {
 							} )
 						}
 					/>
+				</PanelBody>
+
+				<PanelBody
+					title={ __( 'Hiệu ứng', 'laca' ) }
+					initialOpen={ false }
+				>
+					<p
+						style={ {
+							fontSize: '12px',
+							color: '#757575',
+							marginTop: 0,
+						} }
+					>
+						{ __(
+							'Bật được nhiều hiệu ứng cùng lúc. Chỉ chạy ngoài trang thật (editor đứng yên); tự tắt chuyển động nếu máy người xem bật "giảm chuyển động".',
+							'laca'
+						) }
+					</p>
+					<ToggleControl
+						label={ __( 'Ảnh zoom chậm khi tải', 'laca' ) }
+						help={ __(
+							'Ảnh hơi phóng to rồi thu dần về kích thước thật (~2,4 giây).',
+							'laca'
+						) }
+						checked={ !! zoomIn }
+						onChange={ ( v ) => setAttributes( { zoomIn: v } ) }
+					/>
+					<ToggleControl
+						label={ __( 'Chữ hiện lần lượt', 'laca' ) }
+						help={ __(
+							'Tiêu đề rồi mô tả trượt nhẹ từ dưới lên. Hero nằm dưới trang thì chạy khi cuộn tới.',
+							'laca'
+						) }
+						checked={ !! textReveal }
+						onChange={ ( v ) => setAttributes( { textReveal: v } ) }
+					/>
+					<ToggleControl
+						label={ __( 'Lớp phủ đậm dần khi cuộn', 'laca' ) }
+						help={ __(
+							'Cuộn qua hero thì ảnh tối dần, chuyển êm sang nội dung bên dưới.',
+							'laca'
+						) }
+						checked={ !! scrollDarken }
+						onChange={ ( v ) =>
+							setAttributes( { scrollDarken: v } )
+						}
+					/>
+					{ scrollDarken && (
+						<RangeControl
+							label={ __( 'Độ đậm tối đa (%)', 'laca' ) }
+							value={ scrollDarkenMax }
+							min={ 10 }
+							max={ 90 }
+							step={ 5 }
+							onChange={ ( v ) =>
+								setAttributes( { scrollDarkenMax: v } )
+							}
+						/>
+					) }
+					<ToggleControl
+						label={ __( 'Parallax khi cuộn', 'laca' ) }
+						help={ __(
+							'Ảnh trôi chậm hơn trang khi cuộn.',
+							'laca'
+						) }
+						checked={ !! parallax }
+						onChange={ ( v ) => setAttributes( { parallax: v } ) }
+					/>
+					{ parallax && (
+						<RangeControl
+							label={ __( 'Độ mạnh (%)', 'laca' ) }
+							help={ __(
+								'Càng cao ảnh trôi càng nhiều (ảnh được phóng to tương ứng để không lộ mép).',
+								'laca'
+							) }
+							value={ parallaxStrength }
+							min={ 10 }
+							max={ 50 }
+							step={ 5 }
+							onChange={ ( v ) =>
+								setAttributes( { parallaxStrength: v } )
+							}
+						/>
+					) }
 				</PanelBody>
 
 				<PanelBody

@@ -140,6 +140,30 @@
             "type": "string",
             "default": "180"
         },
+        "parallax": {
+            "type": "boolean",
+            "default": false
+        },
+        "parallaxStrength": {
+            "type": "number",
+            "default": 30
+        },
+        "zoomIn": {
+            "type": "boolean",
+            "default": false
+        },
+        "textReveal": {
+            "type": "boolean",
+            "default": false
+        },
+        "scrollDarken": {
+            "type": "boolean",
+            "default": false
+        },
+        "scrollDarkenMax": {
+            "type": "number",
+            "default": 60
+        },
         "__isPreview": {
             "type": "boolean",
             "default": false

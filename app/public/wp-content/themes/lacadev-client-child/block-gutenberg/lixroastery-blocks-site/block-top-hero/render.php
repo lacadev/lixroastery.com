@@ -52,6 +52,25 @@ if ($full_bleed) {
     $classes[] = 'block-top-hero--bleed';
 }
 
+// Hiệu ứng (JS: resources/scripts/theme/components/hero-effects.js).
+// Parallax: ảnh phóng to sẵn đúng phần sẽ dịch chuyển để không lộ mép khi trôi.
+$parallax_strength = 0;
+if (!empty($attributes['parallax']) && $hero_image_url) {
+    $parallax_strength = $percent('parallaxStrength', 30, 10, 50);
+    $classes[] = 'block-top-hero--parallax';
+}
+if (!empty($attributes['zoomIn']) && $hero_image_url) {
+    $classes[] = 'block-top-hero--zoom';
+}
+if (!empty($attributes['textReveal'])) {
+    $classes[] = 'block-top-hero--reveal';
+}
+$darken_max = 0;
+if (!empty($attributes['scrollDarken'])) {
+    $darken_max = $percent('scrollDarkenMax', 60, 10, 90);
+    $classes[] = 'block-top-hero--darken';
+}
+
 foreach ($tiers as $tier => $suffix) {
     $classes[] = 'block-top-hero--v-' . $tier . '-' . $pick('contentVertical' . $suffix, ['top', 'center', 'bottom'], $vertical_defaults[$tier]);
     $classes[] = 'block-top-hero--h-' . $tier . '-' . $pick('contentHorizontal' . $suffix, ['left', 'center', 'right'], 'center');
@@ -77,12 +96,18 @@ $wrapper_attrs = get_block_wrapper_attributes(['class' => implode(' ', $classes)
 $section_style = $height_mode === 'custom'
     ? 'min-height:' . $min_height . 'px;'
     : (!$hero_image_url ? 'min-height:400px;' : '');
+if ($parallax_strength) {
+    $section_style .= '--parallax-scale:' . (1 + $parallax_strength / 100) . ';';
+}
 ?>
-<section <?php echo $wrapper_attrs; ?> style="<?php echo esc_attr($section_style); ?>">
+<section <?php echo $wrapper_attrs; ?> style="<?php echo esc_attr($section_style); ?>"<?php if ($parallax_strength) : ?> data-parallax="<?php echo esc_attr($parallax_strength / 100); ?>"<?php endif; ?><?php if ($darken_max) : ?> data-darken="<?php echo esc_attr($darken_max / 100); ?>"<?php endif; ?>>
     <?php if ($hero_image_url) : ?>
         <img src="<?php echo $hero_image_url; ?>" alt="" class="block-top-hero__bg" loading="eager" />
     <?php endif; ?>
     <div class="block-top-hero__overlay" style="<?php echo esc_attr($overlay_style); ?>"></div>
+    <?php if ($darken_max) : ?>
+        <div class="block-top-hero__shade" aria-hidden="true"></div>
+    <?php endif; ?>
 
     <div class="block-top-hero__content" style="<?php echo esc_attr($content_vars); ?>">
         <?php if ($headline) : ?>

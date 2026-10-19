@@ -155,6 +155,80 @@ body:not(.home) main#main_content > .block-top-hero:first-child {
     }
 }
 
+// Parallax: JS chỉ ghi translateY, scale đặt sẵn ở đây để ảnh không "nhảy"
+// cỡ lúc JS chạy. Không áp trong editor (JS frontend không chạy ở đó).
+body:not(.editor-styles-wrapper) .block-top-hero--parallax .block-top-hero__bg {
+    transform: translate3d(0, var(--parallax-y, 0), 0) scale(var(--parallax-scale, 1));
+    will-change: transform;
+
+    @media (prefers-reduced-motion: reduce) {
+        transform: none;
+    }
+}
+
+// Zoom ảnh + chữ hiện lần lượt: dùng thuộc tính `scale`/`translate` riêng
+// (không phải `transform`) để cộng dồn được với transform của parallax và
+// translateY(-50%) của chữ đặt giữa. Chỉ chạy ở frontend, tôn trọng
+// "giảm chuyển động". is-effects-pending: hero chưa cuộn tới (JS gắn).
+@keyframes heroZoomIn {
+    from {
+        opacity: 0.6;
+        scale: 1.12;
+    }
+
+    to {
+        opacity: 1;
+        scale: 1;
+    }
+}
+
+@keyframes heroFadeUp {
+    from {
+        opacity: 0;
+        translate: 0 rem(24);
+    }
+
+    to {
+        opacity: 1;
+        translate: 0 0;
+    }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    body:not(.editor-styles-wrapper) .block-top-hero--zoom .block-top-hero__bg {
+        animation: heroZoomIn 2.4s cubic-bezier(0.22, 0.61, 0.36, 1) both;
+    }
+
+    body:not(.editor-styles-wrapper) .block-top-hero--reveal .block-top-hero__headline,
+    body:not(.editor-styles-wrapper) .block-top-hero--reveal .block-top-hero__desc {
+        animation: heroFadeUp 0.9s ease-out 0.3s both;
+    }
+
+    body:not(.editor-styles-wrapper) .block-top-hero--reveal .block-top-hero__desc {
+        animation-delay: 0.55s;
+    }
+
+    body:not(.editor-styles-wrapper) .block-top-hero.is-effects-pending .block-top-hero__bg,
+    body:not(.editor-styles-wrapper) .block-top-hero.is-effects-pending .block-top-hero__headline,
+    body:not(.editor-styles-wrapper) .block-top-hero.is-effects-pending .block-top-hero__desc {
+        animation-name: none;
+    }
+
+    body:not(.editor-styles-wrapper) .block-top-hero--reveal.is-effects-pending .block-top-hero__headline,
+    body:not(.editor-styles-wrapper) .block-top-hero--reveal.is-effects-pending .block-top-hero__desc {
+        opacity: 0;
+    }
+}
+
+// Lớp phủ đậm dần khi cuộn: JS ghi --shade-opacity (0 → độ đậm tối đa).
+.block-top-hero__shade {
+    position: absolute;
+    inset: 0;
+    background-color: $darkColor;
+    opacity: var(--shade-opacity, 0);
+    pointer-events: none;
+}
+
 // Tràn viền: thoát khỏi padding của container/container-fluid bao ngoài, sát
 // 2 mép màn hình. Chỉ đúng khi khối cha nằm giữa màn hình (container luôn vậy).
 body:not(.wp-admin):not(.editor-styles-wrapper) .block-top-hero--bleed {
