@@ -51,6 +51,95 @@
             "type": "number",
             "default": 560
         },
+        "fullBleed": {
+            "type": "boolean",
+            "default": false
+        },
+        "textWidth": {
+            "type": "number"
+        },
+        "textWidthTablet": {
+            "type": "number"
+        },
+        "textWidthMobile": {
+            "type": "number"
+        },
+        "contentVertical": {
+            "type": "string",
+            "default": "bottom"
+        },
+        "contentVerticalTablet": {
+            "type": "string",
+            "default": "center"
+        },
+        "contentVerticalMobile": {
+            "type": "string",
+            "default": "center"
+        },
+        "contentHorizontal": {
+            "type": "string",
+            "default": "center"
+        },
+        "contentHorizontalTablet": {
+            "type": "string",
+            "default": "center"
+        },
+        "contentHorizontalMobile": {
+            "type": "string",
+            "default": "center"
+        },
+        "offsetY": {
+            "type": "number",
+            "default": 20
+        },
+        "offsetYTablet": {
+            "type": "number",
+            "default": 10
+        },
+        "offsetYMobile": {
+            "type": "number",
+            "default": 10
+        },
+        "offsetX": {
+            "type": "number",
+            "default": 5
+        },
+        "offsetXTablet": {
+            "type": "number",
+            "default": 5
+        },
+        "offsetXMobile": {
+            "type": "number",
+            "default": 5
+        },
+        "textAlign": {
+            "type": "string",
+            "default": "center"
+        },
+        "textAlignTablet": {
+            "type": "string",
+            "default": "center"
+        },
+        "textAlignMobile": {
+            "type": "string",
+            "default": "center"
+        },
+        "overlayType": {
+            "type": "string",
+            "default": "solid"
+        },
+        "overlayColor2": {
+            "type": "string",
+            "default": "#000000"
+        },
+        "overlayOpacity2": {
+            "type": "number",
+            "default": 0
+        },
+        "overlayDirection": {
+            "type": "string",
+            "default": "180"
+        },
         "__isPreview": {
             "type": "boolean",
             "default": false
