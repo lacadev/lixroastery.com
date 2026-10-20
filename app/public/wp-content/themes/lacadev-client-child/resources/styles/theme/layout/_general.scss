@@ -85,6 +85,15 @@ p a,
 }
 
 // Typography heading đồng bộ toàn site (mobile → desktop)
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  text-transform: uppercase;
+}
+
 h1 {
   @include resFont(rem(32), rem(48));
 }

@@ -47,7 +47,7 @@
     // trở xuống, khớp đúng breakpoint mà __grid tự đổi số cột bên trên.
     &__number {
         font-family: $subFont;
-        font-weight: $bold;
+        font-weight: $regular;
         line-height: 1;
         margin-bottom: rem(20);
         text-align: var(--stats-title-align-pc, left);
@@ -65,7 +65,7 @@
 
     &__label {
         font-family: $subFont;
-        font-weight: $medium;
+        font-weight: $regular;
         text-transform: uppercase;
         margin-bottom: rem(20);
         text-align: var(--stats-title-align-pc, left);
