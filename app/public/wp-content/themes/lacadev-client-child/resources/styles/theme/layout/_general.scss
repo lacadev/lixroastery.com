@@ -83,3 +83,21 @@ p a,
   text-underline-position: under;
   text-decoration-color: $primaryColor !important;
 }
+
+// Typography heading đồng bộ toàn site (mobile → desktop)
+h1 {
+  @include resFont(rem(32), rem(48));
+}
+
+h2 {
+  @include resFont(rem(20), rem(24));
+}
+
+h3 {
+  @include resFont(rem(16), rem(16));
+}
+
+// Core WP mặc định separator dày 2px, site dùng 1px
+.wp-block-separator:not(.is-style-dots) {
+  border-top-width: 1px;
+}

@@ -46,14 +46,27 @@
         margin: 0 0 rem(80);
     }
 
+    // Cỡ chữ: --ctg-*-{pc|tablet|mobile} chỉ có khi admin chỉnh (render.php);
+    // fallback = đúng các cỡ resFont() cũ (max → giữa ở $lg → min ở $sm).
     &__title {
         font-family: $subFont;
         font-weight: $regular;
         text-transform: uppercase;
         letter-spacing: 0.02em;
         margin: 0 0 rem(20);
+        font-size: var(--ctg-title-pc, #{rem(30)});
 
-        @include resFont(rem(18), rem(30));
+        @include maxWidth($lg) {
+            font-size: var(--ctg-title-pc, #{rem(24)});
+        }
+
+        @include maxWidth($md) {
+            font-size: var(--ctg-title-tablet, #{rem(24)});
+        }
+
+        @include maxWidth($sm) {
+            font-size: var(--ctg-title-mobile, #{rem(18)});
+        }
     }
 
     &__desc {
@@ -61,7 +74,18 @@
         color: $darkColor;
         max-width: 70%;
         margin: 0 auto;
+        font-size: var(--ctg-desc-pc, #{rem(20)});
 
-        @include resFont(rem(16), rem(20));
+        @include maxWidth($lg) {
+            font-size: var(--ctg-desc-pc, #{rem(18)});
+        }
+
+        @include maxWidth($md) {
+            font-size: var(--ctg-desc-tablet, #{rem(18)});
+        }
+
+        @include maxWidth($sm) {
+            font-size: var(--ctg-desc-mobile, #{rem(16)});
+        }
     }
 }

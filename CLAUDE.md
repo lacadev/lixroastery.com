@@ -4,6 +4,40 @@
 
 ---
 
+## 🚧 0. SAFETY RULES (ƯU TIÊN CAO NHẤT — áp dụng cho cả Claude Code & Antigravity)
+
+### Phạm vi được phép sửa
+* Chỉ sửa file trong 2 theme của project này: `app/public/wp-content/themes/lacadev-client` và `app/public/wp-content/themes/lacadev-client-child`.
+* **Không** sửa WordPress core (`wp-admin/`, `wp-includes/`, file gốc `wp-*.php`), `wp-config.php`, `.htaccess`, thư mục `plugins/` và `uploads/` — trừ khi người dùng yêu cầu rõ ràng.
+* **Không** đụng đến project khác (vd. `../lacadev-client`, `../nhakhoathienphuoc`, `../phucdainam`) hay thư mục cha. Nếu sửa ở đây mà cần đồng bộ sang project khác → chỉ báo lại cho người dùng, không tự sửa.
+* Không sửa tay file build trong `dist/` — chỉ để lệnh build sinh ra.
+
+### Không phá huỷ dữ liệu
+* Tuyệt đối không xoá file/thư mục (`rm`, `rm -rf`, `unlink`...). Cần bỏ code thì sửa nội dung hoặc đề xuất cho người dùng tự xoá. (Lệnh build tự dọn/ghi đè `dist/` thì được.)
+* Git: không chạy `reset --hard`, `clean`, `checkout -- .`, `restore .`, `stash drop`, `push --force`, `rebase`, đổi branch khi còn thay đổi chưa commit. Không `commit`/`push` khi chưa được yêu cầu.
+* Database: không chạy `wp db reset/drop/import`, `wp search-replace`, `DROP/TRUNCATE/DELETE` hay xoá post/option/user khi chưa hỏi người dùng. Đọc dữ liệu (`SELECT`, `wp ... list/get`) thì được.
+* Không cài/gỡ/nâng cấp package (`yarn add/remove/upgrade`, `composer require/update`) hay plugin khi chưa hỏi. `yarn install` / `composer install` theo lockfile có sẵn thì được.
+
+### Đọc trước khi sửa
+* Luôn đọc file (và chỗ gọi tới hàm/class liên quan) trước khi sửa. Sửa tối thiểu, đúng chỗ — không reformat cả file, không đổi tên/di chuyển file ngoài phạm vi task.
+* Không ghi đè cả file đang có bằng nội dung mới nếu chỉ cần sửa một đoạn.
+* Không đưa secret/API key/mật khẩu vào code hoặc commit.
+
+### Lệnh build/test
+* Chỉ chạy lệnh build/lint/test bên trong thư mục theme của project này (`yarn build`, `yarn build:blocks`, `yarn lint`...). Không chạy lệnh ở thư mục cha hay project khác.
+* Không bật watcher/dev server chạy nền (`yarn dev`, `yarn dev:blocks`) mà không tắt khi xong, tránh 2 agent cùng build đè nhau.
+* Sau khi sửa PHP: chạy `php -l <file>`; sau khi sửa block/JS/SCSS: chạy `yarn lint` + `yarn build:blocks`. Lỗi thì báo đúng output, không giấu.
+
+### Phối hợp Claude Code ↔ Antigravity
+* Hai agent có thể làm việc cùng lúc: trước khi sửa một file, kiểm tra agent kia có đang sửa file đó không (git diff / tiến độ của agent kia). Không sửa file mà agent kia đang nhận.
+* Không hoàn tác (revert) thay đổi chưa commit mà mình không tạo ra — hỏi người dùng trước.
+* Khi bắt đầu/kết thúc một phần việc, báo lại danh sách file đã sửa.
+
+### Khi không chắc
+* Thao tác khó hoàn tác, ảnh hưởng production/dữ liệu thật, hoặc nằm ngoài phạm vi trên → **dừng lại và hỏi người dùng**.
+
+---
+
 ## 📌 1. KIẾN TRÚC & QUY TẮC FILE (WPEmerge MVC / PSR-4 `App\`)
 * **Parent Theme (`lacadev-client`)**: Framework core, bảo mật, logs, theme updater, base setup. Mọi sửa đổi core code PHẢI làm ở Parent theme trước.
 * **Child Theme (`lacadev-client-child`)**: CPTs, Carbon Fields, Custom Gutenberg Blocks, Template Overrides, Child CSS/JS.

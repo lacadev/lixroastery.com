@@ -32,6 +32,16 @@ const CONTENT_ALIGN_KEYS = {
 	mobile: 'contentAlignMobile',
 };
 
+const DEVICE_SUFFIX = { pc: '', tablet: 'Tablet', mobile: 'Mobile' };
+const FONT_SIZE_FIELDS = [ 'title', 'desc' ];
+
+// Cỡ đang hiển thị khi chưa chỉnh (fallback trong style.scss) — chỉ để làm
+// vị trí ban đầu cho thanh trượt, không lưu.
+const FONT_SIZE_DEFAULTS = {
+	title: { pc: 30, tablet: 24, mobile: 18 },
+	desc: { pc: 20, tablet: 18, mobile: 16 },
+};
+
 export default function Edit( { attributes, setAttributes } ) {
 	const isPreview = useInserterPreview( attributes );
 	const blockProps = useBlockProps( { className: 'container-fluid' } );
@@ -46,6 +56,17 @@ export default function Edit( { attributes, setAttributes } ) {
 		contentAlignMobile,
 		items,
 	} = attributes;
+
+	// Cỡ chữ: chỉ set biến khi đã chỉnh — giống render.php.
+	const gridStyle = { '--ctg-columns': columns };
+	FONT_SIZE_FIELDS.forEach( ( key ) => {
+		Object.entries( DEVICE_SUFFIX ).forEach( ( [ tier, suffix ] ) => {
+			const value = attributes[ `${ key }FontSize${ suffix }` ];
+			if ( typeof value === 'number' ) {
+				gridStyle[ `--ctg-${ key }-${ tier }` ] = `${ value }px`;
+			}
+		} );
+	} );
 
 	const maxWidthStyle = {
 		'--mw-pc': `${ maxWidth }%`,
@@ -171,6 +192,62 @@ export default function Edit( { attributes, setAttributes } ) {
 						{ __( '+ Thêm mục', 'laca' ) }
 					</Button>
 				</PanelBody>
+
+				<PanelBody
+					title={ __( 'Cỡ chữ', 'laca' ) }
+					initialOpen={ false }
+				>
+					{ [
+						[ 'title', __( 'Cỡ chữ tiêu đề (px)', 'laca' ) ],
+						[ 'desc', __( 'Cỡ chữ mô tả (px)', 'laca' ) ],
+					].map( ( [ key, label ] ) => (
+						<ResponsiveRangeControl
+							key={ key }
+							label={ label }
+							help={ __(
+								'Chưa chỉnh thì dùng cỡ mặc định của block (tự nhỏ dần theo màn hình).',
+								'laca'
+							) }
+							min={ 10 }
+							max={ 120 }
+							valuesByDevice={ Object.fromEntries(
+								Object.entries( DEVICE_SUFFIX ).map(
+									( [ tier, suffix ] ) => [
+										tier,
+										attributes[
+											`${ key }FontSize${ suffix }`
+										] ?? FONT_SIZE_DEFAULTS[ key ][ tier ],
+									]
+								)
+							) }
+							onChange={ ( device, v ) =>
+								setAttributes( {
+									[ `${ key }FontSize${ DEVICE_SUFFIX[ device ] }` ]:
+										v,
+								} )
+							}
+						/>
+					) ) }
+					<Button
+						variant="secondary"
+						onClick={ () =>
+							setAttributes(
+								Object.fromEntries(
+									FONT_SIZE_FIELDS.flatMap( ( key ) =>
+										Object.values( DEVICE_SUFFIX ).map(
+											( suffix ) => [
+												`${ key }FontSize${ suffix }`,
+												undefined,
+											]
+										)
+									)
+								)
+							)
+						}
+					>
+						{ __( 'Về cỡ mặc định', 'laca' ) }
+					</Button>
+				</PanelBody>
 			</InspectorControls>
 
 			<section { ...blockProps }>
@@ -180,7 +257,7 @@ export default function Edit( { attributes, setAttributes } ) {
 				>
 					<div
 						className="block-content-grid__grid"
-						style={ { '--ctg-columns': columns } }
+						style={ gridStyle }
 					>
 						{ items.map( ( item, index ) => (
 							<div

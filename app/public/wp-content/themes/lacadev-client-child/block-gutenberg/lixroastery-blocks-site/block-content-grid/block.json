@@ -41,6 +41,24 @@
             "type": "string",
             "default": "center"
         },
+        "titleFontSize": {
+            "type": "number"
+        },
+        "titleFontSizeTablet": {
+            "type": "number"
+        },
+        "titleFontSizeMobile": {
+            "type": "number"
+        },
+        "descFontSize": {
+            "type": "number"
+        },
+        "descFontSizeTablet": {
+            "type": "number"
+        },
+        "descFontSizeMobile": {
+            "type": "number"
+        },
         "items": {
             "type": "array",
             "translatable": true,

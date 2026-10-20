@@ -23,13 +23,25 @@ if (empty($items)) {
     return;
 }
 
+// Cỡ chữ (px) theo từng màn hình — chỉ set biến khi admin đã chỉnh, bỏ trống
+// thì CSS giữ cỡ mặc định của block (xem style.scss).
+$grid_style = '--ctg-columns:' . $columns . ';';
+foreach (['title', 'desc'] as $key) {
+    foreach (['pc' => '', 'tablet' => 'Tablet', 'mobile' => 'Mobile'] as $tier => $suffix) {
+        $attr = $key . 'FontSize' . $suffix;
+        if (isset($attributes[$attr]) && is_numeric($attributes[$attr])) {
+            $grid_style .= '--ctg-' . $key . '-' . $tier . ':' . max(10, min(120, (int) $attributes[$attr])) . 'px;';
+        }
+    }
+}
+
 // Section ngoài LUÔN container-fluid — độ rộng NỘI DUNG điều chỉnh riêng qua
 // maxWidth (%) + contentAlign, giống hệt block Container.
 $wrapper_attrs = get_block_wrapper_attributes(['class' => 'block-content-grid container-fluid']);
 ?>
 <section <?php echo $wrapper_attrs; ?>>
     <div class="block-content-grid__maxwidth" style="--mw-pc:<?php echo esc_attr($max_width); ?>%;--mw-tablet:<?php echo esc_attr($max_width_tablet); ?>%;--mw-mobile:<?php echo esc_attr($max_width_mobile); ?>%;--align-margin-pc:<?php echo esc_attr($margin_map[$content_align]); ?>;--align-margin-tablet:<?php echo esc_attr($margin_map[$content_align_tablet]); ?>;--align-margin-mobile:<?php echo esc_attr($margin_map[$content_align_mobile]); ?>;">
-        <div class="block-content-grid__grid" style="--ctg-columns: <?php echo esc_attr($columns); ?>;">
+        <div class="block-content-grid__grid" style="<?php echo esc_attr($grid_style); ?>">
             <?php foreach ($items as $item) :
                 $title = esc_html($item['title'] ?? '');
                 // desc cho phép format cơ bản (in đậm/nghiêng…) qua RichText.
