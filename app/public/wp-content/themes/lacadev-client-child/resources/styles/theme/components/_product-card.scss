@@ -46,11 +46,12 @@
 .block-product-grid__tags {
     display: flex;
     align-items: center;
-    font-weight: $medium;
+    font-family: $subFont;
+    font-weight: $light;
     gap: 0.8em;
     text-transform: uppercase;
 
-    @include resFont(rem(14), rem(16));
+    @include resFont(rem(12), rem(13));
 }
 
 // Dấu phân cách giữa 2 tag (vd "Cà Phê Specialty | Aramosa") — vẽ bằng
@@ -85,5 +86,5 @@
     margin: 0;
     font-weight: $regular;
 
-    @include resFont(rem(14), rem(16));
+    @include resFont(rem(13), rem(15));
 }

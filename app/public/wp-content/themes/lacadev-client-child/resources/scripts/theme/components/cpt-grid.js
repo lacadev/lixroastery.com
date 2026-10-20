@@ -114,6 +114,52 @@ function initCptGrid( root ) {
 		}
 	}
 
+	// ── Nút Prev / Next tùy chọn (vd: trang Shop) ─────────────────────
+	const shopContainer = root.closest( '.shop-archive' );
+	const prevBtn =
+		root.querySelector( '[data-cpt-grid-prev]' ) ||
+		( shopContainer
+			? shopContainer.querySelector( '[data-cpt-grid-prev]' )
+			: null );
+	const nextBtn =
+		root.querySelector( '[data-cpt-grid-next]' ) ||
+		( shopContainer
+			? shopContainer.querySelector( '[data-cpt-grid-next]' )
+			: null );
+
+	function updateNavButtons() {
+		if ( prevBtn ) {
+			prevBtn.disabled = currentPage <= 1;
+		}
+		if ( nextBtn ) {
+			nextBtn.disabled = currentPage >= maxPages;
+		}
+	}
+
+	// Chỉ đổi currentPage khi AJAX trả dữ liệu — request lỗi thì giữ trang cũ,
+	// tránh lệch số trang với lưới đang hiển thị.
+	function goToPage( page ) {
+		if ( isLoading || page < 1 || page > maxPages ) {
+			return;
+		}
+		fetchGrid( page, 'replace' ).then( ( data ) => {
+			if ( ! data ) {
+				return;
+			}
+			currentPage = page;
+			replaceGrid( data, true );
+			updateNavButtons();
+		} );
+	}
+
+	if ( prevBtn ) {
+		prevBtn.addEventListener( 'click', () => goToPage( currentPage - 1 ) );
+	}
+
+	if ( nextBtn ) {
+		nextBtn.addEventListener( 'click', () => goToPage( currentPage + 1 ) );
+	}
+
 	// ── Tabs lọc theo taxonomy ─────────────────────────────────────────
 	const tabs = root.querySelectorAll( '.block-cpt-grid__tab' );
 	tabs.forEach( ( tab ) => {
@@ -132,9 +178,10 @@ function initCptGrid( root ) {
 					detail: { tab, termSlug: activeTermSlug },
 				} )
 			);
-			fetchGrid( 1, 'replace' ).then( ( data ) =>
-				replaceGrid( data, true )
-			);
+			fetchGrid( 1, 'replace' ).then( ( data ) => {
+				replaceGrid( data, true );
+				updateNavButtons();
+			} );
 		} );
 	} );
 
@@ -158,9 +205,10 @@ function initCptGrid( root ) {
 				return;
 			}
 			currentPage = page;
-			fetchGrid( page, 'replace' ).then( ( data ) =>
-				replaceGrid( data, true )
-			);
+			fetchGrid( page, 'replace' ).then( ( data ) => {
+				replaceGrid( data, true );
+				updateNavButtons();
+			} );
 		} );
 	}
 

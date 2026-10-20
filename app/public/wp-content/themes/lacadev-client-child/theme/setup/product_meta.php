@@ -95,6 +95,9 @@ add_action('carbon_fields_register_fields', function () {
             Field::make('html', 'producer_intro', '')
                 ->set_html('<p style="font-size:13px;color:#666;margin:0 0 12px;">Hiện ở mục <strong>PRODUCER</strong> trên trang chi tiết sản phẩm — câu chuyện nhà sản xuất, số liệu hợp tác và bản đồ trang trại.</p>'),
 
+            Field::make('text', 'producer_name', __('Tên nhà sản xuất', 'laca'))
+                ->set_attribute('placeholder', __('VD: Café Granja La Esperanza', 'laca')),
+
             Field::make('textarea', 'producer_story', __('Giới thiệu nhà sản xuất', 'laca'))
                 ->set_attribute('placeholder', __('VD: Café Granja La Esperanza, a brand specializing in producing and commercializing high-quality specialty coffees...', 'laca')),
 
@@ -107,6 +110,8 @@ add_action('carbon_fields_register_fields', function () {
             Field::make('text', 'annual_volume', __('Sản lượng theo năm', 'laca'))
                 ->set_width(33.33)
                 ->set_attribute('placeholder', '~1 ton/year'),
+            Field::make('text', 'annual_volume_note', __('Ghi chú sản lượng (vd: For the year 2025)', 'laca'))
+                ->set_attribute('placeholder', 'For the year 2025'),
 
             Field::make('textarea', 'google_maps_embed', __('Google Maps — link nhúng (embed src)', 'laca'))
                 ->set_help_text(__('Vào Google Maps → Chia sẻ → Nhúng bản đồ → copy đường dẫn trong src="...". Chỉ dán đúng đường dẫn đó, không dán cả đoạn mã iframe.', 'laca'))
@@ -118,7 +123,9 @@ add_action('carbon_fields_register_fields', function () {
             Field::make('html', 'flavor_intro', '')
                 ->set_html('<p style="font-size:13px;color:#666;margin:0 0 12px;">Hiện ở mục <strong>FLAVOR PROFILE</strong> trên trang chi tiết sản phẩm.</p>'),
 
-            Field::make('textarea', 'flavor_profile', __('Mô tả hương vị', 'laca'))
+            Field::make('rich_text', 'flavor_profile_content', __('Nội dung Flavor Profile', 'laca'))
+                ->set_attribute('placeholder', __('VD: Sudan Rume #00313 by CGLE...', 'laca')),
+            Field::make('textarea', 'flavor_profile', __('Mô tả hương vị ngắn (hiện ở thông số đầu trang)', 'laca'))
                 ->set_attribute('placeholder', __('VD: Sudan Rume #00313 by CGLE remains a testament to the botanical preservation...', 'laca')),
             Field::make('text', 'sca_coffee_score', __('SCA coffee score | Điểm SCA', 'laca'))
                 ->set_width(33.33)
@@ -147,6 +154,9 @@ add_action('carbon_fields_register_fields', function () {
                 ->set_attribute('placeholder', 'Roasting profile'),
             Field::make('image', 'img_roasting_profile', __('Image | Hình ảnh', 'laca'))
                 ->set_width(30),
+
+            Field::make('textarea', 'roasting_story', __('Mô tả Roasting Profile', 'laca'))
+                ->set_attribute('placeholder', __('Mô tả quá trình và triết lý rang của sản phẩm...', 'laca')),
 
             Field::make('text', 'roast_machine', __('Roast Machine', 'laca'))
                 ->set_width(33.33)

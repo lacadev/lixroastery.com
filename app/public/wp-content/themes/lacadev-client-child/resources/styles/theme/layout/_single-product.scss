@@ -1,74 +1,299 @@
-// $primaryColor/$lightColor/$darkColor/$mainFont/$subFont được định nghĩa ở
-// child theme (không còn ở parent) — @use theo đường dẫn tương đối, không
-// phải @parent/...
 @use "../abstracts/variables" as *;
 @use "../abstracts/mixin" as *;
 
 .single-product-page {
-    &__nav {
-        position: sticky;
-        top: 0;
-        z-index: 20;
-        background: #fff;
-        text-align: center;
-        padding: 1.5rem 1rem;
-        font-size: rem(12);
-        letter-spacing: 0.05em;
-        border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+    padding-top: rem(40);
+    padding-bottom: rem(100);
 
-        a {
-            color: rgba(0, 0, 0, 0.45);
-            text-decoration: none;
-            text-transform: uppercase;
-            transition: color 0.2s ease;
+    // ── Hero ─────────────────────────────────────────────────────────
+    &__hero {
+        display: grid;
+        grid-template-columns: minmax(0, 818fr) minmax(0, 738fr);
+        gap: rem(60);
+        align-items: start;
+        padding-bottom: rem(60);
 
-            &.is-active,
-            &:hover {
-                color: $darkColor;
+        @include maxWidth($md) {
+            grid-template-columns: 1fr;
+            gap: rem(30);
+        }
+    }
+
+    &__gallery {
+        position: relative;
+        width: 100%;
+
+        .woocommerce-product-gallery {
+            opacity: 1 !important;
+        }
+
+        .woocommerce-product-gallery__image {
+            aspect-ratio: 1 / 1;
+            overflow: hidden;
+
+            img {
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+                display: block;
             }
         }
 
-        span {
-            margin: 0 0.6em;
-            color: rgba(0, 0, 0, 0.25);
-        }
+        .flex-control-thumbs {
+            display: flex;
+            gap: rem(10);
+            margin-top: rem(15);
+            padding: 0;
+            list-style: none;
 
-        @include maxWidth($sm) {
-            overflow-x: auto;
-            white-space: nowrap;
-            text-align: left;
+            li {
+                width: rem(80);
+                aspect-ratio: 1 / 1;
+                overflow: hidden;
+                cursor: pointer;
 
-            span {
-                margin: 0 0.4em;
+                img {
+                    width: 100%;
+                    height: 100%;
+                    object-fit: cover;
+                    display: block;
+                }
             }
         }
     }
 
-    &__hero {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 3rem;
-        padding: 3rem 0;
+    &__summary {
+        width: 100%;
 
-        @include maxWidth($md) {
-            grid-template-columns: 1fr;
-            gap: 1.5rem;
+        .product_title {
+            font-family: $subFont;
+            font-weight: $regular;
+            text-transform: uppercase;
+            color: $darkColor;
+            margin: rem(30) 0 0;
+            line-height: 1.2;
+
+            @include resFont(rem(26), rem(40));
+        }
+
+        .price {
+            font-family: $subFont;
+            font-weight: $regular;
+            color: $darkColor;
+            margin: rem(30) 0 0;
+            display: block;
+
+            del {
+                opacity: 0.5;
+                font-size: 0.75em;
+                margin-right: 0.4em;
+            }
+
+            ins {
+                text-decoration: none;
+            }
+
+            @include resFont(rem(26), rem(40));
+        }
+
+        .woocommerce-product-details__short-description {
+            margin-top: rem(25);
+            font-size: rem(20);
+            line-height: 1.7;
+            color: $darkColor;
+
+            @include maxWidth($sm) {
+                font-size: rem(16);
+            }
+        }
+
+        .cart {
+            margin-top: rem(45);
+
+            .quantity {
+                display: none !important;
+            }
+
+            .variations {
+                width: 100%;
+                margin-bottom: rem(20);
+
+                td {
+                    padding: rem(8) 0;
+                }
+
+                select {
+                    width: 100%;
+                    padding: rem(10);
+                    border: 1px solid rgba($darkColor, 0.2);
+                    border-radius: 4px;
+                    font-size: rem(16);
+                }
+            }
+
+            .single_add_to_cart_button {
+                width: 100%;
+                height: rem(50);
+                background-color: $primaryColor;
+                border-radius: 5px;
+                border: none;
+                color: $lightColor;
+                font-family: $mainFont;
+                font-size: rem(20);
+                text-transform: uppercase;
+                cursor: pointer;
+                transition: filter 0.2s ease, opacity 0.2s ease;
+
+                &:hover {
+                    filter: brightness(0.9);
+                }
+            }
         }
     }
 
     &__subname {
         font-family: $subFont;
+        font-weight: $medium;
         text-transform: uppercase;
         letter-spacing: 0.05em;
-        color: rgba(0, 0, 0, 0.5);
-        margin: 0 0 0.5rem;
+        line-height: 1.1;
+        color: $darkColor;
+        margin: 0;
+
+        @include resFont(rem(34), rem(60));
     }
 
-    &__section {
-        padding: 4rem 0;
+    // ── Spec List (Hero & Traceability) ───────────────────────────────
+    &__info-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
 
-        &--dark-media {
-            padding-bottom: 0;
+        &--hero {
+            margin-top: rem(60);
+            display: flex;
+            flex-direction: column;
+            gap: rem(25);
+        }
+
+        &--traceability,
+        &--roasting {
+            max-width: rem(1000);
+            margin: rem(60) auto 0;
+            display: flex;
+            flex-direction: column;
+            gap: rem(20);
+        }
+
+        li {
+            display: flex;
+            align-items: baseline;
+            font-size: rem(20);
+            line-height: 1.4;
+            color: $darkColor;
+
+            .single-product-page__spec-label {
+                width: rem(197);
+                flex-shrink: 0;
+                font-weight: $medium;
+                color: $darkColor;
+
+                @include maxWidth($sm) {
+                    width: 40%;
+                }
+            }
+
+            .single-product-page__spec-value {
+                flex: 1;
+                font-weight: $medium;
+                color: $darkColor;
+
+                &::before {
+                    content: ": ";
+                }
+            }
+
+            @include resFont(rem(15), rem(20));
+        }
+    }
+
+    // ── Tabs Nav ─────────────────────────────────────────────────────
+    &__tabs {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-wrap: wrap;
+        margin: rem(200) auto;
+        padding-bottom: rem(10);
+        gap: 0;
+
+        @include maxWidth($md) {
+            margin: rem(80) auto rem(60);
+        }
+
+        @include maxWidth($sm) {
+            margin: rem(60) auto rem(40);
+            flex-wrap: nowrap;
+            overflow-x: auto;
+            white-space: nowrap;
+            justify-content: flex-start;
+            padding-bottom: rem(4);
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+
+            &::-webkit-scrollbar {
+                display: none;
+            }
+        }
+    }
+
+    &__tab {
+        background: none;
+        border: 0;
+        padding: 0 rem(20);
+        font-family: $subFont;
+        font-weight: $regular;
+        font-size: rem(20);
+        text-transform: uppercase;
+        color: rgba($darkColor, 0.43);
+        cursor: pointer;
+        position: relative;
+        transition: color 0.2s ease;
+
+        &::before {
+            content: "";
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 1px;
+            height: 60%;
+            background-color: rgba($darkColor, 0.43);
+        }
+
+        &:first-child::before {
+            display: none;
+        }
+
+        &:hover,
+        &.is-active,
+        &[aria-selected="true"] {
+            color: $darkColor;
+        }
+
+        @include maxWidth($sm) {
+            padding: 0 rem(12);
+            font-size: rem(16);
+            flex-shrink: 0;
+        }
+    }
+
+    // ── Panel Base ───────────────────────────────────────────────────
+    &__panel {
+        display: block;
+
+        &[hidden] {
+            display: none !important;
         }
     }
 
@@ -77,40 +302,111 @@
         font-weight: $regular;
         text-transform: uppercase;
         text-align: center;
-        margin: 0 0 1.5rem;
+        color: $darkColor;
+        margin: 0 0 rem(30);
 
-        @include resFont(rem(20), rem(32));
+        @include resFont(rem(26), rem(40));
     }
 
-    &__desc,
-    &__sca {
-        max-width: 640px;
-        margin: 0 auto 1.5rem;
+    &__subheading {
+        font-family: $subFont;
+        font-weight: $regular;
+        font-size: rem(20);
+        text-transform: uppercase;
         text-align: center;
-        color: rgba(0, 0, 0, 0.65);
+        color: $darkColor;
+        margin: rem(50) 0 rem(30);
+    }
+
+    &__desc {
+        max-width: rem(1000);
+        margin: rem(100) auto 0;
+        font-size: rem(20);
         line-height: 1.8;
+        text-align: justify;
+        color: $darkColor;
 
-        @include resFont(rem(14), rem(16));
+        h2,
+        h3,
+        h4 {
+            font-family: $subFont;
+            font-weight: $regular;
+            font-size: rem(20);
+            text-transform: uppercase;
+            text-align: center;
+            color: $darkColor;
+            margin: rem(50) 0 rem(30);
+        }
+
+        @include resFont(rem(15), rem(20));
+
+        @include maxWidth($sm) {
+            margin-top: rem(30);
+            text-align: left;
+        }
     }
 
-    &__stats {
-        display: flex;
-        justify-content: center;
-        gap: 3rem;
+    &__rich-text {
+        color: $darkColor;
+    }
+
+    // How to use: subheading đứng trước rich text → khoảng 100px dồn lên khối
+    // cha, tránh cộng dồn margin của subheading + __desc thành ~150px.
+    &__how-to-use {
+        max-width: rem(1000);
+        margin: rem(100) auto 0;
+
+        .single-product-page__subheading {
+            margin-top: 0;
+        }
+
+        .single-product-page__desc {
+            margin-top: rem(30);
+        }
+
+        @include maxWidth($sm) {
+            margin-top: rem(30);
+        }
+    }
+
+    &__water-quality {
+        margin-top: rem(100);
+
+        .single-product-page__subheading {
+            margin-top: 0;
+        }
+
+        // Design: tiêu đề nhỏ → đường kẻ lưới ~66px, ngắn hơn lưới Flavor.
+        .single-product-page__spec-grid {
+            margin-top: rem(60);
+        }
+
+        @include maxWidth($sm) {
+            margin-top: rem(50);
+        }
+    }
+
+    &__sca {
         text-align: center;
-        margin-bottom: 2.5rem;
-        flex-wrap: wrap;
+        font-family: $subFont;
+        font-weight: $regular;
+        font-size: rem(16);
+        color: rgba($darkColor, 0.7);
+        margin-top: rem(20);
+    }
 
-        &--4col {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 1.5rem;
-            border-top: 1px solid rgba(0, 0, 0, 0.12);
-            padding-top: 1.5rem;
+    // ── Stats (Producer / Roasting) ──────────────────────────────────
+    &__stats {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, rem(300)));
+        justify-content: center;
+        gap: rem(40);
+        margin: rem(50) auto 0;
+        text-align: center;
 
-            @include maxWidth($sm) {
-                grid-template-columns: repeat(2, 1fr);
-            }
+        @include maxWidth($sm) {
+            grid-template-columns: 1fr;
+            gap: rem(25);
         }
     }
 
@@ -119,156 +415,168 @@
             display: block;
             font-family: $subFont;
             font-weight: $regular;
-            margin-bottom: 0.3rem;
+            text-transform: uppercase;
+            color: $darkColor;
+            margin-bottom: rem(20);
 
-            &--sm {
-                @include resFont(rem(13), rem(14));
-            }
-
-            @include resFont(rem(18), rem(26));
+            @include resFont(rem(20), rem(30));
         }
 
         &-label {
             display: block;
-            font-size: rem(12);
-            color: rgba(0, 0, 0, 0.55);
+            font-family: $mainFont;
+            color: $darkColor;
+
+            @include resFont(rem(14), rem(20));
         }
     }
 
+    // ── Media / Maps / Roasting Image ────────────────────────────────
     &__media {
-        width: 100%;
-        aspect-ratio: 16 / 9;
-        background: $primaryColor;
-        margin-top: 2rem;
+        max-width: rem(1400);
+        aspect-ratio: 2 / 1;
+        margin: rem(50) auto 0;
         overflow: hidden;
+        background-color: $primaryColor;
 
         iframe,
         img {
-            display: block;
             width: 100%;
             height: 100%;
-            border: none;
+            border: 0;
             object-fit: cover;
+            display: block;
         }
     }
 
-    &__info-list {
-        list-style: none;
-        margin: 2rem 0 0;
-        padding: 0;
-        max-width: 700px;
-        margin-left: auto;
-        margin-right: auto;
-
-        // Trong hero (cạnh ảnh sản phẩm) — danh sách nằm sát theo chiều
-        // rộng cột tóm tắt, canh trái, KHÔNG center/giới hạn max-width như
-        // bản hiện trong section Producer.
-        &--hero {
-            max-width: none;
-            margin: 1.5rem 0 2rem;
-        }
-
-        li {
-            display: flex;
-            justify-content: space-between;
-            gap: 1rem;
-            padding: 0.7rem 0;
-            border-bottom: 1px solid rgba(0, 0, 0, 0.08);
-            font-size: rem(14);
-
-            span:first-child {
-                color: rgba(0, 0, 0, 0.5);
-            }
-
-            span:last-child {
-                font-weight: $medium;
-                text-align: right;
-            }
-        }
-    }
-
-    &__flavor-grid {
+    // ── 8-cell Grid (Flavor & Water Quality) ──────────────────────────
+    &__spec-grid {
+        max-width: rem(1400);
+        margin: rem(100) auto 0;
         display: grid;
         grid-template-columns: repeat(4, 1fr);
-        gap: 2.5rem 1.5rem;
-        margin-top: 2.5rem;
+        column-gap: rem(50);
+        row-gap: rem(100);
+
+        @include maxWidth($md) {
+            grid-template-columns: repeat(2, 1fr);
+            row-gap: rem(60);
+            column-gap: rem(30);
+            margin-top: rem(50);
+        }
 
         @include maxWidth($sm) {
             grid-template-columns: repeat(2, 1fr);
+            row-gap: rem(40);
+            column-gap: rem(15);
         }
     }
 
-    &__flavor-item {
-        border-top: 1px solid rgba(0, 0, 0, 0.15);
-        padding-top: 1rem;
+    &__spec-cell {
+        border-top: 1px solid rgba($primaryColor, 0.5);
+        padding-top: rem(100);
+        text-align: center;
+
+        @include maxWidth($sm) {
+            padding-top: rem(30);
+        }
     }
 
-    &__flavor-label {
+    &__spec-title {
         display: block;
         font-family: $subFont;
-        text-transform: uppercase;
         font-weight: $regular;
-        margin-bottom: 0.4rem;
+        text-transform: uppercase;
+        color: $darkColor;
+        margin-bottom: rem(20);
 
-        @include resFont(rem(15), rem(18));
+        @include resFont(rem(20), rem(30));
     }
 
-    &__flavor-value {
+    &__spec-val {
         display: block;
-        font-size: rem(13);
-        color: rgba(0, 0, 0, 0.6);
+        font-family: $mainFont;
+        font-size: rem(20);
+        color: $darkColor;
+
+        @include maxWidth($sm) {
+            font-size: rem(15);
+        }
     }
 
+    // ── Coffee Journal ───────────────────────────────────────────────
     &__journal-content {
-        margin-bottom: 2.5rem;
+        margin-bottom: rem(50);
 
         &--bottom {
-            margin-top: 2.5rem;
+            margin-top: rem(50);
             margin-bottom: 0;
         }
     }
 
-    &__journal-grid {
+    &__journal-list {
+        max-width: rem(1400);
+        margin: 0 auto;
+        display: flex;
+        flex-direction: column;
+        gap: rem(20);
+    }
+
+    &__journal-row {
         display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        align-items: start;
-        gap: 1.5rem;
+        grid-template-columns: 500fr 880fr;
+        gap: rem(20);
+        height: rem(500);
+
+        &--reverse {
+            grid-template-columns: 880fr 500fr;
+        }
+
+        // Hàng lẻ cuối chỉ còn 1 ô → trải full width, kể cả hàng đảo chiều.
+        > :only-child {
+            grid-column: 1 / -1;
+        }
 
         @include maxWidth($sm) {
-            grid-template-columns: 1fr;
+            grid-template-columns: 1fr !important;
+            height: auto;
         }
     }
 
-    &__journal-card {
+    &__journal-item {
         position: relative;
         overflow: hidden;
-        display: flex;
-        flex-direction: column;
-        justify-content: flex-end;
-        color: inherit;
+        display: block;
         text-decoration: none;
-        background: $primaryColor;
-        padding: 1.5rem;
-        aspect-ratio: 4 / 5;
-        min-height: 260px;
+        color: inherit;
+        background-color: $primaryColor;
+        height: 100%;
 
-        // Xen kẽ nhỏ-to/to-nhỏ theo checkerboard (xem $is_tall trong single-product.php).
-        &--tall {
-            aspect-ratio: 5 / 8;
+        &:hover,
+        &:focus-within {
+            .single-product-page__journal-media img {
+                transform: scale(1.04);
+            }
+
+            .single-product-page__journal-overlay,
+            .single-product-page__journal-info {
+                opacity: 1;
+            }
         }
 
         @include maxWidth($sm) {
-            aspect-ratio: auto;
-            min-height: 260px;
+            aspect-ratio: 4 / 3;
+        }
 
-            &--tall {
-                aspect-ratio: auto;
-                min-height: 340px;
+        @media (hover: none) {
+            .single-product-page__journal-overlay,
+            .single-product-page__journal-info {
+                opacity: 1;
             }
         }
     }
 
-    &__journal-thumb {
+    &__journal-media {
         position: absolute;
         inset: 0;
 
@@ -276,108 +584,184 @@
             width: 100%;
             height: 100%;
             object-fit: cover;
-            opacity: 0.35;
+            display: block;
+            transition: transform 0.4s ease;
         }
     }
 
-    &__journal-title,
-    &__journal-excerpt {
-        position: relative;
-        color: $lightColor;
-        margin: 0;
+    &__journal-overlay {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(to top, rgba(0, 0, 0, 0.8) 0%, rgba(0, 0, 0, 0.4) 50%, rgba(0, 0, 0, 0) 100%);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    &__journal-info {
+        position: absolute;
+        left: 50%;
+        bottom: rem(50);
+        transform: translateX(-50%);
+        width: rem(350);
+        max-width: 90%;
+        text-align: center;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        z-index: 2;
     }
 
     &__journal-title {
         font-family: $subFont;
         font-weight: $regular;
-        margin-bottom: 0.5rem;
-
-        @include resFont(rem(14), rem(16));
-    }
-
-    &__journal-excerpt {
-        font-size: rem(12);
-        opacity: 0.8;
-        line-height: 1.6;
-    }
-
-    &__journal-link {
-        position: relative;
-        display: inline-block;
-        margin-top: 0.8rem;
-        color: $lightColor;
-        font-size: rem(11);
+        font-size: rem(20);
         text-transform: uppercase;
-        letter-spacing: 0.05em;
-        text-decoration: none;
-        opacity: 0.85;
-        transition: opacity 0.2s ease;
-
-        &:hover {
-            opacity: 1;
-            text-decoration: underline;
-        }
+        color: $lightColor;
+        margin: 0 0 rem(10);
     }
 
-    &__how-to-use,
-    &__water-quality {
-        max-width: 700px;
-        margin: 0 auto 2.5rem;
-
-        h3 {
-            text-align: center;
-            font-family: $subFont;
-            font-weight: $regular;
-            text-transform: uppercase;
-            margin: 0 0 1.5rem;
-
-            @include resFont(rem(14), rem(16));
-        }
+    &__journal-desc {
+        font-family: $mainFont;
+        font-size: rem(15);
+        line-height: 1.5;
+        color: $lightColor;
+        margin: 0;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
     }
 
-    &__rich-text {
-        font-size: rem(14);
-        line-height: 1.9;
-        color: rgba(0, 0, 0, 0.7);
-    }
-
+    // ── Reviews ──────────────────────────────────────────────────────
     &__reviews-grid {
+        max-width: rem(1400);
+        margin: rem(100) auto 0;
         display: grid;
         grid-template-columns: repeat(3, 1fr);
-        gap: 2rem;
+        column-gap: rem(50);
+        row-gap: rem(100);
+
+        @include maxWidth($md) {
+            grid-template-columns: repeat(2, 1fr);
+            row-gap: rem(60);
+        }
 
         @include maxWidth($sm) {
             grid-template-columns: 1fr;
+            row-gap: rem(40);
+            margin-top: rem(50);
         }
     }
 
     &__review-card {
-        display: block;
-        text-decoration: none;
+        border-top: 1px solid rgba($primaryColor, 0.5);
+        padding-top: rem(100);
+        text-align: center;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
         color: inherit;
-        border-top: 1px solid rgba(0, 0, 0, 0.15);
-        padding-top: 1.2rem;
+        text-decoration: none;
+
+        @include maxWidth($sm) {
+            padding-top: rem(30);
+        }
     }
 
     &__review-stars {
-        color: #f5c400;
-        letter-spacing: 0.15em;
-        margin-bottom: 0.6rem;
+        margin-bottom: rem(20);
+
+        img {
+            display: block;
+            width: rem(190);
+            height: rem(30);
+            object-fit: contain;
+        }
     }
 
     &__review-name {
         font-family: $subFont;
         font-weight: $regular;
+        font-size: rem(30);
         text-transform: uppercase;
-        margin: 0 0 0.5rem;
-
-        @include resFont(rem(14), rem(16));
+        color: $darkColor;
+        margin: 0 0 rem(20);
     }
 
     &__review-content {
-        font-size: rem(13);
-        color: rgba(0, 0, 0, 0.6);
+        font-size: rem(20);
         line-height: 1.7;
+        color: $darkColor;
+        max-width: rem(300);
+        margin: 0 auto;
+        display: -webkit-box;
+        -webkit-line-clamp: 5;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+}
+
+// ── RELATED COFFEE BEANS ─────────────────────────────────────────────
+.single-product-related {
+    margin-top: rem(200);
+
+    &__header {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        padding-bottom: rem(15);
+        border-bottom: 3px solid $primaryColor;
+    }
+
+    &__title {
+        font-family: $subFont;
+        font-weight: $regular;
+        text-transform: uppercase;
+        color: $darkColor;
         margin: 0;
+
+        @include resFont(rem(24), rem(40));
+    }
+
+    &__view-all {
+        font-family: $subFont;
+        font-weight: $light;
+        font-size: rem(20);
+        text-decoration: none;
+        color: $darkColor;
+        transition: color 0.2s ease;
+
+        &:hover {
+            color: $primaryColor;
+        }
+    }
+
+    &__grid {
+        margin-top: rem(80);
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: rem(20);
+
+        @include maxWidth($md) {
+            margin-top: rem(50);
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        @include maxWidth($sm) {
+            margin-top: rem(30);
+            grid-template-columns: repeat(2, 1fr);
+            gap: rem(15);
+        }
+    }
+
+    .block-product-grid__card-title {
+        @include resFont(rem(16), rem(20));
+    }
+
+    @include maxWidth($md) {
+        margin-top: rem(100);
+    }
+
+    @include maxWidth($sm) {
+        margin-top: rem(60);
     }
 }

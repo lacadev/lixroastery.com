@@ -47,7 +47,7 @@ $terms   = taxonomy_exists($taxonomy) ? laca_get_top_level_terms_with_content($t
 $tax_obj = get_taxonomy($taxonomy);
 $active_term_slug = $current_term ? $current_term->slug : '';
 
-$per_page   = 8;
+$per_page   = 12;
 $query_args = [
     'post_type'      => $post_type,
     'post_status'    => 'publish',
@@ -97,36 +97,46 @@ if (!$current_term) {
 <section class="journal-archive shop-archive">
     <div class="container-fluid">
         <?php if ($current_term) : ?>
-            <h1 class="journal-archive__title"><?php echo esc_html($current_term->name); ?></h1>
+            <h1 class="journal-archive__title shop-archive__title"><?php echo esc_html($current_term->name); ?></h1>
             <?php if ($current_term->description) : ?>
-                <div class="journal-archive__desc"><?php echo wp_kses_post(wpautop($current_term->description)); ?></div>
+                <div class="journal-archive__desc shop-archive__desc"><?php echo wp_kses_post(wpautop($current_term->description)); ?></div>
             <?php endif; ?>
         <?php elseif ($shop_page) : ?>
-            <h1 class="journal-archive__title"><?php echo esc_html(get_the_title($shop_page)); ?></h1>
-            <div class="journal-archive__desc dynamic-cpt-archive-intro">
+            <h1 class="journal-archive__title shop-archive__title"><?php echo esc_html(get_the_title($shop_page)); ?></h1>
+            <div class="journal-archive__desc dynamic-cpt-archive-intro shop-archive__desc">
                 <?php echo apply_filters('the_content', $shop_page->post_content); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
             </div>
         <?php else : ?>
-            <h1 class="journal-archive__title"><?php post_type_archive_title(); ?></h1>
+            <h1 class="journal-archive__title shop-archive__title"><?php post_type_archive_title(); ?></h1>
         <?php endif; ?>
 
         <div class="block-cpt-grid__inner" id="<?php echo esc_attr($unique_id); ?>"
             data-cpt-grid-config='<?php echo esc_attr(wp_json_encode($config)); ?>'>
 
-            <?php if (!empty($terms) && !is_wp_error($terms)) : ?>
-                <div class="block-cpt-grid__tabs-wrap">
-                    <div class="block-cpt-grid__tabs">
-                        <button type="button" class="block-cpt-grid__tab<?php echo $current_term ? '' : ' is-active'; ?>" data-term-slug="">
-                            <?php echo esc_html($tax_obj->labels->all_items ?? __('Tất cả', 'laca')); ?>
-                        </button>
-                        <?php foreach ($terms as $term) : ?>
-                            <button type="button" class="block-cpt-grid__tab<?php echo $term->slug === $active_term_slug ? ' is-active' : ''; ?>" data-term-slug="<?php echo esc_attr($term->slug); ?>">
-                                <?php echo esc_html($term->name); ?>
+            <div class="shop-archive__tabbar">
+                <button type="button" class="shop-archive__nav shop-archive__nav--prev" data-cpt-grid-prev aria-label="<?php esc_attr_e('Trang trước', 'laca'); ?>" disabled>
+                    <?php echo esc_html__('PREV', 'laca'); ?>
+                </button>
+
+                <?php if (!empty($terms) && !is_wp_error($terms)) : ?>
+                    <div class="block-cpt-grid__tabs-wrap">
+                        <div class="block-cpt-grid__tabs">
+                            <button type="button" class="block-cpt-grid__tab<?php echo $current_term ? '' : ' is-active'; ?>" data-term-slug="">
+                                <?php echo esc_html($tax_obj->labels->all_items ?? __('Tất cả', 'laca')); ?>
                             </button>
-                        <?php endforeach; ?>
+                            <?php foreach ($terms as $term) : ?>
+                                <button type="button" class="block-cpt-grid__tab<?php echo $term->slug === $active_term_slug ? ' is-active' : ''; ?>" data-term-slug="<?php echo esc_attr($term->slug); ?>">
+                                    <?php echo esc_html($term->name); ?>
+                                </button>
+                            <?php endforeach; ?>
+                        </div>
                     </div>
-                </div>
-            <?php endif; ?>
+                <?php endif; ?>
+
+                <button type="button" class="shop-archive__nav shop-archive__nav--next" data-cpt-grid-next aria-label="<?php esc_attr_e('Trang sau', 'laca'); ?>"<?php echo $max_pages <= 1 ? ' disabled' : ''; ?>>
+                    <?php echo esc_html__('NEXT', 'laca'); ?>
+                </button>
+            </div>
 
             <div class="block-cpt-grid__list block-cpt-grid__list--cols-4">
                 <?php laca_cpt_grid_render_cards($query, $taxonomy); ?>

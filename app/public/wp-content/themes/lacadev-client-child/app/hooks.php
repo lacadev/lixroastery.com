@@ -54,6 +54,7 @@ require_once CHILD_APP_DIR . 'helpers/journal-cat-render.php';
 // quan" tự động cuối mỗi bài Journal (single.php) ────────────────────────────
 require_once CHILD_APP_DIR . 'helpers/product-grid-render.php';
 require_once CHILD_APP_DIR . 'helpers/journal-related-products-render.php';
+require_once CHILD_APP_DIR . 'helpers/single-product-related-render.php';
 
 // ── Chi tiết bài Journal: mục lục tự động + bình chọn/chia sẻ/bài liên quan/tag ──
 require_once CHILD_APP_DIR . 'helpers/journal-single-render.php';

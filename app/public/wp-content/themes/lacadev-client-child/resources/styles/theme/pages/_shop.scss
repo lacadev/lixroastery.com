@@ -1,0 +1,176 @@
+@use "../abstracts/variables" as *;
+@use "../abstracts/mixin" as *;
+
+.shop-archive {
+    padding-top: rem(40);
+    padding-bottom: rem(100);
+
+    &__title {
+        font-family: $subFont;
+        font-weight: $regular;
+        text-transform: uppercase;
+        text-align: center;
+        color: $darkColor;
+        margin: 0 0 rem(20);
+
+        @include resFont(rem(36), rem(60));
+    }
+
+    &__desc {
+        font-size: rem(20);
+        line-height: 1.8;
+        text-align: justify;
+        max-width: rem(1000);
+        margin: rem(100) auto 0;
+        color: $darkColor;
+
+        @include maxWidth($sm) {
+            margin-top: rem(30);
+            font-size: rem(16);
+            text-align: left;
+        }
+    }
+
+    &__tabbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: rem(20);
+        margin-top: rem(100);
+        padding-bottom: rem(10);
+        border-bottom: 3px solid $primaryColor;
+
+        @include maxWidth($sm) {
+            margin-top: rem(40);
+            gap: rem(10);
+        }
+    }
+
+    &__nav {
+        background: none;
+        border: 0;
+        padding: 0;
+        font-family: $subFont;
+        font-weight: $light;
+        font-size: rem(20);
+        color: $darkColor;
+        cursor: pointer;
+        transition: color 0.2s ease, opacity 0.2s ease;
+        flex-shrink: 0;
+
+        &:disabled {
+            color: rgba($darkColor, 0.43);
+            cursor: default;
+        }
+
+        &:not(:disabled):hover {
+            color: $primaryColor;
+        }
+    }
+
+    .block-cpt-grid__tabs-wrap {
+        flex: 1;
+        min-width: 0;
+        margin: 0;
+        border-bottom: none;
+        padding-bottom: 0;
+    }
+
+    .block-cpt-grid__tabs {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 0;
+        margin: 0;
+
+        @include maxWidth($sm) {
+            flex-wrap: nowrap;
+            overflow-x: auto;
+            white-space: nowrap;
+            justify-content: flex-start;
+            padding-bottom: rem(4);
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+
+            &::-webkit-scrollbar {
+                display: none;
+            }
+        }
+    }
+
+    .block-cpt-grid__tab {
+        background: none;
+        border: 0;
+        padding: 0 rem(20);
+        font-family: $subFont;
+        font-weight: $regular;
+        font-size: rem(20);
+        text-transform: uppercase;
+        color: rgba($darkColor, 0.43);
+        cursor: pointer;
+        position: relative;
+        transition: color 0.2s ease;
+
+        &::before {
+            content: "";
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 1px;
+            height: 60%;
+            background-color: rgba($darkColor, 0.43);
+        }
+
+        &:first-child::before {
+            display: none;
+        }
+
+        // _cpt-grid.scss đã vẽ vạch ngăn bằng ::after — tắt đi để không ra 2 vạch.
+        &::after {
+            display: none;
+        }
+
+        &:hover,
+        &.is-active {
+            color: $darkColor;
+        }
+
+        &.is-active {
+            font-weight: $regular;
+        }
+
+        @include maxWidth($sm) {
+            padding: 0 rem(12);
+            font-size: rem(16);
+            flex-shrink: 0;
+        }
+    }
+
+    .block-cpt-grid__list {
+        margin-top: rem(110);
+        row-gap: rem(100);
+        column-gap: rem(20);
+
+        @include maxWidth($md) {
+            margin-top: rem(60);
+            row-gap: rem(60);
+        }
+
+        @include maxWidth($sm) {
+            grid-template-columns: repeat(2, 1fr) !important;
+            margin-top: rem(40);
+            row-gap: rem(40);
+            column-gap: rem(15);
+        }
+    }
+
+    .block-product-grid__card-title {
+        @include resFont(rem(18), rem(25));
+    }
+
+    .block-cpt-grid__pagination {
+        display: none !important;
+    }
+}
