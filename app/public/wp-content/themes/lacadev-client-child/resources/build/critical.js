@@ -77,6 +77,11 @@ const dimensions = [
             pageLoadSkipTimeout: 15000,
             // Small buffer to let above-the-fold styles settle.
             renderWaitTime: 1000,
+            // Critical trích từ site LOCAL, mà local thiếu dữ liệu header của
+            // production (logo dạng ảnh, menu trái) → rule header bị loại vì "không
+            // dùng" → trên production logo hiện ảnh gốc 2560px rồi co lại (CLS 0.35).
+            // Header luôn ở màn hình đầu nên giữ toàn bộ rule của nó.
+            forceInclude: [/\.header/, /\.menu-item/],
             // Penthouse supports custom browser via puppeteer.getBrowser.
             // This avoids fallback to old bundled Chromium revisions.
             puppeteer: {
