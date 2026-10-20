@@ -4,7 +4,7 @@ if (!defined('ABSPATH')) {
 }
 
 /**
- * Render section "RELATED COFFEE BEANS" cuối trang chi tiết sản phẩm.
+ * Render section "SẢN PHẨM LIÊN QUAN" cuối trang chi tiết sản phẩm.
  *
  * @param WC_Product $product
  * @return void
@@ -23,12 +23,12 @@ function laca_render_single_product_related(WC_Product $product): void
         $needed = $target_count - count($related_ids);
 
         $fallback_query = new WP_Query([
-            'post_type'      => 'product',
-            'post_status'    => 'publish',
+            'post_type' => 'product',
+            'post_status' => 'publish',
             'posts_per_page' => $needed,
-            'post__not_in'   => $exclude_ids,
-            'fields'         => 'ids',
-            'no_found_rows'  => true,
+            'post__not_in' => $exclude_ids,
+            'fields' => 'ids',
+            'no_found_rows' => true,
         ]);
 
         if (!empty($fallback_query->posts)) {
@@ -61,15 +61,15 @@ function laca_render_single_product_related(WC_Product $product): void
     <aside class="single-product-related">
         <div class="container-fluid">
             <div class="single-product-related__header">
-                <h2 class="single-product-related__title"><?php esc_html_e('RELATED COFFEE BEANS', 'laca'); ?></h2>
-                <?php if ($view_all_url) : ?>
+                <h2 class="single-product-related__title"><?php esc_html_e('SẢN PHẨM LIÊN QUAN', 'laca'); ?></h2>
+                <?php if ($view_all_url): ?>
                     <a href="<?php echo esc_url($view_all_url); ?>" class="single-product-related__view-all">
                         <?php echo esc_html__('View all', 'laca'); ?>
                     </a>
                 <?php endif; ?>
             </div>
             <div class="single-product-related__grid">
-                <?php foreach ($related_ids as $r_id) : ?>
+                <?php foreach ($related_ids as $r_id): ?>
                     <div class="single-product-related__item">
                         <?php
                         if (function_exists('laca_render_product_grid_card')) {
