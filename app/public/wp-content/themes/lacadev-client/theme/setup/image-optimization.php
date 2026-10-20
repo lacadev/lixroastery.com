@@ -250,7 +250,19 @@ add_filter('wp_get_attachment_image_attributes', function($attr, $attachment, $s
     
     if (!empty($srcset)) {
         $attr['srcset'] = implode(', ', $srcset);
-        $attr['sizes'] = '(max-width: 480px) 480px, (max-width: 768px) 768px, 100vw';
+        // Chỉ ép sizes mặc định khi nơi gọi KHÔNG tự truyền sizes: ghi đè vô điều
+        // kiện làm ảnh trong lưới 2-4 cột luôn tải bản full màn hình, và mất
+        // sizes="auto" (WP 6.7+, ảnh lazy) vốn chọn đúng kích thước thật.
+        // WP 6.7 chèn sẵn "auto, " cho ảnh lazy TRƯỚC filter này → tách ra để so
+        // sánh rồi giữ lại (Chrome dùng auto để chọn theo kích thước layout thật).
+        $default_sizes = wp_calculate_image_sizes($size, null, null, $attachment->ID);
+        $current_sizes = trim($attr['sizes'] ?? '');
+        $has_auto      = (bool) preg_match('/^auto\s*(,|$)/i', $current_sizes);
+        $rest          = trim(preg_replace('/^auto\s*,?\s*/i', '', $current_sizes));
+        if ($rest === '' || $rest === $default_sizes) {
+            $rest = '(max-width: 480px) 480px, (max-width: 768px) 768px, 100vw';
+        }
+        $attr['sizes'] = ($has_auto ? 'auto, ' : '') . $rest;
     }
     
     return $attr;

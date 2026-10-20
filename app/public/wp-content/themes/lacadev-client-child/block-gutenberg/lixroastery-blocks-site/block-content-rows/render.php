@@ -110,7 +110,7 @@ $wrapper_attrs = get_block_wrapper_attributes(['class' => 'block-content-rows co
                             ?>
                                 <<?php echo $tag; ?> <?php echo $img_link ? 'href="' . $img_link . '"' : ''; ?> class="block-content-rows__image-card">
                                     <?php if ($image_url) : ?>
-                                        <img src="<?php echo $image_url; ?>" alt="<?php echo esc_attr(wp_strip_all_tags($img_title)); ?>" loading="lazy" />
+                                        <?php echo laca_block_image_html((int) ($img['imageId'] ?? 0), $image_url, wp_strip_all_tags($img_title), '(max-width: 768px) 100vw, 40vw'); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
                                     <?php endif; ?>
                                     <?php if ($img_title) : ?>
                                         <h4 class="block-content-rows__image-title"><?php echo $img_title; ?></h4>

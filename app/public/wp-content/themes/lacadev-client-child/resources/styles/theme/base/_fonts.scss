@@ -1,60 +1,98 @@
-// SFUfutura
+// Fallback có metric override để chữ fallback chiếm đúng chỗ của font thật →
+// swap không làm nhảy layout (CLS). Số đo từ file font thật bằng fontkit
+// (độ rộng TB chuỗi mẫu + hhea ascent/descent), không phải số ước lượng.
 @font-face {
-  font-family: SFUfutura;
-  src: url("~@child-fonts/SFUFuturaRegular.TTF");
-  font-weight: normal;
-  font-style: normal;
-  font-display: swap;
+  font-family: "VNF-Futura Fallback";
+  src: local("Arial");
+  ascent-override: 103.97%;
+  descent-override: 28.01%;
+  line-gap-override: 2.91%;
+  size-adjust: 95.71%;
 }
 
-//VNF-Futura
+// VNF-Futura
 @font-face {
   font-family: VNF-Futura;
-  src: url("~@child-fonts/VNF-Futura.ttf") format("truetype");
+  src:
+    url("~@child-fonts/VNF-Futura.woff2") format("woff2"),
+    url("~@child-fonts/VNF-Futura.woff") format("woff"),
+    url("~@child-fonts/VNF-Futura.ttf") format("truetype");
   font-weight: normal;
   font-style: normal;
   font-display: swap;
 }
 
-//Oswald
+// Oswald là chữ hẹp: ưu tiên Arial Narrow. Máy không có Narrow thì local() lỗi,
+// face bị bỏ qua và trình duyệt rơi xuống "Oswald Fallback" (Arial, số riêng).
 @font-face {
-  font-family: "Oswald";
-  src: url("~@child-fonts/Oswald-ExtraLight.ttf") format('truetype');
-  font-weight: 200;
-  font-style: normal;
+  font-family: "Oswald Fallback Narrow";
+  src: local("Arial Narrow"), local("ArialNarrow");
+  ascent-override: 118.23%;
+  descent-override: 28.64%;
+  line-gap-override: 0%;
+  size-adjust: 100.9%;
 }
 
 @font-face {
+  font-family: "Oswald Fallback";
+  src: local("Arial");
+  ascent-override: 148.56%;
+  descent-override: 35.99%;
+  line-gap-override: 0%;
+  size-adjust: 80.31%;
+}
+
+// Oswald Light (300)
+@font-face {
   font-family: "Oswald";
-  src: url("~@child-fonts/Oswald-Light.ttf") format('truetype');
+  src:
+    url("~@child-fonts/Oswald-Light.woff2") format("woff2"),
+    url("~@child-fonts/Oswald-Light.ttf") format("truetype");
   font-weight: 300;
   font-style: normal;
+  font-display: swap;
 }
 
+// Oswald Regular (400)
 @font-face {
   font-family: "Oswald";
-  src: url("~@child-fonts/Oswald-Regular.ttf") format('truetype');
+  src:
+    url("~@child-fonts/Oswald-Regular.woff2") format("woff2"),
+    url("~@child-fonts/Oswald-Regular.ttf") format("truetype");
   font-weight: 400;
   font-style: normal;
+  font-display: swap;
 }
 
+// Oswald Medium (500)
 @font-face {
   font-family: "Oswald";
-  src: url("~@child-fonts/Oswald-Medium.ttf") format('truetype');
+  src:
+    url("~@child-fonts/Oswald-Medium.woff2") format("woff2"),
+    url("~@child-fonts/Oswald-Medium.ttf") format("truetype");
   font-weight: 500;
   font-style: normal;
+  font-display: swap;
 }
 
+// Oswald SemiBold (600)
 @font-face {
   font-family: "Oswald";
-  src: url("~@child-fonts/Oswald-SemiBold.ttf") format('truetype');
+  src:
+    url("~@child-fonts/Oswald-SemiBold.woff2") format("woff2"),
+    url("~@child-fonts/Oswald-SemiBold.ttf") format("truetype");
   font-weight: 600;
   font-style: normal;
+  font-display: swap;
 }
 
+// Oswald Bold (700)
 @font-face {
   font-family: "Oswald";
-  src: url("~@child-fonts/Oswald-Bold.ttf") format('truetype');
+  src:
+    url("~@child-fonts/Oswald-Bold.woff2") format("woff2"),
+    url("~@child-fonts/Oswald-Bold.ttf") format("truetype");
   font-weight: 700;
   font-style: normal;
+  font-display: swap;
 }

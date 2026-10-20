@@ -39,7 +39,7 @@ if (!function_exists('laca_render_product_grid_card')) {
         ?>
         <a href="<?php echo $link; ?>" class="block-product-grid__card">
             <div class="block-product-grid__image">
-                <img src="<?php echo esc_url(getPostThumbnailUrl($post_id)); ?>" alt="<?php echo $title; ?>" loading="lazy" />
+                <?php echo laca_block_image_html((int) get_post_thumbnail_id($post_id), getPostThumbnailUrl($post_id), get_the_title($post_id), '(max-width: 768px) 50vw, 25vw'); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
             </div>
             <?php if ($tag_left || $tag_right): ?>
                 <div class="block-product-grid__tags">

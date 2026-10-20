@@ -155,7 +155,9 @@ module.exports = {
     entry: require('./webpack/entry'),
     output: {
         ...require('./webpack/output'),
-        clean: true,
+        // Giữ critical*.css: critical.js chạy SAU webpack và có thể bỏ qua trang
+        // đang "Coming soon" — xoá sạch thì mất luôn bản đã sinh trước đó.
+        clean: { keep: /styles[\\/]critical[^/\\]*\.css$/ },
     },
     resolve: require('./webpack/resolve'),
     externals: require('./webpack/externals'),

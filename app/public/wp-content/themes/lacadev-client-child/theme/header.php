@@ -39,12 +39,6 @@ if (!defined('ABSPATH')) {
 	<meta name="msapplication-TileColor" content="#ffffff">
 	<meta name="msapplication-TileImage" content="<?php theAsset('favicon/ms-icon-144x144.png'); ?>">
 	<meta name="theme-color" content="#ffffff">
-	<?php
-	$critical_css_path = get_template_directory() . '/dist/styles/critical.css';
-	if (file_exists($critical_css_path)) {
-		echo '<style id="critical-css">' . file_get_contents($critical_css_path) . '</style>';
-	}
-	?>
 </head>
 
 <body <?php body_class(); ?>>
@@ -96,15 +90,25 @@ if (!defined('ABSPATH')) {
 								$has_both_logos = $logo_url && $logo_white_url;
 
 								if ($logo_url || $logo_white_url):
+									$logo_meta = $logo_id ? wp_get_attachment_metadata($logo_id) : null;
+									$logo_w = !empty($logo_meta['width']) ? (int) $logo_meta['width'] : '';
+									$logo_h = !empty($logo_meta['height']) ? (int) $logo_meta['height'] : '';
+
+									$logo_white_meta = $logo_white_id ? wp_get_attachment_metadata($logo_white_id) : null;
+									$logo_white_w = !empty($logo_white_meta['width']) ? (int) $logo_white_meta['width'] : '';
+									$logo_white_h = !empty($logo_white_meta['height']) ? (int) $logo_white_meta['height'] : '';
+
 									if ($logo_url):
 										?>
 										<img src="<?php echo esc_url($logo_url); ?>"
+											<?php if ($logo_w && $logo_h): ?>width="<?php echo esc_attr($logo_w); ?>" height="<?php echo esc_attr($logo_h); ?>"<?php endif; ?>
 											class="header__logo-img header__logo-img--default<?php echo !$has_both_logos ? ' header__logo-img--only' : ''; ?>"
 											alt="<?php echo esc_attr(get_bloginfo('name')); ?>">
 									<?php endif;
 									if ($logo_white_url):
 										?>
 										<img src="<?php echo esc_url($logo_white_url); ?>"
+											<?php if ($logo_white_w && $logo_white_h): ?>width="<?php echo esc_attr($logo_white_w); ?>" height="<?php echo esc_attr($logo_white_h); ?>"<?php endif; ?>
 											class="header__logo-img header__logo-img--white<?php echo !$has_both_logos ? ' header__logo-img--only' : ''; ?>"
 											alt="<?php echo esc_attr(get_bloginfo('name')); ?>">
 									<?php endif;

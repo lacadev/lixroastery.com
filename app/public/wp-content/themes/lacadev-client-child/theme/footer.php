@@ -141,9 +141,20 @@ $footer_socials = [
                     </ul>
                 <?php endif; ?>
 
-                <?php if (!empty($footer_dmca_badge)): ?>
+                <?php if (!empty($footer_dmca_badge)):
+                    // Tối ưu DMCA badge: thêm width/height (121x24) + loading="lazy", script defer ở footer
+                    $optimized_dmca = $footer_dmca_badge;
+                    if (strpos($optimized_dmca, '<img') !== false) {
+                        if (strpos($optimized_dmca, 'width=') === false) {
+                            $optimized_dmca = preg_replace('/<img\s+/i', '<img width="121" height="24" loading="lazy" decoding="async" ', $optimized_dmca);
+                        }
+                    }
+                    if (strpos($optimized_dmca, '<script') !== false && strpos($optimized_dmca, 'defer') === false) {
+                        $optimized_dmca = str_replace('<script ', '<script defer ', $optimized_dmca);
+                    }
+                    ?>
                     <div class="footer__dmca">
-                        <?php echo $footer_dmca_badge; ?>
+                        <?php echo $optimized_dmca; ?>
                     </div>
                 <?php endif; ?>
 

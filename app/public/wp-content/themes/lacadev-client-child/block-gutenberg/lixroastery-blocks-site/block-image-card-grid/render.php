@@ -63,7 +63,13 @@ $wrapper_attrs = get_block_wrapper_attributes(['class' => 'block-image-card-grid
                 <div class="block-image-card-grid__card" <?php echo $is_checkerboard ? 'style="grid-column: span ' . $col_span . ';"' : ''; ?>>
                     <<?php echo $tag; ?>     <?php echo $link ? 'href="' . $link . '" target="' . esc_attr($link_target) . '"' . ($link_target === '_blank' ? ' rel="noopener noreferrer"' : '') : ''; ?> class="block-image-card-grid__image<?php echo $is_tall ? ' block-image-card-grid__image--tall' : ''; ?>" style="<?php echo $image_url ? '' : 'background:' . esc_attr($bg_color) . ';'; ?>">
                             <?php if ($image_url): ?>
-                                     <img src="<?php echo $image_url; ?>" alt="<?php echo $title; ?>" loading="lazy" />
+                                     <?php
+                                     // Ảnh theo bố cục lưới: mobile 1 cột, desktop chia theo số cột / ô checkerboard 70%.
+                                     $icg_sizes = $is_checkerboard
+                                         ? '(max-width: 768px) 100vw, ' . ($is_tall ? '60vw' : '40vw')
+                                         : '(max-width: 768px) 100vw, ' . round(100 / $columns) . 'vw';
+                                     echo laca_block_image_html((int) ($item['imageId'] ?? 0), $image_url, wp_strip_all_tags($item['title'] ?? ''), $icg_sizes); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+                                     ?>
                             <?php endif; ?>
                             <div class="block-image-card-grid__overlay"></div>
                             <div class="block-image-card-grid__content">

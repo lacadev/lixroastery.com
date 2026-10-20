@@ -36,13 +36,8 @@ $nl_messages = [
     'error' => NewsletterTexts::get('newsletter_msg_error', $nl_lang),
 ];
 
-// Laca_Recaptcha (parent) đọc key qua getOption() — có hậu tố ngôn ngữ — nên
-// có thể không enqueue script dù key đã nhập. Tự enqueue cùng handle để không
-// nạp trùng; footer.php chạy trước wp_footer() nên script in_footer vẫn kịp in.
+// Key reCAPTCHA truyền qua data-recaptcha-key trên form để JS lazy load khi người dùng tương tác
 $nl_recaptcha_key = NewsletterAjaxHandler::recaptchaSiteKey();
-if ($nl_recaptcha_key !== '' && !wp_script_is('google-recaptcha', 'enqueued')) {
-    wp_enqueue_script('google-recaptcha', 'https://www.google.com/recaptcha/api.js?render=' . rawurlencode($nl_recaptcha_key), [], null, true);
-}
 ?>
 <section class="newsletter container-fluid" aria-labelledby="newsletter-title">
     <h2 id="newsletter-title" class="newsletter__title"><?php echo esc_html($nl_title); ?></h2>

@@ -2,7 +2,7 @@
  * Contact Page Logic - Enhanced UX/UI
  */
 
-import Swal from 'sweetalert2';
+import { Swal } from '../swal-lazy.js';
 
 export const initContactPage = () => {
     console.log('📧 Contact Page: Initializing...');

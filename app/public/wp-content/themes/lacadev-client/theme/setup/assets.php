@@ -268,18 +268,21 @@ function app_action_admin_enqueue_assets()
  * Preload critical assets in admin_head
  */
 add_action('admin_head', function() {
+    $theme_root_dir = dirname(get_stylesheet_directory());
     $theme_root_uri = dirname(get_stylesheet_directory_uri());
+    $dist_path = $theme_root_dir . '/dist/';
     $dist_url = $theme_root_uri . '/dist/';
     
-    // Preload important fonts
-    $fonts = [
-        'fonts/BeVietnamPro-Regular.bbe77399f9.ttf',
-        'fonts/BeVietnamPro-SemiBold.fbc3f74acb.ttf',
-        'fonts/Quicksand-Regular.61504eaec8.ttf',
-    ];
+    // Preload important fonts (qua filter lacadev_preload_fonts)
+    $fonts = apply_filters('lacadev_preload_fonts', []);
 
-    foreach ($fonts as $font) {
-        echo '<link rel="preload" href="' . $dist_url . $font . '" as="font" type="font/ttf" crossorigin>' . "\n";
+    foreach ($fonts as $font_rel) {
+        $font_path = $dist_path . ltrim($font_rel, '/');
+        if (file_exists($font_path)) {
+            $ext = pathinfo($font_rel, PATHINFO_EXTENSION);
+            $type = $ext === 'woff2' ? 'font/woff2' : ($ext === 'woff' ? 'font/woff' : 'font/ttf');
+            echo '<link rel="preload" href="' . $dist_url . ltrim($font_rel, '/') . '" as="font" type="' . esc_attr($type) . '" crossorigin>' . "\n";
+        }
     }
 }, 1);
 
@@ -489,28 +492,39 @@ function app_action_add_favicon()
 add_filter('script_loader_tag', function ($tag, $handle, $src) {
     // Scripts to defer (non-critical)
     // NOTE: theme-vendors-js is NOT deferred - it must load blocking to ensure Swal/dependencies are available
-    $defer_scripts = [
+    $default_defer = [
         'theme-js-bundle',
         'theme-admin-js-bundle',
         'theme-login-js-bundle',
         'theme-editor-js-bundle',
         'theme-archive-js',
-        'theme-comments-js'
+        'theme-comments-js',
+        'child-theme-js',
+        'sourcebuster-js',
+        'wc-order-attribution',
     ];
+    $defer_scripts = apply_filters('lacadev_defer_scripts', $default_defer);
 
     // Scripts to async (tracking, analytics)
-    $async_scripts = [
+    $default_async = [
         'google-analytics',
         'facebook-pixel',
         'hotjar'
     ];
+    $async_scripts = apply_filters('lacadev_async_scripts', $default_async);
 
-    if (in_array($handle, $defer_scripts)) {
-        return str_replace('<script ', '<script defer ', $tag);
+    if (in_array($handle, $defer_scripts, true)) {
+        if (strpos($tag, ' defer') === false) {
+            return str_replace('<script ', '<script defer ', $tag);
+        }
+        return $tag;
     }
 
-    if (in_array($handle, $async_scripts)) {
-        return str_replace('<script ', '<script async ', $tag);
+    if (in_array($handle, $async_scripts, true)) {
+        if (strpos($tag, ' async') === false) {
+            return str_replace('<script ', '<script async ', $tag);
+        }
+        return $tag;
     }
 
     return $tag;
@@ -520,17 +534,52 @@ add_filter('script_loader_tag', function ($tag, $handle, $src) {
  * Advanced style optimization
  */
 add_filter('style_loader_tag', function ($tag, $handle, $href) {
-    // Non-critical styles to load asynchronously
-    $non_critical_styles = [
-        'theme-single-css',
-        'fontawesome',
-        'google-fonts'
+    if (is_admin() || is_customize_preview() || wp_is_json_request() || (function_exists('is_feed') && is_feed())) {
+        return $tag;
+    }
+
+    // Chỉ chuyển sang async tải bất đồng bộ khi Critical CSS đã được in ở request này
+    if (empty($GLOBALS['lacadev_critical_css_inlined'])) {
+        return $tag;
+    }
+
+    $default_async = [
+        'theme-css-bundle',
+        'theme-styles',
     ];
+    $async_handles = apply_filters('lacadev_async_style_handles', $default_async);
 
-    // Note: theme-css-bundle is always loaded blocking to prevent layout issues.
-    // Critical CSS is inlined separately in wp_head for above-the-fold performance.
+    // Kiểm tra khớp handle chính xác hoặc tiền tố (ví dụ block-block-*)
+    $is_async = false;
+    foreach ($async_handles as $async_handle) {
+        if ($handle === $async_handle || (str_ends_with($async_handle, '*') && str_starts_with($handle, rtrim($async_handle, '*')))) {
+            $is_async = true;
+            break;
+        }
+    }
 
-    return $tag;
+    if (!$is_async) {
+        return $tag;
+    }
+
+    // Lấy media attribute gốc (nếu có, ví dụ woocommerce-smallscreen: only screen and (max-width: 768px))
+    $media = 'all';
+    if (preg_match('/media=[\'"]([^\'"]+)[\'"]/', $tag, $matches)) {
+        $media = esc_attr($matches[1]);
+    }
+
+    // CSP có 'unsafe-inline' và không có nonce trên frontend nên onload inline chạy an toàn
+    $async_tag = preg_replace(
+        '/<link\s+([^>]*?)media=[\'"][^\'"]*[\'"]([^>]*?)>/',
+        '<link $1media="print" onload="this.media=\'' . $media . '\';this.onload=null;"$2>',
+        $tag
+    );
+
+    if ($async_tag === $tag) {
+        $async_tag = str_replace('<link ', '<link media="print" onload="this.media=\'' . $media . '\';this.onload=null;" ', $tag);
+    }
+
+    return $async_tag . '<noscript>' . $tag . '</noscript>' . "\n";
 }, 10, 3);
 
 /**
@@ -548,10 +597,18 @@ add_action('wp_head', function() {
     $dist_url  = $theme_root_uri . '/dist/';
     
     // 1. Inline Critical CSS (prevents FOUC when theme.css is loaded async)
-    $critical_path = $dist_path . 'styles/critical.css';
-    if (file_exists($critical_path)) {
+    // Child có thể trả file critical riêng theo loại trang (nhỏ + đúng hơn 1 file chung).
+    $critical_path = apply_filters('lacadev_critical_css_path', $dist_path . 'styles/critical.css', $dist_path);
+    if (!file_exists($critical_path)) {
+        $critical_path = $dist_path . 'styles/critical.css';
+    }
+    // Tool sinh critical (yarn critical) cần CSS gốc dạng blocking để trích đủ rule —
+    // ?lacadev_no_critical=1 tắt inline + async cho request đó (chỉ ảnh hưởng tốc độ, không lộ dữ liệu).
+    $skip_critical = isset($_GET['lacadev_no_critical']); // phpcs:ignore WordPress.Security.NonceVerification
+    if (!$skip_critical && file_exists($critical_path)) {
         $critical_css = file_get_contents($critical_path);
         if ($critical_css) {
+            $GLOBALS['lacadev_critical_css_inlined'] = true;
             echo '<style id="critical-css">' . $critical_css . '</style>' . "\n";
         }
     }
@@ -562,19 +619,20 @@ add_action('wp_head', function() {
     }
 
     // 3. Preload Main CSS Bundle (if NOT using Critical CSS)
-    if (!file_exists($critical_path)) {
+    if (empty($GLOBALS['lacadev_critical_css_inlined'])) {
          echo '<link rel="preload" href="' . $dist_url . 'styles/theme.css" as="style">' . "\n";
     }
 
-    // 4. Preload important fonts
-    $fonts = [
-        'fonts/BeVietnamPro-Regular.bbe77399f9.ttf',
-        'fonts/BeVietnamPro-SemiBold.fbc3f74acb.ttf',
-        'fonts/Quicksand-Regular.61504eaec8.ttf',
-    ];
+    // 4. Preload important fonts (qua filter lacadev_preload_fonts)
+    $fonts = apply_filters('lacadev_preload_fonts', []);
 
-    foreach ($fonts as $font) {
-        echo '<link rel="preload" href="' . $dist_url . $font . '" as="font" type="font/ttf" crossorigin>' . "\n";
+    foreach ($fonts as $font_rel) {
+        $font_path = $dist_path . ltrim($font_rel, '/');
+        if (file_exists($font_path)) {
+            $ext = pathinfo($font_rel, PATHINFO_EXTENSION);
+            $type = $ext === 'woff2' ? 'font/woff2' : ($ext === 'woff' ? 'font/woff' : 'font/ttf');
+            echo '<link rel="preload" href="' . $dist_url . ltrim($font_rel, '/') . '" as="font" type="' . esc_attr($type) . '" crossorigin>' . "\n";
+        }
     }
 }, 1);
 
@@ -582,6 +640,11 @@ add_action('wp_head', function() {
  * Enhanced resource hints for performance
  */
 add_filter('wp_resource_hints', function ($hints, $relation_type) {
+    $custom_hints = apply_filters('lacadev_resource_hints', null, $relation_type);
+    if (is_array($custom_hints)) {
+        return $custom_hints;
+    }
+
     if ('preconnect' === $relation_type) {
         $hints[] = 'https://fonts.gstatic.com';
         $hints[] = 'https://ajax.googleapis.com';
@@ -593,8 +656,10 @@ add_filter('wp_resource_hints', function ($hints, $relation_type) {
     }
 
     if ('prefetch' === $relation_type && (is_home() || is_front_page())) {
-        // Prefetch likely next pages
-        $hints[] = get_permalink(get_option('page_for_posts'));
+        $page_for_posts = get_option('page_for_posts');
+        if ($page_for_posts) {
+            $hints[] = get_permalink($page_for_posts);
+        }
     }
 
     return $hints;

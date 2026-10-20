@@ -1,31 +1,21 @@
 /* eslint-disable no-unused-vars */
+import './public-path.js';
 import '@images/favicon.ico';
 import '@styles/tailwind.css'; // Tailwind v3: PostCSS only, no sass-loader
 import '@styles/theme';
 import './pages/*.js';
 import './ajax-search.js';
 
-import gsap from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
+// window.Swal cho script inline của [laca_contact_form]
+// (ContactFormAjaxHandler.php) giờ do swal-lazy.js gán khi tải động —
+// trang có form liên hệ thì tải ngay lúc khởi động (initPageFeatures).
+import { loadSwal } from './swal-lazy.js';
 
-// Expose window.Swal cho MỌI site dùng theme này — ContactFormAjaxHandler
-// (app/src/Features/ContactForm/ContactFormAjaxHandler.php) in ra 1 script
-// inline ngay trong shortcode [laca_contact_form] giả định window.Swal đã
-// có sẵn ("Swal sẽ available vì theme.js chạy trước") nhưng bundle public
-// trước đây KHÔNG tự expose global này (chỉ admin/index.js làm) — mọi form
-// liên hệ trên frontend vì vậy luôn rơi vào fallback alert()/banner thay vì
-// popup SweetAlert2 thật.
-import Swal from 'sweetalert2';
-window.Swal = Swal;
-
-import {setupGsap404 } from './components/animations.js';
 import { initHeaderScroll, resetHeaderState }           from './components/header.js';
 import { initMobileMenu, closeMobileMenu }             from './components/mobile-menu.js';
 import { initContactPage }                             from './pages/contact.js';
 import { initCommentForm }                             from './pages/comments.js';
 import { initScrollReveal, initCounters, initRippleEffect } from './micro-interactions.js';
-
-gsap.registerPlugin( ScrollTrigger );
 
 // ─── Device check ────────────────────────────────────────────────────────────
 const isMobile = window.matchMedia && window.matchMedia( '(max-width: 768px)' ).matches;
@@ -42,11 +32,21 @@ function initPageFeatures() {
 		gsapCtx.revert();
 	}
 
-	gsapCtx = gsap.context( () => {
-		if ( ! isMobile ) {
-			setupGsap404();
-		}
-	} );
+	// GSAP (~120KB) chỉ phục vụ cảnh 404 → tải động khi trang có #spaceman,
+	// không bắt mọi trang tải trước (PageSpeed: unused JS + tranh băng thông LCP).
+	if ( ! isMobile && document.querySelector( '#spaceman' ) ) {
+		import( /* webpackChunkName: "gsap-404" */ './components/animations.js' ).then(
+			( { default: gsap, setupGsap404 } ) => {
+				gsapCtx = gsap.context( () => setupGsap404() );
+			}
+		);
+	}
+
+	// Form liên hệ gọi window.Swal ngay khi AJAX trả về (không qua proxy) →
+	// trang có form thì tải luôn, không đợi người dùng focus.
+	if ( document.querySelector( '.laca-contact-form' ) ) {
+		loadSwal();
+	}
 
 	// Scroll-reveal and counters observe current DOM nodes.
 	initScrollReveal();
@@ -54,8 +54,6 @@ function initPageFeatures() {
 
 	initContactPage();
 	initCommentForm();
-
-	setTimeout( () => ScrollTrigger.refresh(), 500 );
 }
 
 // ─── Bootstrap ───────────────────────────────────────────────────────────────

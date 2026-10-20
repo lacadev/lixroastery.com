@@ -1,4 +1,4 @@
-import Swal from 'sweetalert2';
+import { Swal } from '../swal-lazy.js';
 
 export const initCommentForm = () => {
     const form = document.getElementById('commentform');

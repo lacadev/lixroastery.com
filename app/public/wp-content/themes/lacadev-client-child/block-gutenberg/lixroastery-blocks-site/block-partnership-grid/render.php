@@ -116,7 +116,7 @@ $wrapper_attrs = get_block_wrapper_attributes(['class' => 'block-partnership-gri
                 ?>
                     <a href="<?php echo $post_url; ?>" class="block-partnership-grid__card">
                         <div class="block-partnership-grid__image">
-                            <img src="<?php echo esc_url(getPostThumbnailUrl($post_id)); ?>" alt="<?php echo $title; ?>" loading="lazy" />
+                            <?php echo laca_block_image_html((int) get_post_thumbnail_id($post_id), getPostThumbnailUrl($post_id), get_the_title($post), '(max-width: 768px) 100vw, ' . round(100 / $columns) . 'vw'); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
                         </div>
                         <?php if ($cat_name || $date) : ?>
                             <div class="block-partnership-grid__tags">

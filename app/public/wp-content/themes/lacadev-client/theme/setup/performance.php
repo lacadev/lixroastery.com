@@ -139,9 +139,17 @@ class ThemePerformance
      */
     public static function optimize_images($attr, $attachment, $size)
     {
-        // Add loading and decoding attributes
-        $attr['loading'] = 'lazy';
-        $attr['decoding'] = 'async';
+        // Add loading and decoding attributes (không ghi đè nếu đã chỉ định loading hoặc fetchpriority="high")
+        if (empty($attr['loading'])) {
+            if (isset($attr['fetchpriority']) && $attr['fetchpriority'] === 'high') {
+                $attr['loading'] = 'eager';
+            } else {
+                $attr['loading'] = 'lazy';
+            }
+        }
+        if (empty($attr['decoding'])) {
+            $attr['decoding'] = 'async';
+        }
 
         // Add better alt text if missing
         if (empty($attr['alt'])) {
@@ -165,8 +173,23 @@ class ThemePerformance
      */
     public static function optimize_content_images($content)
     {
-        // Add lazy loading to content images
-        $content = preg_replace('/<img((?![^>]*loading)[^>]*)>/', '<img$1 loading="lazy" decoding="async">', $content);
+        // Add lazy loading to content images (không ghi đè nếu đã có loading hoặc fetchpriority="high")
+        $content = preg_replace_callback('/<img([^>]+)>/i', function ($matches) {
+            $tag = $matches[0];
+            $attrs = $matches[1];
+
+            // Nếu đã có loading="..." thì giữ nguyên
+            if (stripos($attrs, 'loading=') !== false) {
+                return $tag;
+            }
+
+            // Nếu có fetchpriority="high" thì gắn loading="eager"
+            if (stripos($attrs, 'fetchpriority="high"') !== false || stripos($attrs, "fetchpriority='high'") !== false) {
+                return '<img' . $attrs . ' loading="eager" decoding="async">';
+            }
+
+            return '<img' . $attrs . ' loading="lazy" decoding="async">';
+        }, $content);
 
         // Add responsive images if missing
         $content = preg_replace_callback('/<img([^>]+)>/', function ($matches) {

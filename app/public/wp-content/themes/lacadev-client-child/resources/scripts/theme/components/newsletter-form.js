@@ -1,13 +1,46 @@
 // Form Newsletter ở footer — xem theme/template-parts/newsletter-form.php.
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+let recaptchaLoadPromise = null;
+
+const loadRecaptchaScript = ( key ) => {
+	if ( ! key ) {
+		return Promise.resolve();
+	}
+	if ( window.grecaptcha ) {
+		return Promise.resolve();
+	}
+	if ( recaptchaLoadPromise ) {
+		return recaptchaLoadPromise;
+	}
+
+	recaptchaLoadPromise = new Promise( ( resolve ) => {
+		const script = document.createElement( 'script' );
+		script.src = `https://www.google.com/recaptcha/api.js?render=${ encodeURIComponent(
+			key
+		) }`;
+		script.async = true;
+		script.onload = () => resolve();
+		script.onerror = () => resolve();
+		document.head.appendChild( script );
+	} );
+
+	return recaptchaLoadPromise;
+};
+
 // Token reCAPTCHA v3 chỉ dùng được 1 lần và hết hạn sau 2 phút — lấy mới
 // ngay trước mỗi lần gửi thay vì lấy sẵn lúc tải trang.
-const getRecaptchaToken = ( form ) => {
+const getRecaptchaToken = async ( form ) => {
 	const { recaptchaKey, recaptchaAction } = form.dataset;
 
-	if ( ! recaptchaKey || ! window.grecaptcha ) {
-		return Promise.resolve( '' );
+	if ( ! recaptchaKey ) {
+		return '';
+	}
+
+	await loadRecaptchaScript( recaptchaKey );
+
+	if ( ! window.grecaptcha ) {
+		return '';
 	}
 
 	return new Promise( ( resolve ) => {
@@ -90,6 +123,15 @@ const bindNewsletterForm = ( form ) => {
 		input.removeAttribute( 'aria-invalid' );
 		message.hidden = true;
 	} );
+
+	// Tải sẵn reCAPTCHA khi người dùng tương tác với form (focus hoặc hover/chạm)
+	const preloadRecaptcha = () => {
+		if ( form.dataset.recaptchaKey ) {
+			loadRecaptchaScript( form.dataset.recaptchaKey );
+		}
+	};
+	form.addEventListener( 'focusin', preloadRecaptcha, { once: true } );
+	form.addEventListener( 'pointerdown', preloadRecaptcha, { once: true } );
 
 	form.addEventListener( 'submit', async ( event ) => {
 		event.preventDefault();

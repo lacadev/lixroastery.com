@@ -5,6 +5,9 @@
 
 import gsap from 'gsap';
 
+// index.js import() động file này → dùng chung đúng instance gsap để tạo context.
+export default gsap;
+
 export function setupGsap404() {
 	gsap.set( 'svg', { visibility: 'visible' } );
 

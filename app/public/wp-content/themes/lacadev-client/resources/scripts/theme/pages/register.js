@@ -1,5 +1,5 @@
 /* eslint-disable no-console, no-unused-vars, no-alert */
-import Swal from 'sweetalert2/dist/sweetalert2';
+import { Swal } from '../swal-lazy.js';
 
 window.registerFunction = {
 	form: null,

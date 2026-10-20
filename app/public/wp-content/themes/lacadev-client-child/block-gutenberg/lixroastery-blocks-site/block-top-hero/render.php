@@ -99,11 +99,32 @@ $section_style = $height_mode === 'custom'
 if ($parallax_strength) {
     $section_style .= '--parallax-scale:' . (1 + $parallax_strength / 100) . ';';
 }
+
+// Đếm số lượng block hero trên cùng trang: chỉ block đầu tiên mới eager + fetchpriority="high"
+static $lix_hero_instance = 0;
+$lix_hero_instance++;
+$is_first_hero = ($lix_hero_instance === 1);
+$hero_loading = $is_first_hero ? 'eager' : 'lazy';
+$hero_priority = $is_first_hero ? 'high' : 'auto';
 ?>
 <section <?php echo $wrapper_attrs; ?> style="<?php echo esc_attr($section_style); ?>"<?php if ($parallax_strength) : ?> data-parallax="<?php echo esc_attr($parallax_strength / 100); ?>"<?php endif; ?><?php if ($darken_max) : ?> data-darken="<?php echo esc_attr($darken_max / 100); ?>"<?php endif; ?>>
-    <?php if ($hero_image_url) : ?>
-        <img src="<?php echo $hero_image_url; ?>" alt="" class="block-top-hero__bg" loading="eager" />
-    <?php endif; ?>
+    <?php
+    $hero_image_id = intval($attributes['heroImageId'] ?? 0);
+    if ($hero_image_id) {
+        echo wp_get_attachment_image($hero_image_id, 'full', false, [
+            'class'         => 'block-top-hero__bg',
+            'alt'           => '',
+            'loading'       => $hero_loading,
+            'fetchpriority' => $hero_priority,
+            'decoding'      => 'async',
+            'sizes'         => '100vw',
+        ]);
+    } elseif ($hero_image_url) {
+        ?>
+        <img src="<?php echo $hero_image_url; ?>" alt="" class="block-top-hero__bg" loading="<?php echo esc_attr($hero_loading); ?>" fetchpriority="<?php echo esc_attr($hero_priority); ?>" decoding="async" />
+        <?php
+    }
+    ?>
     <div class="block-top-hero__overlay" style="<?php echo esc_attr($overlay_style); ?>"></div>
     <?php if ($darken_max) : ?>
         <div class="block-top-hero__shade" aria-hidden="true"></div>
