@@ -1,0 +1,896 @@
+// ============================================================
+// Laca SEO Admin SCSS Stylesheet
+// Uses --laca-* CSS custom properties and BEM methodology
+// ============================================================
+
+.laca-seo-wrap {
+    margin: 10px 20px 0 2px;
+    max-width: calc(100% - 20px);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+    color: var(--laca-text-main, #3d4654);
+    overflow-x: clip;
+    box-sizing: border-box;
+
+    @media (max-width: 782px) {
+        margin: 10px 10px 0 0;
+        max-width: calc(100% - 10px);
+    }
+
+    * {
+        box-sizing: border-box;
+    }
+}
+
+// ─── Header ──────────────────────────────────────────────────
+.laca-seo-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #fff;
+    padding: 16px 24px;
+    border-radius: var(--laca-radius, 8px);
+    border: 1px solid var(--laca-border, #e8ecf0);
+    box-shadow: var(--laca-shadow-sm, 0 1px 3px rgba(0, 0, 0, 0.06));
+    margin-bottom: 20px;
+
+    &__branding {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    &__logo {
+        font-size: 28px;
+        width: 28px;
+        height: 28px;
+        color: var(--laca-primary, #8aadf7);
+    }
+
+    &__title {
+        font-size: 22px;
+        font-weight: 700;
+        margin: 0;
+        color: var(--laca-text-main, #3d4654);
+    }
+
+    &__badge {
+        background: var(--laca-primary-lt, #eef3fe);
+        color: #3b82f6;
+        font-size: 11px;
+        font-weight: 700;
+        padding: 3px 8px;
+        border-radius: 9999px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+}
+
+// ─── Top Navigation Bar ──────────────────────────────────────
+.laca-seo-nav {
+    background: #fff;
+    border-radius: var(--laca-radius, 8px);
+    border: 1px solid var(--laca-border, #e8ecf0);
+    margin-bottom: 24px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+
+    &__list {
+        display: flex;
+        flex-wrap: wrap;
+        margin: 0;
+        padding: 0;
+        list-style: none;
+    }
+
+    &__item {
+        margin: 0;
+    }
+
+    &__link {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 14px 20px;
+        color: var(--laca-text-muted, #8b95a5);
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 14px;
+        border-bottom: 3px solid transparent;
+        white-space: nowrap;
+        transition: all 0.2s ease;
+
+        &:hover {
+            color: var(--laca-primary, #8aadf7);
+            background: var(--laca-bg-soft, #fafbfc);
+        }
+
+        &.is-active {
+            color: #2563eb;
+            border-bottom-color: #2563eb;
+            background: #fff;
+        }
+
+        .dashicons {
+            font-size: 18px;
+            width: 18px;
+            height: 18px;
+        }
+    }
+
+    &__badge {
+        background: #f1f5f9;
+        color: #64748b;
+        font-size: 10px;
+        font-weight: 700;
+        padding: 2px 6px;
+        border-radius: 4px;
+        margin-left: 4px;
+    }
+}
+
+// ─── Stat Cards ──────────────────────────────────────────────
+.laca-seo-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+
+    @media (max-width: 1199px) {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    @media (max-width: 600px) {
+        grid-template-columns: 1fr;
+    }
+}
+
+.laca-seo-stat-card {
+    background: #fff;
+    padding: 20px;
+    border-radius: var(--laca-radius, 8px);
+    border: 1px solid var(--laca-border, #e8ecf0);
+    display: flex;
+    align-items: center;
+    gap: 16px;
+
+    &__icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+
+        .dashicons {
+            font-size: 24px;
+            width: 24px;
+            height: 24px;
+        }
+
+        &.is-success {
+            background: var(--laca-green-soft, #edf9f2);
+            color: #10b981;
+        }
+
+        &.is-warning {
+            background: var(--laca-amber-soft, #fef7ea);
+            color: #f59e0b;
+        }
+
+        &.is-danger {
+            background: var(--laca-red-soft, #fef0f0);
+            color: #ef4444;
+        }
+
+        &.is-info {
+            background: var(--laca-blue-soft, #eef3fe);
+            color: #3b82f6;
+        }
+
+        &.is-amber {
+            background: #fffbeb;
+            color: #d97706;
+        }
+    }
+
+    &__info {
+        display: flex;
+        flex-direction: column;
+    }
+
+    &__label {
+        font-size: 13px;
+        color: var(--laca-text-muted, #8b95a5);
+    }
+
+    &__value {
+        font-size: 18px;
+        font-weight: 700;
+        color: var(--laca-text-main, #3d4654);
+        margin: 2px 0;
+    }
+
+    small {
+        font-size: 12px;
+        color: #94a3b8;
+
+        a {
+            color: #3b82f6;
+            text-decoration: none;
+            &:hover { text-decoration: underline; }
+        }
+    }
+}
+
+// ─── Modules Grid ────────────────────────────────────────────
+.laca-seo-modules-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+
+    @media (max-width: 1199px) {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    @media (max-width: 700px) {
+        grid-template-columns: 1fr;
+    }
+}
+
+.laca-seo-module-card {
+    background: #fff;
+    border: 1px solid var(--laca-border, #e8ecf0);
+    border-radius: var(--laca-radius, 8px);
+    padding: 18px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: all 0.2s ease;
+
+    &:hover {
+        border-color: #cbd5e1;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+    }
+
+    &.is-active {
+        border-color: #bfdbfe;
+        background: #fbfdff;
+    }
+
+    &.is-future {
+        opacity: 0.75;
+        background: #fafafa;
+    }
+
+    &__header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 12px;
+        margin-bottom: 10px;
+    }
+
+    &__title {
+        font-size: 15px;
+        font-weight: 600;
+        margin: 0;
+        color: #1e293b;
+    }
+
+    &__desc {
+        font-size: 13px;
+        color: #64748b;
+        margin: 0;
+        line-height: 1.5;
+    }
+}
+
+// ─── Settings Layout (Sidebar + Content) ─────────────────────
+.laca-seo-settings-layout {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.laca-seo-search-bar {
+    background: #fff;
+    border: 1px solid var(--laca-border, #e8ecf0);
+    border-radius: var(--laca-radius, 8px);
+    padding: 8px 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+    .dashicons {
+        color: #94a3b8;
+    }
+
+    .laca-seo-search-input {
+        border: none !important;
+        box-shadow: none !important;
+        font-size: 14px;
+        width: 100%;
+        outline: none;
+        padding: 4px 0;
+        background: transparent;
+    }
+}
+
+.laca-seo-settings-body {
+    display: grid;
+    grid-template-columns: 260px 1fr;
+    gap: 20px;
+    align-items: start;
+    min-width: 0;
+    max-width: 100%;
+
+    @media (max-width: 1199px) {
+        grid-template-columns: 1fr;
+    }
+}
+
+.laca-seo-tabs-sidebar {
+    background: #fff;
+    border: 1px solid var(--laca-border, #e8ecf0);
+    border-radius: var(--laca-radius, 8px);
+    padding: 10px 0;
+    min-width: 0;
+    max-width: 100%;
+    position: sticky;
+    top: 42px;
+    max-height: calc(100vh - 60px);
+    overflow-y: auto;
+
+    @media (max-width: 1199px) {
+        position: static;
+        max-height: none;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+}
+
+.laca-seo-tabs-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    min-width: 0;
+
+    @media (max-width: 1199px) {
+        display: flex;
+        flex-wrap: nowrap;
+        width: max-content;
+    }
+
+    &__item {
+        margin: 0;
+    }
+
+    &__link {
+        display: block;
+        padding: 9px 16px;
+        font-size: 13px;
+        font-weight: 500;
+        line-height: 1.35;
+        color: #475569;
+        text-decoration: none;
+        border-left: 3px solid transparent;
+        transition: all 0.15s ease;
+        white-space: normal;
+        word-break: break-word;
+
+        @media (max-width: 1199px) {
+            white-space: nowrap;
+        }
+
+        &:hover {
+            color: #2563eb;
+            background: #f8fafc;
+        }
+
+        &.is-active {
+            color: #2563eb;
+            background: #eff6ff;
+            font-weight: 600;
+            border-left-color: #2563eb;
+
+            @media (max-width: 1199px) {
+                border-left-color: transparent;
+                border-bottom: 3px solid #2563eb;
+            }
+        }
+    }
+}
+
+// ─── Card & Form Fields ──────────────────────────────────────
+.laca-seo-card {
+    background: #fff;
+    border: 1px solid var(--laca-border, #e8ecf0);
+    border-radius: var(--laca-radius, 8px);
+    padding: 24px;
+    margin-bottom: 24px;
+    box-shadow: var(--laca-shadow-sm, 0 1px 3px rgba(0, 0, 0, 0.06));
+    max-width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+
+    @media (max-width: 782px) {
+        padding: 16px;
+    }
+
+    &__header {
+        margin-bottom: 20px;
+        padding-bottom: 14px;
+        border-bottom: 1px solid #f1f5f9;
+        max-width: 100%;
+        min-width: 0;
+    }
+
+    &__title {
+        font-size: 18px;
+        font-weight: 700;
+        margin: 0 0 6px 0;
+        color: #1e293b;
+    }
+
+    &__subtitle {
+        font-size: 13px;
+        color: #64748b;
+        margin: 0;
+    }
+}
+
+.laca-seo-field-row {
+    display: grid;
+    grid-template-columns: 320px 1fr;
+    gap: 24px;
+    padding: 18px 0;
+    border-bottom: 1px solid #f1f5f9;
+    align-items: start;
+    max-width: 100%;
+    min-width: 0;
+
+    &:last-child {
+        border-bottom: none;
+    }
+
+    // Mẫu tiêu đề/mô tả/code: label trên, ô full width dưới (xem Renderer::render).
+    &--stack {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+
+    @media (max-width: 782px) {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+
+    &__label-col {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        max-width: 100%;
+        min-width: 0;
+    }
+
+    &__control-col {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        max-width: 100%;
+        min-width: 0;
+
+        input[type="text"],
+        input[type="number"],
+        input[type="url"],
+        input[type="email"],
+        select,
+        textarea {
+            max-width: 100% !important;
+            box-sizing: border-box;
+        }
+
+        .regular-text {
+            max-width: 100% !important;
+            width: 100%;
+        }
+    }
+}
+
+.laca-seo-field-label {
+    font-size: 14px;
+    font-weight: 600;
+    color: #1e293b;
+    line-height: 1.4;
+}
+
+// ─── 3-Line Collapsible Note ─────────────────────────────────
+.laca-seo-note {
+    &__toggle {
+        background: none;
+        border: none;
+        padding: 0;
+        color: #64748b;
+        font-size: 12px;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        text-decoration: underline;
+
+        &:hover {
+            color: #2563eb;
+        }
+
+        .dashicons {
+            font-size: 14px;
+            width: 14px;
+            height: 14px;
+        }
+    }
+
+    &__content {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 6px;
+        padding: 10px 14px;
+        margin-top: 8px;
+        font-size: 12px;
+        line-height: 1.5;
+        color: #475569;
+    }
+
+    &__item {
+        margin: 4px 0;
+
+        strong {
+            color: #1e293b;
+        }
+
+        &--i18n {
+            color: #2563eb;
+            margin-top: 6px;
+        }
+    }
+}
+
+// ─── Switch / Toggle Control ─────────────────────────────────
+.laca-seo-switch {
+    position: relative;
+    display: inline-block;
+    width: 44px;
+    height: 24px;
+    cursor: pointer;
+
+    input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+
+        &:checked + .laca-seo-switch__slider {
+            background-color: #2563eb;
+
+            &:before {
+                transform: translateX(20px);
+            }
+        }
+
+        &:focus + .laca-seo-switch__slider {
+            box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
+        }
+    }
+
+    &__slider {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #cbd5e1;
+        transition: .2s;
+        border-radius: 24px;
+
+        &:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .2s;
+            border-radius: 50%;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+        }
+    }
+}
+
+// ─── Radio Inline & Multicheck ───────────────────────────────
+.laca-seo-radio-inline,
+.laca-seo-multicheck {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+
+    &__item {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 13px;
+        cursor: pointer;
+        color: #334155;
+    }
+}
+
+// ─── Sticky Bottom Actions ───────────────────────────────────
+.laca-seo-sticky-footer {
+    position: sticky;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(8px);
+    border-top: 1px solid var(--laca-border, #e8ecf0);
+    padding: 14px 24px;
+    margin: 20px -24px -24px -24px;
+    border-radius: 0 0 var(--laca-radius, 8px) var(--laca-radius, 8px);
+    z-index: 10;
+    max-width: 100vw;
+    box-sizing: border-box;
+
+    @media (max-width: 782px) {
+        padding: 12px 16px;
+        margin: 16px -16px -16px -16px;
+    }
+
+    &__inner {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+
+        @media (max-width: 480px) {
+            flex-direction: column;
+            align-items: stretch;
+            width: 100%;
+
+            button {
+                width: 100% !important;
+                justify-content: center !important;
+            }
+        }
+    }
+}
+
+.laca-seo-save-btn {
+    height: 40px !important;
+    line-height: 38px !important;
+    padding: 0 24px !important;
+    font-size: 14px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 6px !important;
+
+    .dashicons {
+        margin: 0 !important;
+        line-height: 1 !important;
+        font-size: 18px !important;
+        width: 18px !important;
+        height: 18px !important;
+        display: inline-block !important;
+    }
+}
+
+.laca-seo-reset-btn {
+    height: 40px !important;
+    line-height: 38px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+// ─── Variable Field UI (Dropdown, Counters, Preview) ──────────
+.laca-seo-var-field {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: 100%;
+
+    &__input-wrap {
+        display: flex;
+        gap: 8px;
+        align-items: flex-start;
+        width: 100%;
+
+        @media (max-width: 600px) {
+            flex-direction: column;
+        }
+
+        .laca-seo-var-input {
+            flex: 1 1 auto;
+            width: 100%;
+            min-width: 0;
+        }
+    }
+}
+
+.laca-seo-var-dropdown-wrap {
+    position: relative;
+    display: inline-block;
+    flex-shrink: 0;
+}
+
+.laca-seo-var-btn {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 4px !important;
+    white-space: nowrap !important;
+    flex-shrink: 0 !important;
+
+    .dashicons {
+        width: 16px;
+        height: 16px;
+        font-size: 16px;
+        line-height: 1;
+    }
+}
+
+.laca-seo-var-dropdown {
+    position: absolute;
+    right: 0;
+    top: calc(100% + 4px);
+    width: 320px;
+    max-height: 360px;
+    background: #fff;
+    border: 1px solid var(--laca-border, #e8ecf0);
+    border-radius: var(--laca-radius, 8px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.12);
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+
+    &[hidden] {
+        display: none !important;
+    }
+
+    @media (max-width: 600px) {
+        right: auto;
+        left: 0;
+        width: 280px;
+    }
+}
+
+.laca-seo-var-search {
+    border: none !important;
+    border-bottom: 1px solid #e2e8f0 !important;
+    border-radius: 0 !important;
+    padding: 8px 12px !important;
+    font-size: 13px !important;
+    outline: none !important;
+    box-shadow: none !important;
+    width: 100% !important;
+}
+
+.laca-seo-var-list {
+    list-style: none;
+    margin: 0;
+    padding: 4px 0;
+    overflow-y: auto;
+    max-height: 300px;
+
+    &__item {
+        padding: 8px 12px;
+        cursor: pointer;
+        border-bottom: 1px solid #f8fafc;
+        transition: background 0.15s ease;
+
+        &:hover {
+            background: #eff6ff;
+        }
+
+        &:last-child {
+            border-bottom: none;
+        }
+    }
+
+    &__tag {
+        font-size: 13px;
+        color: #1e293b;
+
+        code {
+            color: #2563eb;
+            background: #eff6ff;
+            padding: 1px 4px;
+            border-radius: 3px;
+            font-size: 12px;
+        }
+    }
+
+    &__desc {
+        font-size: 11px;
+        color: #64748b;
+        margin-top: 2px;
+    }
+
+    &__example {
+        font-size: 11px;
+        color: #94a3b8;
+        margin-top: 2px;
+    }
+
+    &__empty {
+        padding: 16px;
+        text-align: center;
+        color: #94a3b8;
+        font-size: 12px;
+    }
+}
+
+.laca-seo-var-counter {
+    font-size: 12px;
+    color: #64748b;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+
+    &.is-good {
+        color: #16a34a;
+        font-weight: 600;
+    }
+
+    &.is-warning {
+        color: #d97706;
+    }
+
+    &.is-danger {
+        color: #dc2626;
+        font-weight: 600;
+    }
+}
+
+.laca-seo-var-preview {
+    font-size: 12px;
+    background: #f8fafc;
+    border: 1px dashed #cbd5e1;
+    border-radius: 4px;
+    padding: 6px 10px;
+    color: #334155;
+    word-break: break-all;
+
+    &__label {
+        font-weight: 600;
+        color: #64748b;
+        margin-right: 4px;
+    }
+
+    &__text {
+        color: #0f172a;
+    }
+}
+
+// ─── 2-Column Grid for Import/Export ─────────────────────────
+.laca-seo-grid-2col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+
+    @media (max-width: 900px) {
+        grid-template-columns: 1fr;
+    }
+}
+
+.laca-seo-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+
+    &--core {
+        background: #f1f5f9;
+        color: #475569;
+    }
+
+    &--subtle {
+        background: #fef3c7;
+        color: #b45309;
+    }
+}

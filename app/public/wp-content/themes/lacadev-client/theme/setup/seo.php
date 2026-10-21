@@ -1,30 +1,18 @@
 <?php
+/**
+ * Legacy SEO Meta Tags System (Deprecated)
+ * 
+ * Superseded by App\Features\LacaSeo (Laca SEO module).
+ * Kept empty for safety/backwards-compatibility without active hooks.
+ * 
+ * @package LacaDev
+ * @deprecated Superseded by \App\Features\LacaSeo\LacaSeo
+ */
+
 if (!defined('ABSPATH')) {
     exit;
 }
-
-/**
- * SEO Meta Tags System
- * 
- * @package LacaDev
- */
-
-/**
- * Add Canonical URL
- */
-add_action('wp_head', function() {
-    if (is_singular()) {
-        echo '<link rel="canonical" href="' . esc_url(get_permalink()) . '">' . "\n";
-    } elseif (is_home() || is_front_page()) {
-        echo '<link rel="canonical" href="' . esc_url(home_url('/')) . '">' . "\n";
-    } elseif (is_archive()) {
-        echo '<link rel="canonical" href="' . esc_url(get_pagenum_link(get_query_var('paged') ? get_query_var('paged') : 1)) . '">' . "\n";
-    }
-}, 1);
-
-/**
- * Add Open Graph Meta Tags
- */
+// (Hooks deactivated - see App\Features\LacaSeo)
 add_action('wp_head', function() {
     global $post;
     

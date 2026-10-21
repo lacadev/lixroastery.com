@@ -9,6 +9,8 @@
   "editor.js": "editor.js",
   "child.css": "styles/child.css",
   "child.js": "child.js",
+  "laca-seo.css": "styles/laca-seo.css",
+  "laca-seo.js": "laca-seo.js",
   "517.js": "517.js",
   "588.js": "588.js",
   "fonts/VNF-Futura.ttf": "fonts/VNF-Futura.2bfaecbc9e.ttf",

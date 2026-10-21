@@ -28,13 +28,17 @@ add_action('admin_bar_menu', function (\WP_Admin_Bar $wp_admin_bar) {
     // Ẩn nút WP logo
     $wp_admin_bar->remove_node('wp-logo');
 
-    // Thêm node logo LacaDev
-    $logo_url = get_template_directory_uri() . '/dist/images/logo.png';
-    $fallback = 'https://lacadev.com';
+    // Thêm node logo LacaDev nếu file tồn tại
+    $logo_path = get_template_directory() . '/dist/images/logo.png';
+    $logo_url  = get_template_directory_uri() . '/dist/images/logo.png';
+    $fallback  = 'https://lacadev.com';
+    $title     = file_exists($logo_path)
+        ? '<img src="' . esc_url($logo_url) . '" class="logo-admin-bar" alt="LacaDev" onerror="this.style.display=\'none\'">'
+        : '<span class="ab-icon dashicons dashicons-admin-generic"></span><span class="ab-label">LacaDev</span>';
 
     $wp_admin_bar->add_node([
         'id'    => 'logo_author',
-        'title' => '<img src="' . esc_url($logo_url) . '" class="logo-admin-bar" alt="LacaDev" onerror="this.style.display=\'none\'">',
+        'title' => $title,
         'href'  => esc_url($fallback),
         'meta'  => ['target' => '_blank'],
     ]);

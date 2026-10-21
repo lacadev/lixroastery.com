@@ -396,7 +396,8 @@ class DashboardWidgets
         $view_posts = new \WP_Query(['post_type' => $allow_post_types, 'posts_per_page' => $paged_limit, 'meta_key' => self::VIEW_COUNT_META, 'orderby' => 'meta_value_num', 'order' => 'DESC', 'post_status' => 'publish', 'no_found_rows' => false]);
 
         $seo_meta_key  = '';
-        if (defined('RANK_MATH_VERSION'))  $seo_meta_key = 'rank_math_seo_score';
+        if (class_exists('\App\Features\LacaSeo\LacaSeo'))   $seo_meta_key = '_laca_seo_seo_score';
+        elseif (defined('RANK_MATH_VERSION'))  $seo_meta_key = 'rank_math_seo_score';
         elseif (defined('WPSEO_VERSION')) $seo_meta_key = '_yoast_wpseo_linkdex';
 
         $low_seo_posts = null;

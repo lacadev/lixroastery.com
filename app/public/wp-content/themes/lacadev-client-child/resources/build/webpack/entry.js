@@ -25,4 +25,9 @@ module.exports = {
     utils.srcStylesPath('child.scss'),
     path.join(childSrc, 'theme/index.js'),
   ],
+  // Laca SEO Admin Bundle (Phase 0 & 1)
+  'laca-seo': [
+    path.join(parentSrc, 'admin/laca-seo/index.js'),
+    path.resolve(__dirname, '../../../../lacadev-client/resources/styles/admin/laca-seo/index.scss'),
+  ],
 };

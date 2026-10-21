@@ -236,7 +236,7 @@ class ContentAuditService
 
         $post_ids   = array_column($posts, 'ID');
         $id_in      = implode(',', array_map('absint', $post_ids));
-        $meta_keys  = ['_yoast_wpseo_metadesc', 'rank_math_description', '_seopress_titles_desc'];
+        $meta_keys  = ['_laca_seo_description', '_yoast_wpseo_metadesc', 'rank_math_description', '_seopress_titles_desc'];
         $meta_in    = implode(',', array_fill(0, count($meta_keys), '%s'));
 
         $rows = $wpdb->get_results($wpdb->prepare("

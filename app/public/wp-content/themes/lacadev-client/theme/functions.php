@@ -143,7 +143,7 @@ add_action('after_setup_theme', function () {
     require_once APP_APP_SETUP_DIR . 'security.php';
     require_once APP_APP_SETUP_DIR . 'recaptcha.php';
     // contact-recaptcha.php removed - recaptcha.php handles all forms including contact
-    // require_once APP_APP_SETUP_DIR . 'seo.php';
+    // (Legacy seo.php removed - replaced by App\Features\LacaSeo)
 
     // Load image optimization (Phase 2 improvements)
     require_once APP_APP_SETUP_DIR . 'image-optimization.php';

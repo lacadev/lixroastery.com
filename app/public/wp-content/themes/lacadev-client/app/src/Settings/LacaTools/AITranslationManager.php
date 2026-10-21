@@ -205,6 +205,12 @@ class AITranslationManager
     private function translateSEOMeta($post_id, $target_lang)
     {
         $meta_keys = [
+            // Laca SEO
+            '_laca_seo_title',
+            '_laca_seo_description',
+            '_laca_seo_focus_keyword',
+            '_laca_seo_facebook_title',
+            '_laca_seo_facebook_description',
             // RankMath
             'rank_math_title',
             'rank_math_description',

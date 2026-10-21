@@ -566,6 +566,11 @@ final class ReleaseChecklist
                             if (preg_match('/\b(G-[A-Z0-9]{6,}|GTM-[A-Z0-9]{4,}|UA-\d+-\d+)\b/', $scripts, $m)) {
                                 return [true, 'Mã ' . $m[1] . ' trong Header/Footer scripts'];
                             }
+                            $laca_ga = \App\Features\LacaSeo\Core\Settings::get('general.ga4_measurement_id', '');
+                            $laca_gtm = \App\Features\LacaSeo\Core\Settings::get('general.gtm_container_id', '');
+                            if (!empty($laca_ga) || !empty($laca_gtm)) {
+                                return [true, 'Laca SEO chèn mã ' . ($laca_ga ?: $laca_gtm)];
+                            }
                             $rm = (array) get_option('rank_math_google_analytic_options', []);
                             if (!empty($rm['install_code']) && !empty($rm['measurement_id'])) {
                                 return [true, 'Rank Math chèn mã ' . $rm['measurement_id']];
@@ -576,9 +581,26 @@ final class ReleaseChecklist
                             return [false, 'Chưa thấy mã GA4/GTM'];
                         }],
                     ['id' => 'seo_plugin', 'title' => 'Sitemap, tắt author archive, Search Console', 'type' => 'manual',
-                        'guide' => 'Rank Math: bật Sitemap, Titles & Meta → Authors → tắt Author Archives (tránh lộ username), gửi sitemap lên Google Search Console.',
-                        'url' => admin_url('admin.php?page=rank-math'),
+                        'guide' => 'Laca SEO / Rank Math: bật Sitemap, Titles & Meta → Authors → tắt Author Archives (tránh lộ username), dán mã xác minh Google Search Console.',
+                        'url' => admin_url('admin.php?page=laca-seo'),
                         'check' => static function () {
+                            // Check Laca SEO first
+                            if (class_exists('\App\Features\LacaSeo\Core\Settings')) {
+                                $laca_author_disabled = \App\Features\LacaSeo\Core\Settings::get('titles.disable_author_archives', 'off') === 'on';
+                                $laca_google_verify = !empty(\App\Features\LacaSeo\Core\Settings::get('general.google_verify', ''));
+                                $laca_sitemap_on = \App\Features\LacaSeo\Core\Modules::isActive('sitemap');
+
+                                $missing = array_keys(array_filter([
+                                    'bật Sitemap' => !$laca_sitemap_on,
+                                    'tắt Author Archives' => !$laca_author_disabled,
+                                    'kết nối Search Console' => !$laca_google_verify,
+                                ]));
+
+                                if (!$missing) {
+                                    return [true, 'Laca SEO: Sitemap bật · Author Archives tắt · đã kết nối Search Console'];
+                                }
+                            }
+
                             if (!class_exists('RankMath')) {
                                 return [false, ''];
                             }

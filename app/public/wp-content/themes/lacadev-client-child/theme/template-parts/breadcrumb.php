@@ -9,7 +9,9 @@ $title = getPageTitle();
 <div class="breadcumb">
 	<div class="container-fluid">
 		<?php
-		if (function_exists('rank_math_the_breadcrumbs')):
+		if (function_exists('laca_seo_breadcrumbs')):
+			laca_seo_breadcrumbs();
+		elseif (function_exists('rank_math_the_breadcrumbs')):
 			rank_math_the_breadcrumbs();
 		endif;
 		?>

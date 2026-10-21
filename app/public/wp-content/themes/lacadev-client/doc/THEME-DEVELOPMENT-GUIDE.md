@@ -270,11 +270,11 @@ Theme đã tích hợp hệ thống **Responsive Images** tự động. Sử d�
 - `'tablet'` (~768px)
 - `'full'` (Original)
 
-### 7.2. Tạo XML Sitemap
+### 7.2. Laca SEO & XML Sitemap
 
-Code tạo sitemap tùy chỉnh nằm trong `theme/setup/seo.php` (hoặc `sitemap.php`).
-URL: `/sitemap.xml`.
-Tự động update khi đăng bài mới.
+Hệ thống SEO toàn diện được tích hợp trong `app/src/Features/LacaSeo/` (thay thế Rank Math).
+Quản lý cấu hình tại wp-admin › Laca Theme › SEO (`admin.php?page=laca-seo`).
+Sơ đồ trang XML tự động cung cấp tại: `/sitemap_index.xml`.
 
 ### 7.3. Thêm Custom Post Types
 

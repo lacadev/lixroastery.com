@@ -289,7 +289,15 @@ function thePostTypePagination($query, $post_type) {
     }
 }
 
-// Breadcrumb
+// Breadcrumb wrapper: Laca SEO (phase 3) -> Rank Math -> empty
+function laca_seo_breadcrumbs(): void {
+    if (function_exists('laca_seo_the_breadcrumbs')) {
+        laca_seo_the_breadcrumbs();
+    } elseif (function_exists('rank_math_the_breadcrumbs')) {
+        rank_math_the_breadcrumbs();
+    }
+}
+
 function theBreadcrumb() {
     get_template_part('template-parts/breadcrumb');
 }

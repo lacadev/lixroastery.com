@@ -277,6 +277,14 @@ add_action('after_setup_theme', function () {
     } catch (\Throwable $e) {
         error_log('[laca-discord-hub] Không khởi động được: ' . $e->getMessage());
     }
+
+    try {
+        if (class_exists('\App\Features\LacaSeo\LacaSeo')) {
+            \App\Features\LacaSeo\LacaSeo::boot();
+        }
+    } catch (\Throwable $e) {
+        error_log('[laca-seo] Không khởi động được: ' . $e->getMessage());
+    }
 }, 20);
 
 /**
