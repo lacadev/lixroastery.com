@@ -49,6 +49,11 @@ class Exporter
             $payload['data']['modules'] = Modules::getActive();
         }
 
+        if (in_array('redirections', $sections, true)) {
+            $redirs = \App\Features\LacaSeo\Modules\Redirections\DB::getRedirections(['limit' => 10000]);
+            $payload['data']['redirections'] = $redirs['redirections'] ?? [];
+        }
+
         return $payload;
     }
 

@@ -25,6 +25,8 @@ class GeneralFields
             'robots' => self::getRobotsTxtFields(),
             'htaccess' => self::getHtaccessFields(),
             'woocommerce' => self::getWooCommerceFields(),
+            'redirections' => self::getRedirectionsFields(),
+            '404-monitor' => self::get404MonitorFields(),
             'blocks' => self::getBlocksFields(),
             'others' => self::getOthersFields(),
         ];
@@ -771,6 +773,124 @@ class GeneralFields
                     'Mẫu giao diện huy hiệu điểm SEO hiển thị ngoài frontend.',
                     'Chọn kiểu vòng tròn hoặc kiểu thẻ vuông.',
                     'Huy hiệu xuất hiện theo kiểu dáng tương ứng.'
+                ),
+        ];
+    }
+
+    /**
+     * @return Field[]
+     */
+    private static function getRedirectionsFields(): array
+    {
+        return [
+            Field::make('redirections_debug', 'toggle', 'Chế độ gỡ lỗi chuyển hướng (Debug Redirections)')
+                ->default('off')
+                ->tab('redirections')
+                ->group('general')
+                ->note(
+                    'Hiển thị trang điều khiển gỡ lỗi (Debug Console) thay vì chuyển hướng ngay lập tức (chỉ áp dụng cho quản trị viên).',
+                    'Bật tuỳ chọn nếu bạn muốn kiểm tra các biến và luồng xử lý trước khi kích hoạt chuyển hướng.',
+                    'Quản trị viên sẽ thấy thông tin chi tiết về mã trạng thái, URL nguồn và đích.'
+                ),
+
+            Field::make('redirections_fallback', 'select', 'Hành vi dự phòng khi 404 (Fallback Behavior)')
+                ->default('default')
+                ->tab('redirections')
+                ->group('general')
+                ->choices([
+                    'default'  => __('Trang 404 mặc định (Default 404)', 'lacadev'),
+                    'homepage' => __('Chuyển về Trang chủ (Redirect to Homepage)', 'lacadev'),
+                    'custom'   => __('Chuyển hướng tuỳ chỉnh (Custom Redirection)', 'lacadev'),
+                ])
+                ->note(
+                    'Hành vi tự động khi khách truy cập vào một URL không tồn tại và không khớp với bất kỳ quy tắc chuyển hướng nào.',
+                    'Chọn chuyển hướng về trang chủ hoặc URL tuỳ chỉnh để giữ chân khách truy cập.',
+                    'Người dùng truy cập link hỏng sẽ được điều hướng theo đúng cấu hình dự phòng.'
+                ),
+
+            Field::make('redirections_custom_url', 'text', 'URL chuyển hướng tuỳ chỉnh dự phòng')
+                ->default('')
+                ->tab('redirections')
+                ->group('general')
+                ->showIf('redirections_fallback', 'custom')
+                ->note(
+                    'Đường dẫn URL đích mà khách truy cập sẽ được chuyển đến khi gặp lỗi 404.',
+                    'Nhập URL đầy đủ (ví dụ https://example.com/tim-kiem/) khi chọn hành vi dự phòng là Tuỳ chỉnh.',
+                    'Tất cả liên kết hỏng không xác định sẽ trỏ về URL này.'
+                ),
+
+            Field::make('redirections_header_code', 'select', 'Mã chuyển hướng mặc định (Redirection Type)')
+                ->default('301')
+                ->tab('redirections')
+                ->group('general')
+                ->choices(Helper::choicesRedirectionTypes())
+                ->note(
+                    'Mã trạng thái phản hồi HTTP mặc định sử dụng khi tạo chuyển hướng mới.',
+                    'Thông thường nên giữ 301 (Chuyển hướng vĩnh viễn) để truyền trọn vẹn sức mạnh SEO của URL cũ.',
+                    'Các quy tắc chuyển hướng mới tạo sẽ mặc định chọn loại mã trạng thái này.'
+                ),
+
+            Field::make('redirections_post_redirect', 'toggle', 'Tự động tạo chuyển hướng khi đổi slug (Auto Post Redirect)')
+                ->default('off')
+                ->tab('redirections')
+                ->group('general')
+                ->note(
+                    'Tự động ghi nhận và tạo chuyển hướng 301 từ URL cũ sang URL mới khi bạn sửa đường dẫn (slug) của bài viết, trang hoặc phân loại đã xuất bản.',
+                    'Bật tính năng này để tránh đứt gãy liên kết khi cập nhật lại tiêu đề đường dẫn.',
+                    'Hệ thống tự động thêm quy tắc chuyển hướng và thông báo cho quản trị viên.'
+                ),
+        ];
+    }
+
+    /**
+     * @return Field[]
+     */
+    private static function get404MonitorFields(): array
+    {
+        return [
+            Field::make('404_monitor_mode', 'select', 'Chế độ ghi nhận (Monitor Mode)')
+                ->default('simple')
+                ->tab('404-monitor')
+                ->group('general')
+                ->choices([
+                    'simple'   => __('Đơn giản (Simple - Chỉ ghi URL và số lượt truy cập)', 'lacadev'),
+                    'advanced' => __('Nâng cao (Advanced - Ghi thêm Referer, User-Agent)', 'lacadev'),
+                ])
+                ->note(
+                    'Mức độ chi tiết của nhật ký theo dõi lỗi 404.',
+                    'Chế độ Đơn giản giúp tiết kiệm tài nguyên cơ sở dữ liệu. Chế độ Nâng cao lưu thêm thông tin trình duyệt và nguồn giới thiệu.',
+                    'Nhật ký lỗi 404 sẽ ghi nhận các trường dữ liệu tương ứng.'
+                ),
+
+            Field::make('404_monitor_limit', 'text', 'Giới hạn số dòng nhật ký (Log Limit)')
+                ->default('100')
+                ->tab('404-monitor')
+                ->group('general')
+                ->attributes(['type' => 'number', 'min' => 0])
+                ->note(
+                    'Số lượng bản ghi tối đa được lưu trữ trong bảng nhật ký 404 (đặt 0 để không giới hạn).',
+                    'Nên đặt trong khoảng 100 đến 1000 dòng để cơ sở dữ liệu luôn nhẹ nhàng.',
+                    'Khi số lượng bản ghi vượt quá ngưỡng này, các bản ghi cũ nhất sẽ tự động được dọn dẹp.'
+                ),
+
+            Field::make('404_monitor_ignore_query_parameters', 'toggle', 'Bỏ qua tham số truy vấn URL (Ignore Query Parameters)')
+                ->default('off')
+                ->tab('404-monitor')
+                ->group('general')
+                ->note(
+                    'Bỏ qua toàn bộ phần tham số sau dấu hỏi chấm (?) khi ghi nhận lỗi 404.',
+                    'Bật tuỳ chọn nếu bạn muốn gộp các truy vấn cùng URL nhưng khác tham số theo dõi (vd: utm_source, fbclid) thành một dòng.',
+                    'URL được chuẩn hoá và gộp số lượt truy cập chính xác hơn.'
+                ),
+
+            Field::make('404_monitor_exclude', 'textarea', 'Danh sách đường dẫn loại trừ (Exclude Paths)')
+                ->default([])
+                ->tab('404-monitor')
+                ->group('general')
+                ->note(
+                    'Danh sách các đường dẫn hoặc từ khoá không muốn ghi nhận vào nhật ký 404 (nhập định dạng JSON mảng hoặc dòng).',
+                    'Thường dùng để loại trừ các tệp quét rác tự động như wp-login.php, xmlrpc.php.',
+                    'Các URL khớp quy tắc loại trừ sẽ bị bỏ qua và không lưu vào cơ sở dữ liệu.'
                 ),
         ];
     }

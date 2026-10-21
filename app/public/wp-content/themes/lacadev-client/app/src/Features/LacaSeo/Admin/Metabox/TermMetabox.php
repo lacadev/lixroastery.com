@@ -298,6 +298,38 @@ class TermMetabox
                             <label for="laca_seo_breadcrumb_title"><strong><?php esc_html_e('Tiêu đề Breadcrumb', 'lacadev'); ?></strong></label>
                             <input type="text" id="laca_seo_breadcrumb_title" name="laca_seo[_laca_seo_breadcrumb_title]" value="<?php echo esc_attr($meta['breadcrumb_title']); ?>" class="regular-text">
                         </div>
+
+                        <?php
+                        $existingTermRedirCache = \App\Features\LacaSeo\Modules\Redirections\Cache::getByObjectId($term->term_id, 'term');
+                        $existingTermRedir = $existingTermRedirCache ? \App\Features\LacaSeo\Modules\Redirections\DB::getRedirectionById((int) $existingTermRedirCache->redirection_id, 'active') : null;
+                        $hasTermRedir = !empty($existingTermRedir['url_to']);
+                        $termRedirUrlTo = $hasTermRedir ? $existingTermRedir['url_to'] : '';
+                        $termRedirCode = $hasTermRedir ? ($existingTermRedir['header_code'] ?? 301) : 301;
+                        ?>
+                        <div class="laca-seo-field-group laca-seo-redirection-metabox">
+                            <label><strong><?php esc_html_e('Chuyển hướng Danh mục (Redirection)', 'lacadev'); ?></strong></label>
+                            <div style="margin-top: 8px;">
+                                <label class="laca-checkbox-inline">
+                                    <input type="checkbox" name="laca_seo[_laca_seo_enable_redirection]" id="laca_seo_enable_term_redirection" value="on" <?php checked($hasTermRedir); ?>>
+                                    <span><?php esc_html_e('Kích hoạt chuyển hướng cho danh mục này', 'lacadev'); ?></span>
+                                </label>
+                            </div>
+                            <div id="laca_seo_term_redirection_fields" style="margin-top: 12px; <?php echo $hasTermRedir ? '' : 'display:none;'; ?>">
+                                <input type="hidden" name="laca_seo[_laca_seo_redirection_id]" value="<?php echo esc_attr((string) ($existingTermRedir['id'] ?? '')); ?>">
+                                <div style="margin-bottom: 10px;">
+                                    <label for="laca_seo_term_redirection_url_to" style="display:block; margin-bottom: 4px;"><?php esc_html_e('URL đích chuyển đến:', 'lacadev'); ?></label>
+                                    <input type="text" id="laca_seo_term_redirection_url_to" name="laca_seo[_laca_seo_redirection_url_to]" value="<?php echo esc_attr($termRedirUrlTo); ?>" class="large-text" placeholder="https://example.com/danh-muc-moi/">
+                                </div>
+                                <div>
+                                    <label for="laca_seo_term_redirection_header_code" style="display:block; margin-bottom: 4px;"><?php esc_html_e('Loại chuyển hướng:', 'lacadev'); ?></label>
+                                    <select id="laca_seo_term_redirection_header_code" name="laca_seo[_laca_seo_redirection_header_code]">
+                                        <?php foreach (Helper::choicesRedirectionTypes() as $code => $label): ?>
+                                            <option value="<?php echo esc_attr($code); ?>" <?php selected((string) $termRedirCode, (string) $code); ?>><?php echo esc_html($label); ?></option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                     <!-- Tab 3: Social -->
@@ -503,6 +535,52 @@ class TermMetabox
                 update_term_meta($termId, '_laca_seo_seo_score', $score);
             } else {
                 delete_term_meta($termId, '_laca_seo_seo_score');
+            }
+        }
+
+        // Redirection saving (Phase 4)
+        $enableRedir = !empty($input['_laca_seo_enable_redirection']) && ($input['_laca_seo_enable_redirection'] === 'on' || $input['_laca_seo_enable_redirection'] === '1');
+        $existingCache = \App\Features\LacaSeo\Modules\Redirections\Cache::getByObjectId($termId, 'term');
+        $existingRedirId = $existingCache ? (int) $existingCache->redirection_id : 0;
+        $destination = trim(wp_unslash($input['_laca_seo_term_redirection_url_to'] ?? ''));
+        $headerCode  = absint($input['_laca_seo_term_redirection_header_code'] ?? 301);
+
+        if (!$enableRedir || (empty($destination) && !in_array($headerCode, [410, 451], true))) {
+            if ($existingRedirId > 0) {
+                \App\Features\LacaSeo\Modules\Redirections\DB::delete($existingRedirId);
+            }
+        } else {
+            $termUrl = get_term_link($termId);
+            if (!is_wp_error($termUrl)) {
+                $fromPath = wp_parse_url($termUrl, PHP_URL_PATH) ?: '';
+                $fromPath = \App\Features\LacaSeo\Modules\Redirections\Redirection::stripSubdirectory($fromPath);
+
+                $redirectionData = [
+                    'id'          => $existingRedirId,
+                    'url_to'      => $destination,
+                    'header_code' => $headerCode,
+                    'sources'     => [
+                        [
+                            'pattern'    => $fromPath,
+                            'comparison' => 'exact',
+                        ],
+                    ],
+                ];
+
+                $redir = \App\Features\LacaSeo\Modules\Redirections\Redirection::from($redirectionData);
+                $redir->setNocache(true);
+                $savedId = $redir->save();
+
+                \App\Features\LacaSeo\Modules\Redirections\Cache::purgeByObjectId($termId, 'term');
+                if ($savedId) {
+                    \App\Features\LacaSeo\Modules\Redirections\Cache::add([
+                        'from_url'       => $fromPath,
+                        'redirection_id' => $savedId,
+                        'object_id'      => $termId,
+                        'object_type'    => 'term',
+                        'is_redirected'  => 1,
+                    ]);
+                }
             }
         }
     }

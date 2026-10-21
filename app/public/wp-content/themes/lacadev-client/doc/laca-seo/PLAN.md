@@ -351,6 +351,7 @@ Meta riêng Woo Pro: `_rank_math_gtin_code` → `_laca_seo_gtin_code`.
 | 2 | ✅ Xong 21/10/2026 (commit 828afb02) sau 2 vòng review (REVIEW-P2-R1, R2) | Analyzer đối chiếu trên editor thật: diffs=0, điểm khớp tuyệt đối (gồm Classic editor product + term). Hoãn sang 3A: dịch thông điệp phân tích sang tiếng Việt, hiện 2 test product trong UI. |
 | 3A | ✅ Xong 21/10/2026 sau review R1 (chờ commit) | Claude tự kiểm: sitemap 0 khác (mọi sitemap con, lastmod, ảnh, thứ tự), breadcrumbs HTML 19/19 (option RM general đã sửa nạp bộ nhớ), robots.txt giống RM, simulate-cutover 9/9. Đã khôi phục robots meta bài 866/908 bị test Phase 2 làm lệch (908 từng bị noindex). |
 | 3B | ✅ Xong 21/10/2026 sau review R1, R2 (chờ commit) — Claude tự kiểm: head + JSON-LD 19/19 URL (blog_public=1 trong bộ nhớ) chỉ còn 2 lệch đã chấp nhận; schema Event/Product nạp bộ nhớ khớp RM từng node; không còn đọc `rank_math_*`. Còn lại: CUTOVER trên production theo `CUTOVER.md` (cần người dùng thực hiện). | Schema graph + Schema Generator types chính + WooCommerce SEO → CUTOVER tắt RM |
+| 4 | ✅ Xong 21/10/2026 sau review R1 (chờ commit) | test-redirections 45/45 (M1–M20 so bằng hàm RM compare_sources, export so RM), Claude chạy 2 lần: checksum 3 bảng + bài 866 + terms không đổi. Module mặc định tắt; bảng wp_laca_seo_redirections, _cache, _404_logs đã tạo. Còn 1 dòng rác id 100003 từ test cũ chờ người dùng cho xoá. |
 
 Phase 3 tách 3A/3B vì khối lượng lớn. News/Video sitemap (Pro, module không bật trên LIX) dời sang Phase 5.
 
@@ -601,3 +602,94 @@ WooCommerce (General): wc_remove_product_base/category_base/category_parent_slug
 5. `php -l`, `yarn build`, `yarn lint` 0 error; tab Schema 1440/900/390, 0 lỗi console.
 6. KHÔNG xoá file, không cài package, không sửa plugins/, không tạo bài/term mới, khôi phục 100% dữ liệu test (kiểm lại bằng truy vấn so meta Laca vs RM
    như Claude đã làm), không commit.
+
+---
+# Spec chi tiết Phase 4 — Redirections + 404 Monitor (Free + Pro)
+
+Khảo sát LIX 21/10/2026: module `redirections` và `404-monitor` của RM **đang TẮT**, bảng `wp_rank_math_redirections*` / `wp_rank_math_404_logs`
+**không tồn tại** ⇒ không có dữ liệu cũ; Laca module mặc định TẮT như RM. Settings liên quan đã có trong `rank-math-options-general`:
+`redirections_header_code=301, redirections_debug='', 404_monitor_mode=simple, 404_monitor_limit=100, 404_monitor_ignore_query_parameters=1`.
+Vì không có dữ liệu thật ⇒ kiểm chứng bằng **so logic với chính hàm RM** (gọi class RM trong CLI) + test chức năng trong **transaction ROLLBACK**.
+
+## P4.0 Nguồn (chỉ đọc) — đọc HẾT trước khi code
+- Free: `RM/includes/modules/redirections/` (class-redirections, class-redirection, class-redirector, class-db, class-cache, class-watcher, class-debugger,
+  class-metabox, class-admin, class-table, class-export, class-import-export, views/*), `RM/includes/modules/404-monitor/` (class-monitor, class-db,
+  class-admin, class-table, views/*). Schema bảng: tìm `CREATE TABLE` trong `RM/includes/class-installer.php` (hoặc nơi tạo bảng tương ứng).
+- Pro: `RM-pro/includes/modules/redirections/` (class-redirections, class-categories, class-schedule, csv-import-redirections/*),
+  `RM-pro/includes/modules/404-monitor/class-monitor-pro.php`.
+- Settings field: `RM/includes/modules/redirections/` + `404-monitor` options (tìm `add_field` id `redirections_*`, `404_monitor_*`). Đối chiếu với
+  `Fields/GeneralFields.php` (Phase 1) — field nào RM có mà Laca thiếu thì bổ sung, đúng id/default/choices.
+
+## P4.1 Kiến trúc (`App\Features\LacaSeo\Modules\Redirections\*`, `Modules\NotFoundMonitor\*`)
+- Bảng riêng (tạo bằng `dbDelta`, chỉ khi bật module lần đầu hoặc khi chạy importer; cột/kiểu/index **y hệt** RM, đổi tiền tố):
+  `{prefix}laca_seo_redirections`, `{prefix}laca_seo_redirections_cache`, `{prefix}laca_seo_404_logs`
+  (+ Pro: taxonomy category cho redirection như `class-categories.php`, tên `laca_seo_redirection_category`; cột/meta lịch schedule như RM).
+  Lưu version schema vào option `laca_seo_db_version` để nâng cấp sau. KHÔNG xoá bảng khi tắt module.
+- Module key trong `Core/Modules.php`: `redirections`, `404-monitor` (đúng tên RM để importer `rank_math_modules` map 1:1). Mặc định tắt.
+- Chỉ chạy redirect/log khi module bật **và** RM không active (hoặc force hợp lệ). Khi RM active: màn admin vẫn quản lý được dữ liệu Laca nhưng
+  hiện notice "Rank Math đang xử lý chuyển hướng".
+
+## P4.2 Redirections — chức năng 1:1 RM
+1. Sources nhiều dòng; comparison: `exact`, `contains`, `start`, `end`, `regex`; cờ không phân biệt hoa thường (`ignore` case) đúng như RM; chuẩn hoá URL
+   (bỏ domain, slash đầu/cuối, query string) **dùng đúng logic RM** (`class-redirector.php`/`class-db.php`, các hàm get/compare/match).
+2. Header code: 301, 302, 307, 410, 451 (410/451 không cần destination). Destination hỗ trợ regex backreference `$1` như RM.
+3. Trạng thái active/inactive/trash; hits + last_accessed cập nhật như RM; cache bảng `_cache` (URL→id) + invalidation như `class-cache.php`.
+4. Thứ tự ưu tiên khi nhiều rule khớp: y RM (exact trước, rồi theo thứ tự RM xử lý — đọc kỹ `class-db.php`).
+5. Fallback cho 404 (`redirections_fallback`: default/homepage/custom + `redirections_custom_url`) y RM.
+6. Debug mode (`redirections_debug`): admin thấy trang trung gian thay vì redirect, như `class-debugger.php`.
+7. Watcher: đổi slug post/term (đã publish) → tự tạo redirect cũ→mới (`redirections_post_redirect`), xoá post → gợi ý như RM `class-watcher.php`.
+8. Metabox: field "Chuyển hướng" trong tab Nâng cao của PostMetabox/TermMetabox (Phase 2) như `class-metabox.php` (tạo/sửa redirect cho chính URL bài).
+9. Admin màn `laca-seo&view=redirections`: list table (search, filter status, phân trang, bulk activate/deactivate/trash/delete-permanently),
+   form thêm/sửa (nhiều source + comparison + case + header + destination + category + schedule Pro), xem nhanh hits.
+10. Import/Export: export `.htaccess` (Apache) + Nginx đúng format `class-export.php`; JSON trong Import/Export chung của Laca (Phase 0) thêm mục
+    "Redirections"; Pro CSV import theo `csv-import-redirections/*` (cột như RM), CSV export.
+11. Pro: categories (lọc theo category), schedule (start/end → chỉ hoạt động trong khoảng), xử lý query param theo `RM-pro .../class-redirections.php`.
+12. RankMathImporter: thêm `importRedirections()` + `import404Logs()` đọc bảng RM **nếu tồn tại** (LIX không có ⇒ trả 0, không lỗi), batch 500 dòng,
+    giữ id/hits/created; idempotent (không nhân đôi khi chạy lại).
+
+## P4.3 404 Monitor — 1:1 RM
+1. Ghi log khi `is_404()` (bỏ admin, REST, cron, file tĩnh như RM): mode `simple` (url, hits, accessed) / `advanced` (thêm referer, user agent, ip theo RM).
+2. `404_monitor_limit` (giới hạn số bản ghi, xoá cũ nhất như RM), `404_monitor_ignore_query_parameters`, `404_monitor_exclude` (pattern + comparison).
+3. Admin `view=404-monitor`: list (search, sort hits/accessed), bulk delete, "Xoá toàn bộ log", nút "Tạo chuyển hướng" từ 1 hoặc nhiều URL (mở form
+   redirections với source điền sẵn), export CSV (Pro), Pro auto-xoá log cũ nếu RM-pro có.
+4. Dashboard Laca: thẻ số 404 tuần + số redirect active (khi module bật).
+
+## P4.4 Bảo mật & hiệu năng (bắt buộc)
+- Mọi action admin: nonce + `manage_options`; AJAX `check_ajax_referer`; mọi SQL `$wpdb->prepare`; regex người dùng nhập: kiểm hợp lệ trước khi lưu
+  (`@preg_match` trả false ⇒ báo lỗi), giới hạn độ dài source 2000 ký tự.
+- Redirect chạy sớm (`template_redirect` priority như RM hoặc `parse_request` theo RM), **1 query qua bảng cache** cho URL đã gặp; không query khi module tắt.
+- Log 404: 1 INSERT … ON DUPLICATE KEY UPDATE (hoặc cách RM), không chạy cho bot đã loại trừ như RM; không log khi đang là request redirect.
+- Escape mọi output list table; `wp_safe_redirect` không dùng cho destination ngoài domain (RM dùng `wp_redirect` — làm như RM, nhưng chặn header
+  injection: bỏ ký tự xuống dòng trong destination).
+
+## P4.5 Nghiệm thu — MỘT script tự kiểm, output gọn (để Claude chỉ cần chạy lại)
+`doc/laca-seo/tools/test-redirections.php` (CLI, PHP_SAPI guard). Toàn bộ thao tác DB của test chạy trong `START TRANSACTION` … `ROLLBACK`
+(bảng InnoDB; tạo bảng bằng dbDelta TRƯỚC transaction vì CREATE gây implicit commit — bảng rỗng là trạng thái hợp lệ của module tắt).
+Mỗi ca in đúng 1 dòng `PASS|FAIL <mã ca> <mô tả ngắn> [expected → actual]`, cuối in `SUMMARY pass=N fail=M`. Không in gì khác. Các ca bắt buộc:
+- **M1–M20 so khớp vs RM:** với 20 cặp (source, comparison, case, request URL) gồm: exact có/không slash cuối, exact có query string (ignore query bật/tắt),
+  contains, start, end, regex có `$1`, regex sai cú pháp, hoa/thường, URL có ký tự Unicode/percent-encode, URL có `#`, nhiều source trong 1 rule,
+  2 rule cùng khớp (ưu tiên). Kết quả match + destination cuối của Laca phải BẰNG kết quả khi gọi trực tiếp hàm so khớp của RM
+  (require file class RM cần thiết trong CLI; nếu hàm RM phụ thuộc DB thì gọi hàm so sánh thuần của RM, ghi rõ hàm nào).
+- **H1–H5 header:** 301/302/307 có Location đúng; 410/451 không Location, status đúng (chạy redirector trong tiến trình con, bắt `headers_list()`/status).
+- **C1–C3 cache:** lần 2 cùng URL dùng cache (đếm query), sửa rule → cache bị xoá, rule inactive → không redirect.
+- **W1–W2 watcher:** đổi slug bài 866 trong transaction → có redirect cũ→mới; rollback.
+- **F1 fallback** homepage/custom khi 404; **D1 debug** admin thấy trang debug, khách bị redirect.
+- **S1 schedule (Pro)** ngoài khoảng → không redirect; **K1 category** lọc đúng.
+- **L1–L6 404 log:** simple vs advanced cột ghi đúng; ignore query gộp 1 dòng; exclude pattern không ghi; limit 3 → còn 3 dòng mới nhất; không ghi
+  admin/REST.
+- **E1–E2 export:** htaccess + nginx cho 3 rule mẫu = chuỗi mong đợi lấy từ `RM class-export.php` sinh với cùng dữ liệu (gọi hàm RM nếu được).
+- **I1 importer:** bảng RM không tồn tại ⇒ 0, không lỗi; với fixture mảng 3 rule (định dạng hàng RM) ⇒ import 3, chạy lại vẫn 3.
+- **X1 security:** destination chứa `\r\n` bị làm sạch; source regex > 2000 ký tự bị từ chối.
+Sau ROLLBACK script tự đếm số dòng 3 bảng (phải = trước test) và in `PASS Z1 DB unchanged`.
+
+Ngoài script: Puppeteer (cookie runtime, KHÔNG ghi file cookie) chụp 2 màn admin (redirections list+form, 404 list) ở 1440 và 390 → lưu ảnh trong
+`/private/tmp/laca-p4/`, in `overflowX=0`, `console errors=[]`. **Không lưu dữ liệu qua UI** (chặn POST bằng request interception, kể cả REST
+`/wp-json/` và `admin-ajax`; abort TẤT CẢ POST — bài học Phase 3B: lần trước để lọt REST save của Gutenberg).
+
+## P4.6 Báo cáo — NGẮN GỌN (tiết kiệm token người review)
+Chỉ gồm: (1) danh sách file tạo/sửa; (2) NGUYÊN VĂN output `test-redirections.php` (không chỉnh sửa, không tóm tắt lại); (3) 2 dòng Puppeteer;
+(4) dòng cuối `php -l` (đếm file lỗi), `yarn build` (dòng compiled), `yarn lint` (dòng problems); (5) điểm lệch RM có chủ ý + lý do (≤5 dòng).
+KHÔNG dán lại spec, KHÔNG mô tả dài dòng, KHÔNG tự sửa số liệu output.
+
+Ràng buộc: không xoá file, không DROP/TRUNCATE/DELETE ngoài transaction test, không cài package, không sửa plugins/, không tạo bài/term, không commit.
+Liệt kê mọi bảng đã tạo trong báo cáo.

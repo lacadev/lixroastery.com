@@ -22,6 +22,9 @@ $missing_count = (int) $wpdb->get_var("
       AND (pm_laca.meta_value IS NULL OR pm_laca.meta_value = '')
 ");
 
+$redirStats = \App\Features\LacaSeo\Modules\Redirections\DB::getStats();
+$notFoundStats = \App\Features\LacaSeo\Modules\NotFoundMonitor\DB::getStats();
+
 ?>
 <div class="laca-seo-dashboard">
     <!-- Stat boxes -->
@@ -67,6 +70,28 @@ $missing_count = (int) $wpdb->get_var("
                 <span class="laca-seo-stat-card__label">Bài thiếu Meta Desc</span>
                 <strong class="laca-seo-stat-card__value"><?php echo esc_html((string) $missing_count); ?> bài</strong>
                 <small><?php echo $missing_count > 0 ? 'Cần bổ sung mô tả SEO' : 'Tất cả bài viết đều đủ'; ?></small>
+            </div>
+        </div>
+
+        <div class="laca-seo-stat-card">
+            <div class="laca-seo-stat-card__icon is-info">
+                <span class="dashicons dashicons-randomize"></span>
+            </div>
+            <div class="laca-seo-stat-card__info">
+                <span class="laca-seo-stat-card__label">Chuyển hướng hoạt động</span>
+                <strong class="laca-seo-stat-card__value"><?php echo esc_html((string) ($redirStats->total ?? 0)); ?> quy tắc</strong>
+                <small><?php echo esc_html((string) ($redirStats->hits ?? 0)); ?> lượt chuyển hướng</small>
+            </div>
+        </div>
+
+        <div class="laca-seo-stat-card">
+            <div class="laca-seo-stat-card__icon <?php echo ($notFoundStats->total ?? 0) > 0 ? 'is-amber' : 'is-success'; ?>">
+                <span class="dashicons dashicons-dismiss"></span>
+            </div>
+            <div class="laca-seo-stat-card__info">
+                <span class="laca-seo-stat-card__label">Lỗi 404 ghi nhận</span>
+                <strong class="laca-seo-stat-card__value"><?php echo esc_html((string) ($notFoundStats->total ?? 0)); ?> URL</strong>
+                <small><?php echo esc_html((string) ($notFoundStats->hits ?? 0)); ?> lượt truy cập lỗi</small>
             </div>
         </div>
     </div>

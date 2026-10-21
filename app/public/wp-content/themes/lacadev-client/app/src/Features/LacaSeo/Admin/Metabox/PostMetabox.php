@@ -501,6 +501,39 @@ class PostMetabox
                     <input type="text" id="laca_seo_breadcrumb_title" name="laca_seo[_laca_seo_breadcrumb_title]" value="<?php echo esc_attr($meta['breadcrumb_title']); ?>" class="regular-text" placeholder="<?php echo esc_attr($post->post_title); ?>">
                     <p class="description"><?php esc_html_e('Tiêu đề ngắn gọn hiển thị trên thanh Breadcrumb thay cho tiêu đề đầy đủ.', 'lacadev'); ?></p>
                 </div>
+
+                <?php
+                $existingRedirCache = \App\Features\LacaSeo\Modules\Redirections\Cache::getByObjectId($post->ID, 'post');
+                $existingRedir = $existingRedirCache ? \App\Features\LacaSeo\Modules\Redirections\DB::getRedirectionById((int) $existingRedirCache->redirection_id, 'active') : null;
+                $hasRedir = !empty($existingRedir['url_to']);
+                $redirUrlTo = $hasRedir ? $existingRedir['url_to'] : '';
+                $redirCode = $hasRedir ? ($existingRedir['header_code'] ?? 301) : 301;
+                ?>
+                <div class="laca-seo-field-group laca-seo-redirection-metabox">
+                    <label><strong><?php esc_html_e('Chuyển hướng bài viết (Redirection)', 'lacadev'); ?></strong></label>
+                    <p class="description"><?php esc_html_e('Tự động chuyển hướng khách truy cập khi vào đường dẫn của bài viết này sang URL khác.', 'lacadev'); ?></p>
+                    <div style="margin-top: 8px;">
+                        <label class="laca-checkbox-inline">
+                            <input type="checkbox" name="laca_seo[_laca_seo_enable_redirection]" id="laca_seo_enable_redirection" value="on" <?php checked($hasRedir); ?>>
+                            <span><?php esc_html_e('Kích hoạt chuyển hướng cho bài viết này', 'lacadev'); ?></span>
+                        </label>
+                    </div>
+                    <div id="laca_seo_redirection_fields" style="margin-top: 12px; <?php echo $hasRedir ? '' : 'display:none;'; ?>">
+                        <input type="hidden" name="laca_seo[_laca_seo_redirection_id]" value="<?php echo esc_attr((string) ($existingRedir['id'] ?? '')); ?>">
+                        <div style="margin-bottom: 10px;">
+                            <label for="laca_seo_redirection_url_to" style="display:block; margin-bottom: 4px;"><?php esc_html_e('URL đích chuyển đến (Destination URL):', 'lacadev'); ?></label>
+                            <input type="text" id="laca_seo_redirection_url_to" name="laca_seo[_laca_seo_redirection_url_to]" value="<?php echo esc_attr($redirUrlTo); ?>" class="large-text" placeholder="https://example.com/url-moi/">
+                        </div>
+                        <div>
+                            <label for="laca_seo_redirection_header_code" style="display:block; margin-bottom: 4px;"><?php esc_html_e('Loại chuyển hướng (Redirection Type):', 'lacadev'); ?></label>
+                            <select id="laca_seo_redirection_header_code" name="laca_seo[_laca_seo_redirection_header_code]">
+                                <?php foreach (Helper::choicesRedirectionTypes() as $code => $label): ?>
+                                    <option value="<?php echo esc_attr($code); ?>" <?php selected((string) $redirCode, (string) $code); ?>><?php echo esc_html($label); ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <!-- Tab 3: Schema (Phase 3B - Multi-schema generator) -->
@@ -969,6 +1002,52 @@ class PostMetabox
 
                 $metaKey = "_laca_seo_schema_{$actualType}";
                 update_post_meta($postId, $metaKey, $schemaData);
+            }
+        }
+
+        // 14. Redirection saving (Phase 4)
+        if (isset($_POST['laca_seo_advanced_present'])) {
+            $enableRedir = !empty($input['_laca_seo_enable_redirection']) && ($input['_laca_seo_enable_redirection'] === 'on' || $input['_laca_seo_enable_redirection'] === '1');
+            $existingCache = \App\Features\LacaSeo\Modules\Redirections\Cache::getByObjectId($postId, 'post');
+            $existingRedirId = $existingCache ? (int) $existingCache->redirection_id : 0;
+            $destination = trim(wp_unslash($input['_laca_seo_redirection_url_to'] ?? ''));
+            $headerCode  = absint($input['_laca_seo_redirection_header_code'] ?? 301);
+
+            if (!$enableRedir || (empty($destination) && !in_array($headerCode, [410, 451], true))) {
+                if ($existingRedirId > 0) {
+                    \App\Features\LacaSeo\Modules\Redirections\DB::delete($existingRedirId);
+                }
+            } else {
+                $postUrl = get_permalink($postId);
+                $fromPath = wp_parse_url($postUrl, PHP_URL_PATH) ?: '';
+                $fromPath = \App\Features\LacaSeo\Modules\Redirections\Redirection::stripSubdirectory($fromPath);
+
+                $redirectionData = [
+                    'id'          => $existingRedirId,
+                    'url_to'      => $destination,
+                    'header_code' => $headerCode,
+                    'sources'     => [
+                        [
+                            'pattern'    => $fromPath,
+                            'comparison' => 'exact',
+                        ],
+                    ],
+                ];
+
+                $redir = \App\Features\LacaSeo\Modules\Redirections\Redirection::from($redirectionData);
+                $redir->setNocache(true);
+                $savedId = $redir->save();
+
+                \App\Features\LacaSeo\Modules\Redirections\Cache::purgeByObjectId($postId, 'post');
+                if ($savedId) {
+                    \App\Features\LacaSeo\Modules\Redirections\Cache::add([
+                        'from_url'       => $fromPath,
+                        'redirection_id' => $savedId,
+                        'object_id'      => $postId,
+                        'object_type'    => 'post',
+                        'is_redirected'  => 1,
+                    ]);
+                }
             }
         }
     }

@@ -15,6 +15,8 @@ $tabs = [
     'robots'      => 'Chỉnh sửa robots.txt',
     'htaccess'    => 'Chỉnh sửa .htaccess',
     'woocommerce' => 'WooCommerce SEO',
+    'redirections'=> 'Chuyển hướng (Redirections)',
+    '404-monitor' => 'Theo dõi lỗi 404 (404 Monitor)',
     'blocks'      => 'Khối Block Mục lục',
     'others'      => 'Khác (Others)',
 ];

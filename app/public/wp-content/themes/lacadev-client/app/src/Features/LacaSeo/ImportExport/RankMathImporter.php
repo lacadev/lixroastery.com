@@ -305,4 +305,118 @@ class RankMathImporter
 
         return $count;
     }
+
+    /**
+     * Import Redirections from Rank Math table if exists.
+     * Batch size 500, idempotent, keeps id, hits, created.
+     */
+    public static function importRedirections(int $limit = 500, int $offset = 0, ?array $fixtureRows = null): array
+    {
+        global $wpdb;
+
+        $targetTable = \App\Features\LacaSeo\Modules\Redirections\DB::getTable();
+        \App\Features\LacaSeo\Modules\Redirections\Installer::createTables();
+
+        if ($fixtureRows !== null) {
+            $rows = array_slice($fixtureRows, $offset, $limit);
+            $total = count($fixtureRows);
+        } else {
+            $sourceTable = $wpdb->prefix . 'rank_math_redirections';
+            $tableExists = $wpdb->get_var($wpdb->prepare("SHOW TABLES LIKE %s", $sourceTable));
+            if (!$tableExists) {
+                return ['processed' => 0, 'remaining' => 0];
+            }
+
+            $total = (int) $wpdb->get_var("SELECT COUNT(*) FROM {$sourceTable}");
+            $rows = $wpdb->get_results($wpdb->prepare("SELECT * FROM {$sourceTable} ORDER BY id ASC LIMIT %d OFFSET %d", $limit, $offset), ARRAY_A);
+        }
+
+        if (empty($rows)) {
+            return ['processed' => 0, 'remaining' => 0];
+        }
+
+        $processed = 0;
+        foreach ($rows as $row) {
+            $id = (int) $row['id'];
+            $existing = $wpdb->get_var($wpdb->prepare("SELECT id FROM {$targetTable} WHERE id = %d", $id));
+
+            $data = [
+                'id'            => $id,
+                'sources'       => $row['sources'],
+                'url_to'        => $row['url_to'],
+                'header_code'   => (int) $row['header_code'],
+                'hits'          => (int) ($row['hits'] ?? 0),
+                'status'        => $row['status'] ?? 'active',
+                'created'       => $row['created'] ?? current_time('mysql'),
+                'updated'       => $row['updated'] ?? current_time('mysql'),
+                'last_accessed' => $row['last_accessed'] ?? '0000-00-00 00:00:00',
+            ];
+
+            if ($existing) {
+                $wpdb->update($targetTable, $data, ['id' => $id]);
+            } else {
+                $wpdb->insert($targetTable, $data);
+            }
+            $processed++;
+        }
+
+        $remaining = max(0, $total - ($offset + count($rows)));
+        return [
+            'processed' => $processed,
+            'remaining' => $remaining,
+        ];
+    }
+
+    /**
+     * Import 404 Logs from Rank Math table if exists.
+     * Batch size 500, idempotent, keeps id, times_accessed.
+     */
+    public static function import404Logs(int $limit = 500, int $offset = 0): array
+    {
+        global $wpdb;
+
+        $targetTable = \App\Features\LacaSeo\Modules\NotFoundMonitor\DB::getTable();
+        \App\Features\LacaSeo\Modules\Redirections\Installer::createTables();
+
+        $sourceTable = $wpdb->prefix . 'rank_math_404_logs';
+        $tableExists = $wpdb->get_var($wpdb->prepare("SHOW TABLES LIKE %s", $sourceTable));
+        if (!$tableExists) {
+            return ['processed' => 0, 'remaining' => 0];
+        }
+
+        $total = (int) $wpdb->get_var("SELECT COUNT(*) FROM {$sourceTable}");
+        $rows = $wpdb->get_results($wpdb->prepare("SELECT * FROM {$sourceTable} ORDER BY id ASC LIMIT %d OFFSET %d", $limit, $offset), ARRAY_A);
+
+        if (empty($rows)) {
+            return ['processed' => 0, 'remaining' => 0];
+        }
+
+        $processed = 0;
+        foreach ($rows as $row) {
+            $id = (int) $row['id'];
+            $existing = $wpdb->get_var($wpdb->prepare("SELECT id FROM {$targetTable} WHERE id = %d", $id));
+
+            $data = [
+                'id'             => $id,
+                'uri'            => $row['uri'],
+                'accessed'       => $row['accessed'],
+                'times_accessed' => (int) ($row['times_accessed'] ?? 1),
+                'referer'        => $row['referer'] ?? '',
+                'user_agent'     => $row['user_agent'] ?? '',
+            ];
+
+            if ($existing) {
+                $wpdb->update($targetTable, $data, ['id' => $id]);
+            } else {
+                $wpdb->insert($targetTable, $data);
+            }
+            $processed++;
+        }
+
+        $remaining = max(0, $total - ($offset + count($rows)));
+        return [
+            'processed' => $processed,
+            'remaining' => $remaining,
+        ];
+    }
 }

@@ -76,7 +76,7 @@ class Modules
             'title'       => 'Chuyển hướng (Redirections 301/302)',
             'desc'        => 'Quản lý danh sách URL chuyển hướng tự động và tuỳ biến.',
             'phase'       => 4,
-            'default'     => true,
+            'default'     => false,
             'core'        => false,
         ],
         '404-monitor' => [
@@ -84,7 +84,7 @@ class Modules
             'title'       => 'Theo dõi lỗi 404 (404 Monitor)',
             'desc'        => 'Ghi nhận các liên kết lỗi 404 mà người dùng hoặc bot truy cập.',
             'phase'       => 4,
-            'default'     => true,
+            'default'     => false,
             'core'        => false,
         ],
         'local-seo' => [

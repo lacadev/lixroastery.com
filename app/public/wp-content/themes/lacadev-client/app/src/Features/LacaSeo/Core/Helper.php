@@ -142,6 +142,38 @@ class Helper
     }
 
     /**
+     * Standard choices for redirection HTTP header codes.
+     *
+     * @return array<string, string>
+     */
+    public static function choicesRedirectionTypes(): array
+    {
+        return [
+            '301' => __('301 Chuyển hướng vĩnh viễn (Permanent Move)', 'lacadev'),
+            '302' => __('302 Chuyển hướng tạm thời (Temporary Move)', 'lacadev'),
+            '307' => __('307 Chuyển hướng tạm thời chuẩn mới (Temporary Redirect)', 'lacadev'),
+            '410' => __('410 Nội dung đã bị xoá vĩnh viễn (Content Deleted)', 'lacadev'),
+            '451' => __('451 Nội dung không khả dụng vì lý do pháp lý (Unavailable For Legal Reasons)', 'lacadev'),
+        ];
+    }
+
+    /**
+     * Standard choices for source pattern comparison.
+     *
+     * @return array<string, string>
+     */
+    public static function choicesComparisonTypes(): array
+    {
+        return [
+            'exact'    => __('Chính xác (Exact)', 'lacadev'),
+            'contains' => __('Chứa (Contains)', 'lacadev'),
+            'start'    => __('Bắt đầu bằng (Starts With)', 'lacadev'),
+            'end'      => __('Kết thúc bằng (End With)', 'lacadev'),
+            'regex'    => __('Biểu thức chính quy (Regex)', 'lacadev'),
+        ];
+    }
+
+    /**
      * Standard phone types for Local SEO.
      *
      * @return array<string, string>

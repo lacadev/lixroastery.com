@@ -104,6 +104,8 @@ class AdminPage
             'titles'        => ['label' => 'Tiêu đề & Thẻ Meta', 'icon' => 'dashicons-heading'],
             'sitemap'       => ['label' => 'Sơ đồ trang XML (Sitemap)', 'icon' => 'dashicons-networking'],
             'instant-indexing' => ['label' => 'Index tức thì (IndexNow)', 'icon' => 'dashicons-update'],
+            'redirections'  => ['label' => 'Chuyển hướng (Redirections)', 'icon' => 'dashicons-randomize'],
+            '404-monitor'   => ['label' => 'Theo dõi 404 (404 Monitor)', 'icon' => 'dashicons-dismiss'],
             'import-export' => ['label' => 'Sao lưu & Nhập/Xuất', 'icon' => 'dashicons-migrate'],
             'guide'         => ['label' => 'Hướng dẫn tối ưu SEO', 'icon' => 'dashicons-book'],
         ];
@@ -178,6 +180,12 @@ class AdminPage
                         break;
                     case 'instant-indexing':
                         include __DIR__ . '/views/instant-indexing.php';
+                        break;
+                    case 'redirections':
+                        include __DIR__ . '/views/redirections.php';
+                        break;
+                    case '404-monitor':
+                        include __DIR__ . '/views/404-monitor.php';
                         break;
                     case 'dashboard':
                     default:
