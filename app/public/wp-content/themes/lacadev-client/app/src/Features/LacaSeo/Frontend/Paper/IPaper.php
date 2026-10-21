@@ -29,9 +29,9 @@ interface IPaper
     /**
      * Retrieves the advanced robots directives array.
      *
-     * @return array<string, string|int>
+     * @return array<string, string|int>|null
      */
-    public function advanced_robots(): array;
+    public function advanced_robots(): ?array;
 
     /**
      * Retrieves the canonical parts.

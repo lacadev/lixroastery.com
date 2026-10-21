@@ -61,7 +61,7 @@ class Shop extends Singular
         return [];
     }
 
-    public function advanced_robots(): array
+    public function advanced_robots(): ?array
     {
         $shop = $this->getShopPage();
         if ($shop) {
@@ -72,10 +72,13 @@ class Shop extends Singular
         }
 
         if (Settings::get('titles.pt_product_custom_robots', 'off') === 'on') {
-            return Paper::advanced_robots_combine((array) Settings::get('titles.pt_product_advanced_robots', []));
+            $adv = Paper::advanced_robots_combine((array) Settings::get('titles.pt_product_advanced_robots', []));
+            if (!empty($adv)) {
+                return $adv;
+            }
         }
 
-        return [];
+        return null;
     }
 
     public function canonical(): array

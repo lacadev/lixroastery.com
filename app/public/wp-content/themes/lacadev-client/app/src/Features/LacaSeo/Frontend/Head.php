@@ -42,9 +42,10 @@ class Head
         add_filter('pre_get_document_title', [$this, 'filterTitle'], 15);
         add_filter('wp_title', [$this, 'filterTitle'], 15);
 
-        // 4. In WP Core, wp_robots is standard. We remove all external wp_robots filters and apply our own.
-        remove_all_filters('wp_robots');
-        add_filter('wp_robots', [$this, 'filterRobots'], 99);
+        // 4. Remove core robots data to avoid duplicates, as we output <meta name="robots"> directly in outputHead() like Rank Math
+        if (!is_embed()) {
+            remove_all_filters('wp_robots');
+        }
     }
 
     /**
@@ -79,10 +80,8 @@ class Head
         // Description
         $this->outputDescription();
 
-        // NOTE on robots:
-        // Rank Math outputs meta robots here AND calls remove_all_filters('wp_robots').
-        // Per review note B4: "Robots in 2 lần: outputRobots() echo thẻ + filterRobots() sửa wp_robots (core cũng in) → bỏ echo, CHỈ dùng wp_robots"
-        // Therefore, we DO NOT echo <meta name="robots"> here! We let wp_robots filter handle it cleanly.
+        // Robots (outputs directly like Rank Math, remove_all_filters('wp_robots') ensures no duplicate)
+        $this->outputRobots();
 
         // Canonical
         $this->outputCanonical();
@@ -104,6 +103,9 @@ class Head
             $this->outputWebmasterVerification();
         }
 
+        // Schema JSON-LD Graph
+        do_action('laca_seo/head');
+
         echo "<!-- / Laca SEO -->\n";
 
         if (!empty($old_wp_query)) {
@@ -120,6 +122,18 @@ class Head
         $desc = Paper::get()->get_description();
         if ($desc !== '') {
             echo '<meta name="description" content="' . esc_attr($desc) . '"/>' . "\n";
+        }
+    }
+
+    /**
+     * Output meta robots tag matching Rank Math.
+     */
+    private function outputRobots(): void
+    {
+        $robots = Paper::get()->get_robots();
+        $robotsStr = join(', ', $robots);
+        if ($robotsStr !== '') {
+            echo '<meta name="robots" content="' . esc_attr($robotsStr) . '"/>' . "\n";
         }
     }
 

@@ -342,8 +342,6 @@ export class LacaSeoAnalyzer {
     // keywordInSubheadings, linksHasExternals, linksNotAllExternals, linksHasInternal, titleSentiment, titleHasNumber, contentHasTOC
     const excludeProduct = isProduct;
 
-    // --- Basic SEO Group ---
-
     // keywordInTitle (max 36 for en, 38 for other)
     const kwInTitle = hasKw && Ht(keyword, titleLower);
     const maxKwInTitle = isEn ? 36 : 38;
@@ -352,8 +350,8 @@ export class LacaSeoAnalyzer {
       kwInTitle,
       kwInTitle ? maxKwInTitle : 0,
       maxKwInTitle,
-      kwInTitle ? "Hurray! You're using Focus Keyword in the SEO Title." : 'Add Focus Keyword to the SEO title.',
-      'Make sure the focus keyword appears in the SEO post title too.'
+      kwInTitle ? 'Tuyệt vời! Bạn đang sử dụng Từ khoá chính trong Tiêu đề SEO.' : 'Thêm Từ khoá chính vào Tiêu đề SEO.',
+      'Hãy chắc chắn rằng từ khoá chính xuất hiện trong tiêu đề SEO của bài viết.'
     );
 
     // keywordInMetaDescription (max 2)
@@ -363,8 +361,8 @@ export class LacaSeoAnalyzer {
       kwInDesc,
       kwInDesc ? 2 : 0,
       2,
-      kwInDesc ? 'Focus Keyword used inside SEO Meta Description.' : 'Add Focus Keyword to your SEO Meta Description.',
-      'Make sure the focus keyword appears in the SEO description too.'
+      kwInDesc ? 'Từ khoá chính đã được dùng trong Mô tả SEO.' : 'Thêm Từ khoá chính vào Mô tả SEO của bạn.',
+      'Hãy đảm bảo từ khoá chính xuất hiện trong phần mô tả SEO.'
     );
 
     // keywordInPermalink (max 5) - excluded on isHome
@@ -380,8 +378,8 @@ export class LacaSeoAnalyzer {
         kwInPermalink,
         kwInPermalink ? 5 : 0,
         5,
-        kwInPermalink ? 'Focus Keyword used in the URL.' : 'Use Focus Keyword in the URL.',
-        'Include the focus keyword in the slug (permalink) of this post.'
+        kwInPermalink ? 'Từ khoá chính xuất hiện trong đường dẫn URL.' : 'Sử dụng Từ khoá chính trong đường dẫn URL.',
+        'Đưa từ khoá chính vào chuỗi đường dẫn tĩnh (slug/permalink) của bài này.'
       );
     }
 
@@ -402,8 +400,8 @@ export class LacaSeoAnalyzer {
         kwIn10Pct,
         kwIn10Pct ? 3 : 0,
         3,
-        kwIn10Pct ? 'Focus Keyword appears in the first 10% of the content.' : 'Use Focus Keyword at the beginning of your content.',
-        'The first 10% of the content should contain the Focus Keyword preferably at the beginning.'
+        kwIn10Pct ? 'Từ khoá chính xuất hiện trong 10% nội dung đầu tiên.' : 'Sử dụng Từ khoá chính ở phần đầu nội dung của bạn.',
+        '10% đầu tiên của nội dung nên chứa Từ khoá chính, tốt nhất là ở những câu mở đầu.'
       );
     }
 
@@ -415,8 +413,8 @@ export class LacaSeoAnalyzer {
         kwInContent,
         kwInContent ? 3 : 0,
         3,
-        kwInContent ? 'Focus Keyword found in the content.' : 'Use Focus Keyword in the content.',
-        'It is recommended to make the focus keyword appear in the post content too.'
+        kwInContent ? 'Tìm thấy Từ khoá chính trong nội dung.' : 'Sử dụng Từ khoá chính trong nội dung.',
+        'Nên để từ khoá chính xuất hiện rải rác tự nhiên trong bài viết.'
       );
     }
 
@@ -469,8 +467,8 @@ export class LacaSeoAnalyzer {
         lengthOk,
         lengthScore,
         8,
-        lengthOk ? `Content is ${wc} words long. Good job!` : `Content is ${wc} words long. Consider using at least ${isProduct ? 200 : 600} words.`,
-        `Minimum recommended content length should be ${isProduct ? 200 : 600} words.`
+        lengthOk ? `Nội dung dài ${wc} từ. Làm tốt lắm!` : `Nội dung dài ${wc} từ. Hãy cân nhắc viết ít nhất ${isProduct ? 200 : 600} từ.`,
+        `Độ dài nội dung tối thiểu khuyến nghị là ${isProduct ? 200 : 600} từ.`
       );
     }
 
@@ -491,8 +489,8 @@ export class LacaSeoAnalyzer {
         kwInSub,
         kwInSub ? 3 : 0,
         3,
-        kwInSub ? 'Focus Keyword found in the subheading(s).' : 'Use Focus Keyword in subheading(s) like H2, H3, H4, etc..',
-        'It is recommended to add the focus keyword as part of one or more subheadings in the content.'
+        kwInSub ? 'Đã tìm thấy Từ khoá chính trong thẻ tiêu đề phụ (subheading).' : 'Dùng Từ khoá chính trong các tiêu đề phụ như H2, H3, H4...',
+        'Khuyến nghị đưa từ khoá chính vào một hoặc nhiều tiêu đề phụ trong nội dung.'
       );
     }
 
@@ -530,8 +528,8 @@ export class LacaSeoAnalyzer {
       kwInImgAlt,
       kwInImgAlt ? 2 : 0,
       2,
-      kwInImgAlt ? 'Focus Keyword found in image alt attribute(s).' : 'Add an image with your Focus Keyword as alt text.',
-      'It is recommended to add the focus keyword in the alt attribute of one or more images.'
+      kwInImgAlt ? 'Tìm thấy Từ khoá chính trong thuộc tính Alt của hình ảnh.' : 'Thêm hình ảnh với Từ khoá chính trong thẻ alt.',
+      'Khuyến nghị chèn từ khoá chính vào văn bản thay thế (alt) của ít nhất một hình ảnh.'
     );
 
     // keywordDensity (max 6) - excluded on isPostsPage
@@ -563,8 +561,8 @@ export class LacaSeoAnalyzer {
         densityOk,
         densityScore,
         6,
-        densityOk ? `Keyword Density is ideal.` : `Aim for around 1% Keyword Density.`,
-        'There is no ideal keyword density percentage, but it should not be too high. The most important thing is to keep the copy natural.'
+        densityOk ? 'Mật độ từ khoá (Keyword Density) đạt mức lý tưởng.' : 'Hãy nhắm đến khoảng 1% mật độ từ khoá.',
+        'Không có tỷ lệ phần trăm lý tưởng duy nhất, nhưng không nên nhồi nhét từ khoá quá dày đặc.'
       );
     }
 
@@ -577,8 +575,8 @@ export class LacaSeoAnalyzer {
         permalinkOk,
         permalinkOk ? 4 : 0,
         4,
-        permalinkOk ? `URL is ${permalinkLen} characters long. Kudos!` : 'Permalink should be at most 75 characters long.',
-        'Include a short URL.'
+        permalinkOk ? `Độ dài URL là ${permalinkLen} ký tự. Rất tốt!` : 'Đường dẫn tĩnh chỉ nên dài tối đa 75 ký tự.',
+        'Hãy giữ URL ngắn gọn, súc tích.'
       );
     }
 
@@ -594,8 +592,8 @@ export class LacaSeoAnalyzer {
         hasExt,
         hasExt ? 4 : 0,
         4,
-        hasExt ? 'Great! You are linking to external resources.' : 'No outbound links were found. Link out to external resources.',
-        'Add external links.'
+        hasExt ? 'Tuyệt vời! Bạn đang trỏ liên kết đến các nguồn ngoài uy tín.' : 'Chưa tìm thấy liên kết ngoài nào. Hãy trỏ liên kết đến các nguồn tham khảo bên ngoài.',
+        'Thêm liên kết trỏ ra bên ngoài.'
       );
 
       // linksNotAllExternals (max 2)
@@ -605,8 +603,8 @@ export class LacaSeoAnalyzer {
         doFollowOk,
         doFollowOk ? 2 : 0,
         2,
-        doFollowOk ? 'At least one external link is DoFollow.' : 'Add DoFollow links pointing to external resources.',
-        'Outbound links should be dofollow.'
+        doFollowOk ? 'Ít nhất một liên kết ngoài là DoFollow.' : 'Thêm liên kết DoFollow trỏ đến các tài nguyên bên ngoài.',
+        'Nên có liên kết ngoài dạng dofollow.'
       );
 
       // linksHasInternal (max 5)
@@ -616,8 +614,8 @@ export class LacaSeoAnalyzer {
         hasInt,
         hasInt ? 5 : 0,
         5,
-        hasInt ? 'You are linking to other resources on your website which is great.' : "We couldn't find any internal links in your content.",
-        'Add internal links.'
+        hasInt ? 'Bạn đang liên kết đến các bài viết khác trên website, rất tốt.' : 'Không tìm thấy liên kết nội bộ (internal link) nào trong bài viết.',
+        'Thêm liên kết nội bộ.'
       );
     }
 
@@ -627,7 +625,7 @@ export class LacaSeoAnalyzer {
       isKeywordNew,
       0,
       0,
-      isKeywordNew ? "You haven't used this Focus Keyword before." : 'You have already used this Focus Keyword.',
+      isKeywordNew ? 'Bạn chưa từng dùng Từ khoá chính này trước đây.' : 'Bạn đã từng sử dụng Từ khoá chính này cho một bài viết khác.',
       ''
     );
 
@@ -648,8 +646,8 @@ export class LacaSeoAnalyzer {
       titleStart,
       titleStart ? 3 : 0,
       3,
-      titleStart ? 'Focus Keyword used at the beginning of SEO title.' : 'Use the Focus Keyword near the beginning of SEO title.',
-      'The SEO page title should contain the Focus Keyword preferably at the beginning.'
+      titleStart ? 'Từ khoá chính xuất hiện ở đầu Tiêu đề SEO.' : 'Hãy đặt Từ khoá chính gần đầu Tiêu đề SEO.',
+      'Tiêu đề SEO nên chứa Từ khoá chính ở phần đầu để thu hút click.'
     );
 
     // titleSentiment (max 1) - ONLY on isEn, excluded on product / isHome
@@ -661,8 +659,8 @@ export class LacaSeoAnalyzer {
         hasSentiment,
         hasSentiment ? 1 : 0,
         1,
-        hasSentiment ? 'Your title has a positive or a negative sentiment.' : "Your title doesn't contain a positive or a negative sentiment.",
-        'Headlines with a strong emotional sentiment tend to receive more clicks.'
+        hasSentiment ? 'Tiêu đề của bạn thể hiện cảm xúc rõ ràng (tích cực hoặc tiêu cực).' : 'Tiêu đề của bạn chưa chứa từ ngữ biểu đạt cảm xúc rõ ràng.',
+        'Tiêu đề gợi cảm xúc mạnh thường nhận được nhiều lượt nhấp chuột hơn.'
       );
     }
 
@@ -678,8 +676,8 @@ export class LacaSeoAnalyzer {
         hasPower,
         hasPower ? 1 : 0,
         1,
-        hasPower ? 'Your title contains power word(s). Booyah!' : "Your title doesn't contain a power word. Add at least one.",
-        'Power Words are tried-and-true words that copywriters use to attract more clicks.'
+        hasPower ? 'Tiêu đề có chứa Từ khoá quyền lực (Power Word). Tuyệt vời!' : 'Tiêu đề chưa chứa Từ khoá quyền lực. Hãy thêm ít nhất một từ.',
+        'Power Words là những từ thôi miên được các copywriter sử dụng để tăng tỷ lệ nhấp.'
       );
     }
 
@@ -691,8 +689,8 @@ export class LacaSeoAnalyzer {
         hasNumber,
         hasNumber ? 1 : 0,
         1,
-        hasNumber ? 'You are using a number in your SEO title.' : "Your SEO title doesn't contain a number.",
-        'Headlines with numbers are 36% more likely to generate clicks.'
+        hasNumber ? 'Bạn đang sử dụng số trong Tiêu đề SEO.' : 'Tiêu đề SEO của bạn chưa chứa con số nào.',
+        'Tiêu đề chứa con số có tỷ lệ tạo lượt click cao hơn khoảng 36%.'
       );
     }
 
@@ -706,8 +704,8 @@ export class LacaSeoAnalyzer {
         tocDetected,
         tocDetected ? 2 : 0,
         2,
-        tocDetected ? 'You seem to be using a Table of Contents to break-down your text.' : 'Use Table of Content to break-down your text.',
-        'Table of Contents help break down content into smaller, digestible chunks.'
+        tocDetected ? 'Bạn đang sử dụng Mục lục (TOC) để phân đoạn nội dung.' : 'Hãy sử dụng Mục lục (TOC) để phân đoạn nội dung rõ ràng hơn.',
+        'Mục lục giúp người đọc dễ nắm bắt cấu trúc và duyệt nội dung nhanh chóng.'
       );
     }
 
@@ -721,8 +719,8 @@ export class LacaSeoAnalyzer {
         hasShort,
         hasShort ? 3 : 0,
         3,
-        hasShort ? 'You are using short paragraphs.' : 'At least one paragraph is long. Consider using short paragraphs.',
-        'Short paragraphs are easier to read and more pleasing to the eye.'
+        hasShort ? 'Bạn đang sử dụng các đoạn văn ngắn gọn, dễ đọc.' : 'Có ít nhất một đoạn văn quá dài (>120 từ). Cân nhắc ngắt thành các đoạn ngắn.',
+        'Các đoạn văn ngắn giúp mắt không bị mỏi và dễ theo dõi trên di động.'
       );
     }
 
@@ -754,8 +752,8 @@ export class LacaSeoAnalyzer {
       assetOk,
       assetScore,
       6,
-      assetOk ? 'Your content contains images and/or video(s).' : 'Add a few images and/or videos to make your content appealing.',
-      'Content with images and/or video feels more inviting to users.'
+      assetOk ? 'Nội dung có chứa hình ảnh và/hoặc video.' : 'Thêm vài hình ảnh hoặc video để nội dung sinh động hơn.',
+      'Bài viết có hình ảnh và video luôn thu hút người đọc tốt hơn.'
     );
 
     // --- Product Specific Tests (RM Pro) ---
@@ -767,8 +765,8 @@ export class LacaSeoAnalyzer {
         schemaOk,
         schemaOk ? 2 : 0,
         2,
-        schemaOk ? 'You are using the Product Schema for this Product' : 'You are not using the Product Schema for this Product.',
-        ''
+        schemaOk ? 'Bạn đang sử dụng Schema Sản phẩm (Product Schema) cho sản phẩm này.' : 'Sản phẩm này chưa áp dụng Schema Sản phẩm (Product Schema).',
+        'Schema Product giúp Google hiển thị giá và tình trạng còn hàng trên trang tìm kiếm.'
       );
 
       // isReviewEnabled: max 2
@@ -778,8 +776,8 @@ export class LacaSeoAnalyzer {
         reviewOk,
         reviewOk ? 2 : 0,
         2,
-        reviewOk ? 'Reviews are enabled for this Product. Good Job!' : 'Reviews are disabled on this Product.',
-        ''
+        reviewOk ? 'Đánh giá nhận xét (Reviews) đã được bật cho sản phẩm này. Tuyệt vời!' : 'Tính năng đánh giá nhận xét (Reviews) đang bị tắt cho sản phẩm này.',
+        'Đánh giá sao giúp gia tăng độ tin cậy và CTR tìm kiếm.'
       );
     }
 

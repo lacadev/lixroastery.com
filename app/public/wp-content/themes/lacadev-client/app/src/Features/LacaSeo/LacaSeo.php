@@ -46,10 +46,17 @@ class LacaSeo
                 (new \App\Features\LacaSeo\Admin\ListScreens\BulkActions())->register();
                 (new \App\Features\LacaSeo\Admin\ListScreens\TermList())->register();
                 (new \App\Features\LacaSeo\Admin\Csv\CsvMetaHandler())->register();
-                (new Polylang())->register();
             }
 
-            // 2. Frontend modules: run only if Rank Math is inactive OR force flag is set
+            // 2. Sitemap, Breadcrumbs, InstantIndexing, Llms, WooCommerce, and Polylang modules
+            (new \App\Features\LacaSeo\Sitemap\Sitemap())->register();
+            (new \App\Features\LacaSeo\Frontend\Breadcrumbs())->register();
+            (new \App\Features\LacaSeo\Modules\InstantIndexing\InstantIndexing())->register();
+            (new \App\Features\LacaSeo\Modules\Llms\LlmsTxt())->register();
+            (new \App\Features\LacaSeo\Modules\WooCommerce\WooCommerce())->register();
+            (new Polylang())->register();
+
+            // 3. Frontend modules: run only if Rank Math is inactive OR force flag is set
             if (Helper::shouldRunFrontend()) {
                 if (Helper::isForceFrontend() && Helper::isRankMathActive()) {
                     // Suppress Rank Math frontend head output so Laca SEO can be tested cleanly
@@ -62,6 +69,7 @@ class LacaSeo
                 }
 
                 (new Head())->register();
+                (new \App\Features\LacaSeo\Schema\JsonLd())->register();
                 (new LinkAttributes())->register();
                 (new Rewrite())->register();
                 (new RobotsTxt())->register();

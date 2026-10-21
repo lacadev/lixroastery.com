@@ -348,7 +348,11 @@ Meta riêng Woo Pro: `_rank_math_gtin_code` → `_laca_seo_gtin_code`.
 | Phase | Trạng thái | Ghi chú |
 |---|---|---|
 | 0 + 1 | ✅ Xong 21/10/2026 sau 4 vòng review (REVIEW-P0P1-R1…R4) | compare-head 19/19 URL khớp RM (khác duy nhất: RM để lọt `<p>` trong og/twitter description — Laca strip); test-variables 55/55 khớp `RankMath\Helper::replace_vars()`; Export/Import HTTP thật OK; RM importer mô phỏng đúng hành vi "thiếu key" của RM (taxonomy ≡ rỗng; post type: title/description dùng mẫu mặc định, archive_* rỗng). Vòng 4 do Claude sửa trực tiếp (Antigravity treo). |
-| 2 | ⏳ Chưa bắt đầu | Spec chi tiết sẽ thêm khi bắt đầu |
+| 2 | ✅ Xong 21/10/2026 (commit 828afb02) sau 2 vòng review (REVIEW-P2-R1, R2) | Analyzer đối chiếu trên editor thật: diffs=0, điểm khớp tuyệt đối (gồm Classic editor product + term). Hoãn sang 3A: dịch thông điệp phân tích sang tiếng Việt, hiện 2 test product trong UI. |
+| 3A | ✅ Xong 21/10/2026 sau review R1 (chờ commit) | Claude tự kiểm: sitemap 0 khác (mọi sitemap con, lastmod, ảnh, thứ tự), breadcrumbs HTML 19/19 (option RM general đã sửa nạp bộ nhớ), robots.txt giống RM, simulate-cutover 9/9. Đã khôi phục robots meta bài 866/908 bị test Phase 2 làm lệch (908 từng bị noindex). |
+| 3B | ✅ Xong 21/10/2026 sau review R1, R2 (chờ commit) — Claude tự kiểm: head + JSON-LD 19/19 URL (blog_public=1 trong bộ nhớ) chỉ còn 2 lệch đã chấp nhận; schema Event/Product nạp bộ nhớ khớp RM từng node; không còn đọc `rank_math_*`. Còn lại: CUTOVER trên production theo `CUTOVER.md` (cần người dùng thực hiện). | Schema graph + Schema Generator types chính + WooCommerce SEO → CUTOVER tắt RM |
+
+Phase 3 tách 3A/3B vì khối lượng lớn. News/Video sitemap (Pro, module không bật trên LIX) dời sang Phase 5.
 
 Lưu ý vận hành:
 - Công cụ `doc/laca-seo/tools/*.php` chỉ chạy CLI (web trả 404).
@@ -446,3 +450,154 @@ bằng cờ `?laca_seo_force=1` (local) như Phase 1.
 4. CSV: export → sửa 1 ô ở bản sao → import → meta đổi đúng → import lại bản gốc khôi phục.
 5. `php -l`, `yarn build`, `yarn lint` 0 error; editor + list ở 1440/900/390 không tràn, 0 lỗi console (cả editor Gutenberg).
 6. Mọi thay đổi dữ liệu thật trong test PHẢI khôi phục; không tạo bài/term mới; screenshot để NGOÀI theme; không commit/push.
+
+---
+# Spec chi tiết Phase 3A — Sitemap, Breadcrumbs, IndexNow, llms.txt
+
+Nguyên tắc chung (như các phase trước):
+- RM = `wp-content/plugins/seo-by-rank-math/` (chỉ ĐỌC). Port logic 1:1, id option/key giữ y RM. Mọi output frontend **chỉ chạy khi RM không active**,
+  hoặc khi cờ dev `laca_seo_force_frontend` hợp lệ (cơ chế Phase 1: chỉ env local hoặc user `manage_options`).
+- Không tạo bài/term/page mới, không xoá file, không cài package, không commit. Dữ liệu test phải khôi phục. Screenshot/script tạm để ngoài theme (`/private/tmp/...`).
+- Mọi field có `note{what,how,result}` tiếng Việt như Phase 1. Asset admin tiếp tục dùng entry `laca-seo`.
+
+## P3A.0 Nguồn tham chiếu
+- Sitemap: `RM/includes/modules/sitemap/` (router, sitemap, generator, providers/{post-type,taxonomy,author}, image-parser, cache, cache-watcher,
+  classifier, timezone, stylesheet + `sitemap-xsl.php`, redirect-core-sitemaps, admin, settings/*.php, html-sitemap/*).
+- Breadcrumbs: `RM/includes/frontend/class-breadcrumbs.php`, shortcode trong `RM/includes/frontend/class-shortcodes.php`, settings breadcrumbs trong General (đã có field ở Phase 1).
+- IndexNow: `RM/includes/modules/instant-indexing/` (+ views). llms.txt: `RM/includes/modules/llms/`.
+- Dữ liệu LIX: `rank-math-options-sitemap` 16 key (items_per_page=200, include_images=on, html_sitemap=on display=shortcode, authors_sitemap=on,
+  pt_post/page/product=on, pt_attachment=off, tax_category=on, tax_post_tag=off…); module bật: sitemap, instant-indexing; llms TẮT.
+
+## P3A.1 Settings Sitemap (`Fields/SitemapFields.php`, option `laca_seo_sitemap`) + view `sitemap`
+- Thay placeholder "Sắp có" bằng màn thật, tab: Chung · Sitemap HTML · Tác giả · mỗi post type · mỗi taxonomy (tên tab không trùng nhau, như Titles).
+- Field 1:1 theo `RM/includes/modules/sitemap/settings/{general,html-sitemap,authors,post-types,taxonomies}.php` (id, type, default, choices, điều kiện hiển thị):
+  `items_per_page, include_images, include_featured_image, exclude_posts, exclude_terms, html_sitemap, html_sitemap_display, html_sitemap_shortcode (hiển thị
+  shortcode, không lưu), html_sitemap_page, html_sitemap_sort, html_sitemap_show_dates, html_sitemap_seo_titles, authors_sitemap, authors_html_sitemap,
+  include_authors_without_posts, exclude_roles, exclude_users, pt_{pt}_sitemap, pt_{pt}_html_sitemap, pt_{pt}_image_customfields, tax_{tax}_sitemap,
+  tax_{tax}_html_sitemap, tax_{tax}_include_empty`. Default per post type/taxonomy y như RM (đọc kỹ điều kiện default trong file).
+- Viết `doc/laca-seo/tools/fieldcmp-sitemap.php` (CLI): liệt kê key registry vs key trong `rank-math-options-sitemap` + default RM → in bảng thiếu/thừa/khác default. Kỳ vọng 0 thiếu.
+- Importer RM (Phase 1) đã chép option sitemap; xác nhận sau import `laca_seo_sitemap` khớp RM 16/16 key.
+- Lưu settings → xoá cache sitemap + `flush_rewrite_rules()` khi đổi cấu trúc (như RM admin).
+
+## P3A.2 XML Sitemap (`Sitemap/` : Router, Sitemap, Generator, Providers/{PostType,Taxonomy,Author}, ImageParser, Cache, CacheWatcher, Stylesheet)
+- Rewrite y RM: `sitemap_index.xml`, `{type}-sitemap{n}.xml`, `{type}-sitemap.xsl`/`main-sitemap.xsl`; `sitemap.xml` → 301 `sitemap_index.xml`;
+  redirect `wp-sitemap*.xml` core như `class-redirect-core-sitemaps.php`; tắt core sitemap (`wp_sitemaps_enabled` false) khi Laca sitemap chạy.
+- Provider giữ đúng query/điều kiện loại trừ của RM: noindex (meta + settings robots post type/taxonomy), `exclude_posts/terms`, canonical khác URL, password,
+  hidden product (Woo), số item mỗi trang, `lastmod` (timezone class), ảnh (image parser: content, gallery, featured theo `include_featured_image`,
+  custom field theo `pt_{pt}_image_customfields`), author (exclude roles/users, without posts).
+- Cache: transient tiền tố **`laca_seo_sitemap_`** (KHÔNG dùng `sitemap_` của RM), invalidation như cache-watcher (save/delete post, term, user, settings).
+- XSL stylesheet: giống RM về cấu trúc bảng, đổi branding sang "Laca SEO" (đường link credit bỏ).
+- `robots.txt`: thêm `Sitemap: {home}/sitemap_index.xml` đúng như RM (đối chiếu RobotsTxt Phase 1).
+- Polylang: hành vi y RM trên LIX (RM có notice `multilingual_sitemap_notice`) — xác định bằng so sánh thực tế, không tự sáng tạo.
+- **Khi RM còn active (để so sánh):** Laca KHÔNG đăng ký rewrite; chỉ phục vụ qua query var khi cờ force hợp lệ:
+  `/?laca_seo_force_frontend=1&laca_sitemap=index` | `&laca_sitemap=post&laca_sitemap_n=1` | `&laca_sitemap=xsl` — URL bên trong XML vẫn là URL thật
+  (`/post-sitemap.xml`…) để so sánh được.
+
+## P3A.3 HTML Sitemap (`Sitemap/Html/*`)
+- Port `html-sitemap/{class-sitemap,class-posts,class-terms,class-authors}.php`: shortcode `[laca_seo_html_sitemap]`; khi RM không active đăng ký thêm
+  alias `[rank_math_html_sitemap]` (để nội dung cũ trên site không vỡ sau cutover). `html_sitemap_display=page` → gắn vào page `html_sitemap_page`.
+- Markup + thứ tự + sort + show dates + SEO titles y RM; class CSS đổi tiền tố `laca-seo-` nhưng giữ cấu trúc (ghi chú nếu theme cần style).
+
+## P3A.4 Breadcrumbs (`Frontend/Breadcrumbs.php`)
+- Port toàn bộ `class-breadcrumbs.php` (home, 404, search, attachment, product, singular + ancestors + primary term (meta `_laca_seo_primary_{tax}` Phase 2),
+  shop, post type archive, category/tag/tax + term ancestors, date, author, blog page, breadcrumb_title meta), settings breadcrumbs_* từ General.
+- API: `laca_seo_get_breadcrumbs(array $args=[]): string`, `laca_seo_the_breadcrumbs()`, shortcode `[laca_seo_breadcrumb]`; khi RM không active định nghĩa
+  thêm `rank_math_the_breadcrumbs()`, `rank_math_get_breadcrumbs()` (bọc `function_exists`, đăng ký sau `plugins_loaded`) + alias shortcode `[rank_math_breadcrumb]`.
+- **Khi RM active và không force: `laca_seo_the_breadcrumbs()` gọi `rank_math_the_breadcrumbs()`** — wrapper `laca_seo_breadcrumbs()` trong
+  `P/app/helpers/template_tags.php` ưu tiên Laca, nên nếu Laca tự render sẽ đổi giao diện live trước cutover.
+- Markup HTML giống RM (cấu trúc, separator, aria, `last` item) — class đổi `laca-seo-breadcrumb`; kiểm theme CSS không phụ thuộc class RM (đã grep: không).
+- BreadcrumbList JSON-LD để Phase 3B (schema graph), nhưng chuẩn bị `get_crumbs()` dùng chung.
+
+## P3A.5 Instant Indexing / IndexNow (`Modules/InstantIndexing/*`, option `laca_seo_instant_indexing` đã import)
+- Field 1:1 RM (`bing_post_types`, `indexnow_api_key` — sinh key mới khi trống, nút "Tạo key mới"), route `/{key}.txt` trả key (text/plain) như RM.
+- Tự gửi khi publish/cập nhật post type đã chọn (logic `before_save_post`/`save_post` RM), bulk action "Gửi IndexNow" trên list, row action, trang gửi tay
+  (textarea URL) + lịch sử 100 lần gần nhất (option riêng `laca_seo_indexnow_log`).
+- **An toàn:** không gửi request thật khi `wp_get_environment_type()` là `local`/`development` hoặc host kết thúc `.local` — ghi log "bỏ qua (môi trường local)".
+  Chỉ chạy khi RM không active (tránh gửi đôi). Có filter `laca_seo/indexnow/endpoint`.
+- Key IndexNow là công khai (đặt ở `/{key}.txt`) nên lưu option là đúng; không coi là secret nhưng không log ra ngoài.
+
+## P3A.6 llms.txt (`Modules/Llms/*`)
+- Port `RM/includes/modules/llms/` (route `/llms.txt`, field `llms_post_types, llms_taxonomies, llms_limit, llms_extra_content`, default y RM).
+  Module mặc định TẮT như RM (LIX đang tắt) — bật/tắt ở Dashboard modules.
+
+## P3A.7 Việc hoãn từ Phase 2
+1. Dịch toàn bộ thông điệp phân tích (text/empty/tooltip của 23 test) sang tiếng Việt tự nhiên, giữ đúng nghĩa và placeholder số (`%1$d`…); không đổi logic.
+2. Hiện `hasProductSchema`, `isReviewEnabled` trong nhóm phù hợp của bảng phân tích (như RM: nhóm Basic/Additional — đối chiếu UI RM), counter nhóm đúng.
+
+## P3A.8 Hướng dẫn & ghi chú
+- Trang Hướng dẫn: thêm mục Sitemap (nộp Search Console/Bing), Breadcrumbs (bật + dùng shortcode/hàm), IndexNow, llms.txt; checklist trạng thái
+  (sitemap truy cập được, robots.txt có dòng Sitemap, core sitemap đã tắt).
+
+## P3A.9 Nghiệm thu (dán NGUYÊN VĂN output)
+1. `doc/laca-seo/tools/compare-sitemap.php` (CLI, HTTP thật): lấy RM `sitemap_index.xml` + MỌI sitemap con (mọi trang n) vs Laca qua query var force →
+   so tập `<loc>`, `<lastmod>`, số `image:image` mỗi URL; in bảng theo sitemap: số URL RM/Laca, thiếu/thừa, lastmod lệch. Kỳ vọng 0 khác.
+   Kiểm thêm: XSL Laca trả 200 + content-type XML; `sitemap.xml` 301 (chỉ kiểm được khi RM tắt → mô phỏng bằng gọi hàm router trong CLI).
+2. `doc/laca-seo/tools/compare-breadcrumbs.php` (CLI, HTTP): 19 URL của compare-head → trích breadcrumb RM vs Laca (force) → so text từng crumb + href
+   (bỏ qua khác biệt tên class). Kỳ vọng 0 khác.
+3. HTML sitemap: CLI `do_shortcode('[rank_math_html_sitemap]')` vs `do_shortcode('[laca_seo_html_sitemap]')` → so danh sách link + thứ tự. 0 khác.
+4. IndexNow: CLI chặn HTTP bằng filter `pre_http_request`, gọi submit cho 2 URL → in payload Laca và payload RM (gọi API class RM tương ứng nếu được) → giống
+   cấu trúc (host, key, keyLocation, urlList). Xác nhận môi trường local không gửi thật. Route `/{key}.txt` trả đúng key.
+5. llms.txt: so output Laca với RM sinh từ cùng settings (gọi class RM trong CLI nếu tạo được instance; nếu không, giải thích và so theo code).
+6. `fieldcmp-sitemap.php` output; `compare-head.php` vẫn 19/19 MATCH; `compare-analysis.js` ≥ 3 ca vẫn diffs=0 (sau khi dịch thông điệp).
+7. `php -l` mọi file, `yarn build` (child), `yarn lint` 0 error; màn Sitemap settings 1440/900/390 không tràn, 0 lỗi console.
+8. Báo cáo: file tạo/sửa, field theo tab so với RM, điểm lệch RM + lý do. Không commit.
+
+---
+# Spec chi tiết Phase 3B — Schema (JSON-LD), WooCommerce SEO, sẵn sàng CUTOVER
+
+Khảo sát LIX (21/10/2026): KHÔNG có meta `rank_math_schema_*` (không có schema riêng từng bài), không có template schema (CPT `rank_math_schema` = 0),
+nội dung/widget/option KHÔNG dùng block/shortcode RM. JSON-LD hiện tại = graph mặc định (Person+Organization, WebSite, ImageObject, WebPage/ItemPage,
+Product/Article…) — đây là thứ PHẢI giữ y hệt sau cutover. `pt_{post,page}_default_rich_snippet=article`, `pt_product=product`, attachment off.
+WooCommerce (General): wc_remove_product_base/category_base/category_parent_slugs = off, wc_remove_generator=on, noindex_hidden_products=on, gtin=gtin, show_gtin=off.
+
+## P3B.0 Nguồn tham chiếu (chỉ đọc)
+- Free: `RM/includes/modules/schema/` (class-jsonld, class-frontend, class-schema, class-db, class-opengraph, snippets/*, class-snippet-shortcode, shortcode/*).
+- Pro: `RM-pro/includes/modules/schema/` (class-frontend, class-schema, class-post-type, class-taxonomy, class-display-conditions…) — chỉ phần ảnh hưởng output graph mặc định/per-post (template + display conditions để Phase 5).
+- Woo: `RM/includes/modules/woocommerce/*`, `RM-pro/includes/modules/woocommerce/*`.
+
+## P3B.1 JSON-LD graph (`Schema/` : JsonLd, Frontend, Snippets/*)
+- Port 1:1 `class-jsonld.php` + snippets: Website, Publisher (Person/Organization theo `knowledgegraph_*`, logo, sameAs social), WebPage (WebPage/ItemPage/
+  CollectionPage/SearchResultsPage/ProfilePage… đúng nhánh RM), PrimaryImage, Author, Singular (Article/BlogPosting/NewsArticle theo setting), Product
+  (+ ProductWooCommerce, WC attributes, offers/price/availability/reviews/aggregateRating/brand/gtin), ProductsPage (shop/product_cat), Breadcrumbs
+  (BreadcrumbList dùng chung `Breadcrumbs::getCrumbs()` của 3A, `hide_in_schema`).
+- Thẻ `<script type="application/ld+json" class="laca-seo-schema">` cùng vị trí `wp_head` như RM. Chỉ chạy khi RM không active hoặc force hợp lệ.
+- Per-post schema: lưu `_laca_seo_schema_{Type}` cùng cấu trúc `rank_math_schema_*` (importer đã map prefix — xác nhận); frontend đọc và hợp nhất vào graph y
+  logic RM (`class-frontend.php` free + pro). Shortcode `[laca_seo_rich_snippet]` + alias `[rank_math_rich_snippet]` khi RM không active.
+- Filter tương đương để dev mở rộng: `laca_seo/json_ld` (như `rank_math/json_ld`).
+
+## P3B.2 Tab Schema trong metabox (thay placeholder Phase 2)
+- Hiển thị schema đang áp dụng (mặc định theo post type hoặc riêng bài), cho chọn loại trong nhóm free: Article, Book, Course, Event, JobPosting, Music,
+  Product, Recipe, Restaurant, Video, Person, Service, SoftwareApplication; form field theo đúng map field của RM (lấy từ mã RM, không tự nghĩ),
+  lưu `_laca_seo_schema_{Type}` đúng định dạng RM. Nhiều schema/bài, xoá schema, "Dùng mặc định". UI theo style metabox Phase 2, 1440/900/390.
+- Không làm: template schema, display conditions, import từ URL, custom builder (Phase 5).
+
+## P3B.3 WooCommerce SEO (`Modules/WooCommerce/*`)
+- Port free: remove product base / category base / parent slugs (rewrite + permalink watcher, chỉ khi bật — LIX đang off), remove generator, noindex
+  hidden products (robots + sitemap), product OpenGraph (`product:price:amount`, `currency`, availability… như `class-opengraph.php`), biến WC
+  (`class-wc-vars.php`) vào Variables engine, shop page trong sitemap (3A đã có — xác nhận dùng chung).
+- Port Pro: GTIN/ISBN/MPN field trên product + variation (`gtin`, `show_gtin`, `gtin_label` hiển thị trên trang SP), brand (`product_brand` taxonomy
+  setting), dữ liệu variant vào schema Product. Meta key theo RM (`_rank_math_gtin_code` → `_laca_seo_gtin_code`, importer đã có).
+- Field Settings tương ứng đã có ở General (Phase 1) — nối logic, không đổi id.
+
+## P3B.4 Kiểm tra robots/head khi site public (lỗ hổng phát hiện ở 3A)
+- Local đang `blog_public=0` ⇒ RM và Laca đều ép noindex mọi trang ⇒ cột Robots của `compare-head.php` luôn "MATCH" (không phát hiện được bài 908 từng
+  bị noindex). Viết `doc/laca-seo/tools/compare-head-cli.php`: mỗi URL **một tiến trình php**, hook nạp trước WP load:
+  `pre_option_blog_public` = `1`, `pre_option_rank-math-options-general` = bản đã sửa (cách `scratchpad/p3/bc2.php`), rồi render `<head>` 2 lần:
+  (A) RM active, (B) `laca_seo_force_frontend` (Laca) — mô phỏng request (REQUEST_URI, `$wp->main()`, bắt `wp_head`). So mọi thẻ như compare-head + **JSON-LD
+  (chuẩn hoá: parse JSON, bỏ `class`, so từng node theo `@id`/`@type`)**. 19 URL. Kỳ vọng 0 khác (ngoài khác biệt đã chấp nhận `<p>` trong og desc).
+
+## P3B.5 CUTOVER — tài liệu + công cụ (chưa tắt RM trên production)
+- `doc/laca-seo/CUTOVER.md`: checklist cho production LIX: backup DB; Laca SEO > Nhập từ Rank Math (settings + meta, batch); chạy `compare-head-cli`/
+  `compare-sitemap`/`simulate-cutover` trên bản sao; tắt RM Free+Pro; Lưu permalink (flush rewrite); kiểm `/sitemap_index.xml`, `/robots.txt`,
+  view-source 5 URL mẫu (JSON-LD, canonical, robots), Search Console nộp lại sitemap; cách rollback (bật lại RM — Laca tự nhường).
+- Mở rộng `simulate-cutover.php`: thêm kiểm `<head>` + JSON-LD của 5 URL mẫu ở trạng thái RM tắt (so với RM active, blog_public=1 trong bộ nhớ).
+
+## P3B.6 Nghiệm thu (dán NGUYÊN VĂN output)
+1. `compare-head-cli.php` 19 URL: 0 khác (gồm JSON-LD, robots khi public).
+2. Schema per-post: trên 1 bài journal + 1 product (bản sao dữ liệu trong bộ nhớ hoặc ghi meta tạm rồi khôi phục): ghi cùng 1 schema (Article tuỳ chỉnh / Product
+   có GTIN) vào `rank_math_schema_*` và `_laca_seo_schema_*` → so JSON-LD RM vs Laca → khôi phục. 0 khác.
+3. WooCommerce: OG product + GTIN hiển thị (show_gtin bật tạm trong bộ nhớ) so với RM.
+4. `simulate-cutover.php` mở rộng: PASS hết. `compare-sitemap`, `compare-breadcrumbs`, `compare-analysis` (≥3 ca) vẫn đạt.
+5. `php -l`, `yarn build`, `yarn lint` 0 error; tab Schema 1440/900/390, 0 lỗi console.
+6. KHÔNG xoá file, không cài package, không sửa plugins/, không tạo bài/term mới, khôi phục 100% dữ liệu test (kiểm lại bằng truy vấn so meta Laca vs RM
+   như Claude đã làm), không commit.

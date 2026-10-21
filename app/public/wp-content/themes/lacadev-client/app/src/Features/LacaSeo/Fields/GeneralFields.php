@@ -470,7 +470,7 @@ class GeneralFields
     {
         return [
             Field::make('robots_txt_content', 'code', 'Nội dung tệp robots.txt')
-                ->default("User-agent: *\nDisallow: /wp-admin/\nAllow: /wp-admin/admin-ajax.php\n\nSitemap: " . get_home_url() . "/sitemap_index.xml")
+                ->default('')
                 ->tab('robots')
                 ->group('general')
                 ->sanitizeWith(function($content) {
@@ -486,7 +486,7 @@ class GeneralFields
                 ->note(
                     'Quy định chỉ dẫn cho các bọ tìm kiếm (Googlebot, Bingbot...) về các khu vực được phép thu thập.',
                     'Chỉnh sửa nội dung chỉ thị robots.txt ảo do theme sinh ra; có nút khôi phục mặc định an toàn.',
-                    'Kiểm tra tại URL: ' . get_home_url() . '/robots.txt để xem nội dung thực tế.'
+                    'Kiểm tra tại URL: /robots.txt để xem nội dung thực tế.'
                 ),
         ];
     }
@@ -577,6 +577,56 @@ class GeneralFields
                     'Chỉ định taxonomy nào trên website đang lưu tên thương hiệu/nhà sản xuất của sản phẩm.',
                     'Chọn taxonomy phù hợp (ví dụ product_brand) để hệ thống tự lấy điền vào Schema JSON-LD.',
                     'Thuộc tính brand trong Schema Product sẽ được tự động điền giá trị chuẩn.'
+                ),
+
+            Field::make('gtin', 'select', 'Mã định danh sản phẩm toàn cầu (GTIN)')
+                ->default('gtin')
+                ->tab('woocommerce')
+                ->group('general')
+                ->choices([
+                    'gtin'   => __('GTIN', 'lacadev'),
+                    'gtin8'  => __('GTIN-8', 'lacadev'),
+                    'gtin12' => __('GTIN-12 (UPC)', 'lacadev'),
+                    'gtin13' => __('GTIN-13 (EAN)', 'lacadev'),
+                    'gtin14' => __('GTIN-14 (ITF-14)', 'lacadev'),
+                    'isbn'   => __('ISBN (Sách)', 'lacadev'),
+                    'mpn'    => __('MPN (Mã phụ tùng)', 'lacadev'),
+                ])
+                ->note(
+                    'Chọn chuẩn mã vạch hoặc mã nhận diện sản phẩm sử dụng trong Schema.',
+                    'Chọn loại GTIN phù hợp với dữ liệu sản phẩm của bạn (mặc định gtin).',
+                    'Dữ liệu mã GTIN trong Schema Product sẽ được gán đúng thuộc tính Schema.org.'
+                ),
+
+            Field::make('show_gtin', 'toggle', 'Hiển thị GTIN trên trang sản phẩm')
+                ->default('off')
+                ->tab('woocommerce')
+                ->group('general')
+                ->note(
+                    'Tự động hiển thị mã GTIN trong khối thông tin meta của sản phẩm (cạnh SKU).',
+                    'Bật nếu bạn muốn hiển thị mã vạch/mã GTIN công khai cho khách hàng xem.',
+                    'Nhãn GTIN và giá trị sẽ xuất hiện trong phần thông tin chi tiết sản phẩm.'
+                ),
+
+            Field::make('gtin_label', 'text', 'Nhãn hiển thị GTIN')
+                ->default('GTIN:')
+                ->tab('woocommerce')
+                ->group('general')
+                ->showIf('show_gtin', 'on')
+                ->note(
+                    'Tiền tố văn bản hiển thị trước mã GTIN trên trang sản phẩm.',
+                    'Nhập nhãn tùy chỉnh (ví dụ: "Mã vạch:" hoặc "GTIN:").',
+                    'Nhãn hiển thị trước giá trị mã GTIN.'
+                ),
+
+            Field::make('noindex_hidden_products', 'toggle', 'Đặt Noindex cho sản phẩm ẩn danh mục (Hidden Products)')
+                ->default('on')
+                ->tab('woocommerce')
+                ->group('general')
+                ->note(
+                    'Tự động gắn thẻ robots noindex và loại khỏi XML Sitemap cho các sản phẩm có hiển thị danh mục là "Ẩn" (Hidden).',
+                    'Bật để ngăn công cụ tìm kiếm lập chỉ mục các sản phẩm không hiển thị công khai trên gian hàng.',
+                    'Sản phẩm ẩn sẽ có thẻ meta robots: noindex, nofollow.'
                 ),
         ];
     }

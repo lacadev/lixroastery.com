@@ -72,7 +72,7 @@ class Taxonomy implements IPaper
         return $robots;
     }
 
-    public function advanced_robots(): array
+    public function advanced_robots(): ?array
     {
         $term = $this->getTerm();
         if (!$term) {
@@ -86,7 +86,7 @@ class Taxonomy implements IPaper
             $adv = Paper::advanced_robots_combine((array) Settings::get("titles.tax_{$tax}_advanced_robots", []));
         }
 
-        return $adv;
+        return !empty($adv) ? $adv : null;
     }
 
     public function canonical(): array

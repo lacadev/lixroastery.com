@@ -144,8 +144,10 @@ class Settings
         }
 
         $map = [
-            'general' => [],
-            'titles'  => [],
+            'general'          => [],
+            'titles'           => [],
+            'sitemap'          => [],
+            'instant_indexing' => [],
         ];
 
         // General fields
@@ -159,6 +161,20 @@ class Settings
         foreach (TitlesFields::get() as $tab => $fields) {
             foreach ($fields as $field) {
                 $map['titles'][$field->getId()] = $field;
+            }
+        }
+
+        // Sitemap fields
+        foreach (\App\Features\LacaSeo\Fields\SitemapFields::get() as $tab => $fields) {
+            foreach ($fields as $field) {
+                $map['sitemap'][$field->getId()] = $field;
+            }
+        }
+
+        // Instant Indexing fields
+        foreach (\App\Features\LacaSeo\Fields\InstantIndexingFields::get() as $tab => $fields) {
+            foreach ($fields as $field) {
+                $map['instant_indexing'][$field->getId()] = $field;
             }
         }
 

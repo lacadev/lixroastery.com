@@ -87,10 +87,19 @@ class Singular implements IPaper
             $robots['index'] = 'noindex';
         }
 
+        // Hidden WooCommerce products
+        if ($pt === 'product' && Settings::get('general.noindex_hidden_products', 'on') === 'on' && function_exists('wc_get_product')) {
+            $prod = wc_get_product($post->ID);
+            if ($prod && $prod->get_catalog_visibility() === 'hidden') {
+                $robots['index'] = 'noindex';
+                $robots['follow'] = 'nofollow';
+            }
+        }
+
         return $robots;
     }
 
-    public function advanced_robots(): array
+    public function advanced_robots(): ?array
     {
         $post = $this->getPost();
         if (!$post) {
@@ -104,7 +113,7 @@ class Singular implements IPaper
             $adv = Paper::advanced_robots_combine((array) Settings::get("titles.pt_{$pt}_advanced_robots", []));
         }
 
-        return $adv;
+        return !empty($adv) ? $adv : null;
     }
 
     public function canonical(): array

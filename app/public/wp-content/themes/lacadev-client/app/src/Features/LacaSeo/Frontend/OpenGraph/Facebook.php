@@ -21,6 +21,10 @@ class Facebook
         $image = Image::get();
 
         echo '<meta property="og:locale" content="' . esc_attr(get_locale()) . '" />' . "\n";
+        $alt_locales = \App\Features\LacaSeo\Compat\Polylang::getAlternateLocales();
+        foreach ($alt_locales as $alt_locale) {
+            echo '<meta property="og:locale:alternate" content="' . esc_attr($alt_locale) . '" />' . "\n";
+        }
         echo '<meta property="og:type" content="' . esc_attr($this->getType()) . '" />' . "\n";
         if (!empty($title)) {
             echo '<meta property="og:title" content="' . esc_attr($title) . '" />' . "\n";
@@ -50,6 +54,31 @@ class Facebook
                     if ($modified && $modified !== $published) {
                         echo '<meta property="article:modified_time" content="' . esc_attr($modified) . '" />' . "\n";
                     }
+                } elseif ($pt === 'product' && function_exists('wc_get_product')) {
+                    $product = wc_get_product($post->ID);
+                    if ($product) {
+                        $brand = \App\Features\LacaSeo\Modules\WooCommerce\WooCommerce::getBrand($post->ID);
+                        if (!empty($brand)) {
+                            echo '<meta property="product:brand" content="' . esc_attr($brand) . '" />' . "\n";
+                        }
+                        if (!$product->is_type('variable')) {
+                            echo '<meta property="product:price:amount" content="' . esc_attr($product->get_price()) . '" />' . "\n";
+                            echo '<meta property="product:price:currency" content="' . esc_attr(get_woocommerce_currency()) . '" />' . "\n";
+                        }
+                        if ($product->is_in_stock()) {
+                            echo '<meta property="product:availability" content="instock" />' . "\n";
+                        }
+                        if ($product->get_sku()) {
+                            echo '<meta property="product:retailer_item_id" content="' . esc_attr($product->get_sku()) . '" />' . "\n";
+                        }
+                    }
+                }
+
+                // Port RM publish_date(): og:updated_time when modified > published
+                $pub = mysql2date(DATE_W3C, $post->post_date, false);
+                $mod = mysql2date(DATE_W3C, $post->post_modified, false);
+                if (strtotime($mod) > strtotime($pub)) {
+                    echo '<meta property="og:updated_time" content="' . esc_attr($mod) . '" />' . "\n";
                 }
             }
         }
@@ -74,6 +103,9 @@ class Facebook
             }
             if (!empty($imageDetails['height'])) {
                 echo '<meta property="og:image:height" content="' . esc_attr((string) $imageDetails['height']) . '" />' . "\n";
+            }
+            if (!empty($imageDetails['alt'])) {
+                echo '<meta property="og:image:alt" content="' . esc_attr($imageDetails['alt']) . '" />' . "\n";
             }
             if (!empty($imageDetails['type'])) {
                 echo '<meta property="og:image:type" content="' . esc_attr($imageDetails['type']) . '" />' . "\n";

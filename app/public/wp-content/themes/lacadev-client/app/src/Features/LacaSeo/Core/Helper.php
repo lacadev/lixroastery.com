@@ -279,4 +279,31 @@ class Helper
         }
         return $choices;
     }
+
+    /**
+     * Sanitize or format a Schema title nicely.
+     */
+    public static function sanitizeSchemaTitle(string $type): string
+    {
+        $types = [
+            'Article'             => 'Article',
+            'BlogPosting'         => 'Blog Posting',
+            'NewsArticle'         => 'News Article',
+            'Book'                => 'Book',
+            'Course'              => 'Course',
+            'Event'               => 'Event',
+            'JobPosting'          => 'Job Posting',
+            'Music'               => 'Music',
+            'Person'              => 'Person',
+            'Product'             => 'Product',
+            'Recipe'              => 'Recipe',
+            'Restaurant'          => 'Restaurant',
+            'Service'             => 'Service',
+            'SoftwareApplication' => 'Software Application',
+            'VideoObject'         => 'Video',
+        ];
+
+        return $types[$type] ?? ucfirst($type);
+    }
 }
+

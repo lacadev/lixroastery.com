@@ -79,6 +79,13 @@ class SaveHandler
         // Persist
         Settings::updateGroup($group, $current);
 
+        if ($group === 'sitemap') {
+            if (class_exists(\App\Features\LacaSeo\Sitemap\Cache::class)) {
+                \App\Features\LacaSeo\Sitemap\Cache::invalidateStorage();
+            }
+            flush_rewrite_rules();
+        }
+
         // Redirect back with success flag
         $redirectUrl = add_query_arg([
             'page'    => 'laca-seo',
@@ -133,7 +140,12 @@ class SaveHandler
      */
     private function getFieldsForTab(string $group, string $tab): array
     {
-        $all = ($group === 'titles') ? TitlesFields::get() : GeneralFields::get();
+        $all = match ($group) {
+            'titles'           => TitlesFields::get(),
+            'sitemap'          => \App\Features\LacaSeo\Fields\SitemapFields::get(),
+            'instant_indexing' => \App\Features\LacaSeo\Fields\InstantIndexingFields::get(),
+            default            => GeneralFields::get(),
+        };
         return $all[$tab] ?? [];
     }
 

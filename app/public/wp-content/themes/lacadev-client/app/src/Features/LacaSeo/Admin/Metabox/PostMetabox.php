@@ -103,21 +103,23 @@ class PostMetabox
             $hasProductSchema = ($pt === 'product');
 
             wp_localize_script('laca-seo-editor', 'lacaSeoEditorData', [
-                'ajaxUrl'          => admin_url('admin-ajax.php'),
-                'nonce'            => wp_create_nonce('laca_seo_admin_nonce'),
-                'postId'           => $postId,
-                'postType'         => $pt,
-                'locale'           => $locale,
-                'homeUrl'          => home_url(),
-                'permalink'        => $post ? get_permalink($post) : home_url(),
-                'defaultTitleTpl'  => (string) Settings::get("titles.pt_{$pt}_title", '%title% %sep% %sitename%'),
-                'defaultDescTpl'   => (string) Settings::get("titles.pt_{$pt}_description", '%excerpt%'),
-                'primaryTax'       => (string) Settings::get("titles.pt_{$pt}_primary_taxonomy", 'off'),
-                'variables'        => Variables::getAvailableList(),
-                'powerWords'       => $this->getPowerWordsList($locale),
-                'isWooActive'      => $isWooActive,
-                'isReviewEnabled'  => $isReviewEnabled,
-                'hasProductSchema' => $hasProductSchema,
+                'ajaxUrl'           => admin_url('admin-ajax.php'),
+                'nonce'             => wp_create_nonce('laca_seo_admin_nonce'),
+                'postId'            => $postId,
+                'postType'          => $pt,
+                'locale'            => $locale,
+                'homeUrl'           => home_url(),
+                'permalink'         => $post ? get_permalink($post) : home_url(),
+                'defaultTitleTpl'   => (string) Settings::get("titles.pt_{$pt}_title", '%title% %sep% %sitename%'),
+                'defaultDescTpl'    => (string) Settings::get("titles.pt_{$pt}_description", '%excerpt%'),
+                'primaryTax'        => (string) Settings::get("titles.pt_{$pt}_primary_taxonomy", 'off'),
+                'variables'         => Variables::getAvailableList(),
+                'powerWords'        => $this->getPowerWordsList($locale),
+                'isWooActive'       => $isWooActive,
+                'isReviewEnabled'   => $isReviewEnabled,
+                'hasProductSchema'  => $hasProductSchema,
+                'schemaDefinitions' => \App\Features\LacaSeo\Schema\SchemaDefinitions::getAll(),
+                'schemaTypes'       => \App\Features\LacaSeo\Schema\SchemaDefinitions::getTypes(),
             ]);
         }
     }
@@ -501,17 +503,46 @@ class PostMetabox
                 </div>
             </div>
 
-            <!-- Tab 3: Schema (Placeholder Phase 3) -->
+            <!-- Tab 3: Schema (Phase 3B - Multi-schema generator) -->
             <div class="laca-seo-tab-content" id="laca_seo_tab_schema" role="tabpanel" hidden>
-                <div class="laca-schema-placeholder">
-                    <span class="dashicons dashicons-media-code laca-placeholder-icon"></span>
-                    <h3><?php esc_html_e('Trình tạo Schema Markup Generator', 'lacadev'); ?></h3>
-                    <p class="description">
-                        <?php printf(esc_html__('Loại Schema hiện đang được gán tự động cho bài viết này: %s', 'lacadev'), '<strong>' . esc_html(strtoupper($schemaDefault)) . '</strong>'); ?>
-                    </p>
-                    <div class="laca-phase-badge">
-                        <span><?php esc_html_e('Tính năng chỉnh sửa Schema tùy biến chi tiết sẽ có trong Phase 3.', 'lacadev'); ?></span>
+                <input type="hidden" name="laca_seo_schema_present" value="1">
+                <?php
+                $savedSchemas = \App\Features\LacaSeo\Schema\Db::getSchemas($post->ID);
+                $availableTypes = \App\Features\LacaSeo\Schema\SchemaDefinitions::getTypes();
+                ?>
+                <input type="hidden" name="laca_seo[_schemas_json]" id="laca_seo_schemas_json" value="<?php echo esc_attr(wp_json_encode(array_values($savedSchemas))); ?>">
+
+                <div class="laca-schema-manager" id="laca_schema_manager">
+                    <!-- Top Toolbar -->
+                    <div class="laca-schema-toolbar">
+                        <div class="laca-schema-toolbar__left">
+                            <label for="laca_new_schema_select" class="screen-reader-text"><?php esc_html_e('Chọn loại Schema', 'lacadev'); ?></label>
+                            <select id="laca_new_schema_select" class="regular-text">
+                                <option value=""><?php esc_html_e('-- Chọn loại Schema để thêm --', 'lacadev'); ?></option>
+                                <?php foreach ($availableTypes as $sType => $sLabel): ?>
+                                    <option value="<?php echo esc_attr($sType); ?>"><?php echo esc_html($sLabel); ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                            <button type="button" class="button button-primary" id="laca_add_schema_btn">
+                                <span class="dashicons dashicons-plus-alt2"></span> <?php esc_html_e('Thêm Schema', 'lacadev'); ?>
+                            </button>
+                        </div>
+                        <div class="laca-schema-toolbar__right">
+                            <button type="button" class="button button-secondary" id="laca_use_default_schema_btn">
+                                <span class="dashicons dashicons-undo"></span> <?php esc_html_e('Dùng mặc định theo loại bài', 'lacadev'); ?>
+                            </button>
+                        </div>
                     </div>
+
+                    <div class="laca-schema-default-notice" id="laca_schema_default_notice" <?php echo !empty($savedSchemas) ? 'style="display:none;"' : ''; ?>>
+                        <span class="dashicons dashicons-info"></span>
+                        <span>
+                            <?php printf(esc_html__('Hiện chưa có Schema tuỳ biến cho bài viết này. Bài viết sẽ tự động dùng Schema mặc định theo cấu hình loại bài (%s).', 'lacadev'), '<strong>' . esc_html(strtoupper($schemaDefault)) . '</strong>'); ?>
+                        </span>
+                    </div>
+
+                    <!-- Schema Items List / Accordions -->
+                    <div class="laca-schema-list" id="laca_schema_list"></div>
                 </div>
             </div>
 
@@ -831,6 +862,113 @@ class PostMetabox
                 } else {
                     delete_post_meta($postId, $primaryKey);
                 }
+            }
+        }
+
+        // 13. Schema saving (Phase 3B - Multi-schema support)
+        if (isset($_POST['laca_seo_schema_present'])) {
+            // Delete existing custom schemas for this post
+            global $wpdb;
+            $existingKeys = $wpdb->get_col($wpdb->prepare(
+                "SELECT meta_key FROM {$wpdb->postmeta} WHERE post_id = %d AND meta_key LIKE %s",
+                $postId,
+                '_laca_seo_schema_%'
+            ));
+            foreach ($existingKeys as $eKey) {
+                delete_post_meta($postId, $eKey);
+            }
+
+            // Check if full JSON payload was submitted
+            if (isset($input['_schemas_json'])) {
+                $rawJson = wp_unslash($input['_schemas_json']);
+                $decoded = json_decode($rawJson, true);
+                if (is_array($decoded)) {
+                    $hasPrimary = false;
+                    foreach ($decoded as $idx => $sItem) {
+                        if (!is_array($sItem) || empty($sItem['@type'])) {
+                            continue;
+                        }
+                        $sType = sanitize_text_field($sItem['@type']);
+
+                        // Clean metadata
+                        $metadata = is_array($sItem['metadata'] ?? null) ? $sItem['metadata'] : [];
+                        $isPrimary = !empty($metadata['isPrimary']);
+                        if ($isPrimary && !$hasPrimary) {
+                            $hasPrimary = true;
+                        } elseif ($isPrimary && $hasPrimary) {
+                            $isPrimary = false; // only one primary allowed
+                        }
+
+                        $metaTitle = sanitize_text_field($metadata['title'] ?? \App\Features\LacaSeo\Core\Helper::sanitizeSchemaTitle($sType));
+                        $metaType = sanitize_text_field($metadata['type'] ?? 'template');
+                        $metaShortcode = !empty($metadata['shortcode']) ? sanitize_text_field($metadata['shortcode']) : uniqid('s-');
+
+                        $cleanMetadata = [
+                            'title'     => $metaTitle,
+                            'type'      => $metaType,
+                            'shortcode' => $metaShortcode,
+                            'isPrimary' => $isPrimary,
+                        ];
+
+                        if (isset($metadata['reviewLocation'])) {
+                            $cleanMetadata['reviewLocation'] = sanitize_text_field($metadata['reviewLocation']);
+                        }
+                        if (isset($metadata['reviewLocationShortcode'])) {
+                            $cleanMetadata['reviewLocationShortcode'] = sanitize_text_field($metadata['reviewLocationShortcode']);
+                        }
+
+                        // Remove metadata from schema properties for clean sanitize, then re-attach
+                        unset($sItem['metadata']);
+
+                        $sanitizedSchema = \App\Features\LacaSeo\Schema\Sanitizer::sanitizeSchema($sItem, $sType);
+                        $sanitizedSchema['metadata'] = $cleanMetadata;
+
+                        $metaKey = "_laca_seo_schema_{$sType}";
+                        // If multiple schemas of same type, append shortcode to key
+                        if (metadata_exists('post', $postId, $metaKey)) {
+                            $metaKey .= "_{$metaShortcode}";
+                        }
+
+                        update_post_meta($postId, $metaKey, $sanitizedSchema);
+                    }
+                }
+            } elseif (!empty($input['_schema_type'])) {
+                $schemaType = sanitize_text_field(wp_unslash($input['_schema_type']));
+                $articleType = sanitize_text_field(wp_unslash($input['_schema_article_type'] ?? 'Article'));
+                $actualType = in_array($schemaType, ['Article', 'BlogPosting', 'NewsArticle'], true) ? $articleType : $schemaType;
+
+                $headline = sanitize_text_field(wp_unslash($input['_schema_headline'] ?? ''));
+                $desc = sanitize_textarea_field(wp_unslash($input['_schema_description'] ?? ''));
+
+                $schemaData = [
+                    '@type'    => $actualType,
+                    'metadata' => [
+                        'title'     => \App\Features\LacaSeo\Core\Helper::sanitizeSchemaTitle($actualType),
+                        'type'      => 'template',
+                        'shortcode' => uniqid('s-'),
+                        'isPrimary' => true,
+                    ],
+                ];
+
+                if (in_array($actualType, ['Article', 'BlogPosting', 'NewsArticle'], true)) {
+                    $schemaData['headline']    = $headline !== '' ? $headline : '%seo_title%';
+                    $schemaData['description'] = $desc !== '' ? $desc : '%seo_description%';
+                    $schemaData['keywords']    = '%keywords%';
+                    $schemaData['author']      = [
+                        '@type' => 'Person',
+                        'name'  => '%name%',
+                    ];
+                } else {
+                    if ($headline !== '') {
+                        $schemaData['name'] = $headline;
+                    }
+                    if ($desc !== '') {
+                        $schemaData['description'] = $desc;
+                    }
+                }
+
+                $metaKey = "_laca_seo_schema_{$actualType}";
+                update_post_meta($postId, $metaKey, $schemaData);
             }
         }
     }

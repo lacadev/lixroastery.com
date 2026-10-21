@@ -102,7 +102,8 @@ class AdminPage
             'dashboard'     => ['label' => 'Bảng điều khiển', 'icon' => 'dashicons-dashboard'],
             'general'       => ['label' => 'Cài đặt chung', 'icon' => 'dashicons-admin-settings'],
             'titles'        => ['label' => 'Tiêu đề & Thẻ Meta', 'icon' => 'dashicons-heading'],
-            'sitemap'       => ['label' => 'Sơ đồ trang XML (Sắp có)', 'icon' => 'dashicons-networking', 'badge' => 'Phase 3'],
+            'sitemap'       => ['label' => 'Sơ đồ trang XML (Sitemap)', 'icon' => 'dashicons-networking'],
+            'instant-indexing' => ['label' => 'Index tức thì (IndexNow)', 'icon' => 'dashicons-update'],
             'import-export' => ['label' => 'Sao lưu & Nhập/Xuất', 'icon' => 'dashicons-migrate'],
             'guide'         => ['label' => 'Hướng dẫn tối ưu SEO', 'icon' => 'dashicons-book'],
         ];
@@ -173,7 +174,10 @@ class AdminPage
                         include __DIR__ . '/views/guide.php';
                         break;
                     case 'sitemap':
-                        echo '<div class="laca-seo-card"><h2 class="laca-seo-card__title">Sơ đồ trang XML (Sitemap)</h2><p>Tính năng Sitemap XML chuyên sâu đang được triển khai hoàn thiện trong Phase 3.</p></div>';
+                        include __DIR__ . '/views/sitemap.php';
+                        break;
+                    case 'instant-indexing':
+                        include __DIR__ . '/views/instant-indexing.php';
                         break;
                     case 'dashboard':
                     default:

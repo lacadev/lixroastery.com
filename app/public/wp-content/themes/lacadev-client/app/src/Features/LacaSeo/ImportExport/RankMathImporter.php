@@ -80,6 +80,15 @@ class RankMathImporter
             foreach ($rmGeneral as $k => $v) {
                 $lacaGeneral[$k] = $v;
             }
+
+            // Keys in Laca registry that are missing in RM General should be set to empty/default (e.g. robots_txt_content)
+            $generalRegistry = Settings::getRegistryMap()['general'] ?? [];
+            foreach ($generalRegistry as $key => $field) {
+                if (!array_key_exists($key, $rmGeneral)) {
+                    $lacaGeneral[$key] = $field->getDefault();
+                }
+            }
+
             Settings::updateGroup('general', $lacaGeneral);
             $imported['general'] = count($rmGeneral);
         }
@@ -130,6 +139,21 @@ class RankMathImporter
         // 3. Sitemap settings
         $rmSitemap = self::getRankMathOption('rank-math-options-sitemap');
         if (!empty($rmSitemap)) {
+            // For any public post type or taxonomy not present in RM sitemap settings,
+            // set to 'off' so they do not fall back to registry default 'on'.
+            foreach (array_keys(\App\Features\LacaSeo\Core\Helper::getAccessiblePostTypes()) as $pt) {
+                $key = "pt_{$pt}_sitemap";
+                if (!array_key_exists($key, $rmSitemap)) {
+                    $rmSitemap[$key] = 'off';
+                }
+            }
+            foreach (array_keys(\App\Features\LacaSeo\Core\Helper::getAccessibleTaxonomies()) as $tax) {
+                $key = "tax_{$tax}_sitemap";
+                if (!array_key_exists($key, $rmSitemap)) {
+                    $rmSitemap[$key] = 'off';
+                }
+            }
+
             update_option('laca_seo_sitemap', $rmSitemap, false);
             $imported['sitemap'] = count($rmSitemap);
         }

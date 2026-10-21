@@ -486,6 +486,12 @@ class Variables
                 }
                 return '';
 
+            case 'wc_brand':
+                if ($post && $post->post_type === 'product') {
+                    return \App\Features\LacaSeo\Modules\WooCommerce\WooCommerce::getBrand((int) $post->ID);
+                }
+                return '';
+
             default:
                 // Check dynamic term_{taxonomy} or term_{taxonomy}_desc
                 if (str_starts_with($id, 'term_')) {
@@ -713,6 +719,8 @@ class Variables
             ['id' => 'search_query', 'name' => 'Từ khoá tìm kiếm', 'desc' => 'Từ khoá người dùng nhập khi tìm kiếm', 'example' => 'Cà phê Arabica'],
             ['id' => 'wc_price', 'name' => 'Giá sản phẩm (WooCommerce)', 'desc' => 'Giá bán hiện tại của sản phẩm', 'example' => '150000'],
             ['id' => 'wc_sku', 'name' => 'Mã SKU sản phẩm', 'desc' => 'Mã quản lý kho SKU sản phẩm', 'example' => 'LIX-ROB-01'],
+            ['id' => 'wc_shortdesc', 'name' => 'Mô tả ngắn sản phẩm', 'desc' => 'Mô tả ngắn của sản phẩm WooCommerce', 'example' => 'Hương thơm hoa quả phong phú...'],
+            ['id' => 'wc_brand', 'name' => 'Thương hiệu sản phẩm', 'desc' => 'Thương hiệu của sản phẩm WooCommerce', 'example' => 'Lix Roastery'],
         ];
     }
 }

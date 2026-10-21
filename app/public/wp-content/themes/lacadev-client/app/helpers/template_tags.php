@@ -291,10 +291,47 @@ function thePostTypePagination($query, $post_type) {
 
 // Breadcrumb wrapper: Laca SEO (phase 3) -> Rank Math -> empty
 function laca_seo_breadcrumbs(): void {
-    if (function_exists('laca_seo_the_breadcrumbs')) {
-        laca_seo_the_breadcrumbs();
-    } elseif (function_exists('rank_math_the_breadcrumbs')) {
-        rank_math_the_breadcrumbs();
+    laca_seo_the_breadcrumbs();
+}
+
+/**
+ * Render breadcrumbs HTML.
+ * When Rank Math is active and force frontend is NOT enabled, delegating to Rank Math
+ * ensures 100% untouched live UI.
+ */
+function laca_seo_the_breadcrumbs(): void {
+    echo laca_seo_get_breadcrumbs();
+}
+
+/**
+ * Retrieve breadcrumbs HTML string.
+ */
+function laca_seo_get_breadcrumbs(array $args = []): string {
+    // If Rank Math is active and not forced, delegate directly to Rank Math
+    if (\App\Features\LacaSeo\Core\Helper::isRankMathActive() && !\App\Features\LacaSeo\Core\Helper::isForceFrontend()) {
+        if (function_exists('rank_math_get_breadcrumbs')) {
+            return rank_math_get_breadcrumbs($args);
+        }
+        if (function_exists('rank_math_the_breadcrumbs')) {
+            ob_start();
+            rank_math_the_breadcrumbs();
+            return (string) ob_get_clean();
+        }
+    }
+
+    $breadcrumbs = new \App\Features\LacaSeo\Frontend\Breadcrumbs();
+    return $breadcrumbs->getBreadcrumb($args);
+}
+
+// WHY: Plugin Rank Math loads before theme, so if RM is active its functions already exist; these shims only register when RM is inactive to maintain backward compatibility without fatal collision.
+if (!function_exists('rank_math_the_breadcrumbs')) {
+    function rank_math_the_breadcrumbs(): void {
+        echo laca_seo_get_breadcrumbs();
+    }
+}
+if (!function_exists('rank_math_get_breadcrumbs')) {
+    function rank_math_get_breadcrumbs(array $args = []): string {
+        return laca_seo_get_breadcrumbs($args);
     }
 }
 

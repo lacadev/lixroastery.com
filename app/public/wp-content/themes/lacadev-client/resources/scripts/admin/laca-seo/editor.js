@@ -528,8 +528,18 @@ document.addEventListener('DOMContentLoaded', () => {
     if (isTermScreen) {
       renderGroupTests('basic', ['keywordInTitle', 'keywordInMetaDescription', 'keywordInPermalink', 'keywordNotUsed', 'titleStartWithKeyword'], analysis.results);
     } else {
-      renderGroupTests('basic', ['keywordInTitle', 'keywordInMetaDescription', 'keywordInPermalink', 'keywordIn10Percent', 'keywordInContent', 'lengthContent'], analysis.results);
-      renderGroupTests('additional', ['keywordInSubheadings', 'keywordInImageAlt', 'keywordDensity', 'lengthPermalink', 'linksHasExternals', 'linksNotAllExternals', 'linksHasInternal', 'keywordNotUsed'], analysis.results);
+      const basicTests = ['keywordInTitle', 'keywordInMetaDescription', 'keywordInPermalink', 'keywordIn10Percent', 'keywordInContent', 'lengthContent'];
+      if (analysis.results && analysis.results.hasProductSchema) {
+        basicTests.push('hasProductSchema');
+      }
+
+      const additionalTests = ['keywordInSubheadings', 'keywordInImageAlt', 'keywordDensity', 'lengthPermalink', 'linksHasExternals', 'linksNotAllExternals', 'linksHasInternal', 'keywordNotUsed'];
+      if (analysis.results && analysis.results.isReviewEnabled) {
+        additionalTests.push('isReviewEnabled');
+      }
+
+      renderGroupTests('basic', basicTests, analysis.results);
+      renderGroupTests('additional', additionalTests, analysis.results);
       renderGroupTests('title', ['titleStartWithKeyword', 'titleSentiment', 'titleHasPowerWords', 'titleHasNumber'], analysis.results);
       renderGroupTests('content', ['contentHasTOC', 'contentHasShortParagraphs', 'contentHasAssets'], analysis.results);
     }
@@ -603,6 +613,592 @@ document.addEventListener('DOMContentLoaded', () => {
       debouncePreviewAndAnalysis();
     });
   }
+
+  /* -------------------------------------------------------------
+   * 7. Multi-Schema Generator Manager (Phase 3B - Vòng 2)
+   * ------------------------------------------------------------- */
+  const schemaListContainer = document.getElementById('laca_schema_list');
+  const schemasJsonInput = document.getElementById('laca_seo_schemas_json');
+  const newSchemaSelect = document.getElementById('laca_new_schema_select');
+  const addSchemaBtn = document.getElementById('laca_add_schema_btn');
+  const useDefaultBtn = document.getElementById('laca_use_default_schema_btn');
+  const defaultNotice = document.getElementById('laca_schema_default_notice');
+
+  const schemaDefinitions = window.lacaSeoEditorData && window.lacaSeoEditorData.schemaDefinitions ? window.lacaSeoEditorData.schemaDefinitions : {};
+  const schemaTypes = window.lacaSeoEditorData && window.lacaSeoEditorData.schemaTypes ? window.lacaSeoEditorData.schemaTypes : {};
+
+  let currentSchemas = [];
+  if (schemasJsonInput && schemasJsonInput.value) {
+    try {
+      const parsed = JSON.parse(schemasJsonInput.value);
+      if (Array.isArray(parsed)) {
+        currentSchemas = parsed;
+      }
+    } catch {
+      currentSchemas = [];
+    }
+  }
+
+  function syncSchemasJson() {
+    if (schemasJsonInput) {
+      schemasJsonInput.value = JSON.stringify(currentSchemas);
+    }
+    if (defaultNotice) {
+      defaultNotice.style.display = currentSchemas.length === 0 ? 'flex' : 'none';
+    }
+  }
+
+  const schemaFieldTranslations = {
+    headline: { label: 'Tiêu đề chính', tooltip: 'Tiêu đề hiển thị cho Schema' },
+    description: { label: 'Mô tả tóm tắt', tooltip: 'Đoạn mô tả ngắn gọn về nội dung hoặc thực thể' },
+    keywords: { label: 'Từ khóa', tooltip: 'Các từ khóa liên quan, phân cách bằng dấu phẩy' },
+    '@type': { label: 'Loại bài viết (Article Type)', tooltip: 'Chỉ định loại cụ thể cho Article (Article, BlogPosting, NewsArticle)' },
+    author: { label: 'Tác giả', tooltip: 'Thông tin tác giả biên soạn nội dung' },
+    name: { label: 'Tên / Tiêu đề', tooltip: 'Tên gọi của thực thể hoặc sản phẩm' },
+    datePublished: { label: 'Ngày xuất bản', tooltip: 'Thời gian xuất bản bài viết theo định dạng ISO' },
+    dateModified: { label: 'Ngày cập nhật', tooltip: 'Thời gian cập nhật lần cuối theo định dạng ISO' },
+    image: { label: 'Hình ảnh đại diện', tooltip: 'Thông tin hình ảnh đi kèm Schema' },
+    url: { label: 'Đường dẫn (URL)', tooltip: 'Đường dẫn liên kết trực tiếp' },
+    articleSection: { label: 'Chuyên mục bài viết', tooltip: 'Chuyên mục hoặc phân loại của bài' },
+    reviewLocation: { label: 'Vị trí hiển thị đánh giá', tooltip: 'Vị trí chèn khối đánh giá trong nội dung' },
+    reviewLocationShortcode: { label: 'Mã ngắn (Shortcode)', tooltip: 'Shortcode hiển thị đánh giá' },
+    review: { label: 'Đánh giá (Review)', tooltip: 'Thông tin đánh giá hoặc nhận xét' },
+    reviewRating: { label: 'Xếp hạng đánh giá', tooltip: 'Điểm số xếp hạng chi tiết' },
+    ratingValue: { label: 'Điểm đánh giá', tooltip: 'Điểm đánh giá (vd: 5 hoặc 4.5)' },
+    worstRating: { label: 'Điểm thấp nhất', tooltip: 'Mức điểm đánh giá tối thiểu (mặc định 1)' },
+    bestRating: { label: 'Điểm cao nhất', tooltip: 'Mức điểm đánh giá tối đa (mặc định 5)' },
+    hasPart: { label: 'Các phiên bản sách (Editions)', tooltip: 'Danh sách các phiên bản xuất bản của cuốn sách' },
+    bookEdition: { label: 'Lần tái bản / Phiên bản', tooltip: 'Phiên bản xuất bản (vd: Tái bản lần 1)' },
+    isbn: { label: 'Mã số ISBN', tooltip: 'Mã số tiêu chuẩn quốc tế cho sách' },
+    bookFormat: { label: 'Định dạng sách', tooltip: 'Định dạng sách (Bìa cứng, bìa mềm, ebook...)' },
+    provider: { label: 'Đơn vị cung cấp', tooltip: 'Tổ chức hoặc cá nhân cung cấp khóa học' },
+    sameAs: { label: 'Liên kết mạng xã hội / Trang chủ', tooltip: 'URL tham chiếu chính thức của tổ chức hoặc cá nhân' },
+    hasCourseInstance: { label: 'Lớp học / Kỳ học cụ thể', tooltip: 'Thông tin các khóa học mở thực tế' },
+    courseMode: { label: 'Hình thức học', tooltip: 'Trực tiếp (onsite), trực tuyến (online) hoặc kết hợp' },
+    courseWorkload: { label: 'Thời lượng học tập', tooltip: 'Khối lượng thời gian học (vd: 40 giờ)' },
+    courseSchedule: { label: 'Lịch học', tooltip: 'Lịch học chi tiết định kỳ' },
+    duration: { label: 'Thời lượng', tooltip: 'Khoảng thời gian (vd: PT30M cho 30 phút)' },
+    repeatCount: { label: 'Số lần lặp lại', tooltip: 'Số lần khóa học được tổ chức lặp lại' },
+    repeatFrequency: { label: 'Tần suất lặp lại', tooltip: 'Tần suất tổ chức khóa học' },
+    startDate: { label: 'Thời gian bắt đầu', tooltip: 'Ngày và giờ bắt đầu sự kiện' },
+    endDate: { label: 'Thời gian kết thúc', tooltip: 'Ngày và giờ kết thúc sự kiện' },
+    offers: { label: 'Ưu đãi & Vé / Bán hàng', tooltip: 'Thông tin vé hoặc giá bán sản phẩm' },
+    category: { label: 'Danh mục', tooltip: 'Danh mục phân loại' },
+    price: { label: 'Giá tiền', tooltip: 'Mức giá (chỉ nhập số)' },
+    priceCurrency: { label: 'Đơn vị tiền tệ', tooltip: 'Mã tiền tệ quốc tế ISO (vd: VND, USD)' },
+    availability: { label: 'Tình trạng còn hàng / vé', tooltip: 'Tình trạng sẵn có (Còn hàng, Hết hàng, Đặt trước...)' },
+    validFrom: { label: 'Ngày bắt đầu áp dụng giá', tooltip: 'Thời điểm bắt đầu có hiệu lực của mức giá' },
+    priceValidUntil: { label: 'Ngày hết hạn giá', tooltip: 'Thời điểm hết hạn của mức giá ưu đãi' },
+    inventoryLevel: { label: 'Số lượng trong kho', tooltip: 'Số lượng vé hoặc sản phẩm còn lại' },
+    eventStatus: { label: 'Trạng thái sự kiện', tooltip: 'Sự kiện đã lên lịch, hoãn hay bị huỷ' },
+    eventAttendanceMode: { label: 'Hình thức tham gia sự kiện', tooltip: 'Tham gia trực tiếp, trực tuyến hoặc hỗn hợp' },
+    VirtualLocation: { label: 'Địa điểm trực tuyến', tooltip: 'Đường dẫn phòng họp hoặc luồng trực tuyến' },
+    location: { label: 'Địa điểm tổ chức', tooltip: 'Địa điểm thực tế diễn ra sự kiện' },
+    address: { label: 'Địa chỉ chi tiết', tooltip: 'Địa chỉ bưu chính đầy đủ' },
+    streetAddress: { label: 'Địa chỉ đường / số nhà', tooltip: 'Tên đường, số nhà, ngõ ngách' },
+    addressLocality: { label: 'Quận / Huyện / Thành phố', tooltip: 'Đơn vị hành chính cấp quận, huyện hoặc thành phố' },
+    addressRegion: { label: 'Tỉnh / Thành phố trực thuộc', tooltip: 'Tỉnh hoặc thành phố' },
+    postalCode: { label: 'Mã bưu điện (Postal Code)', tooltip: 'Mã bưu chính của khu vực' },
+    addressCountry: { label: 'Quốc gia', tooltip: 'Mã quốc gia ISO (vd: VN, US)' },
+    performer: { label: 'Người biểu diễn / Diễn giả', tooltip: 'Thông tin cá nhân biểu diễn hoặc diễn giả' },
+    title: { label: 'Chức danh / Tiêu đề tuyển dụng', tooltip: 'Tên vị trí công việc' },
+    baseSalary: { label: 'Mức lương cơ bản', tooltip: 'Thông tin mức lương của công việc' },
+    currency: { label: 'Đơn vị tiền tệ lương', tooltip: 'Mã tiền tệ (VND, USD...)' },
+    value: { label: 'Mức lương', tooltip: 'Khoản lương cụ thể hoặc dải lương' },
+    unitText: { label: 'Kỳ trả lương', tooltip: 'Trả theo tháng (MONTH), năm (YEAR), ngày (DAY)...' },
+    datePosted: { label: 'Ngày đăng tuyển', tooltip: 'Ngày tin tuyển dụng được đăng tải' },
+    validThrough: { label: 'Hạn nộp hồ sơ', tooltip: 'Thời hạn cuối cùng nhận hồ sơ ứng tuyển' },
+    unpublish: { label: 'Ẩn bài khi hết hạn', tooltip: 'Tự động gỡ tin khi quá hạn nộp' },
+    employmentType: { label: 'Hình thức làm việc', tooltip: 'Toàn thời gian, bán thời gian, hợp đồng...' },
+    hiringOrganization: { label: 'Nhà tuyển dụng / Công ty', tooltip: 'Thông tin doanh nghiệp tuyển dụng' },
+    logo: { label: 'Logo tổ chức / doanh nghiệp', tooltip: 'Đường dẫn ảnh logo của công ty' },
+    id: { label: 'Mã định danh tuyển dụng', tooltip: 'Mã công việc hoặc số hiệu tham chiếu' },
+    jobLocation: { label: 'Nơi làm việc', tooltip: 'Địa điểm làm việc của ứng viên' },
+    email: { label: 'Địa chỉ Email', tooltip: 'Email liên hệ' },
+    gender: { label: 'Giới tính', tooltip: 'Giới tính của nhân vật / ứng viên' },
+    jobTitle: { label: 'Chức danh nghề nghiệp', tooltip: 'Chức vụ hoặc nghề nghiệp chuyên môn' },
+    sku: { label: 'Mã sản phẩm (SKU)', tooltip: 'Mã quản lý kho của sản phẩm' },
+    brand: { label: 'Thương hiệu sản phẩm', tooltip: 'Tên thương hiệu hoặc nhà sản xuất' },
+    gtin8: { label: 'Mã vạch GTIN / Barcode', tooltip: 'Mã sản phẩm toàn cầu GTIN-8, GTIN-12 hoặc GTIN-13' },
+    mpn: { label: 'Mã phụ tùng (MPN)', tooltip: 'Mã định danh linh kiện của nhà sản xuất' },
+    prepTime: { label: 'Thời gian chuẩn bị', tooltip: 'Thời gian chuẩn bị nguyên liệu (vd: PT15M)' },
+    cookTime: { label: 'Thời gian nấu', tooltip: 'Thời gian nấu nướng (vd: PT30M)' },
+    totalTime: { label: 'Tổng thời gian', tooltip: 'Tổng thời gian thực hiện món ăn' },
+    recipeCategory: { label: 'Phân loại món ăn', tooltip: 'Bữa sáng, món chính, tráng miệng...' },
+    recipeCuisine: { label: 'Ẩm thực vùng miền', tooltip: 'Ẩm thực Việt Nam, Ý, Pháp...' },
+    recipeYield: { label: 'Khẩu phần phục vụ', tooltip: 'Số lượng người dùng (vd: 4 người)' },
+    nutrition: { label: 'Giá trị dinh dưỡng', tooltip: 'Thông tin dinh dưỡng của món' },
+    calories: { label: 'Lượng calo (Calories)', tooltip: 'Hàm lượng calo (vd: 250 calories)' },
+    recipeIngredient: { label: 'Nguyên liệu món ăn', tooltip: 'Danh sách các nguyên liệu cần chuẩn bị' },
+    video: { label: 'Video hướng dẫn', tooltip: 'Video clip hướng dẫn các bước' },
+    embedUrl: { label: 'Đường dẫn nhúng (Embed URL)', tooltip: 'URL nhúng video player' },
+    contentUrl: { label: 'Đường dẫn file video (Content URL)', tooltip: 'URL trực tiếp đến file video' },
+    thumbnailUrl: { label: 'Ảnh thu nhỏ (Thumbnail)', tooltip: 'Ảnh đại diện của video' },
+    uploadDate: { label: 'Ngày tải video lên', tooltip: 'Thời gian đăng tải video' },
+    instructionType: { label: 'Kiểu hướng dẫn', tooltip: 'Hiển thị dạng văn bản đơn hoặc từng bước (HowToStep)' },
+    instructionsSingleField: { label: 'Nội dung hướng dẫn', tooltip: 'Hướng dẫn tổng hợp trong một khối văn bản' },
+    instructionsHowToStep: { label: 'Các bước thực hiện (How-To Steps)', tooltip: 'Danh sách các bước thực hiện tuần tự' },
+    text: { label: 'Văn bản hướng dẫn', tooltip: 'Mô tả chi tiết nội dung của bước' },
+    telephone: { label: 'Số điện thoại', tooltip: 'Số điện thoại liên hệ đặt bàn hoặc hỗ trợ' },
+    priceRange: { label: 'Mức giá trung bình', tooltip: 'Biểu thị khoảng giá (vd: $$, $$$ hoặc 100k - 500k)' },
+    geo: { label: 'Tọa độ địa lý (Geo)', tooltip: 'Tọa độ kinh độ và vĩ độ' },
+    latitude: { label: 'Vĩ độ (Latitude)', tooltip: 'Tọa độ vĩ độ địa lý' },
+    longitude: { label: 'Kinh độ (Longitude)', tooltip: 'Tọa độ kinh độ địa lý' },
+    openingHoursSpecification: { label: 'Khung giờ hoạt động', tooltip: 'Thời gian mở cửa và đóng cửa theo ngày' },
+    dayOfWeek: { label: 'Các ngày trong tuần', tooltip: 'Ngày áp dụng khung giờ' },
+    opens: { label: 'Giờ mở cửa', tooltip: 'Thời gian mở cửa (vd: 08:00)' },
+    closes: { label: 'Giờ đóng cửa', tooltip: 'Thời gian đóng cửa (vd: 22:00)' },
+    servesCuisine: { label: 'Loại hình món ăn phục vụ', tooltip: 'Các món ẩm thực nhà hàng phục vụ' },
+    hasMenu: { label: 'Đường dẫn thực đơn (Menu URL)', tooltip: 'Liên kết tới trang thực đơn chi tiết' },
+    serviceType: { label: 'Loại hình dịch vụ', tooltip: 'Tên gọi gói dịch vụ cung cấp' },
+    operatingSystem: { label: 'Hệ điều hành tương thích', tooltip: 'Hệ điều hành hỗ trợ (Windows, macOS, iOS, Android)' },
+    applicationCategory: { label: 'Danh mục ứng dụng', tooltip: 'Phân loại ứng dụng phần mềm' },
+  };
+
+  function getFieldInfo(fieldDef) {
+    const key = fieldDef.key;
+    const trans = schemaFieldTranslations[key];
+    const label = (trans && trans.label) ? trans.label : (fieldDef.label || key);
+    const tooltip = (trans && trans.tooltip) ? trans.tooltip : (fieldDef.help || '');
+    return { label, tooltip };
+  }
+
+  function getFieldDefs(type) {
+    if (type === 'BlogPosting' || type === 'NewsArticle') {
+      return schemaDefinitions.Article || [];
+    }
+    return schemaDefinitions[type] || [];
+  }
+
+  function renderSchemaList() {
+    if (!schemaListContainer) return;
+    schemaListContainer.replaceChildren();
+
+    currentSchemas.forEach((schema, sIdx) => {
+      const type = schema['@type'] || 'Article';
+      const metadata = schema.metadata || {};
+      const isPrimary = !!metadata.isPrimary;
+      const title = metadata.title || type;
+
+      const itemEl = document.createElement('div');
+      itemEl.className = `laca-schema-item ${isPrimary ? 'is-primary' : ''}`;
+      itemEl.dataset.index = sIdx;
+      itemEl.dataset.type = type;
+
+      // Header
+      const headerEl = document.createElement('div');
+      headerEl.className = 'laca-schema-item__header';
+
+      const titleWrap = document.createElement('div');
+      titleWrap.className = 'laca-schema-item__title';
+      titleWrap.innerHTML = `
+        <span class="dashicons dashicons-arrow-right-alt2"></span>
+        <strong>${escapeHtml(title)}</strong>
+        <span class="laca-badge-type">${escapeHtml(type)}</span>
+        ${isPrimary ? '<span class="laca-badge-primary">Chính (Primary)</span>' : ''}
+      `;
+
+      const actionsWrap = document.createElement('div');
+      actionsWrap.className = 'laca-schema-item__actions';
+
+      if (!isPrimary) {
+        const makePrimaryBtn = document.createElement('button');
+        makePrimaryBtn.type = 'button';
+        makePrimaryBtn.className = 'button button-small laca-make-primary-btn';
+        makePrimaryBtn.innerHTML = '<span class="dashicons dashicons-star-filled"></span> Đặt làm chính';
+        makePrimaryBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          currentSchemas.forEach((s, i) => {
+            if (!s.metadata) s.metadata = {};
+            s.metadata.isPrimary = (i === sIdx);
+          });
+          syncSchemasJson();
+          renderSchemaList();
+        });
+        actionsWrap.appendChild(makePrimaryBtn);
+      }
+
+      const removeBtn = document.createElement('button');
+      removeBtn.type = 'button';
+      removeBtn.className = 'button button-small button-link-delete laca-remove-schema-btn';
+      removeBtn.innerHTML = '<span class="dashicons dashicons-trash"></span> Xoá';
+      removeBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        currentSchemas.splice(sIdx, 1);
+        if (currentSchemas.length > 0 && !currentSchemas.some(s => s.metadata && s.metadata.isPrimary)) {
+          if (!currentSchemas[0].metadata) currentSchemas[0].metadata = {};
+          currentSchemas[0].metadata.isPrimary = true;
+        }
+        syncSchemasJson();
+        renderSchemaList();
+      });
+      actionsWrap.appendChild(removeBtn);
+
+      headerEl.appendChild(titleWrap);
+      headerEl.appendChild(actionsWrap);
+
+      // Body Form
+      const bodyEl = document.createElement('div');
+      bodyEl.className = 'laca-schema-item__body';
+
+      const fieldDefs = getFieldDefs(type);
+      fieldDefs.forEach(fieldDef => {
+        const fEl = renderField(fieldDef, schema, (newVal) => {
+          setSchemaValue(schema, fieldDef, newVal);
+          syncSchemasJson();
+        }, false);
+        if (fEl) bodyEl.appendChild(fEl);
+      });
+
+      // Toggle accordion
+      headerEl.addEventListener('click', () => {
+        itemEl.classList.toggle('is-open');
+      });
+
+      // Open first item or primary item by default
+      if (sIdx === 0 || isPrimary) {
+        itemEl.classList.add('is-open');
+      }
+
+      itemEl.appendChild(headerEl);
+      itemEl.appendChild(bodyEl);
+      schemaListContainer.appendChild(itemEl);
+    });
+  }
+
+  function setSchemaValue(targetObj, fieldDef, value) {
+    const key = fieldDef.key;
+    if (fieldDef.save === 'metadata') {
+      if (!targetObj.metadata) targetObj.metadata = {};
+      targetObj.metadata[key] = value;
+    } else {
+      targetObj[key] = value;
+    }
+  }
+
+  function getSchemaValue(targetObj, fieldDef) {
+    const key = fieldDef.key;
+    if (fieldDef.save === 'metadata') {
+      return (targetObj.metadata && targetObj.metadata[key] !== undefined) ? targetObj.metadata[key] : (fieldDef.default || '');
+    }
+    return targetObj[key] !== undefined ? targetObj[key] : (fieldDef.default || '');
+  }
+
+  function renderField(fieldDef, parentObj, onChange, isSubObject = false) {
+    if (!fieldDef || !fieldDef.key) return null;
+
+    // Check if sub-object @type field: hide and fix constant value like Rank Math
+    if (isSubObject && fieldDef.key === '@type') {
+      const fixedTypeVal = fieldDef.value || fieldDef.default || '';
+      if (fixedTypeVal && parentObj['@type'] !== fixedTypeVal) {
+        parentObj['@type'] = fixedTypeVal;
+        onChange(fixedTypeVal);
+      }
+      const hiddenInput = document.createElement('input');
+      hiddenInput.type = 'hidden';
+      hiddenInput.dataset.fieldName = '@type';
+      hiddenInput.value = fixedTypeVal;
+      return hiddenInput;
+    }
+
+    // Check if repeater (isArray && subfields)
+    if (fieldDef.isArray && (fieldDef.subfields || fieldDef.fields)) {
+      return renderRepeaterField(fieldDef, parentObj, onChange);
+    }
+
+    // Check if group (isGroup && subfields)
+    if (fieldDef.isGroup && (fieldDef.subfields || fieldDef.fields)) {
+      return renderGroupField(fieldDef, parentObj, onChange);
+    }
+
+    const fieldWrap = document.createElement('div');
+    fieldWrap.className = 'laca-schema-field';
+
+    const info = getFieldInfo(fieldDef);
+
+    const labelEl = document.createElement('label');
+    labelEl.textContent = info.label;
+    if (fieldDef.required) {
+      const req = document.createElement('span');
+      req.className = 'required';
+      req.textContent = '*';
+      labelEl.appendChild(req);
+    }
+    if (info.tooltip) {
+      const tipIcon = document.createElement('span');
+      tipIcon.className = 'dashicons dashicons-editor-help laca-field-tooltip-icon';
+      tipIcon.title = info.tooltip;
+      tipIcon.style.fontSize = '15px';
+      tipIcon.style.width = '15px';
+      tipIcon.style.height = '15px';
+      tipIcon.style.marginLeft = '4px';
+      tipIcon.style.color = '#8c8f94';
+      tipIcon.style.cursor = 'help';
+      tipIcon.style.verticalAlign = 'middle';
+      labelEl.appendChild(tipIcon);
+    }
+    fieldWrap.appendChild(labelEl);
+
+    const curVal = getSchemaValue(parentObj, fieldDef);
+
+    if (fieldDef.type === 'select') {
+      const select = document.createElement('select');
+      select.dataset.fieldName = fieldDef.key;
+      const opts = fieldDef.options || {};
+      Object.keys(opts).forEach(optKey => {
+        const opt = document.createElement('option');
+        opt.value = optKey;
+        opt.textContent = opts[optKey];
+        if (optKey === curVal) opt.selected = true;
+        select.appendChild(opt);
+      });
+      select.addEventListener('change', () => onChange(select.value));
+      fieldWrap.appendChild(select);
+    } else if (fieldDef.type === 'radio') {
+      const radioWrap = document.createElement('div');
+      radioWrap.className = 'laca-radio-group';
+      radioWrap.dataset.fieldName = fieldDef.key;
+      const opts = fieldDef.options || {};
+      const radName = 'rad_' + Math.random().toString(36).substring(2, 9);
+      Object.keys(opts).forEach(optKey => {
+        const rLabel = document.createElement('label');
+        const radio = document.createElement('input');
+        radio.type = 'radio';
+        radio.name = radName;
+        radio.value = optKey;
+        radio.dataset.fieldName = fieldDef.key;
+        if (optKey === curVal || (!curVal && optKey === fieldDef.default)) radio.checked = true;
+        radio.addEventListener('change', () => onChange(radio.value));
+        rLabel.appendChild(radio);
+        rLabel.appendChild(document.createTextNode(' ' + opts[optKey]));
+        radioWrap.appendChild(rLabel);
+      });
+      fieldWrap.appendChild(radioWrap);
+    } else if (fieldDef.type === 'textarea') {
+      const textarea = document.createElement('textarea');
+      textarea.dataset.fieldName = fieldDef.key;
+      textarea.rows = 3;
+      textarea.placeholder = fieldDef.placeholder || '';
+      textarea.value = curVal;
+      textarea.addEventListener('input', () => onChange(textarea.value));
+      fieldWrap.appendChild(textarea);
+    } else if (fieldDef.type === 'datetimepicker') {
+      const input = document.createElement('input');
+      input.dataset.fieldName = fieldDef.key;
+      input.type = 'datetime-local';
+      input.value = curVal ? curVal.replace(' ', 'T').substring(0, 16) : '';
+      input.addEventListener('input', () => onChange(input.value));
+      fieldWrap.appendChild(input);
+    } else if (fieldDef.type === 'datepicker') {
+      const input = document.createElement('input');
+      input.dataset.fieldName = fieldDef.key;
+      input.type = 'date';
+      input.value = curVal ? curVal.substring(0, 10) : '';
+      input.addEventListener('input', () => onChange(input.value));
+      fieldWrap.appendChild(input);
+    } else {
+      const input = document.createElement('input');
+      input.dataset.fieldName = fieldDef.key;
+      input.type = fieldDef.type === 'number' ? 'number' : 'text';
+      input.placeholder = fieldDef.placeholder || '';
+      input.value = curVal;
+      input.addEventListener('input', () => onChange(input.value));
+      fieldWrap.appendChild(input);
+    }
+
+    if (info.tooltip) {
+      const help = document.createElement('p');
+      help.className = 'description';
+      help.textContent = info.tooltip;
+      fieldWrap.appendChild(help);
+    }
+
+    return fieldWrap;
+  }
+
+  function renderGroupField(groupDef, parentObj, onChange) {
+    const groupWrap = document.createElement('div');
+    groupWrap.className = 'laca-schema-subgroup';
+
+    const info = getFieldInfo(groupDef);
+
+    const groupTitle = document.createElement('h5');
+    groupTitle.className = 'laca-schema-subgroup__title';
+    groupTitle.textContent = info.label;
+    if (info.tooltip) {
+      const tipIcon = document.createElement('span');
+      tipIcon.className = 'dashicons dashicons-editor-help laca-field-tooltip-icon';
+      tipIcon.title = info.tooltip;
+      tipIcon.style.fontSize = '14px';
+      tipIcon.style.width = '14px';
+      tipIcon.style.height = '14px';
+      tipIcon.style.marginLeft = '4px';
+      tipIcon.style.color = '#8c8f94';
+      tipIcon.style.cursor = 'help';
+      tipIcon.style.verticalAlign = 'middle';
+      groupTitle.appendChild(tipIcon);
+    }
+    groupWrap.appendChild(groupTitle);
+
+    const subfields = groupDef.subfields || groupDef.fields || [];
+    let groupVal = parentObj[groupDef.key];
+    if (!groupVal || typeof groupVal !== 'object' || Array.isArray(groupVal)) {
+      groupVal = {};
+      parentObj[groupDef.key] = groupVal;
+    }
+
+    subfields.forEach(subDef => {
+      const sfEl = renderField(subDef, groupVal, (newVal) => {
+        setSchemaValue(groupVal, subDef, newVal);
+        onChange(groupVal);
+      }, true);
+      if (sfEl) groupWrap.appendChild(sfEl);
+    });
+
+    return groupWrap;
+  }
+
+  function renderRepeaterField(repeaterDef, parentObj, onChange) {
+    const repWrap = document.createElement('div');
+    repWrap.className = 'laca-schema-repeater';
+
+    const info = getFieldInfo(repeaterDef);
+
+    const header = document.createElement('div');
+    header.className = 'laca-schema-repeater__header';
+    header.innerHTML = `<strong>${escapeHtml(info.label)}</strong>`;
+    if (info.tooltip) {
+      const tip = document.createElement('span');
+      tip.className = 'dashicons dashicons-editor-help laca-field-tooltip-icon';
+      tip.title = info.tooltip;
+      tip.style.fontSize = '14px';
+      tip.style.width = '14px';
+      tip.style.height = '14px';
+      tip.style.marginLeft = '4px';
+      tip.style.color = '#8c8f94';
+      tip.style.cursor = 'help';
+      tip.style.verticalAlign = 'middle';
+      header.querySelector('strong').appendChild(tip);
+    }
+
+    const addRowBtn = document.createElement('button');
+    addRowBtn.type = 'button';
+    addRowBtn.className = 'button button-small';
+    addRowBtn.innerHTML = '<span class="dashicons dashicons-plus"></span> Thêm';
+    header.appendChild(addRowBtn);
+    repWrap.appendChild(header);
+
+    const listEl = document.createElement('div');
+    listEl.className = 'laca-schema-repeater__list';
+    repWrap.appendChild(listEl);
+
+    let rows = parentObj[repeaterDef.key];
+    if (!Array.isArray(rows)) {
+      rows = [];
+      parentObj[repeaterDef.key] = rows;
+    }
+
+    const subdefs = repeaterDef.subfields || repeaterDef.fields || [];
+
+    function renderRows() {
+      listEl.replaceChildren();
+      rows.forEach((rowObj, rIdx) => {
+        const rowEl = document.createElement('div');
+        rowEl.className = 'laca-schema-repeater__row';
+
+        const rowHeader = document.createElement('div');
+        rowHeader.className = 'laca-schema-repeater__row-header';
+        rowHeader.innerHTML = `<span>#${rIdx + 1}</span>`;
+
+        const delRowBtn = document.createElement('button');
+        delRowBtn.type = 'button';
+        delRowBtn.className = 'button button-small button-link-delete';
+        delRowBtn.innerHTML = '<span class="dashicons dashicons-trash"></span>';
+        delRowBtn.addEventListener('click', () => {
+          rows.splice(rIdx, 1);
+          renderRows();
+          onChange(rows);
+        });
+        rowHeader.appendChild(delRowBtn);
+        rowEl.appendChild(rowHeader);
+
+        subdefs.forEach(subDef => {
+          const sfEl = renderField(subDef, rowObj, (newVal) => {
+            setSchemaValue(rowObj, subDef, newVal);
+            onChange(rows);
+          });
+          if (sfEl) rowEl.appendChild(sfEl);
+        });
+
+        listEl.appendChild(rowEl);
+      });
+    }
+
+    addRowBtn.addEventListener('click', () => {
+      const newRow = {};
+      subdefs.forEach(subDef => {
+        if (subDef.default) {
+          newRow[subDef.key] = subDef.default;
+        }
+      });
+      rows.push(newRow);
+      renderRows();
+      onChange(rows);
+    });
+
+    renderRows();
+    return repWrap;
+  }
+
+  // Handle Add Schema
+  if (addSchemaBtn && newSchemaSelect) {
+    addSchemaBtn.addEventListener('click', () => {
+      const selectedType = newSchemaSelect.value;
+      if (!selectedType) return;
+
+      const isFirst = currentSchemas.length === 0;
+      const typeLabel = (schemaTypes && schemaTypes[selectedType]) ? schemaTypes[selectedType] : selectedType;
+
+      const newSchemaObj = {
+        '@type': selectedType,
+        metadata: {
+          title: selectedType,
+          type: 'template',
+          shortcode: 's-' + Math.random().toString(36).substring(2, 9),
+          isPrimary: isFirst,
+        }
+      };
+
+      // Fill in defaults
+      const defs = getFieldDefs(selectedType);
+      defs.forEach(fDef => {
+        if (fDef.default) {
+          setSchemaValue(newSchemaObj, fDef, fDef.default);
+        } else if (fDef.placeholder && fDef.placeholder.startsWith('%')) {
+          setSchemaValue(newSchemaObj, fDef, fDef.placeholder);
+        }
+      });
+
+      currentSchemas.push(newSchemaObj);
+      newSchemaSelect.value = '';
+      syncSchemasJson();
+      renderSchemaList();
+    });
+  }
+
+  // Handle Use Default Schema
+  if (useDefaultBtn) {
+    useDefaultBtn.addEventListener('click', () => {
+      if (confirm('Bạn có chắc muốn dùng Schema mặc định theo loại bài? Tất cả Schema tuỳ biến của bài này sẽ bị xoá.')) {
+        currentSchemas = [];
+        syncSchemasJson();
+        renderSchemaList();
+      }
+    });
+  }
+
+  // Initial render of Schema List
+  renderSchemaList();
 
   // Initial full cycle
   runFullCycle();

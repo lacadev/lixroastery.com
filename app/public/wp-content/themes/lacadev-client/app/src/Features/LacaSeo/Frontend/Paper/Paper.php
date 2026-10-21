@@ -159,7 +159,7 @@ class Paper
             return;
         }
 
-        $this->robots = array_intersect_key(
+        $filtered = array_intersect_key(
             $this->robots,
             [
                 'index'        => '',
@@ -170,12 +170,15 @@ class Paper
             ]
         );
 
-        if (!isset($this->robots['index'])) {
-            $this->robots = ['index' => 'index'] + $this->robots;
+        $ordered = [];
+        $ordered['index'] = $filtered['index'] ?? 'index';
+        $ordered['follow'] = $filtered['follow'] ?? 'follow';
+        foreach ($filtered as $k => $v) {
+            if ($k !== 'index' && $k !== 'follow') {
+                $ordered[$k] = $v;
+            }
         }
-        if (!isset($this->robots['follow'])) {
-            $this->robots = ['follow' => 'follow'] + $this->robots;
-        }
+        $this->robots = $ordered;
     }
 
     private function respect_settings_for_robots(): void
@@ -197,7 +200,7 @@ class Paper
         }
 
         $adv = $this->paper->advanced_robots();
-        if (!is_array($adv) || empty($adv)) {
+        if (!is_array($adv)) {
             $advGlobal = (array) Settings::get('titles.advanced_robots_global', [
                 'max-snippet'       => -1,
                 'max-video-preview' => -1,
@@ -245,7 +248,7 @@ class Paper
             'canonical_override' => false,
         ]);
 
-        $canonical = $this->canonical['canonical'] ?: home_url();
+        $canonical = $this->canonical['canonical'] ?: false;
         $canonical_unpaged = $canonical;
         $canonical_override = $this->canonical['canonical_override'];
 

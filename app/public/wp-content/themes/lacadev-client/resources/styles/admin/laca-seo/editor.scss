@@ -517,36 +517,260 @@
     }
   }
 
-  /* Schema Placeholder */
-  .laca-schema-placeholder {
-    text-align: center;
-    padding: 40px 20px;
-    background: var(--laca-seo-bg);
-    border-radius: 8px;
-    border: 1px dashed var(--laca-seo-border);
+  /* Schema Manager (Phase 3B - Multi-schema generator) */
+  .laca-schema-manager {
+    .laca-schema-toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+      padding-bottom: 16px;
+      margin-bottom: 16px;
+      border-bottom: 1px solid var(--laca-seo-border);
 
-    .laca-placeholder-icon {
-      font-size: 40px;
-      width: 40px;
-      height: 40px;
-      color: var(--laca-seo-primary);
-      margin-bottom: 12px;
+      &__left,
+      &__right {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+
+      select {
+        min-width: 260px;
+      }
     }
 
-    h3 {
-      margin: 0 0 8px;
-      font-size: 16px;
+    .laca-schema-default-notice {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 16px;
+      background: #f8fafc;
+      border: 1px dashed var(--laca-seo-border);
+      border-radius: 6px;
+      color: var(--laca-seo-text);
+      font-size: 13px;
+      margin-bottom: 16px;
+
+      .dashicons {
+        color: var(--laca-seo-primary);
+        font-size: 18px;
+        width: 18px;
+        height: 18px;
+      }
     }
 
-    .laca-phase-badge {
-      display: inline-block;
-      margin-top: 16px;
-      padding: 6px 14px;
-      background: #e0e7ff;
-      color: #3730a3;
-      border-radius: 20px;
-      font-size: 12px;
-      font-weight: 600;
+    .laca-schema-item {
+      background: #ffffff;
+      border: 1px solid var(--laca-seo-border);
+      border-radius: 8px;
+      margin-bottom: 16px;
+      overflow: hidden;
+      transition: border-color 0.2s, box-shadow 0.2s;
+
+      &.is-primary {
+        border-color: #6366f1;
+        box-shadow: 0 0 0 1px #6366f1;
+      }
+
+      &__header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 16px;
+        background: #f8fafc;
+        border-bottom: 1px solid transparent;
+        cursor: pointer;
+        user-select: none;
+
+        .laca-schema-item__title {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+
+          .dashicons-arrow-right-alt2 {
+            transition: transform 0.2s;
+            color: #64748b;
+          }
+
+          strong {
+            font-size: 14px;
+            color: var(--laca-seo-text);
+          }
+
+          .laca-badge-type {
+            font-size: 11px;
+            background: #e2e8f0;
+            color: #334155;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-weight: 600;
+          }
+
+          .laca-badge-primary {
+            font-size: 11px;
+            background: #e0e7ff;
+            color: #4338ca;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-weight: 600;
+          }
+        }
+
+        .laca-schema-item__actions {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+
+          button {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 12px;
+          }
+        }
+      }
+
+      &.is-open {
+        .laca-schema-item__header {
+          border-bottom-color: var(--laca-seo-border);
+
+          .dashicons-arrow-right-alt2 {
+            transform: rotate(90deg);
+          }
+        }
+
+        .laca-schema-item__body {
+          display: block;
+        }
+      }
+
+      &__body {
+        display: none;
+        padding: 16px;
+        background: #ffffff;
+      }
+    }
+
+    /* Subfields & Nested Groups */
+    .laca-schema-subgroup {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+      padding: 14px 16px;
+      margin-bottom: 14px;
+
+      &__title {
+        font-size: 13px;
+        font-weight: 700;
+        color: #334155;
+        margin: 0 0 10px 0;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+    }
+
+    /* Repeater */
+    .laca-schema-repeater {
+      margin-bottom: 16px;
+
+      &__header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 8px;
+
+        strong {
+          font-size: 13px;
+          color: var(--laca-seo-text);
+        }
+      }
+
+      &__list {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        margin-bottom: 10px;
+      }
+
+      &__row {
+        background: #f8fafc;
+        border: 1px solid var(--laca-seo-border);
+        border-radius: 6px;
+        padding: 12px 14px;
+        position: relative;
+
+        &-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 10px;
+          font-size: 12px;
+          font-weight: 600;
+          color: #64748b;
+        }
+      }
+    }
+
+    .laca-schema-field {
+      margin-bottom: 14px;
+
+      label {
+        display: block;
+        font-weight: 600;
+        font-size: 12px;
+        margin-bottom: 4px;
+        color: #334155;
+
+        .required {
+          color: #ef4444;
+          margin-left: 2px;
+        }
+      }
+
+      .description {
+        font-size: 12px;
+        color: #64748b;
+        margin-top: 4px;
+        margin-bottom: 0;
+      }
+
+      input[type="text"],
+      input[type="number"],
+      input[type="url"],
+      input[type="datetime-local"],
+      input[type="date"],
+      select,
+      textarea {
+        width: 100%;
+        font-size: 13px;
+        border: 1px solid #cbd5e1;
+        border-radius: 4px;
+        padding: 6px 10px;
+
+        &:focus {
+          border-color: #6366f1;
+          box-shadow: 0 0 0 1px #6366f1;
+        }
+      }
+
+      .laca-radio-group {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 14px;
+
+        label {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          font-weight: normal;
+          font-size: 13px;
+          cursor: pointer;
+          margin-bottom: 0;
+        }
+      }
     }
   }
 

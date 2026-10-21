@@ -17,11 +17,9 @@ $missing_count = (int) $wpdb->get_var("
     SELECT COUNT(p.ID)
     FROM {$wpdb->posts} p
     LEFT JOIN {$wpdb->postmeta} pm_laca ON (p.ID = pm_laca.post_id AND pm_laca.meta_key = '_laca_seo_description')
-    LEFT JOIN {$wpdb->postmeta} pm_rm ON (p.ID = pm_rm.post_id AND pm_rm.meta_key = 'rank_math_description')
     WHERE p.post_type IN ('post', 'page', 'product')
       AND p.post_status = 'publish'
       AND (pm_laca.meta_value IS NULL OR pm_laca.meta_value = '')
-      AND (pm_rm.meta_value IS NULL OR pm_rm.meta_value = '')
 ");
 
 ?>

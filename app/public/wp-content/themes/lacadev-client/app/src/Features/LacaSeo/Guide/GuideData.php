@@ -109,6 +109,30 @@ class GuideData
                 'action_url'   => add_query_arg(['page' => 'laca-seo', 'view' => 'general', 'tab' => 'analytics'], admin_url('admin.php')),
                 'action_label' => 'Mở Analytics',
             ],
+            [
+                'id'           => 'sitemap_xml',
+                'title'        => 'Sơ đồ trang XML (XML Sitemap) & Khai báo robots.txt',
+                'status'       => true,
+                'desc'         => 'Sơ đồ XML tự động cập nhật tại ' . home_url('/sitemap_index.xml') . ' và đã khai báo trong robots.txt.',
+                'action_url'   => add_query_arg(['page' => 'laca-seo', 'view' => 'sitemap'], admin_url('admin.php')),
+                'action_label' => 'Cài đặt Sitemap',
+            ],
+            [
+                'id'           => 'breadcrumbs_status',
+                'title'        => 'Thanh điều hướng phân cấp (Breadcrumbs)',
+                'status'       => Settings::get('general.breadcrumbs', 'off') === 'on',
+                'desc'         => (Settings::get('general.breadcrumbs', 'off') === 'on') ? 'Đường dẫn điều hướng Breadcrumbs đang hoạt động trên giao diện.' : 'Tính năng Breadcrumbs đang tắt.',
+                'action_url'   => add_query_arg(['page' => 'laca-seo', 'view' => 'general', 'tab' => 'breadcrumbs'], admin_url('admin.php')),
+                'action_label' => 'Cài đặt Breadcrumbs',
+            ],
+            [
+                'id'           => 'indexnow_status',
+                'title'        => 'Giao thức lập chỉ mục tức thì (IndexNow API)',
+                'status'       => !empty(Settings::get('instant_indexing.indexnow_api_key', '')),
+                'desc'         => !empty(Settings::get('instant_indexing.indexnow_api_key', '')) ? 'Khoá API IndexNow đã được tạo và kích hoạt tự động gửi URL bài mới.' : 'Chưa kích hoạt khoá API IndexNow.',
+                'action_url'   => add_query_arg(['page' => 'laca-seo', 'view' => 'instant-indexing'], admin_url('admin.php')),
+                'action_label' => 'Mở IndexNow',
+            ],
         ];
     }
 

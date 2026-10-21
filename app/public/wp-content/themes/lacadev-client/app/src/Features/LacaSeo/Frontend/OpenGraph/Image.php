@@ -42,13 +42,17 @@ class Image
                         'width'  => (int) $img[1],
                         'height' => (int) $img[2],
                         'type'   => (string) get_post_mime_type($meta_id) ?: 'image/jpeg',
+                        'alt'    => self::getAttachmentAlt($meta_id, $post),
                     ];
                 }
             }
 
             $meta_img = get_post_meta($post->ID, '_laca_seo_facebook_image', true);
             if (!empty($meta_img)) {
-                return ['url' => (string) $meta_img];
+                return [
+                    'url' => (string) $meta_img,
+                    'alt' => self::getAttachmentAlt(0, $post),
+                ];
             }
 
             // Level 2: Featured image
@@ -61,6 +65,7 @@ class Image
                         'width'  => (int) $img[1],
                         'height' => (int) $img[2],
                         'type'   => (string) get_post_mime_type($thumb_id) ?: 'image/jpeg',
+                        'alt'    => self::getAttachmentAlt($thumb_id, $post),
                     ];
                 }
             }
@@ -68,7 +73,10 @@ class Image
             // Level 3: First image in post content
             $content_img = self::extractFirstImage($post->post_content);
             if (!empty($content_img)) {
-                return ['url' => $content_img];
+                return [
+                    'url' => $content_img,
+                    'alt' => self::getAttachmentAlt(0, $post),
+                ];
             }
         } elseif (is_category() || is_tag() || is_tax()) {
             $term = get_queried_object();
@@ -77,17 +85,22 @@ class Image
                 if ($meta_id > 0) {
                     $img = wp_get_attachment_image_src($meta_id, 'full');
                     if ($img) {
+                        $alt = (string) get_post_meta($meta_id, '_wp_attachment_image_alt', true);
                         return [
                             'url'    => $img[0],
                             'width'  => (int) $img[1],
                             'height' => (int) $img[2],
                             'type'   => (string) get_post_mime_type($meta_id) ?: 'image/jpeg',
+                            'alt'    => $alt ?: (string) $term->name,
                         ];
                     }
                 }
                 $meta_img = get_term_meta($term->term_id, '_laca_seo_facebook_image', true);
                 if (!empty($meta_img)) {
-                    return ['url' => (string) $meta_img];
+                    return [
+                        'url' => (string) $meta_img,
+                        'alt' => (string) $term->name,
+                    ];
                 }
             }
         }
@@ -97,11 +110,13 @@ class Image
         if ($global_id > 0) {
             $img = wp_get_attachment_image_src($global_id, 'full');
             if ($img) {
+                $alt = (string) get_post_meta($global_id, '_wp_attachment_image_alt', true);
                 return [
                     'url'    => $img[0],
                     'width'  => (int) $img[1],
                     'height' => (int) $img[2],
                     'type'   => (string) get_post_mime_type($global_id) ?: 'image/jpeg',
+                    'alt'    => $alt,
                 ];
             }
         }
@@ -113,6 +128,35 @@ class Image
 
         return !empty($global) ? ['url' => (string) $global] : null;
     }
+
+    /**
+     * Get attachment alt text with fallback matching Rank Math:
+     * 1. Attachment _wp_attachment_image_alt
+     * 2. Post focus keyword
+     * 3. Post title
+     */
+    private static function getAttachmentAlt(int $attachment_id, ?\WP_Post $post = null): string
+    {
+        if ($attachment_id > 0) {
+            $alt = (string) get_post_meta($attachment_id, '_wp_attachment_image_alt', true);
+            if (!empty($alt)) {
+                return $alt;
+            }
+        }
+
+        if ($post) {
+            $focus = (string) get_post_meta($post->ID, '_laca_seo_focus_keyword', true);
+            if (!empty($focus)) {
+                $kw = explode(',', $focus);
+                return trim($kw[0]);
+            }
+
+            return (string) get_the_title($post);
+        }
+
+        return '';
+    }
+
 
     /**
      * Extract first <img> src from HTML string.
