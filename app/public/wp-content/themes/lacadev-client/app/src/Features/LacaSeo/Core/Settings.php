@@ -37,17 +37,18 @@ class Settings
         [$group, $id] = $parts;
         $groupOptions = self::getGroup($group);
 
+        $value = $fallback;
         if (array_key_exists($id, $groupOptions)) {
-            return $groupOptions[$id];
+            $value = $groupOptions[$id];
+        } else {
+            // Check fallback from registry default
+            $registry = self::getRegistryMap();
+            if (isset($registry[$group][$id])) {
+                $value = $registry[$group][$id]->getDefault();
+            }
         }
 
-        // Check fallback from registry default
-        $registry = self::getRegistryMap();
-        if (isset($registry[$group][$id])) {
-            return $registry[$group][$id]->getDefault();
-        }
-
-        return $fallback;
+        return apply_filters('laca_seo/settings/get', $value, $key);
     }
 
     /**

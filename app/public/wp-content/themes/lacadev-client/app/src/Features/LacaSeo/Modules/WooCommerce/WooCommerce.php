@@ -62,7 +62,11 @@ class WooCommerce
         }
 
         $val = '';
-        if (method_exists($product, 'get_meta')) {
+        $productId = method_exists($product, 'get_id') ? (int) $product->get_id() : 0;
+        if ($productId > 0) {
+            $val = (string) get_post_meta($productId, '_laca_seo_gtin_code', true);
+        }
+        if ($val === '' && method_exists($product, 'get_meta')) {
             $val = (string) $product->get_meta('_laca_seo_gtin_code');
         }
         if ($val === '' && method_exists($product, 'get_global_unique_id')) {

@@ -69,6 +69,7 @@ class LacaSeo
             (new \App\Features\LacaSeo\Modules\AdminBar\AdminBarMenu())->register();
             (new \App\Features\LacaSeo\Modules\DashboardWidget\DashboardWidget())->register();
             (new \App\Features\LacaSeo\Modules\Podcast\Podcast())->register();
+            (new \App\Features\LacaSeo\Modules\SeoAnalysis\ContentAnalysisEndpoint())->register();
 
 
             // 3. Frontend modules: run only if Rank Math is inactive OR force flag is set

@@ -24,7 +24,9 @@ class Links
 
     public function register(): void
     {
-        Installer::createTables();
+        if (is_admin()) {
+            Installer::createTables();
+        }
 
         if (!Modules::isActive('link-counter')) {
             return;

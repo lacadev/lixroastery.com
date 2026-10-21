@@ -56,6 +56,13 @@ class DashboardWidget
             $linksCount = (int) $wpdb->get_var("SELECT COUNT(*) FROM {$lkTable}");
         }
 
+        // 4. Google Search Console 28-day metrics if connected
+        $gscCreds = \App\Features\LacaSeo\Modules\SearchConsole\GscOAuth::getCredentials();
+        $gscPerf = null;
+        if (!empty($gscCreds['access_token'])) {
+            $gscPerf = \App\Features\LacaSeo\Modules\SearchConsole\GscClient::getPerformanceSummary(home_url('/'));
+        }
+
         ?>
         <div class="laca-seo-dashboard-widget-content" style="padding: 10px 0;">
             <p><strong><?php esc_html_e('Chỉ số SEO cốt lõi của website:', 'lacadev'); ?></strong></p>
@@ -75,6 +82,14 @@ class DashboardWidget
                     <?php esc_html_e('Liên kết nội bộ đã phân tích:', 'lacadev'); ?>
                     <strong><?php echo esc_html($linksCount); ?></strong>
                 </li>
+                <?php if ($gscPerf): ?>
+                <li>
+                    <span class="dashicons dashicons-google" style="color: #ea4335;"></span>
+                    <?php esc_html_e('Google Search (28 ngày):', 'lacadev'); ?>
+                    <strong><?php echo esc_html(number_format_i18n($gscPerf['totalClicks'] ?? 0)); ?> clicks</strong>
+                    <span style="color:#64748b;">(<?php echo esc_html(number_format_i18n($gscPerf['totalImpressions'] ?? 0)); ?> hiển thị)</span>
+                </li>
+                <?php endif; ?>
             </ul>
             <div style="border-top: 1px solid #eee; padding-top: 10px; margin-top: 10px;">
                 <a href="<?php echo esc_url(admin_url('admin.php?page=laca-seo')); ?>" class="button button-primary">

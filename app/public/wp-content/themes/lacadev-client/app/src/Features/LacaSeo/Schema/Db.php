@@ -36,6 +36,24 @@ class Db
             $idCol = 'user_id';
         }
 
+        // Check WP post_meta cache first if available
+        if ($table === 'postmeta') {
+            $postMetaCache = wp_cache_get($objectId, 'post_meta');
+            if (is_array($postMetaCache)) {
+                $hasSchema = false;
+                foreach (array_keys($postMetaCache) as $k) {
+                    if (str_starts_with((string)$k, '_laca_seo_schema_')) {
+                        $hasSchema = true;
+                        break;
+                    }
+                }
+                if (!$hasSchema) {
+                    $cache[$cacheKey] = [];
+                    return [];
+                }
+            }
+        }
+
         // Check Laca SEO schema meta
         $rows = $wpdb->get_results($wpdb->prepare(
             "SELECT meta_id, meta_key, meta_value FROM {$tableName} WHERE {$idCol} = %d AND meta_key LIKE %s",

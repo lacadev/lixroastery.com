@@ -88,9 +88,8 @@ class Singular implements IPaper
         }
 
         // Hidden WooCommerce products
-        if ($pt === 'product' && Settings::get('general.noindex_hidden_products', 'on') === 'on' && function_exists('wc_get_product')) {
-            $prod = wc_get_product($post->ID);
-            if ($prod && $prod->get_catalog_visibility() === 'hidden') {
+        if ($pt === 'product' && Settings::get('general.noindex_hidden_products', 'on') === 'on') {
+            if (has_term(['exclude-from-catalog', 'exclude-from-search'], 'product_visibility', $post->ID)) {
                 $robots['index'] = 'noindex';
                 $robots['follow'] = 'nofollow';
             }

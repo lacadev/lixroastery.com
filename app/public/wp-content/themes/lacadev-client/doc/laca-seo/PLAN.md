@@ -354,6 +354,7 @@ Meta riêng Woo Pro: `_rank_math_gtin_code` → `_laca_seo_gtin_code`.
 | 4 | ✅ Xong 21/10/2026 sau review R1 | test-redirections 45/45 (M1–M20 so bằng hàm RM compare_sources, export so RM), Claude chạy 2 lần: checksum 3 bảng + bài 866 + terms không đổi. Module mặc định tắt; bảng wp_laca_seo_redirections, _cache, _404_logs đã tạo. Đã xoá dòng rác test. Commit 82db1b10. |
 | 5 | ✅ Xong 21/10/2026 sau review R1, R2 | test-phase5 37/37 so với RM Pro (module RM bật trong bộ nhớ, dữ liệu nạp filter/transaction, Z1 checksum); cmp 19 URL chỉ 2 lệch đã chấp nhận. Lưu ý: test-phase5 R1 gọi scratchpad/p3b/cmp.php của Claude (không nằm trong repo). |
 | 6 | ✅ Xong 22/10/2026 sau review R1 | test-phase6: 24 ca so với RM Free/Pro + 2 LACAONLY (wizard, admin bar), 0 fail, chạy 2 lần DB không đổi. SA1–SA4 (phân tích nội dung trang chủ) là bản local — RM gọi API từ xa nên chỉ SA5 so trực tiếp được. |
+| 7 | ✅ Xong 22/10/2026 | test-phase7 17/17 (2 lần); bài 908 phân tích được 13 block động + Carbon Fields; perf-compare (Claude chạy lại): median Laca nhanh hơn RM 4,47%, queries ≤ RM 7/8 URL (product +4 query, thời gian bằng RM); 0 asset frontend thừa. Claude sửa: cache id template schema tách khỏi settings (không bị Xuất/Nhập), tự xoá khi template đổi, bỏ đọc rank_math_schema. GSC: người dùng tự tạo OAuth client rồi kết nối. |
 
 Phase 3 tách 3A/3B vì khối lượng lớn. News/Video sitemap (Pro, module không bật trên LIX) dời sang Phase 5.
 
@@ -834,3 +835,79 @@ Puppeteer (abort MỌI POST, cookie runtime không ghi file, ảnh ở `/private
 
 ## P6.10 Báo cáo NGẮN như P5.6 (file, NGUYÊN VĂN output 2 lần chạy, Puppeteer, php -l/build/lint, lệch RM ≤5 dòng, bảng/CPT/cap mới).
 Ràng buộc như cũ (không xoá file, không cài package, không sửa plugins/, không tạo dữ liệu thật ngoài transaction, không gọi mạng ngoài khi test, không commit).
+
+---
+# Spec chi tiết Phase 7 — Bổ sung ngoài Rank Math (LIX)
+
+Đây là phần VƯỢT Rank Math nên không còn tiêu chí "giống RM" — tiêu chí là đúng dữ liệu thật của LIX + không làm hỏng parity đã đạt.
+Khảo sát: child `block-gutenberg/lixroastery-blocks-site/` có 17 block, **13 block động** (`save.js` trả `null`, nội dung nằm trong attributes,
+render ở `render.php`) ⇒ analyzer Phase 2 (đọc `getEditedPostContent()`) gần như không thấy chữ của bài journal. Carbon Fields post_meta
+đăng ký qua `P/app/src/Abstracts/AbstractPostType.php`, `P/app/src/Features/DynamicCPT/DynamicCptMetaEditor.php` và các file
+`C/app/src/PostTypes/DynamicMeta/*-meta.php`.
+
+## P7.1 Chấm điểm nội dung đầy đủ (Carbon Fields + block động)
+1. Endpoint AJAX `laca_seo_analysis_content` (nonce + `edit_post` cho post_id): nhận `post_id` + `content` (bản đang sửa, chưa lưu) →
+   trả HTML **đã render** để phân tích = `do_blocks($content)` (chạy `render.php` của block động với đúng attributes — KHÔNG `the_content`
+   toàn bộ filter để tránh shortcode/nặng; tắt output buffering lạ) + nội dung text từ Carbon Fields của post đó.
+2. Carbon Fields: duyệt container post_meta khớp post type qua repository runtime của Carbon (`\Carbon_Fields\Carbon_Fields::resolve('container_repository')`
+   hoặc API tương đương có sẵn trong phiên bản đang cài — đọc vendor để chọn đúng, không sửa vendor); lấy field kiểu text, textarea, rich_text,
+   complex (đệ quy các field con text/rich_text); bỏ field kỹ thuật (id, url, color, số, select, image id…). Giá trị lấy từ form đang sửa nếu
+   JS gửi lên (metabox Carbon trong editor), fallback `carbon_get_post_meta`. Bọc mỗi field trong `<div data-laca-source="cf:{name}">`.
+3. Filter mở rộng: `laca_seo/analysis/extra_content` (string $html, int $post_id) để site khác thêm nguồn; `laca_seo/analysis/carbon_field_types`.
+4. JS `editor.js`: trước khi analyze, gọi endpoint (debounce 1s, cache theo hash nội dung, timeout 5s → fallback nội dung cũ, không chặn UI);
+   analyzer chạy trên HTML trả về. Hiển thị dòng nhỏ dưới điểm: "Đã phân tích: nội dung bài + N block động + M trường Carbon Fields".
+5. Setting General › "Phân tích cả block động và Carbon Fields" (toggle, mặc định **bật**, note what/how/result). Khi TẮT ⇒ hành vi y Phase 2
+   (để `compare-analysis.js` parity RM vẫn chạy được — chạy compare-analysis với setting tắt trong bộ nhớ).
+6. Hiệu năng: endpoint không chạy khi bài > 300KB HTML (trả cảnh báo); cache transient 10 phút theo md5(content+cf).
+
+## P7.2 Google Search Console (OAuth 2.0) — module `search-console`, mặc định tắt
+1. Người dùng tự tạo OAuth Client (Web) trên Google Cloud; Laca có màn "Kết nối Search Console" với hướng dẫn từng bước tiếng Việt, ô nhập
+   Client ID + Client Secret, hiển thị **Redirect URI** chính xác để copy (`admin.php?page=laca-seo&view=search-console&laca_gsc_oauth=1`).
+   KHÔNG ghi cứng bất kỳ client id/secret/token nào trong code.
+2. OAuth: scope `https://www.googleapis.com/auth/webmasters.readonly`, `access_type=offline`, `prompt=consent`, tham số `state` = nonce gắn user,
+   PKCE (S256) ; đổi code lấy token bằng `wp_remote_post` tới `oauth2.googleapis.com/token`; tự refresh khi hết hạn; nút "Ngắt kết nối" (revoke
+   `oauth2.googleapis.com/revoke` + xoá token). Token + secret lưu option `laca_seo_gsc` **mã hoá** (openssl AES-256-GCM, khoá dẫn xuất từ
+   `AUTH_KEY`/`SECURE_AUTH_SALT`), autoload = no. Chỉ `manage_options` (hoặc cap `laca_seo_analytics` Phase 6).
+3. Chọn property (list `sites`), sau đó dashboard `view=search-console`:
+   - Hiệu suất 28 ngày (searchanalytics.query): tổng clicks/impressions/CTR/position + so 28 ngày trước; bảng top 50 query, top 50 page,
+     lọc theo quốc gia/thiết bị; biểu đồ đường theo ngày (vanilla JS + SVG, không thêm thư viện).
+   - Sitemaps (sitemaps.list): trạng thái, lỗi/cảnh báo, số URL gửi/được index.
+   - Index & rich results (urlInspection.index.inspect): kiểm tra theo yêu cầu cho 1 URL (nút ở màn + nút "Kiểm tra index" trong admin bar và
+     row action danh sách bài) → verdict, coverageState, lastCrawlTime, mobile usability, richResultsResult (lỗi/cảnh báo từng loại schema).
+     Quét hàng loạt tối đa 50 URL quan trọng (trang chủ, page, journal mới nhất) qua WP-Cron, tôn trọng quota (≤ 600/ngày mặc định, setting).
+   - Cột "GSC" (clicks 28 ngày) tuỳ chọn ở danh sách bài, lấy từ cache.
+   Cache transient: performance 12h, sitemaps 6h, inspection 24h/URL; nút "Làm mới". Lỗi API hiển thị thân thiện tiếng Việt.
+4. Widget dashboard (Phase 6) thêm khối clicks/impressions 28 ngày khi đã kết nối.
+
+## P7.3 Đo hiệu năng Laca vs Rank Math (công cụ + tối ưu)
+1. `doc/laca-seo/tools/perf-compare.php` (CLI): với 8 URL (/, /en/, /manifesto/, product, 2 journal, /shop/, product_cat), mỗi URL chạy
+   tiến trình con 7 lần/mode, bỏ lần đầu (warm), lấy median:
+   mode **RM** = trạng thái hiện tại (RM active, Laca nhường); mode **LACA** = mô phỏng cutover (`option_active_plugins` bỏ RM, như
+   simulate-cutover). Đo: thời gian render toàn trang (template_redirect→shutdown, `hrtime`), **số query** (`SAVEQUERIES`, đếm + tổng ms),
+   peak memory, số option autoload do mỗi bên thêm, kích thước HTML `<head>`. Tách riêng chi phí phần SEO: thời gian + query trong các hook
+   `wp_head` của RM vs Laca.
+   In bảng: URL | time RM | time Laca | Δ% | queries RM | queries Laca | Δ | mem. Dòng tổng: median Δ%.
+2. Mục tiêu: Laca **không chậm hơn** RM (median Δ time ≤ +3%, queries ≤ RM). Nếu vượt: tìm điểm nóng (Query Monitor-style trace trong script:
+   top 10 query chậm/lặp của Laca) và tối ưu (gộp option, `wp_cache`, tránh N+1, tránh query khi module tắt, lazy-load class) rồi đo lại.
+3. Frontend asset: xác nhận Laca không enqueue CSS/JS nào ở frontend ngoài khi cần (block FAQ/HowTo/TOC chỉ khi có block, local SEO map chỉ
+   khi có shortcode); in danh sách handle Laca enqueue trên 8 URL (kỳ vọng rỗng với LIX).
+4. PageSpeed: giữ mục tiêu ≥99 — chạy Puppeteer đo TTFB/FCP/LCP của 3 URL ở trạng thái hiện tại để làm mốc (ghi vào `doc/laca-seo/PERF.md`
+   cùng bảng perf-compare), và thêm mục "Sau cutover chạy PSI production cho 3 URL, so mốc" vào CUTOVER.md (người dùng làm).
+
+## P7.4 Nghiệm thu — MỘT script `doc/laca-seo/tools/test-phase7.php` (1 dòng/ca + SUMMARY, như Phase 4–6)
+- **A1** bài 908 (block động): HTML phân tích chứa text của từng block động (đếm ≥ số block động trong bài), wordCount tăng so với Phase 2.
+- **A2** post có Carbon Fields (tìm 1 post type có container trên LIX; nếu không có thì nạp field giả trong bộ nhớ qua filter) → text CF có trong HTML.
+- **A3** setting tắt ⇒ HTML = nội dung Phase 2 (byte-identical). **A4** nonce sai / user không có `edit_post` ⇒ 403. **A5** cache hit lần 2.
+- **G1** OAuth URL sinh đúng (scope, state, PKCE code_challenge, redirect_uri). **G2** callback state sai ⇒ từ chối. **G3** token lưu được mã hoá
+  (raw option không chứa chuỗi token), giải mã đúng. **G4** refresh khi hết hạn (mock `pre_http_request`). **G5** parse response mẫu
+  searchanalytics/sitemaps/urlInspection (fixture JSON theo docs Google) → số liệu dashboard đúng. **G6** disconnect xoá token + gọi revoke.
+  KHÔNG gọi mạng thật (mock toàn bộ).
+- **P1** perf-compare chạy xong, in bảng; PASS khi median Δ time ≤ +3% và queries Laca ≤ RM trên ≥ 7/8 URL. **P2** Laca không enqueue asset
+  frontend nào trên 8 URL.
+- **R1** `compare-head-full.php` vẫn 2 lệch đã chấp nhận; **R2** `compare-analysis.js` (setting P7.1 tắt) ≥3 ca diffs=0; **R3** test-phase6
+  `fail=0`; **Z1** checksum DB (options laca_seo_*, postmeta, transients không tính).
+Puppeteer (abort MỌI POST, cookie runtime không ghi file, ảnh `/private/tmp/laca-p7/`): editor bài 908 hiển thị dòng "Đã phân tích…",
+màn search-console (chưa kết nối) 1440/390 — overflowX, response ≥500, console errors.
+
+## P7.5 Báo cáo NGẮN (file; NGUYÊN VĂN output test-phase7 2 lần + bảng perf-compare; Puppeteer; php -l/build/lint; điểm cần người dùng làm:
+tạo OAuth client + kết nối GSC). Ràng buộc như cũ (không xoá file, không cài package, không sửa plugins/ & vendor, không ghi secret, không commit).

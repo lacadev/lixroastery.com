@@ -106,6 +106,7 @@ class AdminPage
             'instant-indexing' => ['label' => 'Index tức thì (IndexNow)', 'icon' => 'dashicons-update'],
             'redirections'  => ['label' => 'Chuyển hướng (Redirections)', 'icon' => 'dashicons-randomize'],
             '404-monitor'   => ['label' => 'Theo dõi 404 (404 Monitor)', 'icon' => 'dashicons-dismiss'],
+            'search-console'=> ['label' => 'Search Console', 'icon' => 'dashicons-google'],
             'import-export' => ['label' => 'Sao lưu & Nhập/Xuất', 'icon' => 'dashicons-migrate'],
             'guide'         => ['label' => 'Hướng dẫn tối ưu SEO', 'icon' => 'dashicons-book'],
         ];
@@ -186,6 +187,9 @@ class AdminPage
                         break;
                     case '404-monitor':
                         include __DIR__ . '/views/404-monitor.php';
+                        break;
+                    case 'search-console':
+                        include __DIR__ . '/views/search-console.php';
                         break;
                     case 'dashboard':
                     default:

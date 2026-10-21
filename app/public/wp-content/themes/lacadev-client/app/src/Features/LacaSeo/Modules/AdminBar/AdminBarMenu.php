@@ -75,5 +75,13 @@ class AdminBarMenu
             'href'   => 'https://search.google.com/test/rich-results?url=' . $encodedUrl,
             'meta'   => ['target' => '_blank'],
         ]);
+
+        $wpAdminBar->add_node([
+            'id'     => self::MENU_ID . '-gsc-inspect',
+            'parent' => self::MENU_ID,
+            'title'  => esc_html__('Kiểm tra Index trên Google', 'lacadev'),
+            'href'   => 'https://search.google.com/search-console/inspect?resource_id=' . rawurlencode(home_url('/')) . '&id=' . $encodedUrl,
+            'meta'   => ['target' => '_blank'],
+        ]);
     }
 }

@@ -849,6 +849,16 @@ class GeneralFields
                     'Chọn kiểu vòng tròn hoặc kiểu thẻ vuông.',
                     'Huy hiệu xuất hiện theo kiểu dáng tương ứng.'
                 ),
+
+            Field::make('analyze_blocks_and_carbon', 'toggle', 'Phân tích cả block động và Carbon Fields')
+                ->default('on')
+                ->tab('others')
+                ->group('general')
+                ->note(
+                    'Phân tích nội dung hiển thị thực tế từ các Block động và trường dữ liệu tùy biến Carbon Fields trong trình soạn thảo.',
+                    'Bật để tính điểm SEO dựa trên toàn bộ nội dung mà người dùng thực tế nhìn thấy ngoài website.',
+                    'Điểm SEO và các bài kiểm tra từ khóa sẽ bao gồm cả nội dung từ Block và Carbon Fields.'
+                ),
         ];
     }
 

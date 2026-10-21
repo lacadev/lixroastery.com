@@ -30,7 +30,25 @@ class PostList
         add_action('bulk_edit_custom_box', [$this, 'renderBulkEdit'], 10, 2);
         add_action('save_post', [$this, 'handleBulkEditSave'], 10, 2);
         add_action('admin_enqueue_scripts', [$this, 'enqueueListScripts']);
+        add_filter('post_row_actions', [$this, 'addRowActions'], 10, 2);
+        add_filter('page_row_actions', [$this, 'addRowActions'], 10, 2);
     }
+
+    /**
+     * Add "Kiểm tra Index" action link to post row actions.
+     */
+     public function addRowActions(array $actions, \WP_Post $post): array
+     {
+         if ($post->post_status === 'publish') {
+             $url = get_permalink($post);
+             $actions['laca_gsc_inspect'] = sprintf(
+                 '<a href="%s" target="_blank" rel="noopener noreferrer">%s</a>',
+                 esc_url('https://search.google.com/search-console/inspect?resource_id=' . rawurlencode(home_url('/')) . '&id=' . rawurlencode($url)),
+                 esc_html__('Kiểm tra Index', 'lacadev')
+             );
+         }
+         return $actions;
+     }
 
     /**
      * Enqueue list inline edit scripts.

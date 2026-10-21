@@ -36,19 +36,35 @@ class DisplayConditions
             'supports'            => ['title', 'custom-fields'],
             'can_export'          => true,
         ]);
+
+        // Cache danh sách id template phải được làm mới khi template thay đổi, nếu không template mới không hiện ở frontend.
+        add_action('save_post_laca_seo_schema_tpl', [self::class, 'flushTemplateIdsCache']);
+        add_action('deleted_post', [self::class, 'flushTemplateIdsCache']);
+        add_action('trashed_post', [self::class, 'flushTemplateIdsCache']);
     }
 
+    public static function flushTemplateIdsCache(): void
+    {
+        delete_option(self::TEMPLATE_IDS_OPTION);
+    }
+
+    // Option riêng (không nằm trong nhóm settings) để id template không bị Xuất/Nhập sang site khác.
+    private const TEMPLATE_IDS_OPTION = 'laca_seo_schema_tpl_ids';
+
     /**
-     * Get Schema data from Schema Templates post type (laca_seo_schema_tpl or rank_math_schema).
+     * Get Schema data from Schema Templates post type (laca_seo_schema_tpl).
      */
     public static function getSchemaTemplates(array $data = [], ?JsonLd $jsonld = null): array
     {
         global $wpdb;
 
-        // Query both template post types for full compatibility
-        $templates = $wpdb->get_col(
-            "SELECT ID FROM {$wpdb->posts} WHERE post_type IN ('laca_seo_schema_tpl', 'rank_math_schema') AND post_status='publish'"
-        );
+        $templates = get_option(self::TEMPLATE_IDS_OPTION, null);
+        if (!is_array($templates)) {
+            $templates = array_map('intval', $wpdb->get_col(
+                "SELECT ID FROM {$wpdb->posts} WHERE post_type = 'laca_seo_schema_tpl' AND post_status='publish'"
+            ));
+            update_option(self::TEMPLATE_IDS_OPTION, $templates, true);
+        }
 
         if (empty($templates)) {
             return [];
@@ -63,22 +79,6 @@ class DisplayConditions
             ];
 
             $schema = Db::getSchemas((int) $templateId);
-            if (empty($schema)) {
-                // If not found in _laca_seo_schema_*, also check rank_math_schema_* on template
-                $rows = $wpdb->get_results($wpdb->prepare(
-                    "SELECT meta_id, meta_key, meta_value FROM {$wpdb->postmeta} WHERE post_id = %d AND (meta_key LIKE %s OR meta_key LIKE %s)",
-                    $templateId,
-                    '_laca_seo_schema_%',
-                    'rank_math_schema_%'
-                ));
-                foreach ($rows as $row) {
-                    $val = maybe_unserialize($row->meta_value);
-                    if (!empty($val) && is_array($val)) {
-                        $schema['schema-' . $row->meta_id] = $val;
-                    }
-                }
-            }
-
             if (empty($schema)) {
                 continue;
             }

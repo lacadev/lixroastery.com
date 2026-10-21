@@ -36,6 +36,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Keywords cache map for isKeywordNew AJAX
   const keywordsCheckedCache = new Map();
+  // Content analysis cache for dynamic blocks & Carbon Fields
+  const contentAnalysisCache = new Map();
 
   // DOM Elements
   const tabs = metaboxApp.querySelectorAll('.laca-seo-tab-btn');
@@ -500,12 +502,71 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
 
+    // Dynamic blocks & Carbon Fields Content Analysis (Phase 7)
+    let analysisContent = editor.content;
+    const scopeNoteEl = document.getElementById('laca_analysis_scope_note');
+    if (!isTermScreen && dataConfig.postId && dataConfig.analyzeBlocksCarbon !== false) {
+      try {
+        const rawContent = editor.content || '';
+        // Collect current carbon form values if available
+        const cfInputs = {};
+        const cfFormElements = document.querySelectorAll('[name^="carbon_fields_compact_input["], [name^="_carbon_"]');
+        cfFormElements.forEach(el => {
+          if (el.name && el.value) {
+            cfInputs[el.name] = el.value;
+          }
+        });
+
+        const cacheHash = `${rawContent.length}_${rawContent.slice(0, 50)}_${Object.keys(cfInputs).length}`;
+        if (contentAnalysisCache.has(cacheHash)) {
+          const cachedResult = contentAnalysisCache.get(cacheHash);
+          analysisContent = cachedResult.html || rawContent;
+          if (scopeNoteEl) {
+            scopeNoteEl.textContent = `Đã phân tích: nội dung bài + ${cachedResult.dynamic_blocks_count || 0} block động + ${cachedResult.carbon_fields_count || 0} trường Carbon Fields`;
+            scopeNoteEl.style.display = 'block';
+          }
+        } else {
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 5000);
+
+          const analysisBody = new URLSearchParams({
+            action: 'laca_seo_analysis_content',
+            nonce: dataConfig.nonce || '',
+            post_id: dataConfig.postId,
+            content: rawContent,
+          });
+
+          const resp = await fetch(dataConfig.ajaxUrl || '/wp-admin/admin-ajax.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: analysisBody.toString(),
+            signal: controller.signal,
+          });
+          clearTimeout(timeoutId);
+
+          const json = await resp.json();
+          if (json && json.success && json.data) {
+            contentAnalysisCache.set(cacheHash, json.data);
+            analysisContent = json.data.html || rawContent;
+            if (scopeNoteEl) {
+              scopeNoteEl.textContent = `Đã phân tích: nội dung bài + ${json.data.dynamic_blocks_count || 0} block động + ${json.data.carbon_fields_count || 0} trường Carbon Fields`;
+              scopeNoteEl.style.display = 'block';
+            }
+          }
+        }
+      } catch (err) {
+        // Fallback silently to editor.content
+      }
+    } else if (scopeNoteEl) {
+      scopeNoteEl.style.display = 'none';
+    }
+
     // Run analyzer with rendered title and description
     const analysis = analyzer.analyze({
       title: renderedTitleCache || editor.title,
       description: renderedDescCache,
       keyword: primaryKeyword,
-      content: editor.content,
+      content: analysisContent,
       permalink: dataConfig.permalink || window.location.href,
       isKeywordNew: isKeywordNew,
       thumbnail: editor.thumbnail,

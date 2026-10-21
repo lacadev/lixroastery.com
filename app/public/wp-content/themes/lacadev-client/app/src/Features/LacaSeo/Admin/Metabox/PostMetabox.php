@@ -118,6 +118,7 @@ class PostMetabox
                 'isWooActive'       => $isWooActive,
                 'isReviewEnabled'   => $isReviewEnabled,
                 'hasProductSchema'  => $hasProductSchema,
+                'analyzeBlocksCarbon' => Settings::get('general.analyze_blocks_and_carbon', 'on') === 'on',
                 'schemaDefinitions' => \App\Features\LacaSeo\Schema\SchemaDefinitions::getAll(),
                 'schemaTypes'       => \App\Features\LacaSeo\Schema\SchemaDefinitions::getTypes(),
             ]);
@@ -396,6 +397,7 @@ class PostMetabox
                             <div class="laca-score-intro">
                                 <h4 class="laca-score-status" id="laca_score_status_text"><?php esc_html_e('Đánh giá tối ưu SEO nội dung', 'lacadev'); ?></h4>
                                 <p class="description"><?php esc_html_e('Các chỉ số phân tích sẽ tự động cập nhật trong thời gian thực khi bạn chỉnh sửa tiêu đề, mô tả và nội dung bài viết.', 'lacadev'); ?></p>
+                                <p class="laca-analysis-scope-note" id="laca_analysis_scope_note" style="display:none; font-size:11px; color:#2563eb; margin:4px 0 0 0;"></p>
                             </div>
                         </div>
 

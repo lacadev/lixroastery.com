@@ -14,6 +14,8 @@ defined('ABSPATH') || exit;
  */
 class Breadcrumbs
 {
+    /** @var array<string, string> */
+    private static array $titleCache = [];
     /** @var array<int, array{0: string, 1: string, hide_in_schema?: bool}> */
     private array $crumbs = [];
     /** @var array<string, mixed> */
@@ -502,6 +504,11 @@ class Breadcrumbs
 
     private function getBreadcrumbTitle(string $object_type, int $object_id, string $default_value): string
     {
+        $cacheKey = "{$object_type}_{$object_id}";
+        if (isset(self::$titleCache[$cacheKey])) {
+            return self::$titleCache[$cacheKey];
+        }
+
         $title = '';
         if ('post' === $object_type) {
             $title = (string) get_post_meta($object_id, '_laca_seo_breadcrumb_title', true);
@@ -511,7 +518,9 @@ class Breadcrumbs
             $title = (string) get_user_meta($object_id, '_laca_seo_breadcrumb_title', true);
         }
 
-        return !empty($title) ? $title : $default_value;
+        $finalTitle = !empty($title) ? $title : $default_value;
+        self::$titleCache[$cacheKey] = $finalTitle;
+        return $finalTitle;
     }
 
     private function replacePlaceholder(string $text, string $query): string

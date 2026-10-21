@@ -135,6 +135,14 @@ class Modules
             'default'     => false,
             'core'        => false,
         ],
+        'search-console' => [
+            'id'          => 'search-console',
+            'title'       => 'Google Search Console',
+            'desc'        => 'Tích hợp OAuth 2.0, theo dõi chỉ số hiệu suất tìm kiếm, sitemaps và kiểm tra lập chỉ mục URL.',
+            'phase'       => 7,
+            'default'     => false,
+            'core'        => false,
+        ],
     ];
 
 
