@@ -22,6 +22,7 @@ class Publisher implements Snippet
             'name'  => $jsonld->getOrganizationName(),
         ];
 
+
         $socialProfiles = $jsonld->getSocialProfiles();
         if (!empty($socialProfiles)) {
             $data['publisher']['sameAs'] = $socialProfiles;
@@ -54,6 +55,6 @@ class Publisher implements Snippet
             return 'Person';
         }
 
-        return ['Person', 'Organization'];
+        return ['Organization', 'Person'];
     }
 }

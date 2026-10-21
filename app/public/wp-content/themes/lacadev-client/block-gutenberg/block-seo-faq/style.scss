@@ -1,0 +1,37 @@
+.lacadev-seo-faq,
+.rank-math-block {
+  margin-top: 1.5rem;
+  margin-bottom: 1.5rem;
+
+  .rank-math-list,
+  .lacadev-faq-list {
+    list-style: none;
+    padding-left: 0;
+    margin: 0;
+  }
+
+  .rank-math-list-item,
+  .lacadev-faq-item {
+    margin-bottom: 1.25rem;
+    padding-bottom: 1.25rem;
+    border-bottom: 1px solid #e5e7eb;
+
+    &:last-child {
+      border-bottom: none;
+      margin-bottom: 0;
+      padding-bottom: 0;
+    }
+  }
+
+  .rank-math-question,
+  .lacadev-faq-question {
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+  }
+
+  .rank-math-answer,
+  .lacadev-faq-answer {
+    color: #4b5563;
+    line-height: 1.6;
+  }
+}

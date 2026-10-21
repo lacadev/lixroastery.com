@@ -33,6 +33,8 @@ class Generator extends AbstractXml
             new PostType(),
             new Taxonomy(),
             new Author(),
+            new Providers\News(),
+            new Providers\Video(),
         ];
     }
 
@@ -41,6 +43,16 @@ class Generator extends AbstractXml
      */
     public function getOutput(string $type, int $page): string
     {
+        $stylesheetUrl = Router::getBaseUrl('main-sitemap.xsl');
+        if ($type === 'news') {
+            $stylesheetUrl = Router::getBaseUrl('news-sitemap.xsl');
+        } elseif ($type === 'video') {
+            $stylesheetUrl = Router::getBaseUrl('video-sitemap.xsl');
+        }
+
+        $this->stylesheet = preg_replace('/(^http[s]?:)/', '', $stylesheetUrl);
+        $this->stylesheet = '<?xml-stylesheet type="text/xsl" href="' . $this->stylesheet . '"?>';
+
         $output = '<?xml version="1.0" encoding="' . esc_attr($this->getOutputCharset()) . '"?>';
         if (!empty($this->stylesheet)) {
             $output .= $this->stylesheet . "\n";
@@ -114,17 +126,102 @@ class Generator extends AbstractXml
      */
     public function getUrlset(array $links, string $type, int $currentPage): string
     {
-        $urlset = '<urlset xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1" '
-            . 'xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd '
-            . 'http://www.google.com/schemas/sitemap-image/1.1 http://www.google.com/schemas/sitemap-image/1.1/sitemap-image.xsd" '
-            . 'xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' . "\n";
+        if ($type === 'news') {
+            $urlset = '<urlset xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" '
+                . 'xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd '
+                . 'http://www.google.com/schemas/sitemap-news/0.9 http://www.google.com/schemas/sitemap-news/0.9/sitemap-news.xsd" '
+                . 'xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" '
+                . 'xmlns:news="http://www.google.com/schemas/sitemap-news/0.9">' . "\n";
+        } elseif ($type === 'video') {
+            $urlset = '<urlset xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" '
+                . 'xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd '
+                . 'http://www.google.com/schemas/sitemap-video/1.1 http://www.google.com/schemas/sitemap-video/1.1/sitemap-video.xsd" '
+                . 'xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" '
+                . 'xmlns:video="http://www.google.com/schemas/sitemap-video/1.1">' . "\n";
+        } else {
+            $urlset = '<urlset xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1" '
+                . 'xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd '
+                . 'http://www.google.com/schemas/sitemap-image/1.1 http://www.google.com/schemas/sitemap-image/1.1/sitemap-image.xsd" '
+                . 'xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' . "\n";
+        }
 
         $xml = $urlset;
         foreach ($links as $url) {
-            $xml .= $this->sitemapUrl($url);
+            if ($type === 'news') {
+                $xml .= $this->newsSitemapUrl($url);
+            } elseif ($type === 'video') {
+                $xml .= $this->videoSitemapUrl($url);
+            } else {
+                $xml .= $this->sitemapUrl($url);
+            }
         }
         $xml .= '</urlset>';
         return $xml;
+    }
+
+    public function newsSitemapUrl(array $url): string
+    {
+        $date = null;
+        if (!empty($url['publication_date'])) {
+            $date = $this->timezone->formatDate($url['publication_date']);
+        }
+
+        $output  = $this->newline('<url>', 1);
+        $output .= $this->newline('<loc>' . $this->encodeUrlRfc3986(htmlspecialchars($url['loc'])) . '</loc>', 2);
+        $output .= $this->newline('<news:news>', 2);
+        $output .= $this->newline('<news:publication>', 3);
+        $output .= $this->newline('<news:name>' . esc_html($url['publication_name'] ?? get_bloginfo('name')) . '</news:name>', 4);
+        $output .= $this->newline('<news:language>' . esc_html($url['language'] ?? 'en') . '</news:language>', 4);
+        $output .= $this->newline('</news:publication>', 3);
+        if (!empty($date)) {
+            $output .= $this->newline('<news:publication_date>' . htmlspecialchars($date) . '</news:publication_date>', 3);
+        }
+        $output .= $this->newline('<news:title><![CDATA[' . ($url['title'] ?? '') . ']]></news:title>', 3);
+        $output .= $this->newline('</news:news>', 2);
+        $output .= $this->newline('</url>', 1);
+
+        return $output;
+    }
+
+    public function videoSitemapUrl(array $url): string
+    {
+        $output  = $this->newline('<url>', 1);
+        $output .= $this->newline('<loc>' . $this->encodeUrlRfc3986(htmlspecialchars($url['loc'])) . '</loc>', 2);
+
+        if (!empty($url['videos']) && is_array($url['videos'])) {
+            foreach ($url['videos'] as $video) {
+                $date = null;
+                if (!empty($video['publication_date'])) {
+                    $date = $this->timezone->formatDate($video['publication_date']);
+                }
+
+                $output .= $this->newline('<video:video>', 2);
+                if (!empty($video['thumbnail_loc'])) {
+                    $output .= $this->newline('<video:thumbnail_loc>' . esc_url($video['thumbnail_loc']) . '</video:thumbnail_loc>', 3);
+                }
+                $output .= $this->newline('<video:title><![CDATA[' . ($video['title'] ?? '') . ']]></video:title>', 3);
+                $output .= $this->newline('<video:description><![CDATA[' . ($video['description'] ?? '') . ']]></video:description>', 3);
+                if (!empty($video['content_loc'])) {
+                    $output .= $this->newline('<video:content_loc>' . esc_url($video['content_loc']) . '</video:content_loc>', 3);
+                }
+                if (!empty($video['player_loc'])) {
+                    $output .= $this->newline('<video:player_loc>' . esc_url($video['player_loc']) . '</video:player_loc>', 3);
+                }
+                if (!empty($video['duration'])) {
+                    $output .= $this->newline('<video:duration>' . esc_html($video['duration']) . '</video:duration>', 3);
+                }
+                if (!empty($date)) {
+                    $output .= $this->newline('<video:publication_date>' . htmlspecialchars($date) . '</video:publication_date>', 3);
+                }
+                if (!empty($video['family_friendly'])) {
+                    $output .= $this->newline('<video:family_friendly>' . $video['family_friendly'] . '</video:family_friendly>', 3);
+                }
+                $output .= $this->newline('</video:video>', 2);
+            }
+        }
+
+        $output .= $this->newline('</url>', 1);
+        return $output;
     }
 
     /**

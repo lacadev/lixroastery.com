@@ -56,6 +56,8 @@ class LacaSeo
             (new \App\Features\LacaSeo\Modules\WooCommerce\WooCommerce())->register();
             (new \App\Features\LacaSeo\Modules\Redirections\Redirections())->register();
             (new \App\Features\LacaSeo\Modules\NotFoundMonitor\NotFoundMonitor())->register();
+            (new \App\Features\LacaSeo\Modules\LocalSeo\LocalSeo())->register();
+            add_action('init', [\App\Features\LacaSeo\Schema\Pro\DisplayConditions::class, 'registerPostType']);
             (new Polylang())->register();
 
             // 3. Frontend modules: run only if Rank Math is inactive OR force flag is set

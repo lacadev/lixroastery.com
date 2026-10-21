@@ -96,6 +96,7 @@ class JsonLd
             Snippets\Author::class        => is_author() || (is_singular() && $canAddGlobal),
             Snippets\ProductsPage::class  => $isProductArchive,
             Snippets\Singular::class      => !post_password_required() && is_singular(),
+            Pro\BlockParser::class        => is_singular(),
         ];
 
         foreach ($snippets as $class => $canRun) {
@@ -135,7 +136,7 @@ class JsonLd
         return !is_front_page() && $breadcrumbsEnabled;
     }
 
-    private function isProductArchivePage(): bool
+    public function isProductArchivePage(): bool
     {
         return class_exists('WooCommerce') && ((is_tax() && in_array(get_query_var('taxonomy'), get_object_taxonomies('product'), true)) || (function_exists('is_shop') && is_shop()));
     }

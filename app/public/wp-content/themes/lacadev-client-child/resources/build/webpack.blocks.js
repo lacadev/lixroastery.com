@@ -95,6 +95,7 @@ function scanBlockRelativePaths(rootDir) {
 }
 
 const childBlocksDir = path.resolve(__dirname, '../../block-gutenberg');
+const parentBlocksDir = path.resolve(__dirname, '../../../lacadev-client/block-gutenberg');
 
 const childBlockConfigs = scanBlockRelativePaths(childBlocksDir).map(relPath => {
   return patchSassLoader({
@@ -110,8 +111,28 @@ const childBlockConfigs = scanBlockRelativePaths(childBlocksDir).map(relPath => 
   });
 });
 
+const parentBlockConfigs = scanBlockRelativePaths(parentBlocksDir).map(relPath => {
+  return patchSassLoader({
+    ...defaultConfig,
+    entry: {
+      index: path.join(parentBlocksDir, relPath, 'index.js')
+    },
+    output: {
+      ...defaultConfig.output,
+      path: path.join(parentBlocksDir, relPath, 'build'),
+      filename: '[name].js'
+    },
+    resolve: {
+      ...defaultConfig.resolve,
+      modules: [
+        path.resolve(__dirname, '../../node_modules'),
+        ...(defaultConfig.resolve?.modules || ['node_modules'])
+      ]
+    }
+  });
+});
+
 // === Global Gutenberg bundle: Parent theme → dist/gutenberg/ của Child ===
-const parentBlocksDir = path.resolve(__dirname, '../../../lacadev-client/block-gutenberg');
 const gutenbergLegacyConfig = patchSassLoader({
   ...defaultConfig,
   entry: {
@@ -131,4 +152,4 @@ const gutenbergLegacyConfig = patchSassLoader({
   }
 });
 
-module.exports = [...childBlockConfigs, gutenbergLegacyConfig];
+module.exports = [...childBlockConfigs, ...parentBlockConfigs, gutenbergLegacyConfig];

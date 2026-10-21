@@ -1,0 +1,32 @@
+{
+  "$schema": "https://schemas.wp.org/trunk/block.json",
+  "apiVersion": 3,
+  "name": "lacadev/seo-toc-block",
+  "title": "TOC (Mục lục) Block",
+  "category": "lacadev-blocks",
+  "icon": "list-view",
+  "textdomain": "laca",
+  "keywords": ["toc", "table of contents", "mục lục", "seo", "headings"],
+  "supports": {
+    "html": false,
+    "align": ["wide", "full"]
+  },
+  "attributes": {
+    "title": {
+      "type": "string",
+      "default": "Mục lục nội dung"
+    },
+    "titleWrapper": {
+      "type": "string",
+      "default": "h2"
+    },
+    "listStyle": {
+      "type": "string",
+      "default": "ul"
+    },
+    "headings": {
+      "type": "array",
+      "default": []
+    }
+  }
+}

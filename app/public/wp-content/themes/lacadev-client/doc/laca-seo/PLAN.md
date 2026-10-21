@@ -351,7 +351,8 @@ Meta riêng Woo Pro: `_rank_math_gtin_code` → `_laca_seo_gtin_code`.
 | 2 | ✅ Xong 21/10/2026 (commit 828afb02) sau 2 vòng review (REVIEW-P2-R1, R2) | Analyzer đối chiếu trên editor thật: diffs=0, điểm khớp tuyệt đối (gồm Classic editor product + term). Hoãn sang 3A: dịch thông điệp phân tích sang tiếng Việt, hiện 2 test product trong UI. |
 | 3A | ✅ Xong 21/10/2026 sau review R1 (chờ commit) | Claude tự kiểm: sitemap 0 khác (mọi sitemap con, lastmod, ảnh, thứ tự), breadcrumbs HTML 19/19 (option RM general đã sửa nạp bộ nhớ), robots.txt giống RM, simulate-cutover 9/9. Đã khôi phục robots meta bài 866/908 bị test Phase 2 làm lệch (908 từng bị noindex). |
 | 3B | ✅ Xong 21/10/2026 sau review R1, R2 (chờ commit) — Claude tự kiểm: head + JSON-LD 19/19 URL (blog_public=1 trong bộ nhớ) chỉ còn 2 lệch đã chấp nhận; schema Event/Product nạp bộ nhớ khớp RM từng node; không còn đọc `rank_math_*`. Còn lại: CUTOVER trên production theo `CUTOVER.md` (cần người dùng thực hiện). | Schema graph + Schema Generator types chính + WooCommerce SEO → CUTOVER tắt RM |
-| 4 | ✅ Xong 21/10/2026 sau review R1 (chờ commit) | test-redirections 45/45 (M1–M20 so bằng hàm RM compare_sources, export so RM), Claude chạy 2 lần: checksum 3 bảng + bài 866 + terms không đổi. Module mặc định tắt; bảng wp_laca_seo_redirections, _cache, _404_logs đã tạo. Còn 1 dòng rác id 100003 từ test cũ chờ người dùng cho xoá. |
+| 4 | ✅ Xong 21/10/2026 sau review R1 | test-redirections 45/45 (M1–M20 so bằng hàm RM compare_sources, export so RM), Claude chạy 2 lần: checksum 3 bảng + bài 866 + terms không đổi. Module mặc định tắt; bảng wp_laca_seo_redirections, _cache, _404_logs đã tạo. Đã xoá dòng rác test. Commit 82db1b10. |
+| 5 | ✅ Xong 21/10/2026 sau review R1, R2 | test-phase5 37/37 so với RM Pro (module RM bật trong bộ nhớ, dữ liệu nạp filter/transaction, Z1 checksum); cmp 19 URL chỉ 2 lệch đã chấp nhận. Lưu ý: test-phase5 R1 gọi scratchpad/p3b/cmp.php của Claude (không nằm trong repo). |
 
 Phase 3 tách 3A/3B vì khối lượng lớn. News/Video sitemap (Pro, module không bật trên LIX) dời sang Phase 5.
 
@@ -693,3 +694,72 @@ KHÔNG dán lại spec, KHÔNG mô tả dài dòng, KHÔNG tự sửa số liệ
 
 Ràng buộc: không xoá file, không DROP/TRUNCATE/DELETE ngoài transaction test, không cài package, không sửa plugins/, không tạo bài/term, không commit.
 Liệt kê mọi bảng đã tạo trong báo cáo.
+
+---
+# Spec chi tiết Phase 5 — Schema Pro, Blocks FAQ/HowTo/TOC, Local SEO, News & Video Sitemap
+
+LIX hiện KHÔNG dùng các tính năng này (không có CPT `rank_math_schema`, không block `wp:rank-math/*`, module local-seo/news/video tắt) ⇒ module Laca
+mặc định TẮT; kiểm chứng bằng **so với code RM chạy trên cùng dữ liệu nạp trong bộ nhớ** (filter, không ghi DB) như Phase 3B/4.
+
+## P5.0 Nguồn (chỉ đọc, đọc HẾT trước khi code)
+- Schema Pro: `RM-pro/includes/modules/schema/` (class-schema, class-post-type, class-taxonomy, class-display-conditions, class-frontend, class-parser,
+  class-ajax, class-rest, class-video, class-video-schema-generator, class-media-rss, video/*, shortcode/{claimreview,dataset,faqpage,howto,movie,
+  podcastepisode,…}.php, class-snippet-pro-shortcode) + bundle JS schema của Pro (`RM-pro/includes/modules/schema/assets/js/*`) để lấy map field.
+- Blocks: `RM/includes/modules/schema/blocks/` (class-block, class-block-parser, faq/, howto/, toc/, schema/, views/options-general.php).
+- Local SEO: `RM/includes/modules/local-seo/` + `RM-pro/includes/modules/local-seo/` (class-local-seo, class-frontend, class-admin, class-search,
+  class-kml-file, class-location-shortcode, class-block-local-business, shortcodes/{address,map,opening-hours,store-locator}).
+- News sitemap: `RM-pro/includes/modules/news-sitemap/*`. Video sitemap: `RM-pro/includes/modules/video-sitemap/*`.
+
+## P5.1 Schema Pro (`Schema/Pro/*`)
+1. Thêm loại Pro vào Schema Generator (P3B.2, `SchemaDefinitions`): ClaimReview (FactCheck), Dataset, FAQPage, HowTo, Movie, PodcastEpisode,
+   LocalBusiness (đủ danh sách subtype RM), Custom (builder tự do key/value lồng nhau như RM). Field map lấy từ bundle JS Pro, không tự nghĩ.
+2. **Template schema**: CPT riêng `laca_seo_schema_tpl` (ẩn menu, quản lý trong `laca-seo&view=schema-templates`), lưu cùng cấu trúc meta RM;
+   **display conditions** y `class-display-conditions.php` (include/exclude theo: toàn site, post type, bài cụ thể, taxonomy/term, trang chủ, archive…)
+   → frontend gộp template khớp điều kiện vào graph như RM. Metabox: "Chèn từ template".
+3. **Import schema từ URL** (`class-parser.php`): nhập URL → lấy JSON-LD → chọn node để thêm. Chỉ cho `manage_options`, nonce, `wp_safe_remote_get`,
+   timeout 10s, giới hạn 2MB, chặn IP nội bộ/localhost **trừ** host của chính site (để test local).
+4. **Video schema tự động** (`class-video`, `video-schema-generator`, `video/*`): phát hiện YouTube/Vimeo/Dailymotion/TED/VideoPress/WordPress video
+   trong nội dung → tạo VideoObject như RM (setting tự động theo RM). Media RSS (`class-media-rss.php`) nếu RM bật cho feed.
+5. Shortcode Pro `[laca_seo_rich_snippet id="…"]` + alias RM khi RM tắt (như Phase 3B).
+6. RankMathImporter: import CPT `rank_math_schema` → `laca_seo_schema_tpl` (giữ conditions), idempotent; LIX có 0 ⇒ trả 0.
+
+## P5.2 Blocks FAQ / HowTo / TOC (Gutenberg, chuẩn block lacadev — skill lacadev-theme §2)
+- Đặt ở PARENT `lacadev-client/app/block-gutenberg/` (dùng chung mọi site): `block-seo-faq`, `block-seo-howto`, `block-seo-toc`, đủ 6 file
+  (block.json, index.js, edit.js, save.js, render.php, style.scss), panel Inspector theo chuẩn lacadev (Bố cục → Căn lề → nội dung → Giao diện).
+  Kiểm build thực sự gom được block parent (nếu webpack blocks chỉ quét child thì sửa cấu hình tối thiểu, ghi rõ).
+- Markup HTML + JSON-LD (FAQPage / HowTo) + TOC (danh sách heading, anchor, exclude headings theo setting `toc_block_*` đã có ở General) **y RM**.
+- **Tương thích nội dung cũ**: khi RM tắt, đăng ký thêm block type `rank-math/faq-block`, `rank-math/howto-block`, `rank-math/toc-block` (server render
+  bằng renderer Laca) để bài cũ ở các site khác không vỡ; parser schema đọc được cả block RM lẫn block Laca.
+
+## P5.3 Local SEO (`Modules/LocalSeo/*`)
+- Settings local (Titles › Local SEO — đã có field Phase 1) nối logic: LocalBusiness/Organization trong graph, opening hours, price range, geo, map.
+- Pro multi-location: CPT `laca_seo_locations` (như `rank_math_locations`), mỗi location có schema LocalBusiness; shortcode/block hiển thị:
+  address, opening hours, map (Google Maps API key — field setting, không ghi cứng), store locator (search theo khoảng cách như `class-search.php`).
+  Alias shortcode RM `[rank_math_contact_info]`, `[rank_math_local]` khi RM tắt. KML file (`locations.kml`) + đưa vào sitemap như RM.
+- Importer: CPT `rank_math_locations` → `laca_seo_locations` + meta.
+
+## P5.4 News Sitemap & Video Sitemap (mở rộng Sitemap 3A)
+- News: `news-sitemap.xml` (bài trong 48h, publication name/language, genres, exclude terms, post types chọn — field y RM `class-admin.php`), XSL riêng.
+- Video: `video-sitemap.xml` từ VideoObject (P5.1.4) + metabox video (`class-video-metabox.php`), XSL riêng. Cả hai vào sitemap index khi bật.
+
+## P5.5 Nghiệm thu — MỘT script `doc/laca-seo/tools/test-phase5.php` (CLI), output 1 dòng/ca + `SUMMARY`, như Phase 4
+Mọi dữ liệu test nạp **trong bộ nhớ** (filter `get_post_metadata`, `posts_results`/`the_posts`, `pre_option_*`) — KHÔNG ghi DB; nếu bắt buộc ghi
+(CPT template/location) thì trong transaction + chỉ xoá id do script tạo, và Z1 checksum `wp_posts`/`wp_postmeta`/`wp_options` liên quan trước/sau.
+Mỗi ca so output Laca với RM chạy trên cùng dữ liệu (render `<head>`/shortcode/sitemap qua tiến trình con như `scratchpad/p3b/render.php`, `blog_public=1`
++ option RM general đã sửa nạp bộ nhớ):
+- **T1–T8** mỗi loại Pro (ClaimReview, Dataset, FAQPage, HowTo, Movie, PodcastEpisode, LocalBusiness subtype, Custom): JSON-LD node RM == Laca.
+- **DC1–DC6** display conditions: site-wide, post type, bài cụ thể, term, exclude, archive → template xuất hiện đúng trang như RM.
+- **P1–P2** import từ URL: URL nội bộ site (trang có JSON-LD) → node đọc được; URL `127.0.0.1`/`10.x` khác host site → bị chặn.
+- **V1–V3** video tự động: content có YouTube/Vimeo/WP video → VideoObject RM == Laca.
+- **B1–B6** blocks: FAQ, HowTo, TOC — HTML render (chuẩn hoá class) và JSON-LD của block RM (`wp:rank-math/...`) so với RM; block Laca cho cùng JSON-LD;
+  block RM render được khi RM tắt (mô phỏng `option_active_plugins` như simulate-cutover).
+- **LS1–LS5** Local SEO: LocalBusiness graph, opening hours shortcode, address shortcode, KML, store locator search (2 location, tìm theo toạ độ) so RM.
+- **N1–N3** news sitemap: bài <48h có, >48h không, exclude term. **VS1–VS2** video sitemap có entry + XSL 200.
+- **R1** regression: `scratchpad/p3b/cmp.php` 19 URL vẫn chỉ 2 lệch đã chấp nhận (gọi script, in số URL lệch). **Z1** DB unchanged.
+Puppeteer (abort MỌI POST, cookie runtime không ghi file, ảnh ở `/private/tmp/laca-p5/`): màn schema-templates, editor có 3 block, màn locations —
+1440 và 390: in `overflowX` và `console errors`.
+
+## P5.6 Báo cáo — NGẮN (như P4.6)
+(1) file tạo/sửa; (2) NGUYÊN VĂN output test-phase5.php; (3) dòng Puppeteer; (4) dòng cuối php -l / yarn build / yarn build:blocks / yarn lint;
+(5) lệch RM có chủ ý ≤5 dòng; (6) bảng/CPT/taxonomy mới đã đăng ký. Không dán lại spec, không sửa số liệu output.
+Ràng buộc như Phase 4 (không xoá file, không cài package, không sửa plugins/, không tạo bài/term thật, không commit).

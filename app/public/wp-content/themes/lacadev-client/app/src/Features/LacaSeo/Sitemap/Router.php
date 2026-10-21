@@ -48,8 +48,9 @@ class Router
             $n = 1;
         }
 
-        if ($type === 'xsl') {
-            (new Stylesheet())->output('main');
+        if ($type === 'xsl' || isset($_GET['laca_xsl'])) {
+            $xslType = sanitize_key($_GET['laca_xsl'] ?? 'main');
+            (new Stylesheet())->output($xslType);
             exit;
         }
 

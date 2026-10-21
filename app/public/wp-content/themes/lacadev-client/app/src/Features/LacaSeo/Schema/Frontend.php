@@ -13,7 +13,9 @@ class Frontend
 {
     public function register(): void
     {
+        add_filter('laca_seo/json_ld', [$this, 'addTemplateSchema'], 8, 2);
         add_filter('laca_seo/json_ld', [$this, 'addSchema'], 10, 2);
+        add_filter('laca_seo/json_ld', [$this, 'addVideoSchema'], 15, 2);
         add_filter('laca_seo/snippet/rich_snippet_article_entity', [$this, 'addNameProperty'], 11);
         add_filter('laca_seo/snippet/rich_snippet_event_entity', [$this, 'validateEventSchema'], 11);
         add_filter('laca_seo/json_ld', [$this, 'connectSchemaEntities'], 99, 2);
@@ -48,6 +50,48 @@ class Frontend
         }
 
         return $schema;
+    }
+
+    /**
+     * Add Schema data from Schema Templates.
+     */
+    public function addTemplateSchema(array $data, JsonLd $jsonld): array
+    {
+        $templates = Pro\DisplayConditions::getSchemaTemplates($data, $jsonld);
+        if (empty($templates)) {
+            return $data;
+        }
+
+        foreach ($templates as $schema) {
+            $data = array_merge($data, $schema);
+        }
+
+        return $data;
+    }
+
+    /**
+     * Automatically detect video in content and add VideoObject schema.
+     */
+    public function addVideoSchema(array $data, JsonLd $jsonld): array
+    {
+        if (!is_singular() || post_password_required()) {
+            return $data;
+        }
+
+        global $post;
+        if (!$post instanceof \WP_Post) {
+            return $data;
+        }
+
+        $videoSchemas = Pro\VideoSchema::detectAndGenerate($post);
+        if (empty($videoSchemas)) {
+            return $data;
+        }
+
+        $videoSchemas = $jsonld->replaceVariables($videoSchemas, $post, $data);
+        $videoSchemas = $jsonld->filter($videoSchemas, $jsonld, $data);
+
+        return array_merge($data, $videoSchemas);
     }
 
     /**
@@ -132,11 +176,11 @@ class Frontend
             $props = [
                 'is_part_of' => [
                     'key'   => 'webpage',
-                    'value' => !in_array($type, ['jobposting', 'musicgroup', 'person', 'product', 'productgroup', 'restaurant', 'service'], true) && !$isEvent,
+                    'value' => !in_array($type, ['jobposting', 'musicgroup', 'person', 'product', 'productgroup', 'restaurant', 'service', 'dataset', 'localbusiness'], true) && !$isEvent,
                 ],
                 'publisher'  => [
                     'key'   => 'publisher',
-                    'value' => !in_array($type, ['jobposting', 'musicgroup', 'person', 'product', 'productgroup', 'restaurant', 'service'], true) && !$isEvent,
+                    'value' => !in_array($type, ['jobposting', 'musicgroup', 'person', 'product', 'productgroup', 'restaurant', 'service', 'localbusiness'], true) && !$isEvent,
                 ],
                 'thumbnail'  => [
                     'key'   => 'image',
@@ -144,7 +188,7 @@ class Frontend
                 ],
                 'language'   => [
                     'key'   => 'inLanguage',
-                    'value' => !in_array($type, ['person', 'service', 'restaurant', 'product', 'productgroup', 'musicgroup', 'musicalbum', 'jobposting'], true),
+                    'value' => !in_array($type, ['person', 'service', 'restaurant', 'product', 'productgroup', 'musicgroup', 'musicalbum', 'jobposting', 'localbusiness'], true),
                 ],
             ];
 
@@ -157,6 +201,11 @@ class Frontend
                     continue;
                 }
                 $jsonld->addProp($prop, $schema, $propData['key'], $schemas);
+            }
+
+            if ($type === 'dataset' && !empty($schema['publisher'])) {
+                $schema['creator'] = $schema['publisher'];
+                unset($schema['publisher']);
             }
         }
     }

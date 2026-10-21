@@ -1,0 +1,39 @@
+{
+  "$schema": "https://schemas.wp.org/trunk/block.json",
+  "apiVersion": 3,
+  "name": "lacadev/seo-faq-block",
+  "title": "FAQ Schema Block",
+  "category": "lacadev-blocks",
+  "icon": "editor-ul",
+  "textdomain": "laca",
+  "keywords": ["faq", "questions", "schema", "seo"],
+  "supports": {
+    "html": false,
+    "align": ["wide", "full"]
+  },
+  "attributes": {
+    "title": {
+      "type": "string",
+      "default": "Frequently Asked Questions"
+    },
+    "titleWrapper": {
+      "type": "string",
+      "default": "h3"
+    },
+    "listStyle": {
+      "type": "string",
+      "default": "none"
+    },
+    "questions": {
+      "type": "array",
+      "default": [
+        {
+          "id": "faq-1",
+          "title": "Câu hỏi mẫu 1?",
+          "content": "Câu trả lời mẫu 1.",
+          "visible": true
+        }
+      ]
+    }
+  }
+}
