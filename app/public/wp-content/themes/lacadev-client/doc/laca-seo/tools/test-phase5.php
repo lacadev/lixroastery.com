@@ -779,7 +779,7 @@ try {
 // -------------------------------------------------------------
 // R1: Regression 19 URL cmp test
 // -------------------------------------------------------------
-$cmpScript = '/private/tmp/claude-501/-Users-lacadev-Documents-wordpress-lixroastery/e4577ea8-8f21-416f-8a77-913513a06e67/scratchpad/p3b/cmp.php';
+$cmpScript = __DIR__ . '/compare-head-full.php';
 $phpCli = '/Users/lacadev/Library/Application Support/Local/lightning-services/php-8.3.17+1/bin/darwin-arm64/bin/php';
 $mysqlSock = '/Users/lacadev/Library/Application Support/Local/run/nan2TUtPY/mysql/mysqld.sock';
 $cmpCmd = escapeshellarg($phpCli) . ' -d mysqli.default_socket=' . escapeshellarg($mysqlSock) . ' ' . escapeshellarg($cmpScript) . ' 2>/dev/null';
