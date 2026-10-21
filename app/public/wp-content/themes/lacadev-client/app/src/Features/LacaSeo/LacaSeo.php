@@ -60,6 +60,17 @@ class LacaSeo
             add_action('init', [\App\Features\LacaSeo\Schema\Pro\DisplayConditions::class, 'registerPostType']);
             (new Polylang())->register();
 
+            // Phase 6 modules
+            (new \App\Features\LacaSeo\Modules\ImageSeo\ImageSeo())->register();
+            (new \App\Features\LacaSeo\Modules\ImageSeo\ThumbnailOverlay())->register();
+            (new \App\Features\LacaSeo\Modules\Links\Links())->register();
+            (new \App\Features\LacaSeo\Modules\RoleManager\CapabilityManager())->register();
+            (new \App\Features\LacaSeo\Modules\SetupWizard\SetupWizard())->register();
+            (new \App\Features\LacaSeo\Modules\AdminBar\AdminBarMenu())->register();
+            (new \App\Features\LacaSeo\Modules\DashboardWidget\DashboardWidget())->register();
+            (new \App\Features\LacaSeo\Modules\Podcast\Podcast())->register();
+
+
             // 3. Frontend modules: run only if Rank Math is inactive OR force flag is set
             if (Helper::shouldRunFrontend()) {
                 if (Helper::isForceFrontend() && Helper::isRankMathActive()) {

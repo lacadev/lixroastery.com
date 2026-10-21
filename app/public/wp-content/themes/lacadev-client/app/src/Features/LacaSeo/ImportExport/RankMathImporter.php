@@ -419,4 +419,105 @@ class RankMathImporter
             'remaining' => $remaining,
         ];
     }
+
+    /**
+     * Import Link Counter and Link Genius data from Rank Math tables idempotently.
+     * Copies rank_math_internal_links, rank_math_internal_meta, and rank_math_link_genius_audit.
+     */
+    public static function importLinksData(): array
+    {
+        global $wpdb;
+
+        \App\Features\LacaSeo\Modules\Links\Installer::createTables();
+
+        $imported = [
+            'links' => 0,
+            'meta'  => 0,
+            'audit' => 0,
+        ];
+
+        // 1. Internal Links
+        $srcLinks = $wpdb->prefix . 'rank_math_internal_links';
+        $dstLinks = $wpdb->prefix . 'laca_seo_internal_links';
+        if ($wpdb->get_var($wpdb->prepare("SHOW TABLES LIKE %s", $srcLinks))) {
+            $rows = $wpdb->get_results("SELECT * FROM {$srcLinks}", ARRAY_A);
+            foreach ($rows as $r) {
+                $id = (int) $r['id'];
+                $exists = $wpdb->get_var($wpdb->prepare("SELECT id FROM {$dstLinks} WHERE id = %d", $id));
+                $data = [
+                    'id'             => $id,
+                    'url'            => $r['url'],
+                    'post_id'        => (int) $r['post_id'],
+                    'target_post_id' => (int) $r['target_post_id'],
+                    'type'           => $r['type'],
+                    'anchor_text'    => $r['anchor_text'] ?? '',
+                    'anchor_type'    => $r['anchor_type'] ?? 'HPLNK',
+                    'is_nofollow'    => (int) ($r['is_nofollow'] ?? 0),
+                    'target_blank'   => (int) ($r['target_blank'] ?? 0),
+                    'url_hash'       => $r['url_hash'] ?? md5($r['url']),
+                    'created_at'     => $r['created_at'] ?? current_time('mysql'),
+                ];
+                if ($exists) {
+                    $wpdb->update($dstLinks, $data, ['id' => $id]);
+                } else {
+                    $wpdb->insert($dstLinks, $data);
+                }
+                $imported['links']++;
+            }
+        }
+
+        // 2. Internal Meta
+        $srcMeta = $wpdb->prefix . 'rank_math_internal_meta';
+        $dstMeta = $wpdb->prefix . 'laca_seo_internal_meta';
+        if ($wpdb->get_var($wpdb->prepare("SHOW TABLES LIKE %s", $srcMeta))) {
+            $rows = $wpdb->get_results("SELECT * FROM {$srcMeta}", ARRAY_A);
+            foreach ($rows as $r) {
+                $objId = (int) $r['object_id'];
+                $exists = $wpdb->get_var($wpdb->prepare("SELECT object_id FROM {$dstMeta} WHERE object_id = %d", $objId));
+                $data = [
+                    'object_id'           => $objId,
+                    'internal_link_count' => (int) ($r['internal_link_count'] ?? 0),
+                    'external_link_count' => (int) ($r['external_link_count'] ?? 0),
+                    'incoming_link_count' => (int) ($r['incoming_link_count'] ?? 0),
+                ];
+                if ($exists) {
+                    $wpdb->update($dstMeta, $data, ['object_id' => $objId]);
+                } else {
+                    $wpdb->insert($dstMeta, $data);
+                }
+                $imported['meta']++;
+            }
+        }
+
+        // 3. Link Genius Audit
+        $srcAudit = $wpdb->prefix . 'rank_math_link_genius_audit';
+        $dstAudit = $wpdb->prefix . 'laca_seo_link_genius_audit';
+        if ($wpdb->get_var($wpdb->prepare("SHOW TABLES LIKE %s", $srcAudit))) {
+            $rows = $wpdb->get_results("SELECT * FROM {$srcAudit}", ARRAY_A);
+            foreach ($rows as $r) {
+                $id = (int) $r['id'];
+                $exists = $wpdb->get_var($wpdb->prepare("SELECT id FROM {$dstAudit} WHERE id = %d", $id));
+                $data = [
+                    'id'                 => $id,
+                    'link_id'            => (int) $r['link_id'],
+                    'url_hash'           => $r['url_hash'],
+                    'http_status_code'   => isset($r['http_status_code']) ? (int) $r['http_status_code'] : null,
+                    'status_category'    => $r['status_category'] ?? null,
+                    'robots_blocked'     => (int) ($r['robots_blocked'] ?? 0),
+                    'is_marked_safe'     => (int) ($r['is_marked_safe'] ?? 0),
+                    'last_checked_at'    => $r['last_checked_at'] ?? null,
+                    'last_error_message' => $r['last_error_message'] ?? null,
+                ];
+                if ($exists) {
+                    $wpdb->update($dstAudit, $data, ['id' => $id]);
+                } else {
+                    $wpdb->insert($dstAudit, $data);
+                }
+                $imported['audit']++;
+            }
+        }
+
+        return $imported;
+    }
 }
+

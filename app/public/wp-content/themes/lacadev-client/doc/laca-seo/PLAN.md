@@ -353,6 +353,7 @@ Meta riêng Woo Pro: `_rank_math_gtin_code` → `_laca_seo_gtin_code`.
 | 3B | ✅ Xong 21/10/2026 sau review R1, R2 (chờ commit) — Claude tự kiểm: head + JSON-LD 19/19 URL (blog_public=1 trong bộ nhớ) chỉ còn 2 lệch đã chấp nhận; schema Event/Product nạp bộ nhớ khớp RM từng node; không còn đọc `rank_math_*`. Còn lại: CUTOVER trên production theo `CUTOVER.md` (cần người dùng thực hiện). | Schema graph + Schema Generator types chính + WooCommerce SEO → CUTOVER tắt RM |
 | 4 | ✅ Xong 21/10/2026 sau review R1 | test-redirections 45/45 (M1–M20 so bằng hàm RM compare_sources, export so RM), Claude chạy 2 lần: checksum 3 bảng + bài 866 + terms không đổi. Module mặc định tắt; bảng wp_laca_seo_redirections, _cache, _404_logs đã tạo. Đã xoá dòng rác test. Commit 82db1b10. |
 | 5 | ✅ Xong 21/10/2026 sau review R1, R2 | test-phase5 37/37 so với RM Pro (module RM bật trong bộ nhớ, dữ liệu nạp filter/transaction, Z1 checksum); cmp 19 URL chỉ 2 lệch đã chấp nhận. Lưu ý: test-phase5 R1 gọi scratchpad/p3b/cmp.php của Claude (không nằm trong repo). |
+| 6 | ✅ Xong 22/10/2026 sau review R1 | test-phase6: 24 ca so với RM Free/Pro + 2 LACAONLY (wizard, admin bar), 0 fail, chạy 2 lần DB không đổi. SA1–SA4 (phân tích nội dung trang chủ) là bản local — RM gọi API từ xa nên chỉ SA5 so trực tiếp được. |
 
 Phase 3 tách 3A/3B vì khối lượng lớn. News/Video sitemap (Pro, module không bật trên LIX) dời sang Phase 5.
 
@@ -763,3 +764,73 @@ Puppeteer (abort MỌI POST, cookie runtime không ghi file, ảnh ở `/private
 (1) file tạo/sửa; (2) NGUYÊN VĂN output test-phase5.php; (3) dòng Puppeteer; (4) dòng cuối php -l / yarn build / yarn build:blocks / yarn lint;
 (5) lệch RM có chủ ý ≤5 dòng; (6) bảng/CPT/taxonomy mới đã đăng ký. Không dán lại spec, không sửa số liệu output.
 Ràng buộc như Phase 4 (không xoá file, không cài package, không sửa plugins/, không tạo bài/term thật, không commit).
+
+---
+# Spec chi tiết Phase 6 — Image SEO, Thumbnail overlay, Link Counter/Genius, Role Manager, SEO Analyzer, Tools, Wizard, Admin bar, Widget, Podcast
+
+Dữ liệu LIX liên quan: module RM bật `link-counter`, `seo-analysis`; bảng `wp_rank_math_internal_links` (4 dòng), `wp_rank_math_internal_meta` (105),
+`wp_rank_math_link_genius_audit` (11), các bảng link_genius khác 0. Module image-seo, role-manager, podcast TẮT.
+Nguyên tắc như Phase 4–5: port 1:1, module mặc định giống trạng thái RM trên site (importer `rank_math_modules`), chỉ chạy khi RM không active
+(hoặc force), nghiệm thu so với RM chạy trên cùng dữ liệu nạp bộ nhớ / transaction, KHÔNG gọi dịch vụ ngoài khi test.
+
+## P6.0 Nguồn (chỉ đọc, đọc hết phần liên quan trước khi code)
+`RM/includes/modules/{image-seo,links,role-manager,seo-analysis,status,database-tools}/`, `RM/includes/admin/wizard/`,
+`RM/includes/class-thumbnail-overlay.php`, admin bar + dashboard widget (tìm `admin_bar_menu`, `wp_dashboard_setup` trong `RM/includes/admin/`),
+`RM-pro/includes/modules/{image-seo,link-genius,seo-analysis,podcast,status}/`.
+
+## P6.1 Image SEO (free + Pro)
+alt/title tự động theo template biến (`%filename%`, `%title%`…), Pro: caption/description, đổi case, find & replace, avatar alt — field id/default y
+`image-seo/options.php` + Pro. Áp dụng khi render nội dung/ảnh đại diện y `class-add-attributes.php` (không ghi DB).
+
+## P6.2 Thumbnail overlay (OG image)
+Port `class-thumbnail-overlay.php`: endpoint tạo ảnh OG có overlay (play icon/GIF/custom) theo `facebook_image_overlay`/`twitter_image_overlay`
+meta (đã có ở metabox Phase 2) — dùng GD như RM, cache file trong `uploads/laca-seo/overlays/` (tạo thư mục khi cần, không xoá file cũ).
+
+## P6.3 Link Counter + Link Genius (không AI, không remote)
+- Link counter: bảng `laca_seo_internal_links`, `laca_seo_internal_meta` (cột y RM), đếm khi lưu bài (`class-contentprocessor.php`), cột Links
+  trên list bài (internal/external/incoming) như RM. Importer: chép bảng RM (4 + 105 dòng) idempotent.
+- Link Genius (Pro, đọc `RM-pro/.../link-genius/`): broken link audit (chạy theo batch bằng WP-Cron/Action Scheduler sẵn có, HEAD request
+  `wp_safe_remote_head` timeout 5s, chỉ khi người dùng bấm quét), bulk cập nhật anchor/URL có **snapshot + rollback**, keyword maps tự chèn link
+  (không AI, theo rule người dùng nhập). Bảng y RM tiền tố `laca_seo_`; importer chép `link_genius_audit` (11) idempotent. Bỏ mọi phần gọi API rankmath.
+
+## P6.4 Role Manager
+Capabilities `laca_seo_*` tương ứng `rank_math_*` (liệt kê từ `class-capability-manager.php`), màn ma trận role × cap như RM. Admin (`manage_options`)
+LUÔN có mọi cap (không thể tự khoá mình). Các màn/metabox Laca kiểm cap tương ứng thay cho `manage_options` cứng (giữ fallback admin).
+Importer: map cap RM đang gán cho role → cap Laca.
+
+## P6.5 SEO Analyzer toàn site (local)
+Port `seo-analysis-tests.php` + `class-seo-analyzer.php` thành chạy LOCAL: fetch trang chủ của chính site (`wp_remote_get` home_url), chạy các test
+RM (title/description length, H1, H2, alt ảnh, keyword, SSL, sitemap, robots.txt, blog_public, permalink, tagline, auto-update, page size, links,
+favicon, …) — test cần dịch vụ ngoài (PSI) để tuỳ chọn, mặc định tắt. Kết quả lưu option như RM, màn báo cáo nhóm Basic/Advanced/Performance/Security
+với hướng dẫn sửa tiếng Việt. Competitor analysis (Pro): cho nhập URL ngoài, `wp_safe_remote_get`, chặn IP nội bộ (dùng lại guard P5).
+
+## P6.6 Tools (Status & Database tools)
+System status (PHP/WP/DB/theme/plugin xung đột SEO), error log viewer (`class-error-log.php`, chỉ đọc), backup settings (dùng lại Importer backup Phase 0),
+Database tools: xoá cache sitemap, xoá dữ liệu analyzer, đếm lại link, chuyển block Yoast/AIOSEO FAQ/HowTo/TOC → block Laca (`database-tools/*converter*`)
+— mọi tool phá huỷ phải có xác nhận 2 bước + nonce.
+
+## P6.7 Setup Wizard + Admin bar + Dashboard widget
+- Wizard nhiều bước như `RM/includes/admin/wizard/` (your-site, import từ RM, sitemap, optimization, schema, role, redirection/404, ready) — dùng
+  field registry sẵn có, chỉ ghi khi bấm Lưu từng bước; bỏ bước Search Console (cần OAuth) → thay bằng hướng dẫn + link.
+- Admin bar menu "Laca SEO" (điểm SEO trang hiện tại, link nhanh GSC/PSI/Rich Results/FB Debugger như đã định ở PLAN §1), dashboard widget (số 404,
+  redirect, bài thiếu meta, điểm trung bình) — chỉ cho user có cap.
+
+## P6.8 Podcast (Pro, ưu tiên thấp)
+Feed `/feed/podcast` theo `RM-pro/.../podcast/` (settings, iTunes tags, PodcastEpisode schema đã có P5). Module mặc định tắt.
+
+## P6.9 Nghiệm thu — MỘT script `doc/laca-seo/tools/test-phase6.php`, 1 dòng/ca + `SUMMARY`, như Phase 5 (module RM bật trong bộ nhớ, dữ liệu filter /
+transaction KHÔNG DDL bên trong, chỉ xoá id do script tạo, Z1 checksum bảng liên quan, chạy 2 lần):
+- **IS1–IS4** Image SEO: alt/title/caption/case trên cùng HTML nội dung → RM == Laca.
+- **TO1** overlay: cùng ảnh + overlay → kích thước + md5 ảnh xuất RM == Laca (hoặc lệch pixel ≤1% nếu GD khác bản, in tỉ lệ).
+- **LC1–LC3** link counter: cùng `post_content` → số internal/external/incoming RM == Laca; importer chép 4/105 dòng, chạy lại không nhân đôi.
+- **LG1–LG3** Link Genius: audit 3 URL (mock `pre_http_request`, KHÔNG mạng thật) → trạng thái RM == Laca; bulk update + rollback trả nội dung về đúng md5.
+- **RM1–RM3** role: danh sách cap Laca map đủ cap RM; editor có/không cap đúng như RM; admin không mất cap.
+- **SA1–SA5** analyzer: mock HTML trang chủ (`pre_http_request`) → từng test RM == Laca (pass/fail + giá trị).
+- **DT1** converter Yoast FAQ → block Laca cho JSON-LD giống RM converter.
+- **WZ1** wizard lưu 1 bước ghi đúng option; **AB1** admin bar có menu cho admin, không có cho subscriber; **PD1** podcast feed hợp lệ XML + tag iTunes RM == Laca.
+- **R1** cmp.php 19 URL: đúng 2 URL lệch (2 và 1 chỗ); **R2** test-redirections + test-phase5 vẫn `fail=0`; **Z1** DB unchanged.
+Puppeteer (abort MỌI POST, cookie runtime không ghi file, ảnh ở `/private/tmp/laca-p6/`): wizard, analyzer, role manager, link genius, status ở
+1440/390 — in `overflowX` + danh sách response ≥500 + console errors (phải rỗng).
+
+## P6.10 Báo cáo NGẮN như P5.6 (file, NGUYÊN VĂN output 2 lần chạy, Puppeteer, php -l/build/lint, lệch RM ≤5 dòng, bảng/CPT/cap mới).
+Ràng buộc như cũ (không xoá file, không cài package, không sửa plugins/, không tạo dữ liệu thật ngoài transaction, không gọi mạng ngoài khi test, không commit).

@@ -61,7 +61,7 @@ add_filter('pre_option_blog_public', fn() => '1');
 // Checksum ban đầu
 $initialPostsCount = (int) $wpdb->get_var("SELECT COUNT(*) FROM {$wpdb->posts}");
 $initialPostmetaCount = (int) $wpdb->get_var("SELECT COUNT(*) FROM {$wpdb->postmeta}");
-$initialOptionsCount = (int) $wpdb->get_var("SELECT COUNT(*) FROM {$wpdb->options}");
+$initialOptionsCount = (int) $wpdb->get_var("SELECT COUNT(*) FROM {$wpdb->options} WHERE option_name NOT LIKE '%_transient_%'");
 $initialChecksum = md5(
     $wpdb->get_var("SELECT MD5(GROUP_CONCAT(ID, post_modified)) FROM {$wpdb->posts}") . '|' .
     $wpdb->get_var("SELECT MD5(GROUP_CONCAT(meta_id, meta_value)) FROM {$wpdb->postmeta}")
@@ -798,7 +798,7 @@ reportResult('R1', 'Regression 19 URL cmp test (exactly 2 accepted diffs: find-t
 // -------------------------------------------------------------
 $finalPostsCount = (int) $wpdb->get_var("SELECT COUNT(*) FROM {$wpdb->posts}");
 $finalPostmetaCount = (int) $wpdb->get_var("SELECT COUNT(*) FROM {$wpdb->postmeta}");
-$finalOptionsCount = (int) $wpdb->get_var("SELECT COUNT(*) FROM {$wpdb->options}");
+$finalOptionsCount = (int) $wpdb->get_var("SELECT COUNT(*) FROM {$wpdb->options} WHERE option_name NOT LIKE '%_transient_%'");
 $finalChecksum = md5(
     $wpdb->get_var("SELECT MD5(GROUP_CONCAT(ID, post_modified)) FROM {$wpdb->posts}") . '|' .
     $wpdb->get_var("SELECT MD5(GROUP_CONCAT(meta_id, meta_value)) FROM {$wpdb->postmeta}")

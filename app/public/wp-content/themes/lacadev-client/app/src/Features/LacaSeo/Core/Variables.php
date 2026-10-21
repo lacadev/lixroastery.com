@@ -84,8 +84,10 @@ class Variables
         $term = null;
         $user = null;
 
-        if ($object instanceof \WP_Post) {
+        if ($object instanceof \WP_Post || (is_object($object) && isset($object->filename))) {
             $post = $object;
+        } elseif (is_array($object) && isset($object['filename'])) {
+            $post = (object) $object;
         } elseif ($object instanceof \WP_Term) {
             $term = $object;
         } elseif ($object instanceof \WP_User) {
@@ -216,10 +218,11 @@ class Variables
                     $pto = get_post_type_object($pt);
                     return $pto ? $pto->labels->name : '';
                 }
-                if ($post) {
+                if ($post && isset($post->post_title)) {
                     return stripslashes($post->post_title);
                 }
                 return '';
+
 
             case 'parent_title':
                 if ($post && !empty($post->post_parent)) {
@@ -356,8 +359,32 @@ class Variables
                 return '';
 
             case 'filename':
-                if ($post && $post->post_type === 'attachment') {
-                    return pathinfo(get_attached_file($post->ID) ?: '', PATHINFO_FILENAME);
+                $rawFilename = '';
+                if (is_object($post) && !empty($post->filename)) {
+                    $rawFilename = (string) $post->filename;
+                } elseif ($post instanceof \WP_Post && $post->post_type === 'attachment') {
+                    $rawFilename = (string) get_attached_file($post->ID);
+                }
+                if ($rawFilename !== '') {
+                    $fn = pathinfo($rawFilename, PATHINFO_FILENAME);
+                    $nameParts = explode('-', $fn);
+                    if (str_contains(end($nameParts), 'x')) {
+                        array_pop($nameParts);
+                    }
+                    $name = trim(str_replace('_', ' ', implode(' ', $nameParts)));
+                    return $name !== '' ? $name : '';
+                }
+                return '';
+
+            case 'imagealt':
+                if (is_object($post) && isset($post->alttext)) {
+                    return (string) $post->alttext;
+                }
+                return '';
+
+            case 'imagetitle':
+                if (is_object($post) && isset($post->titletext)) {
+                    return (string) $post->titletext;
                 }
                 return '';
 

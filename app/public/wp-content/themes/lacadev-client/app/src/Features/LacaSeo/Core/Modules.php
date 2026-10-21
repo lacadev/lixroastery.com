@@ -127,7 +127,16 @@ class Modules
             'default'     => false,
             'core'        => false,
         ],
+        'podcast' => [
+            'id'          => 'podcast',
+            'title'       => 'Podcast RSS Feed',
+            'desc'        => 'Tạo nguồn cấp dữ liệu chuẩn iTunes Podcast cho các tập podcast.',
+            'phase'       => 6,
+            'default'     => false,
+            'core'        => false,
+        ],
     ];
+
 
     /**
      * Get active module list.

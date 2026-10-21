@@ -180,6 +180,81 @@ class GeneralFields
                     'Nhập định dạng bạn mong muốn xuất hiện khi di chuột.',
                     'Tooltip ảnh hiển thị nội dung theo đúng công thức.'
                 ),
+
+            Field::make('add_img_caption', 'toggle', 'Tự động thêm Chú thích (Caption) cho ảnh thiếu')
+                ->default('off')
+                ->tab('images')
+                ->group('general'),
+
+            Field::make('img_caption_format', 'variable_text', 'Định dạng Caption tự động')
+                ->default('%title%')
+                ->tab('images')
+                ->group('general')
+                ->showIf('add_img_caption', 'on'),
+
+            Field::make('add_img_description', 'toggle', 'Tự động thêm Mô tả (Description) cho ảnh attachment')
+                ->default('off')
+                ->tab('images')
+                ->group('general'),
+
+            Field::make('img_description_format', 'variable_text', 'Định dạng Description tự động')
+                ->default('%title%')
+                ->tab('images')
+                ->group('general')
+                ->showIf('add_img_description', 'on'),
+
+            Field::make('img_alt_change_case', 'select', 'Đổi kiểu chữ cho thuộc tính ALT')
+                ->default('')
+                ->choices([
+                    ''             => 'Không đổi',
+                    'titlecase'    => 'Title Case',
+                    'sentencecase' => 'Sentence case',
+                    'lowercase'    => 'lowercase',
+                    'uppercase'    => 'UPPERCASE',
+                ])
+                ->tab('images')
+                ->group('general'),
+
+            Field::make('img_title_change_case', 'select', 'Đổi kiểu chữ cho thuộc tính TITLE')
+                ->default('')
+                ->choices([
+                    ''             => 'Không đổi',
+                    'titlecase'    => 'Title Case',
+                    'sentencecase' => 'Sentence case',
+                    'lowercase'    => 'lowercase',
+                    'uppercase'    => 'UPPERCASE',
+                ])
+                ->tab('images')
+                ->group('general'),
+
+            Field::make('img_caption_change_case', 'select', 'Đổi kiểu chữ cho Caption')
+                ->default('')
+                ->choices([
+                    ''             => 'Không đổi',
+                    'titlecase'    => 'Title Case',
+                    'sentencecase' => 'Sentence case',
+                    'lowercase'    => 'lowercase',
+                    'uppercase'    => 'UPPERCASE',
+                ])
+                ->tab('images')
+                ->group('general'),
+
+            Field::make('img_description_change_case', 'select', 'Đổi kiểu chữ cho Description')
+                ->default('')
+                ->choices([
+                    ''             => 'Không đổi',
+                    'titlecase'    => 'Title Case',
+                    'sentencecase' => 'Sentence case',
+                    'lowercase'    => 'lowercase',
+                    'uppercase'    => 'UPPERCASE',
+                ])
+                ->tab('images')
+                ->group('general'),
+
+            Field::make('add_avatar_alt', 'toggle', 'Tự động thêm thuộc tính ALT cho Avatar')
+                ->default('off')
+                ->tab('images')
+                ->group('general'),
         ];
     }
 
