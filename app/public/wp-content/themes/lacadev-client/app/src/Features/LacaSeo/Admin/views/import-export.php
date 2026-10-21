@@ -252,6 +252,200 @@ $pendingImport = get_transient(ImportExportHandler::PENDING_IMPORT_TRANSIENT . $
         <?php endif; ?>
     </div>
 
+    <!-- CSV Meta Import & Export (Pro) -->
+    <div class="laca-seo-card" style="margin-top: 24px;">
+        <h2 class="laca-seo-card__title">
+            <span class="dashicons dashicons-media-spreadsheet" style="vertical-align:middle;color:#2563eb;"></span>
+            CSV Meta Bài viết & Danh mục
+        </h2>
+        <p>Xuất và nhập hàng loạt tiêu đề SEO, mô tả, từ khoá chính, robots, canonical URL của bài viết hoặc danh mục thông qua tệp tin CSV (chuẩn UTF-8 có BOM).</p>
+
+        <div class="laca-seo-grid-2col" style="margin-top: 16px;">
+            <!-- CSV Export Box -->
+            <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 16px;">
+                <h3 style="margin-top:0; font-size:14px; font-weight:600;">Xuất tệp CSV</h3>
+                <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>">
+                    <?php wp_nonce_field('laca_seo_csv_export_action', 'laca_seo_csv_export_nonce'); ?>
+                    <input type="hidden" name="action" value="laca_seo_csv_export">
+
+                    <p>
+                        <label for="csv_object_type"><strong>Chọn loại nội dung:</strong></label><br>
+                        <select name="csv_object_type" id="csv_object_type" style="width: 100%; margin-top: 6px;">
+                            <optgroup label="Loại bài viết (Post Types)">
+                                <?php foreach (\App\Features\LacaSeo\Core\Helper::getAccessiblePostTypes() as $slug => $ptObj): ?>
+                                    <option value="<?php echo esc_attr($slug); ?>"><?php echo esc_html($ptObj->labels->name ?: $slug); ?> (<?php echo esc_html($slug); ?>)</option>
+                                <?php endforeach; ?>
+                            </optgroup>
+                            <optgroup label="Phân loại (Taxonomies)">
+                                <?php foreach (\App\Features\LacaSeo\Core\Helper::getAccessibleTaxonomies() as $taxSlug => $taxObj): ?>
+                                    <option value="<?php echo esc_attr($taxSlug); ?>"><?php echo esc_html($taxObj->labels->name ?: $taxSlug); ?> (<?php echo esc_html($taxSlug); ?>)</option>
+                                <?php endforeach; ?>
+                            </optgroup>
+                        </select>
+                    </p>
+
+                    <button type="submit" class="button button-primary">
+                        <span class="dashicons dashicons-download"></span> Tải CSV về máy
+                    </button>
+                </form>
+            </div>
+
+            <!-- CSV Import Box -->
+            <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 16px;">
+                <h3 style="margin-top:0; font-size:14px; font-weight:600;">Nhập tệp CSV</h3>
+                <p style="font-size:12px; color:#64748b;">Hỗ trợ tệp .csv (≤5MB). Tự động khớp theo cột <code>id</code> (hoặc <code>slug</code> + <code>object_type</code>). Không tạo bài mới.</p>
+
+                <input type="file" id="laca_csv_file_input" accept=".csv" style="margin-bottom: 12px; display:block;">
+                <button type="button" class="button button-secondary" id="laca_csv_start_import_btn">
+                    <span class="dashicons dashicons-upload"></span> Bắt đầu nhập dữ liệu CSV
+                </button>
+
+                <div id="laca_csv_import_progress" style="display:none; margin-top:14px;">
+                    <div style="background:#e2e8f0; border-radius:4px; height:10px; overflow:hidden;">
+                        <div id="laca_csv_progress_bar" style="background:#2563eb; width:0%; height:100%; transition:width 0.2s;"></div>
+                    </div>
+                    <p id="laca_csv_progress_text" style="font-size:12px; margin:6px 0 0; color:#334155;">Đang chuẩn bị...</p>
+                </div>
+
+                <div id="laca_csv_import_log" style="display:none; margin-top:12px; font-size:12px; max-height:140px; overflow-y:auto; background:#fff; padding:8px; border:1px solid #cbd5e1; border-radius:4px;"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    (function() {
+        var startBtn = document.getElementById('laca_csv_start_import_btn');
+        var fileInput = document.getElementById('laca_csv_file_input');
+        var progressBox = document.getElementById('laca_csv_import_progress');
+        var progressBar = document.getElementById('laca_csv_progress_bar');
+        var progressText = document.getElementById('laca_csv_progress_text');
+        var logBox = document.getElementById('laca_csv_import_log');
+
+        if (!startBtn || !fileInput) return;
+
+        startBtn.addEventListener('click', function() {
+            var file = fileInput.files[0];
+            if (!file) {
+                alert('Vui lòng chọn một tệp CSV để nhập.');
+                return;
+            }
+            if (file.size > 5 * 1024 * 1024) {
+                alert('Kích thước tệp CSV không được vượt quá 5MB.');
+                return;
+            }
+
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                var text = e.target.result;
+                var rows = parseCSV(text);
+                if (rows.length === 0) {
+                    alert('Tệp CSV rỗng hoặc không đúng định dạng.');
+                    return;
+                }
+
+                startBtn.disabled = true;
+                progressBox.style.display = 'block';
+                logBox.style.display = 'none';
+                logBox.innerHTML = '';
+
+                var BATCH_SIZE = 100;
+                var totalRows = rows.length;
+                var totalUpdated = 0;
+                var allErrors = [];
+                var currentIndex = 0;
+
+                function sendBatch() {
+                    var chunk = rows.slice(currentIndex, currentIndex + BATCH_SIZE);
+                    if (chunk.length === 0) {
+                        progressBar.style.width = '100%';
+                        progressText.textContent = 'Hoàn tất! Đã cập nhật ' + totalUpdated + '/' + totalRows + ' mục.';
+                        startBtn.disabled = false;
+                        if (allErrors.length > 0) {
+                            logBox.style.display = 'block';
+                            logBox.innerHTML = '<strong>Chi tiết lỗi:</strong><br>' + allErrors.join('<br>');
+                        }
+                        return;
+                    }
+
+                    var formData = new FormData();
+                    formData.append('action', 'laca_seo_csv_import_batch');
+                    formData.append('nonce', '<?php echo esc_js(wp_create_nonce('laca_seo_admin_nonce')); ?>');
+
+                    chunk.forEach(function(row, i) {
+                        for (var key in row) {
+                            if (row.hasOwnProperty(key)) {
+                                formData.append('rows[' + i + '][' + key + ']', row[key]);
+                            }
+                        }
+                    });
+
+                    fetch(ajaxurl, {
+                        method: 'POST',
+                        body: formData
+                    })
+                    .then(function(res) { return res.json(); })
+                    .then(function(res) {
+                        if (res.success) {
+                            totalUpdated += (res.data.updated || 0);
+                            if (res.data.errors && res.data.errors.length) {
+                                allErrors = allErrors.concat(res.data.errors);
+                            }
+                        }
+                        currentIndex += BATCH_SIZE;
+                        var pct = Math.min(100, Math.round((currentIndex / totalRows) * 100));
+                        progressBar.style.width = pct + '%';
+                        progressText.textContent = 'Đang xử lý: ' + Math.min(currentIndex, totalRows) + ' / ' + totalRows + ' dòng (' + pct + '%)...';
+                        sendBatch();
+                    })
+                    .catch(function(err) {
+                        progressText.textContent = 'Lỗi kết nối mạng: ' + err.message;
+                        startBtn.disabled = false;
+                    });
+                }
+
+                sendBatch();
+            };
+            reader.readAsText(file, 'UTF-8');
+        });
+
+        function parseCSV(text) {
+            if (text.charCodeAt(0) === 0xFEFF) {
+                text = text.substr(1);
+            }
+            var lines = text.split(/\r\n|\n|\r/);
+            if (lines.length < 2) return [];
+
+            var header = splitCsvLine(lines[0]);
+            var results = [];
+
+            for (var i = 1; i < lines.length; i++) {
+                var line = lines[i].trim();
+                if (!line) continue;
+                var values = splitCsvLine(line);
+                var row = {};
+                for (var j = 0; j < header.length; j++) {
+                    var key = header[j].trim();
+                    row[key] = values[j] !== undefined ? values[j].trim() : '';
+                }
+                results.push(row);
+            }
+            return results;
+        }
+
+        function splitCsvLine(line) {
+            var re = /(?!\s*$)\s*(?:'([^'\\]*(?:\\[\S\s][^'\\]*)*)'|"([^"\\]*(?:\\[\S\s][^"\\]*)*)"|([^,'"\s\\*]*(?:\s+[^,'"\s\\*]+)*))\s*(?:,|$)/g;
+            var a = [];
+            line.replace(re, function(m0, m1, m2, m3) {
+                if (m1 !== undefined) a.push(m1.replace(/\\'/g, "'"));
+                else if (m2 !== undefined) a.push(m2.replace(/\\"/g, '"'));
+                else if (m3 !== undefined) a.push(m3);
+                return '';
+            });
+            return a;
+        }
+    })();
+    </script>
+
     <!-- Backups List -->
     <div class="laca-seo-card" style="margin-top: 24px;">
         <h2 class="laca-seo-card__title">Lịch sử sao lưu tự động (Tối đa 5 bản gần nhất)</h2>

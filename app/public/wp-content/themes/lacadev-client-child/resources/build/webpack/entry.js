@@ -30,4 +30,9 @@ module.exports = {
     path.join(parentSrc, 'admin/laca-seo/index.js'),
     path.resolve(__dirname, '../../../../lacadev-client/resources/styles/admin/laca-seo/index.scss'),
   ],
+  // Laca SEO Editor Bundle (Phase 2)
+  'laca-seo-editor': [
+    path.join(parentSrc, 'admin/laca-seo/editor.js'),
+    path.resolve(__dirname, '../../../../lacadev-client/resources/styles/admin/laca-seo/editor.scss'),
+  ],
 };

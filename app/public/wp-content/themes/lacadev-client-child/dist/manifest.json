@@ -11,6 +11,8 @@
   "child.js": "child.js",
   "laca-seo.css": "styles/laca-seo.css",
   "laca-seo.js": "laca-seo.js",
+  "laca-seo-editor.css": "styles/laca-seo-editor.css",
+  "laca-seo-editor.js": "laca-seo-editor.js",
   "517.js": "517.js",
   "588.js": "588.js",
   "fonts/VNF-Futura.ttf": "fonts/VNF-Futura.2bfaecbc9e.ttf",

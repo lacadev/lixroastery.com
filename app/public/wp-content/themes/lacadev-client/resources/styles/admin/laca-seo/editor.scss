@@ -1,0 +1,577 @@
+/**
+ * Styles for Laca SEO Editor Metabox.
+ * Uses BEM naming and CSS variables (--laca-seo-*).
+ */
+
+.laca-seo-metabox-wrapper {
+  --laca-seo-primary: #2563eb;
+  --laca-seo-success: #10b981;
+  --laca-seo-warning: #f59e0b;
+  --laca-seo-danger: #ef4444;
+  --laca-seo-border: #e2e8f0;
+  --laca-seo-bg: #f8fafc;
+  --laca-seo-text: #1e293b;
+  --laca-seo-muted: #64748b;
+
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, sans-serif;
+  color: var(--laca-seo-text);
+  margin: -6px -12px -12px;
+  background: #ffffff;
+
+  /* Tabs Nav */
+  .laca-seo-tabs-nav {
+    display: flex;
+    border-bottom: 1px solid var(--laca-seo-border);
+    background: var(--laca-seo-bg);
+    padding: 0 12px;
+    gap: 4px;
+
+    .laca-seo-tab-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 10px 16px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--laca-seo-muted);
+      background: transparent;
+      border: none;
+      border-bottom: 2px solid transparent;
+      cursor: pointer;
+      transition: all 0.15s ease;
+
+      .dashicons {
+        font-size: 17px;
+        width: 17px;
+        height: 17px;
+      }
+
+      &:hover {
+        color: var(--laca-seo-primary);
+      }
+
+      &.active {
+        color: var(--laca-seo-primary);
+        border-bottom-color: var(--laca-seo-primary);
+        background: #ffffff;
+      }
+
+      .laca-seo-tab-score-badge {
+        font-size: 11px;
+        padding: 2px 6px;
+        border-radius: 10px;
+        background: #e2e8f0;
+        color: #334155;
+        font-weight: 700;
+      }
+    }
+  }
+
+  /* Tab Content */
+  .laca-seo-tab-content {
+    display: none;
+    padding: 20px;
+
+    &.active {
+      display: block;
+    }
+  }
+
+  /* SERP Preview */
+  .laca-seo-serp-preview-box {
+    background: var(--laca-seo-bg);
+    border: 1px solid var(--laca-seo-border);
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 24px;
+
+    .laca-seo-serp-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+
+      .laca-seo-serp-title-label {
+        font-weight: 600;
+        font-size: 13px;
+        color: var(--laca-seo-muted);
+      }
+
+      .laca-seo-serp-devices {
+        display: inline-flex;
+        background: #e2e8f0;
+        padding: 2px;
+        border-radius: 6px;
+
+        .laca-serp-btn {
+          border: none;
+          background: transparent;
+          font-size: 12px;
+          padding: 4px 8px;
+          border-radius: 4px;
+          cursor: pointer;
+          color: var(--laca-seo-muted);
+          display: inline-flex;
+          align-items: center;
+          gap: 4px;
+
+          .dashicons {
+            font-size: 14px;
+            width: 14px;
+            height: 14px;
+          }
+
+          &.active {
+            background: #ffffff;
+            color: var(--laca-seo-text);
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+            font-weight: 600;
+          }
+        }
+      }
+    }
+
+    .laca-serp-card {
+      background: #ffffff;
+      border: 1px solid var(--laca-seo-border);
+      border-radius: 6px;
+      padding: 14px;
+      max-width: 600px;
+
+      &--mobile {
+        max-width: 380px;
+        border-radius: 12px;
+      }
+
+      .laca-serp-site-info {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 12px;
+        color: #202124;
+        margin-bottom: 6px;
+
+        .laca-serp-favicon {
+          font-size: 14px;
+          width: 14px;
+          height: 14px;
+          color: #4b5563;
+        }
+
+        .laca-serp-domain {
+          font-weight: 500;
+        }
+
+        .laca-serp-breadcrumb-path {
+          color: #5f6368;
+        }
+      }
+
+      .laca-serp-headline {
+        margin: 0 0 6px 0;
+        font-size: 18px;
+        line-height: 1.3;
+        font-weight: 400;
+        color: #1a0dab;
+        cursor: pointer;
+
+        &:hover {
+          text-decoration: underline;
+        }
+      }
+
+      .laca-serp-snippet {
+        margin: 0;
+        font-size: 13px;
+        line-height: 1.5;
+        color: #4d5156;
+        word-break: break-word;
+      }
+    }
+  }
+
+  /* Fields */
+  .laca-seo-field-group {
+    margin-bottom: 20px;
+
+    label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 6px;
+      font-size: 13px;
+    }
+
+    .laca-seo-field-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+
+      label {
+        margin-bottom: 0;
+      }
+
+      .laca-seo-counter {
+        font-size: 12px;
+        color: var(--laca-seo-muted);
+
+        &.is-good {
+          color: var(--laca-seo-success);
+          font-weight: 600;
+        }
+
+        &.is-warning {
+          color: var(--laca-seo-danger);
+          font-weight: 600;
+        }
+      }
+    }
+
+    input[type="text"],
+    input[type="url"],
+    textarea,
+    select {
+      width: 100%;
+      border: 1px solid var(--laca-seo-border);
+      border-radius: 6px;
+      padding: 8px 12px;
+      font-size: 13px;
+
+      &:focus {
+        border-color: var(--laca-seo-primary);
+        box-shadow: 0 0 0 1px var(--laca-seo-primary);
+      }
+    }
+  }
+
+  /* Focus Keywords Tags Input */
+  .laca-seo-tags-input {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    border: 1px solid var(--laca-seo-border);
+    border-radius: 6px;
+    padding: 6px 10px;
+    background: #ffffff;
+    min-height: 42px;
+
+    .laca-tags-list {
+      display: inline-flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .laca-kw-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #f1f5f9;
+      border: 1px solid #cbd5e1;
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      cursor: grab;
+      user-select: none;
+
+      &--primary {
+        background: #eff6ff;
+        border-color: #93c5fd;
+        font-weight: 600;
+        color: #1d4ed8;
+      }
+
+      .laca-kw-badge {
+        font-size: 10px;
+        background: #2563eb;
+        color: #ffffff;
+        padding: 1px 4px;
+        border-radius: 3px;
+        font-weight: 700;
+      }
+
+      .laca-kw-remove {
+        background: transparent;
+        border: none;
+        cursor: pointer;
+        font-size: 14px;
+        color: #64748b;
+        padding: 0;
+
+        &:hover {
+          color: #ef4444;
+        }
+      }
+    }
+
+    .laca-kw-input {
+      flex: 1;
+      min-width: 180px;
+      border: none !important;
+      outline: none !important;
+      box-shadow: none !important;
+      padding: 4px !important;
+      font-size: 13px;
+    }
+  }
+
+  /* Checkboxes */
+  .laca-checkbox-inline {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    font-size: 13px;
+    margin: 8px 0;
+  }
+
+  .laca-checkbox-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 10px;
+    margin: 10px 0;
+  }
+
+  .laca-options-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 24px;
+    margin: 14px 0 24px;
+    padding-top: 14px;
+    border-top: 1px solid var(--laca-seo-border);
+  }
+
+  /* SEO Analysis Container */
+  .laca-seo-analysis-container {
+    background: #ffffff;
+    border: 1px solid var(--laca-seo-border);
+    border-radius: 8px;
+    overflow: hidden;
+    margin-top: 24px;
+
+    .laca-analysis-header {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 16px 20px;
+      background: var(--laca-seo-bg);
+      border-bottom: 1px solid var(--laca-seo-border);
+
+      .laca-score-circle {
+        width: 54px;
+        height: 54px;
+        border-radius: 50%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        border: 4px solid var(--laca-seo-danger);
+        color: var(--laca-seo-danger);
+        background: #ffffff;
+
+        &--good {
+          border-color: var(--laca-seo-success);
+          color: var(--laca-seo-success);
+        }
+
+        &--ok {
+          border-color: var(--laca-seo-warning);
+          color: var(--laca-seo-warning);
+        }
+
+        &__number {
+          font-size: 16px;
+          line-height: 1;
+        }
+
+        &__total {
+          font-size: 10px;
+          opacity: 0.8;
+        }
+      }
+
+      .laca-score-intro {
+        h4 {
+          margin: 0 0 4px 0;
+          font-size: 15px;
+          font-weight: 600;
+        }
+        p {
+          margin: 0;
+          font-size: 12px;
+          color: var(--laca-seo-muted);
+        }
+      }
+    }
+
+    /* Test Groups */
+    .laca-test-groups {
+      .laca-test-group {
+        border-bottom: 1px solid var(--laca-seo-border);
+
+        &:last-child {
+          border-bottom: none;
+        }
+
+        .laca-group-header {
+          display: flex;
+          align-items: center;
+          padding: 12px 20px;
+          cursor: pointer;
+          user-select: none;
+          background: #ffffff;
+          transition: background 0.15s ease;
+
+          &:hover {
+            background: #f8fafc;
+          }
+
+          .laca-group-arrow {
+            margin-right: 8px;
+            transition: transform 0.2s ease;
+            color: var(--laca-seo-muted);
+          }
+
+          strong {
+            font-size: 13px;
+            color: var(--laca-seo-text);
+          }
+
+          .laca-group-count {
+            margin-left: auto;
+            font-size: 11px;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 10px;
+            background: #f1f5f9;
+            color: var(--laca-seo-muted);
+
+            &.is-all-pass {
+              background: #dcfce7;
+              color: #15803d;
+            }
+          }
+        }
+
+        .laca-group-body {
+          display: none;
+          padding: 10px 20px 16px;
+          background: #fafafa;
+          border-top: 1px dashed var(--laca-seo-border);
+        }
+
+        &.is-open {
+          .laca-group-arrow {
+            transform: rotate(90deg);
+          }
+          .laca-group-body {
+            display: block;
+          }
+        }
+      }
+    }
+
+    .laca-test-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 8px 0;
+      font-size: 13px;
+
+      .laca-test-icon {
+        font-size: 18px;
+        width: 18px;
+        height: 18px;
+        flex-shrink: 0;
+        margin-top: 1px;
+      }
+
+      &--pass {
+        .laca-test-icon {
+          color: var(--laca-seo-success);
+        }
+      }
+
+      &--fail {
+        .laca-test-icon {
+          color: var(--laca-seo-danger);
+        }
+      }
+
+      .laca-test-info {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+
+        .laca-test-msg {
+          color: var(--laca-seo-text);
+          font-weight: 500;
+        }
+
+        .laca-test-tip {
+          font-size: 12px;
+          color: var(--laca-seo-muted);
+        }
+      }
+    }
+  }
+
+  /* Schema Placeholder */
+  .laca-schema-placeholder {
+    text-align: center;
+    padding: 40px 20px;
+    background: var(--laca-seo-bg);
+    border-radius: 8px;
+    border: 1px dashed var(--laca-seo-border);
+
+    .laca-placeholder-icon {
+      font-size: 40px;
+      width: 40px;
+      height: 40px;
+      color: var(--laca-seo-primary);
+      margin-bottom: 12px;
+    }
+
+    h3 {
+      margin: 0 0 8px;
+      font-size: 16px;
+    }
+
+    .laca-phase-badge {
+      display: inline-block;
+      margin-top: 16px;
+      padding: 6px 14px;
+      background: #e0e7ff;
+      color: #3730a3;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+  }
+
+  /* Media Upload */
+  .laca-image-upload-wrap {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+
+    .laca-img-preview {
+      width: 120px;
+      height: 70px;
+      border: 1px solid var(--laca-seo-border);
+      border-radius: 4px;
+      background: #f1f5f9;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+
+      img {
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: cover;
+      }
+    }
+  }
+}

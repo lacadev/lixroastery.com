@@ -332,7 +332,14 @@ class Variables
             case 'primary_taxonomy_terms':
                 if ($post) {
                     $mainTax = (string) Settings::get("titles.pt_{$post->post_type}_primary_taxonomy", '');
-                    if ($mainTax !== '') {
+                    if ($mainTax !== '' && $mainTax !== 'off') {
+                        $primaryTermId = (int) get_post_meta($post->ID, "_laca_seo_primary_{$mainTax}", true);
+                        if ($primaryTermId > 0) {
+                            $primaryTerm = get_term($primaryTermId, $mainTax);
+                            if ($primaryTerm instanceof \WP_Term) {
+                                return $primaryTerm->name;
+                            }
+                        }
                         $terms = wp_get_object_terms($post->ID, $mainTax, ['fields' => 'names']);
                         if (!is_wp_error($terms) && !empty($terms)) {
                             return implode(', ', $terms);

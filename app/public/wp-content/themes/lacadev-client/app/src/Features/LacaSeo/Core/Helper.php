@@ -262,7 +262,21 @@ class Helper
             'CoffeeStore'            => __('Coffee Store / Cửa hàng cà phê', 'lacadev'),
             'TelevisionStation'      => __('Television Station', 'lacadev'),
             'TouristInformationCenter' => __('Tourist Information Center', 'lacadev'),
-            'TravelAgency'           => __('Travel Agency / Đại lý du lịch', 'lacadev'),
         ];
+    }
+
+    /**
+     * Choices for post types (slug => label).
+     *
+     * @return array<string, string>
+     */
+    public static function choicesPostTypes(): array
+    {
+        $choices = [];
+        $pts = self::getAccessiblePostTypes();
+        foreach ($pts as $slug => $obj) {
+            $choices[$slug] = $obj->labels->name ?: $slug;
+        }
+        return $choices;
     }
 }

@@ -39,6 +39,13 @@ class LacaSeo
                 (new AdminPage())->register();
                 (new SaveHandler())->register();
                 (new \App\Features\LacaSeo\Admin\ImportExportHandler())->register();
+                (new \App\Features\LacaSeo\Admin\Metabox\PostMetabox())->register();
+                (new \App\Features\LacaSeo\Admin\Metabox\TermMetabox())->register();
+                (new \App\Features\LacaSeo\Admin\Metabox\UserMetabox())->register();
+                (new \App\Features\LacaSeo\Admin\ListScreens\PostList())->register();
+                (new \App\Features\LacaSeo\Admin\ListScreens\BulkActions())->register();
+                (new \App\Features\LacaSeo\Admin\ListScreens\TermList())->register();
+                (new \App\Features\LacaSeo\Admin\Csv\CsvMetaHandler())->register();
                 (new Polylang())->register();
             }
 
@@ -59,6 +66,7 @@ class LacaSeo
                 (new Rewrite())->register();
                 (new RobotsTxt())->register();
                 (new Tracking())->register();
+                (new \App\Features\LacaSeo\Frontend\FrontendSeoScore())->register();
             }
         } catch (\Throwable $e) {
             error_log('[laca-seo] Boot failure: ' . $e->getMessage() . ' in ' . $e->getFile() . ':' . $e->getLine());

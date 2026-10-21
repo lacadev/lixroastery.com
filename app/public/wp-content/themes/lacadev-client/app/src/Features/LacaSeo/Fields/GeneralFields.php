@@ -668,6 +668,60 @@ class GeneralFields
                     'Ví dụ: "Bài viết %POSTLINK% xuất bản lần đầu tại %BLOGDESCLINK%."',
                     'Bảo vệ bản quyền bài viết khi các trang tin tự động lấy nguồn RSS của bạn.'
                 ),
+
+            Field::make('frontend_seo_score', 'toggle', 'Hiển thị huy hiệu điểm SEO ngoài Frontend')
+                ->default('off')
+                ->tab('others')
+                ->group('general')
+                ->note(
+                    'Tự động hiển thị huy hiệu điểm SEO trên các bài viết ngoài giao diện người dùng.',
+                    'Bật nếu bạn muốn công khai điểm số SEO của bài viết cho độc giả hoặc học viên.',
+                    'Huy hiệu điểm SEO xuất hiện ở vị trí đã chọn trên bài viết.'
+                ),
+
+            Field::make('frontend_seo_score_post_types', 'multicheck', 'Loại nội dung hiển thị điểm SEO')
+                ->default(['post'])
+                ->tab('others')
+                ->group('general')
+                ->choices(Helper::choicesPostTypes())
+                ->showIf('frontend_seo_score', 'on')
+                ->note(
+                    'Chọn các loại bài viết được phép hiển thị huy hiệu điểm SEO.',
+                    'Tích chọn Post, Page hoặc Sản phẩm.',
+                    'Chỉ các post type được chọn mới tự động chèn điểm SEO.'
+                ),
+
+            Field::make('frontend_seo_score_position', 'select', 'Vị trí hiển thị huy hiệu điểm SEO')
+                ->default('bottom')
+                ->tab('others')
+                ->group('general')
+                ->choices([
+                    'top'    => __('Đầu bài viết (Above Content)', 'lacadev'),
+                    'bottom' => __('Cuối bài viết (Below Content)', 'lacadev'),
+                    'both'   => __('Cả đầu và cuối (Both)', 'lacadev'),
+                    'custom' => __('Thủ công bằng Shortcode [laca_seo_score]', 'lacadev'),
+                ])
+                ->showIf('frontend_seo_score', 'on')
+                ->note(
+                    'Vị trí tự động chèn huy hiệu điểm SEO vào nội dung bài viết.',
+                    'Chọn chèn ở đầu bài, cuối bài hoặc chỉ dùng shortcode [laca_seo_score].',
+                    'Điểm SEO hiển thị tại vị trí đã thiết lập.'
+                ),
+
+            Field::make('frontend_seo_score_template', 'select', 'Kiểu hiển thị huy hiệu điểm SEO')
+                ->default('circle')
+                ->tab('others')
+                ->group('general')
+                ->choices([
+                    'circle' => __('Vòng tròn (Circle)', 'lacadev'),
+                    'square' => __('Hình vuông / Thẻ (Square)', 'lacadev'),
+                ])
+                ->showIf('frontend_seo_score', 'on')
+                ->note(
+                    'Mẫu giao diện huy hiệu điểm SEO hiển thị ngoài frontend.',
+                    'Chọn kiểu vòng tròn hoặc kiểu thẻ vuông.',
+                    'Huy hiệu xuất hiện theo kiểu dáng tương ứng.'
+                ),
         ];
     }
 }

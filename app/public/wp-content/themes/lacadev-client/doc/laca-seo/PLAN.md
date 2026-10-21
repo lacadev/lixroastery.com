@@ -353,3 +353,96 @@ Meta riêng Woo Pro: `_rank_math_gtin_code` → `_laca_seo_gtin_code`.
 Lưu ý vận hành:
 - Công cụ `doc/laca-seo/tools/*.php` chỉ chạy CLI (web trả 404).
 - Trên site mới: Laca SEO > Sao lưu & Nhập/Xuất > Nhập từ Rank Math (chạy theo batch). Chạy lại được nhiều lần (idempotent), luôn backup trước.
+
+---
+
+# Spec chi tiết Phase 2 — SEO trong trình soạn thảo + danh sách bài
+
+Mục tiêu: admin sửa SEO từng bài/term/tác giả ngay trong editor như Rank Math; danh sách bài có cột SEO, lọc, bulk/quick edit;
+CSV meta (Pro). Frontend Phase 1 đã đọc `_laca_seo_*` — Phase 2 là nơi NHẬP dữ liệu đó. Rank Math vẫn active trên local → chỉ test
+bằng cờ `?laca_seo_force=1` (local) như Phase 1.
+
+## P2.0 Nguồn tham chiếu (phải đọc trước khi code)
+- Meta box PHP: `RM/includes/admin/metabox/class-metabox.php`, `class-screen.php`, `class-post-screen.php`, `class-taxonomy-screen.php`, `class-user-screen.php`.
+- UI + dữ liệu editor: `RM/assets/admin/js/rank-math-app.js`, `gutenberg.js`, `classic.js`, `gutenberg-primary-term.js`, `post-list.js` (minified nhưng đọc được).
+- Content analysis: `RM/assets/admin/js/analyzer.js` (thư viện analyzer: class từng test, ngưỡng, điểm số, câu thông báo) + danh sách test bật/tắt theo
+  ngữ cảnh trong `rank-math-app.js` (`keywordInTitle:!0,…`) và `class-post-screen.php::get_analysis` / power words / diacritics ở `class-screen.php`.
+- Pro: `RMP/includes/admin/class-quick-edit.php`, `class-bulk-actions.php`, `class-post-filters.php`, `class-common.php` (giới hạn focus keyword 100),
+  `RMP/includes/modules/status/admin/csv-import-export/*`.
+
+## P2.1 Meta box bài viết (`Admin/Metabox/PostMetabox.php` + JS `resources/scripts/admin/laca-seo/metabox/*`)
+- Đăng ký `add_meta_box('laca_seo_metabox', 'Laca SEO', …, $pt, 'normal', 'high')` cho post type có `pt_{pt}_add_meta_box = on` (registry đã có).
+  Hoạt động ở cả Classic và Gutenberg (khu meta box dưới nội dung). KHÔNG làm sidebar plugin React.
+- Asset riêng: entry webpack `laca-seo-editor` (JS + SCSS), chỉ enqueue ở `post.php`/`post-new.php` của post type đó, version `filemtime`.
+- Tab (giữ thứ tự + nhãn như RM, tiếng Việt):
+  1. **Chung**: SERP preview (desktop/mobile, chuyển qua lại) gồm tiêu đề SEO, URL (permalink), mô tả — render biến bằng AJAX `laca_seo_preview_vars`
+     mở rộng nhận `post_id` (dùng chính bài đang sửa, nội dung chưa lưu lấy từ editor) ; ô **Tiêu đề SEO** + **Mô tả** (variable_text, chèn biến, đếm ký tự
+     như settings, placeholder = mẫu của post type); **Từ khoá chính** dạng tag (Enter/phẩy để thêm, kéo thả thứ tự, tối đa 100 — Pro; từ khoá đầu là chính);
+     **Pillar content** (checkbox); **Điểm SEO** (vòng tròn màu: <50 đỏ, 50–79 cam, ≥80 xanh — đúng ngưỡng RM) + danh sách kiểm tra 4 nhóm (P2.2);
+     **Khoá ngày sửa** (`lock_modified_date`); **Ẩn điểm SEO ngoài frontend** (`dont_show_seo_score`).
+  2. **Nâng cao**: robots (index/noindex, nofollow, noarchive, noimageindex, nosnippet — mặc định theo `pt_{pt}_custom_robots`/global, có nút "Dùng mặc định"),
+     advanced robots (max-snippet, max-video-preview, max-image-preview), canonical URL, breadcrumb title. (Redirect của bài → Phase 4, chưa hiện.)
+  3. **Schema**: placeholder "Phase 3" (chưa có chức năng) — hiện loại schema mặc định của post type đang áp dụng.
+  4. **Mạng xã hội**: Facebook (tiêu đề, mô tả, ảnh qua wp.media — lưu url + id), Twitter (dùng dữ liệu Facebook on/off, card type summary_large_image /
+     summary / app / player, tiêu đề, mô tả, ảnh, + nhóm field player & app hiện theo card type). Preview thẻ chia sẻ (khung FB/X đơn giản).
+  Overlay ảnh (Pro) → Phase 6, không làm.
+- **Primary term**: với mỗi taxonomy hierarchical được chọn ở `pt_{pt}_primary_taxonomy`, chọn term chính (Gutenberg: dropdown trong panel taxonomy như
+  `gutenberg-primary-term.js`; Classic: link "Đặt làm chính" cạnh checkbox term). Lưu `_laca_seo_primary_{tax}`; frontend biến `%primary_taxonomy_terms%`
+  + breadcrumb dùng term này.
+- Lưu: hook `save_post` (bỏ qua autosave/revision), `wp_verify_nonce('laca_seo_save_meta')` + `current_user_can('edit_post', $id)`, sanitize theo kiểu
+  (title/desc: `sanitize_text_field`; canonical: `esc_url_raw`; robots: whitelist; keyword: tối đa 100, trim, bỏ trùng). Giá trị rỗng → `delete_post_meta`
+  (không lưu chuỗi rỗng). Gutenberg: meta box được WP lưu sau request REST — kiểm tra thật bằng Puppeteer.
+- `lock_modified_date`: filter `wp_insert_post_data` giữ `post_modified` cũ khi bật (như RM `class-post-screen.php`).
+- Điểm SEO lưu `_laca_seo_seo_score` (int) qua hidden input do JS điền trước khi submit.
+
+## P2.2 Content analysis (JS, chạy local)
+- Port **toàn bộ** test theo `analyzer.js`, giữ id: Basic SEO (keywordInTitle, keywordInMetaDescription, keywordInPermalink, keywordIn10Percent, keywordInContent,
+  lengthContent), Additional (keywordInSubheadings, keywordInImageAlt, keywordDensity, lengthPermalink, linksHasExternals, linksNotAllExternals, linksHasInternal,
+  keywordNotUsed), Title Readability (titleStartWithKeyword, titleSentiment, titleHasPowerWords, titleHasNumber), Content Readability (contentHasTOC,
+  contentHasShortParagraphs, contentHasAssets). Bỏ `hasContentAI`. Giữ đúng ngưỡng, trọng số điểm, cách tính tổng điểm và cách chuẩn hoá tiếng Việt/dấu
+  (diacritics) như RM. Danh sách power words/sentiment: lấy đúng danh sách RM (kèm bản tiếng Việt nếu RM có theo locale).
+- Bật/tắt test theo ngữ cảnh đúng như RM (page bỏ một số test, term/user chỉ 5 test: keywordInTitle, keywordInMetaDescription, keywordInPermalink,
+  keywordNotUsed, titleStartWithKeyword).
+- `keywordNotUsed`: AJAX kiểm tra từ khoá đã dùng ở bài khác (meta `_laca_seo_focus_keyword`) — prepared query, cache.
+- Nguồn nội dung: Gutenberg `wp.data.select('core/editor')` (title, content, slug, excerpt, featured image), Classic: tinyMCE/textarea; cập nhật realtime
+  (debounce 500ms). Câu thông báo từng test tiếng Việt, ngắn, kèm gợi ý sửa (giống tinh thần note 3 dòng).
+- Xuất `window.lacaSeoAnalysis = { score, results: { [testId]: { ok: bool, score: n } } }` để test so sánh.
+
+## P2.3 Term meta + user meta
+- Term edit screen cho taxonomy có `tax_{tax}_add_meta_box = on`; profile user khi `author_add_meta_box = on` (chỉ người có quyền edit user).
+  Tab Chung (preview SERP, tiêu đề, mô tả, từ khoá, 5 test), Nâng cao (robots, advanced robots, canonical, breadcrumb title), Mạng xã hội.
+  Term có thêm `description_editor` như RM (`rank_math_description_editor`). Lưu qua `edited_{tax}`/`create_{tax}` và `personal_options_update`/`edit_user_profile_update`
+  với nonce + cap (`edit_term`, `edit_user`).
+
+## P2.4 Danh sách bài / term (`Admin/ListScreens/*`)
+- Cột **SEO** (điểm màu + từ khoá chính + badge Pillar/Noindex/Canonical), **Tiêu đề SEO**, **Mô tả SEO** cho post type có metabox; term list có cột tương tự.
+  Ẩn được qua Screen Options. Không query trong vòng lặp (meta đã được WP prime cho list table — kiểm tra bằng Query Monitor hoặc đếm `$wpdb->num_queries`).
+- Bộ lọc dropdown: Điểm tốt (≥80) / Khá (50–79) / Kém (<50) / Chưa có từ khoá / Noindex — dùng `meta_query` chuẩn.
+- Bulk actions: Đặt noindex, index, nofollow, follow, Xoá canonical (Pro) — chạy qua `handle_bulk_actions-edit-{pt}` + nonce mặc định, notice kết quả.
+- Quick edit + Bulk edit (Pro, theo `pt_{pt}_bulk_editing`: off / editing / readonly): tiêu đề SEO, mô tả, robots, từ khoá chính, canonical, primary term.
+  Lưu qua `save_post` dùng chung sanitize của P2.1 (nonce riêng cho inline).
+- (Link counter, schema column → Phase 3/6.)
+
+## P2.5 CSV meta (Pro) — view Import/Export thêm mục "CSV meta bài viết & term"
+- Export: chọn post type/taxonomy → CSV UTF-8 có BOM, cột như RM Pro (`id, object_type, slug, seo_title, seo_description, is_pillar_content,
+  focus_keyword, seo_score, robots, advanced_robots, canonical_url, primary_term, social_facebook_title/description/thumbnail, social_twitter_…`),
+  qua `admin_post` + nonce + cap, `ob_end_clean` trước khi gửi.
+- Import: upload CSV (≤5MB, đuôi .csv), chạy batch AJAX 100 dòng/lượt có progress, chỉ cập nhật cột có trong file, khớp theo `id` (fallback `slug`+`object_type`),
+  báo cáo số dòng cập nhật/lỗi (dòng nào, vì sao). Không tạo bài mới.
+
+## P2.6 Settings đi kèm (đã có field ở Phase 1, giờ nối logic)
+- `frontend_seo_score`, `frontend_seo_score_post_types`, `frontend_seo_score_template`, `frontend_seo_score_position` (General › Khác) + shortcode
+  `[laca_seo_score]` — hiển thị badge điểm SEO ngoài frontend như RM `class-frontend-seo-score.php` (tôn trọng `dont_show_seo_score`). Chỉ chạy khi RM không active.
+
+## P2.7 Nghiệm thu (dán NGUYÊN VĂN output)
+1. **`doc/laca-seo/tools/compare-meta.php` (CLI)**: với 3 bài thật (1 journal, 1 product, 1 page) + 1 term product_cat: backup meta → ghi CÙNG bộ giá trị
+   (title, description, robots noindex+nofollow, advanced robots, canonical, FB/Twitter title-desc-image, breadcrumb title) vào `rank_math_*` và `_laca_seo_*`
+   → so `<head>` RM vs Laca (`?laca_seo_force=1`) → **khôi phục meta gốc**. Kỳ vọng 0 khác (ngoài strip `<p>`).
+2. **`doc/laca-seo/tools/compare-analysis.js` (Puppeteer, cookie tạo bằng PHP-CLI lúc chạy, KHÔNG ghi cứng cookie/mật khẩu vào file)**: mở editor 5 bài thật, đặt cùng
+   focus keyword cho RM và Laca, đọc kết quả RM từ store `wp.data.select('rank-math')` (hoặc object RM tương đương — tìm trong `rank-math-app.js`) và
+   `window.lacaSeoAnalysis` → bảng `testId | RM | Laca`, điểm tổng RM vs Laca. Kỳ vọng mọi test cùng ok/fail, điểm lệch ≤ 1. KHÔNG bấm Lưu bài.
+3. Puppeteer: sửa SEO 1 bài trong Gutenberg + 1 bài Classic (nếu có post type dùng classic) → Lưu → đọc lại meta bằng PHP-CLI đúng giá trị → khôi phục.
+   Quick edit + bulk action noindex trên list → kiểm meta → khôi phục.
+4. CSV: export → sửa 1 ô ở bản sao → import → meta đổi đúng → import lại bản gốc khôi phục.
+5. `php -l`, `yarn build`, `yarn lint` 0 error; editor + list ở 1440/900/390 không tràn, 0 lỗi console (cả editor Gutenberg).
+6. Mọi thay đổi dữ liệu thật trong test PHẢI khôi phục; không tạo bài/term mới; screenshot để NGOÀI theme; không commit/push.

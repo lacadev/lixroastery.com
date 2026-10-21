@@ -225,17 +225,54 @@ class AdminPage
     {
         check_ajax_referer('laca_seo_admin_nonce', 'nonce');
 
-        if (!current_user_can('manage_options')) {
+        if (!current_user_can('edit_posts') && !current_user_can('manage_options')) {
             wp_send_json_error(['message' => 'Không có quyền.'], 403);
         }
 
         $template = sanitize_text_field(wp_unslash($_POST['template'] ?? ''));
         $field_id = sanitize_key(wp_unslash($_POST['field_id'] ?? ''));
+        $post_id  = (int) ($_POST['post_id'] ?? 0);
+        $term_id  = (int) ($_POST['term_id'] ?? 0);
+        $user_id  = (int) ($_POST['user_id'] ?? 0);
 
-        $sample = $this->resolvePreviewObject($field_id);
-        if ($sample === false) {
-            wp_send_json_success(['preview' => '', 'empty' => true]);
-            return;
+        if ($post_id > 0) {
+            $sample = get_post($post_id);
+            if ($sample instanceof \WP_Post) {
+                // Clone so we don't pollute global post object
+                $sample = clone $sample;
+                if (isset($_POST['current_title']) && $_POST['current_title'] !== '') {
+                    $sample->post_title = sanitize_text_field(wp_unslash($_POST['current_title']));
+                }
+                if (isset($_POST['current_excerpt']) && $_POST['current_excerpt'] !== '') {
+                    $sample->post_excerpt = sanitize_textarea_field(wp_unslash($_POST['current_excerpt']));
+                }
+                if (isset($_POST['current_content']) && $_POST['current_content'] !== '') {
+                    $sample->post_content = wp_unslash($_POST['current_content']);
+                }
+            }
+        } elseif ($term_id > 0) {
+            $tax = sanitize_key($_POST['taxonomy'] ?? '');
+            $sample = $tax ? get_term($term_id, $tax) : get_term($term_id);
+            if ($sample instanceof \WP_Term) {
+                $sample = clone $sample;
+                if (isset($_POST['current_title']) && $_POST['current_title'] !== '') {
+                    $sample->name = sanitize_text_field(wp_unslash($_POST['current_title']));
+                }
+                if (isset($_POST['current_excerpt']) && $_POST['current_excerpt'] !== '') {
+                    $sample->description = sanitize_textarea_field(wp_unslash($_POST['current_excerpt']));
+                }
+            }
+        } elseif ($user_id > 0) {
+            $sample = get_userdata($user_id);
+        } else {
+            $sample = $this->resolvePreviewObject($field_id);
+        }
+
+        if ($sample === false || $sample === null && $field_id !== '') {
+            if ($sample === false) {
+                wp_send_json_success(['preview' => '', 'empty' => true]);
+                return;
+            }
         }
 
         $rendered = \App\Features\LacaSeo\Core\Variables::replace($template, $sample);
