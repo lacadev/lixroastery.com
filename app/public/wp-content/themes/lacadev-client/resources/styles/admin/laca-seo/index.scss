@@ -1,13 +1,14 @@
 // ============================================================
 // Laca SEO Admin SCSS Stylesheet
-// Uses --laca-* CSS custom properties and BEM methodology
+// Synced to Chakra UI v3 Design Tokens (--laca-*)
+// ZERO RAW HEX - BEM Methodology
 // ============================================================
 
 .laca-seo-wrap {
     margin: 10px 20px 0 2px;
     max-width: calc(100% - 20px);
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
-    color: var(--laca-text-main, #3d4654);
+    font-family: var(--laca-font);
+    color: var(--laca-fg);
     overflow-x: clip;
     box-sizing: border-box;
 
@@ -21,16 +22,17 @@
     }
 }
 
-// ─── Header ──────────────────────────────────────────────────
+// ─── Header (Page Header style) ──────────────────────────────
 .laca-seo-header {
     display: flex;
+    flex-wrap: wrap;
     justify-content: space-between;
     align-items: center;
-    background: #fff;
-    padding: 16px 24px;
-    border-radius: var(--laca-radius, 8px);
-    border: 1px solid var(--laca-border, #e8ecf0);
-    box-shadow: var(--laca-shadow-sm, 0 1px 3px rgba(0, 0, 0, 0.06));
+    gap: 12px;
+    background: var(--laca-bg);
+    padding: 16px 20px;
+    border-radius: var(--laca-radius-l3);
+    border: 1px solid var(--laca-border);
     margin-bottom: 20px;
 
     &__branding {
@@ -43,43 +45,118 @@
         font-size: 28px;
         width: 28px;
         height: 28px;
-        color: var(--laca-primary, #8aadf7);
+        color: var(--laca-accent);
     }
 
     &__title {
-        font-size: 22px;
-        font-weight: 700;
+        font-size: 20px;
+        font-weight: 600;
         margin: 0;
-        color: var(--laca-text-main, #3d4654);
+        color: var(--laca-fg);
+        line-height: 1.3;
     }
 
-    &__badge {
-        background: var(--laca-primary-lt, #eef3fe);
-        color: #3b82f6;
-        font-size: 11px;
-        font-weight: 700;
-        padding: 3px 8px;
-        border-radius: 9999px;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
+    &__actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        max-width: 100%;
+
+        .button {
+            white-space: normal;
+            max-width: 100%;
+        }
     }
 }
 
-// ─── Top Navigation Bar ──────────────────────────────────────
+// ─── Notices ──────────────────────────────────────────────────
+.laca-seo-notices {
+    margin-bottom: 16px;
+
+    .notice {
+        margin: 8px 0;
+    }
+
+    .laca-alert {
+        margin-bottom: 12px;
+    }
+}
+
+// ─── Main 220px Sidebar & Layout ─────────────────────────────
+.laca-seo-layout {
+    display: flex;
+    gap: 24px;
+    align-items: flex-start;
+    width: 100%;
+
+    @media (max-width: 1023px) {
+        display: block;
+    }
+}
+
+.laca-seo-nav-select-wrap {
+    display: none;
+    margin-bottom: 16px;
+    width: 100%;
+
+    @media (max-width: 1023px) {
+        display: block;
+    }
+
+    .laca-seo-nav-select {
+        width: 100%;
+        height: 40px;
+        border-radius: var(--laca-radius-l2);
+        border: 1px solid var(--laca-border);
+        background-color: var(--laca-bg);
+        color: var(--laca-fg);
+        font-size: 14px;
+        padding: 0 12px;
+    }
+}
+
+.laca-seo-sidebar {
+    width: 220px;
+    flex-shrink: 0;
+    position: sticky;
+    top: 48px;
+
+    @media (max-width: 1023px) {
+        display: none;
+    }
+}
+
 .laca-seo-nav {
-    background: #fff;
-    border-radius: var(--laca-radius, 8px);
-    border: 1px solid var(--laca-border, #e8ecf0);
-    margin-bottom: 24px;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
+    background: var(--laca-bg);
+    border-radius: var(--laca-radius-l3);
+    border: 1px solid var(--laca-border);
+    padding: 12px 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+
+    &__group {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+    }
+
+    &__group-title {
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: var(--laca-fg-subtle);
+        padding: 6px 12px 2px;
+    }
 
     &__list {
-        display: flex;
-        flex-wrap: wrap;
+        list-style: none;
         margin: 0;
         padding: 0;
-        list-style: none;
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
     }
 
     &__item {
@@ -90,42 +167,47 @@
         display: flex;
         align-items: center;
         gap: 8px;
-        padding: 14px 20px;
-        color: var(--laca-text-muted, #8b95a5);
+        padding: 8px 12px;
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--laca-fg-muted);
+        border-radius: var(--laca-radius-l2);
         text-decoration: none;
-        font-weight: 600;
-        font-size: 14px;
-        border-bottom: 3px solid transparent;
-        white-space: nowrap;
-        transition: all 0.2s ease;
+        transition: color 0.15s ease, background-color 0.15s ease;
+
+        .dashicons {
+            font-size: 16px;
+            width: 16px;
+            height: 16px;
+            color: var(--laca-fg-subtle);
+            line-height: 1;
+        }
 
         &:hover {
-            color: var(--laca-primary, #8aadf7);
-            background: var(--laca-bg-soft, #fafbfc);
+            color: var(--laca-fg);
+            background: var(--laca-bg-muted);
+
+            .dashicons {
+                color: var(--laca-fg);
+            }
         }
 
         &.is-active {
-            color: #2563eb;
-            border-bottom-color: #2563eb;
-            background: #fff;
-        }
+            color: var(--laca-accent-fg);
+            background: var(--laca-accent-subtle);
+            font-weight: 600;
 
-        .dashicons {
-            font-size: 18px;
-            width: 18px;
-            height: 18px;
+            .dashicons {
+                color: var(--laca-accent);
+            }
         }
     }
+}
 
-    &__badge {
-        background: #f1f5f9;
-        color: #64748b;
-        font-size: 10px;
-        font-weight: 700;
-        padding: 2px 6px;
-        border-radius: 4px;
-        margin-left: 4px;
-    }
+.laca-seo-content {
+    flex: 1;
+    min-width: 0;
+    width: 100%;
 }
 
 // ─── Stat Cards ──────────────────────────────────────────────
@@ -144,10 +226,10 @@
 }
 
 .laca-seo-stat-card {
-    background: #fff;
+    background: var(--laca-bg);
     padding: 20px;
-    border-radius: var(--laca-radius, 8px);
-    border: 1px solid var(--laca-border, #e8ecf0);
+    border-radius: var(--laca-radius-l3);
+    border: 1px solid var(--laca-border);
     display: flex;
     align-items: center;
     gap: 16px;
@@ -155,7 +237,7 @@
     &__icon {
         width: 48px;
         height: 48px;
-        border-radius: 10px;
+        border-radius: var(--laca-radius-l2);
         display: flex;
         align-items: center;
         justify-content: center;
@@ -168,28 +250,28 @@
         }
 
         &.is-success {
-            background: var(--laca-green-soft, #edf9f2);
-            color: #10b981;
+            background: var(--laca-success-subtle);
+            color: var(--laca-success);
         }
 
         &.is-warning {
-            background: var(--laca-amber-soft, #fef7ea);
-            color: #f59e0b;
+            background: var(--laca-warning-subtle);
+            color: var(--laca-warning);
         }
 
         &.is-danger {
-            background: var(--laca-red-soft, #fef0f0);
-            color: #ef4444;
+            background: var(--laca-danger-subtle);
+            color: var(--laca-danger);
         }
 
         &.is-info {
-            background: var(--laca-blue-soft, #eef3fe);
-            color: #3b82f6;
+            background: var(--laca-accent-subtle);
+            color: var(--laca-accent);
         }
 
         &.is-amber {
-            background: #fffbeb;
-            color: #d97706;
+            background: var(--laca-warning-subtle);
+            color: var(--laca-warning);
         }
     }
 
@@ -200,22 +282,22 @@
 
     &__label {
         font-size: 13px;
-        color: var(--laca-text-muted, #8b95a5);
+        color: var(--laca-fg-muted);
     }
 
     &__value {
         font-size: 18px;
         font-weight: 700;
-        color: var(--laca-text-main, #3d4654);
+        color: var(--laca-fg);
         margin: 2px 0;
     }
 
     small {
         font-size: 12px;
-        color: #94a3b8;
+        color: var(--laca-fg-subtle);
 
         a {
-            color: #3b82f6;
+            color: var(--laca-accent);
             text-decoration: none;
             &:hover { text-decoration: underline; }
         }
@@ -238,28 +320,28 @@
 }
 
 .laca-seo-module-card {
-    background: #fff;
-    border: 1px solid var(--laca-border, #e8ecf0);
-    border-radius: var(--laca-radius, 8px);
+    background: var(--laca-bg);
+    border: 1px solid var(--laca-border);
+    border-radius: var(--laca-radius-l3);
     padding: 18px;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    transition: all 0.2s ease;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
 
     &:hover {
-        border-color: #cbd5e1;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+        border-color: var(--laca-border-muted);
+        box-shadow: var(--laca-shadow-sm);
     }
 
     &.is-active {
-        border-color: #bfdbfe;
-        background: #fbfdff;
+        border-color: var(--laca-accent);
+        background: var(--laca-bg);
     }
 
     &.is-future {
         opacity: 0.75;
-        background: #fafafa;
+        background: var(--laca-bg-subtle);
     }
 
     &__header {
@@ -274,35 +356,36 @@
         font-size: 15px;
         font-weight: 600;
         margin: 0;
-        color: #1e293b;
+        color: var(--laca-fg);
     }
 
     &__desc {
         font-size: 13px;
-        color: #64748b;
+        color: var(--laca-fg-muted);
         margin: 0;
         line-height: 1.5;
     }
 }
 
-// ─── Settings Layout (Sidebar + Content) ─────────────────────
+// ─── Settings Layout (Sub-Tabs Line + Content) ──────────────
 .laca-seo-settings-layout {
     display: flex;
     flex-direction: column;
     gap: 16px;
+    width: 100%;
 }
 
 .laca-seo-search-bar {
-    background: #fff;
-    border: 1px solid var(--laca-border, #e8ecf0);
-    border-radius: var(--laca-radius, 8px);
+    background: var(--laca-bg);
+    border: 1px solid var(--laca-border);
+    border-radius: var(--laca-radius-l2);
     padding: 8px 16px;
     display: flex;
     align-items: center;
     gap: 10px;
 
     .dashicons {
-        color: #94a3b8;
+        color: var(--laca-fg-subtle);
     }
 
     .laca-seo-search-input {
@@ -313,102 +396,84 @@
         outline: none;
         padding: 4px 0;
         background: transparent;
+        color: var(--laca-fg);
     }
 }
 
 .laca-seo-settings-body {
-    display: grid;
-    grid-template-columns: 260px 1fr;
-    gap: 20px;
-    align-items: start;
-    min-width: 0;
-    max-width: 100%;
-
-    @media (max-width: 1199px) {
-        grid-template-columns: 1fr;
-    }
+    display: block;
+    width: 100%;
 }
 
+// Sub-tabs line variant cuộn ngang 1 hàng
 .laca-seo-tabs-sidebar {
-    background: #fff;
-    border: 1px solid var(--laca-border, #e8ecf0);
-    border-radius: var(--laca-radius, 8px);
-    padding: 10px 0;
-    min-width: 0;
-    max-width: 100%;
-    position: sticky;
-    top: 42px;
-    max-height: calc(100vh - 60px);
-    overflow-y: auto;
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    padding: 0;
+    margin-bottom: 16px;
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
 
-    @media (max-width: 1199px) {
-        position: static;
-        max-height: none;
-        overflow-x: auto;
-        -webkit-overflow-scrolling: touch;
+    &::-webkit-scrollbar {
+        display: none;
     }
 }
 
 .laca-seo-tabs-list {
-    list-style: none;
+    display: flex;
+    flex-wrap: nowrap;
+    border-bottom: 1px solid var(--laca-border);
     margin: 0;
     padding: 0;
-    min-width: 0;
-
-    @media (max-width: 1199px) {
-        display: flex;
-        flex-wrap: nowrap;
-        width: max-content;
-    }
+    list-style: none;
+    gap: 4px;
+    width: max-content;
+    min-width: 100%;
 
     &__item {
         margin: 0;
+        flex-shrink: 0;
     }
 
     &__link {
-        display: block;
-        padding: 9px 16px;
+        display: inline-flex;
+        align-items: center;
+        padding: 8px 14px;
         font-size: 13px;
         font-weight: 500;
-        line-height: 1.35;
-        color: #475569;
+        color: var(--laca-fg-muted);
         text-decoration: none;
-        border-left: 3px solid transparent;
-        transition: all 0.15s ease;
-        white-space: normal;
-        word-break: break-word;
-
-        @media (max-width: 1199px) {
-            white-space: nowrap;
-        }
+        border-bottom: 2px solid transparent;
+        white-space: nowrap;
+        transition: color 0.15s ease, border-color 0.15s ease;
 
         &:hover {
-            color: #2563eb;
-            background: #f8fafc;
+            color: var(--laca-fg);
         }
 
         &.is-active {
-            color: #2563eb;
-            background: #eff6ff;
+            color: var(--laca-accent-fg);
+            border-bottom-color: var(--laca-accent);
             font-weight: 600;
-            border-left-color: #2563eb;
-
-            @media (max-width: 1199px) {
-                border-left-color: transparent;
-                border-bottom: 3px solid #2563eb;
-            }
         }
     }
 }
 
+.laca-seo-tabs-content {
+    width: 100%;
+    min-width: 0;
+}
+
 // ─── Card & Form Fields ──────────────────────────────────────
 .laca-seo-card {
-    background: #fff;
-    border: 1px solid var(--laca-border, #e8ecf0);
-    border-radius: var(--laca-radius, 8px);
+    background: var(--laca-bg);
+    border: 1px solid var(--laca-border);
+    border-radius: var(--laca-radius-l3);
     padding: 24px;
     margin-bottom: 24px;
-    box-shadow: var(--laca-shadow-sm, 0 1px 3px rgba(0, 0, 0, 0.06));
     max-width: 100%;
     min-width: 0;
     box-sizing: border-box;
@@ -420,21 +485,21 @@
     &__header {
         margin-bottom: 20px;
         padding-bottom: 14px;
-        border-bottom: 1px solid #f1f5f9;
+        border-bottom: 1px solid var(--laca-border);
         max-width: 100%;
         min-width: 0;
     }
 
     &__title {
-        font-size: 18px;
-        font-weight: 700;
+        font-size: 16px;
+        font-weight: 600;
         margin: 0 0 6px 0;
-        color: #1e293b;
+        color: var(--laca-fg);
     }
 
     &__subtitle {
         font-size: 13px;
-        color: #64748b;
+        color: var(--laca-fg-muted);
         margin: 0;
     }
 }
@@ -444,7 +509,7 @@
     grid-template-columns: 320px 1fr;
     gap: 24px;
     padding: 18px 0;
-    border-bottom: 1px solid #f1f5f9;
+    border-bottom: 1px solid var(--laca-border);
     align-items: start;
     max-width: 100%;
     min-width: 0;
@@ -453,7 +518,6 @@
         border-bottom: none;
     }
 
-    // Mẫu tiêu đề/mô tả/code: label trên, ô full width dưới (xem Renderer::render).
     &--stack {
         grid-template-columns: 1fr;
         gap: 10px;
@@ -498,8 +562,8 @@
 
 .laca-seo-field-label {
     font-size: 14px;
-    font-weight: 600;
-    color: #1e293b;
+    font-weight: 500;
+    color: var(--laca-fg);
     line-height: 1.4;
 }
 
@@ -509,7 +573,7 @@
         background: none;
         border: none;
         padding: 0;
-        color: #64748b;
+        color: var(--laca-fg-muted);
         font-size: 12px;
         cursor: pointer;
         display: inline-flex;
@@ -518,7 +582,7 @@
         text-decoration: underline;
 
         &:hover {
-            color: #2563eb;
+            color: var(--laca-accent);
         }
 
         .dashicons {
@@ -529,25 +593,25 @@
     }
 
     &__content {
-        background: #f8fafc;
-        border: 1px solid #e2e8f0;
-        border-radius: 6px;
+        background: var(--laca-bg-subtle);
+        border: 1px solid var(--laca-border);
+        border-radius: var(--laca-radius-l2);
         padding: 10px 14px;
         margin-top: 8px;
         font-size: 12px;
         line-height: 1.5;
-        color: #475569;
+        color: var(--laca-fg-muted);
     }
 
     &__item {
         margin: 4px 0;
 
         strong {
-            color: #1e293b;
+            color: var(--laca-fg);
         }
 
         &--i18n {
-            color: #2563eb;
+            color: var(--laca-accent-fg);
             margin-top: 6px;
         }
     }
@@ -557,8 +621,8 @@
 .laca-seo-switch {
     position: relative;
     display: inline-block;
-    width: 44px;
-    height: 24px;
+    width: 36px;
+    height: 20px;
     cursor: pointer;
 
     input {
@@ -567,15 +631,15 @@
         height: 0;
 
         &:checked + .laca-seo-switch__slider {
-            background-color: #2563eb;
+            background-color: var(--laca-accent);
 
             &:before {
-                transform: translateX(20px);
+                transform: translateX(16px);
             }
         }
 
         &:focus + .laca-seo-switch__slider {
-            box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
+            box-shadow: 0 0 0 2px var(--laca-accent-subtle);
         }
     }
 
@@ -585,21 +649,21 @@
         left: 0;
         right: 0;
         bottom: 0;
-        background-color: #cbd5e1;
-        transition: .2s;
-        border-radius: 24px;
+        background-color: var(--laca-bg-emphasized);
+        transition: background-color 0.2s ease;
+        border-radius: var(--laca-radius-full);
 
         &:before {
             position: absolute;
             content: "";
-            height: 18px;
-            width: 18px;
+            height: 14px;
+            width: 14px;
             left: 3px;
             bottom: 3px;
-            background-color: white;
-            transition: .2s;
-            border-radius: 50%;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+            background-color: var(--laca-bg);
+            transition: transform 0.2s ease;
+            border-radius: var(--laca-radius-full);
+            box-shadow: var(--laca-shadow-xs);
         }
     }
 }
@@ -617,38 +681,40 @@
         gap: 6px;
         font-size: 13px;
         cursor: pointer;
-        color: #334155;
+        color: var(--laca-fg);
     }
 }
 
-// ─── Sticky Bottom Actions ───────────────────────────────────
+// ─── Sticky Action Bar (.laca-actionbar style) ───────────────
 .laca-seo-sticky-footer {
     position: sticky;
     bottom: 0;
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(8px);
-    border-top: 1px solid var(--laca-border, #e8ecf0);
-    padding: 14px 24px;
-    margin: 20px -24px -24px -24px;
-    border-radius: 0 0 var(--laca-radius, 8px) var(--laca-radius, 8px);
+    background: var(--laca-bg);
+    border-top: 1px solid var(--laca-border);
+    box-shadow: var(--laca-shadow-md);
+    padding: 12px 20px;
+    margin: 24px 0 0 0;
+    width: 100%;
+    max-width: 100%;
+    border-radius: var(--laca-radius-l3);
     z-index: 10;
-    max-width: 100vw;
     box-sizing: border-box;
 
     @media (max-width: 782px) {
         padding: 12px 16px;
-        margin: 16px -16px -16px -16px;
     }
 
     &__inner {
         display: flex;
         align-items: center;
-        gap: 16px;
+        justify-content: flex-end;
+        gap: 12px;
+        flex-wrap: wrap;
+        width: 100%;
 
         @media (max-width: 480px) {
             flex-direction: column;
             align-items: stretch;
-            width: 100%;
 
             button {
                 width: 100% !important;
@@ -659,9 +725,8 @@
 }
 
 .laca-seo-save-btn {
-    height: 40px !important;
-    line-height: 38px !important;
-    padding: 0 24px !important;
+    height: 36px !important;
+    padding: 0 16px !important;
     font-size: 14px !important;
     display: inline-flex !important;
     align-items: center !important;
@@ -671,16 +736,15 @@
     .dashicons {
         margin: 0 !important;
         line-height: 1 !important;
-        font-size: 18px !important;
-        width: 18px !important;
-        height: 18px !important;
+        font-size: 16px !important;
+        width: 16px !important;
+        height: 16px !important;
         display: inline-block !important;
     }
 }
 
 .laca-seo-reset-btn {
-    height: 40px !important;
-    line-height: 38px !important;
+    height: 36px !important;
     display: inline-flex !important;
     align-items: center !important;
     justify-content: center !important;
@@ -738,10 +802,10 @@
     top: calc(100% + 4px);
     width: 320px;
     max-height: 360px;
-    background: #fff;
-    border: 1px solid var(--laca-border, #e8ecf0);
-    border-radius: var(--laca-radius, 8px);
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.12);
+    background: var(--laca-bg);
+    border: 1px solid var(--laca-border);
+    border-radius: var(--laca-radius-l3);
+    box-shadow: var(--laca-shadow-lg);
     z-index: 100;
     display: flex;
     flex-direction: column;
@@ -760,13 +824,15 @@
 
 .laca-seo-var-search {
     border: none !important;
-    border-bottom: 1px solid #e2e8f0 !important;
+    border-bottom: 1px solid var(--laca-border) !important;
     border-radius: 0 !important;
     padding: 8px 12px !important;
     font-size: 13px !important;
     outline: none !important;
     box-shadow: none !important;
     width: 100% !important;
+    background: var(--laca-bg) !important;
+    color: var(--laca-fg) !important;
 }
 
 .laca-seo-var-list {
@@ -779,11 +845,11 @@
     &__item {
         padding: 8px 12px;
         cursor: pointer;
-        border-bottom: 1px solid #f8fafc;
-        transition: background 0.15s ease;
+        border-bottom: 1px solid var(--laca-border);
+        transition: background-color 0.15s ease;
 
         &:hover {
-            background: #eff6ff;
+            background: var(--laca-accent-subtle);
         }
 
         &:last-child {
@@ -793,115 +859,118 @@
 
     &__tag {
         font-size: 13px;
-        color: #1e293b;
+        color: var(--laca-fg);
 
         code {
-            color: #2563eb;
-            background: #eff6ff;
+            color: var(--laca-accent-fg);
+            background: var(--laca-accent-subtle);
             padding: 1px 4px;
-            border-radius: 3px;
+            border-radius: var(--laca-radius-xs);
             font-size: 12px;
         }
     }
 
     &__desc {
         font-size: 11px;
-        color: #64748b;
+        color: var(--laca-fg-muted);
         margin-top: 2px;
     }
 
     &__example {
         font-size: 11px;
-        color: #94a3b8;
+        color: var(--laca-fg-subtle);
         margin-top: 2px;
     }
 
     &__empty {
         padding: 16px;
         text-align: center;
-        color: #94a3b8;
+        color: var(--laca-fg-subtle);
         font-size: 12px;
     }
 }
 
 .laca-seo-var-counter {
     font-size: 12px;
-    color: #64748b;
+    color: var(--laca-fg-muted);
     display: inline-flex;
     align-items: center;
     gap: 4px;
 
     &.is-good {
-        color: #16a34a;
+        color: var(--laca-success);
         font-weight: 600;
     }
 
     &.is-warning {
-        color: #d97706;
+        color: var(--laca-warning);
     }
 
     &.is-danger {
-        color: #dc2626;
+        color: var(--laca-danger);
         font-weight: 600;
     }
 }
 
 .laca-seo-var-preview {
     font-size: 12px;
-    background: #f8fafc;
-    border: 1px dashed #cbd5e1;
-    border-radius: 4px;
+    background: var(--laca-bg-subtle);
+    border: 1px dashed var(--laca-border);
+    border-radius: var(--laca-radius-sm);
     padding: 6px 10px;
-    color: #334155;
+    color: var(--laca-fg);
     word-break: break-all;
 
     &__label {
         font-weight: 600;
-        color: #64748b;
+        color: var(--laca-fg-muted);
         margin-right: 4px;
     }
 
     &__text {
-        color: #0f172a;
+        color: var(--laca-fg);
     }
 }
 
 // ─── 2-Column Grid for Import/Export ─────────────────────────
 .laca-seo-grid-2col {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 24px;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
 
-    @media (max-width: 900px) {
-        grid-template-columns: 1fr;
+    @media (max-width: 1199px) {
+        grid-template-columns: minmax(0, 1fr);
     }
 }
 
 .laca-seo-badge {
     display: inline-block;
     padding: 2px 8px;
-    border-radius: 4px;
+    border-radius: var(--laca-radius-sm);
     font-size: 11px;
     font-weight: 600;
 
     &--core {
-        background: #f1f5f9;
-        color: #475569;
+        background: var(--laca-bg-muted);
+        color: var(--laca-fg-muted);
     }
 
     &--subtle {
-        background: #fef3c7;
-        color: #b45309;
+        background: var(--laca-warning-subtle);
+        color: var(--laca-warning);
     }
 }
 
 // ─── Search Console Google Cloud Preparation ─────────────────
 .laca-seo-prep-details {
     margin: 20px 0;
-    background: #f8fafc;
-    border: 1px solid var(--laca-border, #e2e8f0);
-    border-left: 4px solid #3b82f6;
-    border-radius: var(--laca-radius, 8px);
+    background: var(--laca-bg-subtle);
+    border: 1px solid var(--laca-border);
+    border-left: 4px solid var(--laca-accent);
+    border-radius: var(--laca-radius-l3);
     overflow: hidden;
 
     &__summary {
@@ -909,18 +978,19 @@
         font-size: 14px;
         font-weight: 600;
         cursor: pointer;
-        background: #f1f5f9;
+        background: var(--laca-bg-muted);
         display: flex;
         align-items: center;
         gap: 8px;
         user-select: none;
+        color: var(--laca-fg);
 
         .dashicons {
-            color: #3b82f6;
+            color: var(--laca-accent);
         }
 
         &:hover {
-            background: #e2e8f0;
+            background: var(--laca-bg-emphasized);
         }
     }
 
@@ -955,11 +1025,222 @@
 .laca-seo-code-badge {
     display: inline-block;
     padding: 4px 10px;
-    background: #e2e8f0;
-    color: #1e293b;
-    border-radius: 4px;
+    background: var(--laca-bg-muted);
+    color: var(--laca-fg);
+    border-radius: var(--laca-radius-sm);
     font-weight: 600;
     font-size: 12px;
     word-break: break-all;
 }
+
+// ─── Table & Responsive Container ───────────────────────────
+.laca-seo-table-responsive {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    max-width: 100%;
+    width: 100%;
+    margin: 16px 0;
+}
+
+.laca-seo-handbook-item {
+    border: 1px solid var(--laca-border);
+    border-radius: var(--laca-radius-md);
+    padding: 12px 16px;
+    margin-bottom: 12px;
+    background: var(--laca-bg);
+
+    summary {
+        font-weight: 600;
+        font-size: 15px;
+        cursor: pointer;
+        color: var(--laca-fg);
+    }
+
+    &__content {
+        margin-top: 12px;
+        line-height: 1.6;
+        color: var(--laca-fg-muted);
+    }
+}
+
+.laca-seo-sitemap-banner {
+    background: var(--laca-bg);
+    border-left: 4px solid var(--laca-accent);
+    padding: 12px 16px;
+    margin-bottom: 16px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    border: 1px solid var(--laca-border);
+    border-left-width: 4px;
+    border-radius: 0 var(--laca-radius-md) var(--laca-radius-md) 0;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+
+    &--green {
+        border-left-color: var(--laca-success);
+    }
+
+    > div {
+        max-width: 100%;
+    }
+}
+
+.laca-seo-icon-status--ok {
+    color: var(--laca-success);
+    font-size: 20px;
+}
+
+.laca-seo-icon-status--warn {
+    color: var(--laca-warning);
+    font-size: 20px;
+}
+
+.laca-seo-list-disc {
+    list-style: disc;
+    margin-left: 24px;
+    color: var(--laca-fg);
+}
+
+.laca-seo-callout {
+    background: var(--laca-bg-subtle);
+    border-left: 4px solid var(--laca-accent);
+    padding: 10px 14px;
+    margin: 16px 0;
+    border-radius: 0 var(--laca-radius-sm) var(--laca-radius-sm) 0;
+    color: var(--laca-fg-muted);
+}
+
+.laca-seo-btn-group {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.laca-seo-checkbox-row {
+    display: block;
+    margin: 6px 0;
+    color: var(--laca-fg);
+}
+
+.laca-seo-file-upload-wrap {
+    margin: 16px 0;
+}
+
+.laca-seo-card--info {
+    border: 2px solid var(--laca-accent);
+    background: var(--laca-accent-subtle);
+
+    .laca-seo-card__title {
+        color: var(--laca-accent-fg);
+
+        .dashicons {
+            color: var(--laca-accent);
+            vertical-align: middle;
+        }
+    }
+}
+
+.laca-seo-box {
+    background: var(--laca-bg-subtle);
+    border: 1px solid var(--laca-border);
+    border-radius: var(--laca-radius-md);
+    padding: 16px;
+    min-width: 0;
+    max-width: 100%;
+    box-sizing: border-box;
+    overflow-x: clip;
+
+    &__title {
+        margin-top: 0;
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--laca-fg);
+    }
+}
+
+.laca-seo-select-full {
+    width: 100%;
+    margin-top: 6px;
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+.laca-seo-file-input,
+input[type="file"] {
+    margin-bottom: 12px;
+    display: block;
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+.laca-seo-progress-box {
+    margin-top: 14px;
+}
+
+.laca-seo-progress-text {
+    font-size: 12px;
+    margin: 6px 0 0;
+    color: var(--laca-fg-muted);
+}
+
+.laca-seo-log-box {
+    margin-top: 12px;
+    font-size: 12px;
+    max-height: 140px;
+    overflow-y: auto;
+    background: var(--laca-bg);
+    padding: 8px;
+    border: 1px solid var(--laca-border);
+    border-radius: var(--laca-radius-sm);
+    color: var(--laca-fg);
+}
+
+.laca-seo-form-limit {
+    max-width: 600px;
+}
+
+.laca-seo-header-flex {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.laca-seo-form-inline {
+    display: inline;
+    margin: 0;
+}
+
+.laca-seo-title-spaced {
+    margin-top: 30px;
+    font-size: 15px;
+}
+
+.col-status { width: 44px; text-align: center; }
+.col-title { width: 280px; }
+.col-action { width: 160px; text-align: right; }
+.col-click { width: 100px; }
+.col-imp { width: 120px; }
+.col-ctr { width: 90px; }
+.col-pos { width: 90px; }
+.col-time { width: 25%; }
+.col-reason { width: 45%; }
+.col-backup-actions { width: 30%; }
+.laca-seo-sitemap-link {
+    display: block;
+    margin-top: 4px;
+    font-family: monospace;
+    font-size: 13px;
+    color: var(--laca-accent-fg);
+    word-break: break-all;
+    overflow-wrap: anywhere;
+    max-width: 100%;
+}
+.laca-seo-handbook-item__action { margin-top: 12px; }
 

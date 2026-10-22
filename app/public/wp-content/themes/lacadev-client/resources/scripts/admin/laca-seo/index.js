@@ -13,7 +13,28 @@ document.addEventListener('DOMContentLoaded', () => {
     initCodeReset();
     initGroupRepeaters();
     initVariableFields();
+    initAutoDismiss();
 });
+
+/**
+ * 0. Auto-dismiss save notice after 4 seconds
+ */
+function initAutoDismiss() {
+    const alerts = document.querySelectorAll('.laca-seo-auto-dismiss');
+    if (!alerts.length) return;
+    setTimeout(() => {
+        alerts.forEach((alert) => {
+            alert.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+            alert.style.opacity = '0';
+            alert.style.transform = 'translateY(-10px)';
+            setTimeout(() => {
+                if (alert.parentNode) {
+                    alert.parentNode.removeChild(alert);
+                }
+            }, 500);
+        });
+    }, 4000);
+}
 
 /**
  * 1. Notes Collapsible Toggle (3-line notes)

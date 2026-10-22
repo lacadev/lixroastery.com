@@ -20,15 +20,15 @@ $pendingImport = get_transient(ImportExportHandler::PENDING_IMPORT_TRANSIENT . $
         $payload = $pendingImport['payload'];
         $sections = array_keys($payload['data'] ?? []);
         ?>
-        <div class="laca-seo-card" style="border: 2px solid #2271b1; background: #f0f6fc; margin-bottom: 24px;">
-            <h2 class="laca-seo-card__title" style="color:#0a4b78;">
-                <span class="dashicons dashicons-warning" style="vertical-align:middle;color:#2271b1;"></span>
+        <div class="laca-seo-card laca-seo-card--info">
+            <h2 class="laca-seo-card__title">
+                <span class="dashicons dashicons-warning" aria-hidden="true"></span>
                 Xác nhận ghi đè cấu hình từ tệp JSON
             </h2>
             <p>Tệp tải lên: <strong><?php echo esc_html($pendingImport['filename'] ?? ''); ?></strong> (Phiên bản: <?php echo esc_html($payload['version'] ?? '1.0.0'); ?> - Site nguồn: <code><?php echo esc_html($payload['site_url'] ?? ''); ?></code>)</p>
             
             <p><strong>Các phần cài đặt sẽ được ghi đè:</strong></p>
-            <ul style="list-style:disc; margin-left:24px;">
+            <ul class="laca-seo-list-disc">
                 <?php if (in_array('general', $sections, true)): ?>
                     <li><strong>Cài đặt chung (General):</strong> <?php echo count($payload['data']['general'] ?? []); ?> trường cài đặt</li>
                 <?php endif; ?>
@@ -46,8 +46,8 @@ $pendingImport = get_transient(ImportExportHandler::PENDING_IMPORT_TRANSIENT . $
                 <?php endif; ?>
             </ul>
 
-            <div style="background:#fff; border-left:4px solid #72aee6; padding:10px 14px; margin:16px 0;">
-                <p style="margin:0;">
+            <div class="laca-seo-callout">
+                <p>
                     <?php if (!empty($pendingImport['replace_domain'])): ?>
                         ✓ Tự động đổi domain nguồn cũ sang domain website này: <code><?php echo esc_html(get_home_url()); ?></code><br>
                     <?php endif; ?>
@@ -58,7 +58,7 @@ $pendingImport = get_transient(ImportExportHandler::PENDING_IMPORT_TRANSIENT . $
                 </p>
             </div>
 
-            <div style="display:flex; gap:12px; align-items:center;">
+            <div class="laca-seo-btn-group">
                 <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>">
                     <?php wp_nonce_field('laca_seo_confirm_import_action', 'laca_seo_confirm_import_nonce'); ?>
                     <input type="hidden" name="action" value="laca_seo_confirm_import">
@@ -87,13 +87,13 @@ $pendingImport = get_transient(ImportExportHandler::PENDING_IMPORT_TRANSIENT . $
                 <?php wp_nonce_field('laca_seo_export_action', 'laca_seo_export_nonce'); ?>
                 <input type="hidden" name="action" value="laca_seo_export">
 
-                <fieldset class="laca-seo-fieldset" style="margin: 16px 0;">
+                <fieldset class="laca-seo-fieldset">
                     <legend><strong>Chọn các phần cần xuất:</strong></legend>
-                    <label style="display:block;margin:6px 0;"><input type="checkbox" name="export_sections[]" value="general" checked> Cài đặt chung (General)</label>
-                    <label style="display:block;margin:6px 0;"><input type="checkbox" name="export_sections[]" value="titles" checked> Tiêu đề & Thẻ Meta (Titles & Meta)</label>
-                    <label style="display:block;margin:6px 0;"><input type="checkbox" name="export_sections[]" value="sitemap" checked> Cấu hình Sitemap</label>
-                    <label style="display:block;margin:6px 0;"><input type="checkbox" name="export_sections[]" value="instant_indexing" checked> Cấu hình Instant Indexing</label>
-                    <label style="display:block;margin:6px 0;"><input type="checkbox" name="export_sections[]" value="modules" checked> Trạng thái các Modules</label>
+                    <label class="laca-seo-checkbox-row"><input type="checkbox" name="export_sections[]" value="general" checked> Cài đặt chung (General)</label>
+                    <label class="laca-seo-checkbox-row"><input type="checkbox" name="export_sections[]" value="titles" checked> Tiêu đề & Thẻ Meta (Titles & Meta)</label>
+                    <label class="laca-seo-checkbox-row"><input type="checkbox" name="export_sections[]" value="sitemap" checked> Cấu hình Sitemap</label>
+                    <label class="laca-seo-checkbox-row"><input type="checkbox" name="export_sections[]" value="instant_indexing" checked> Cấu hình Instant Indexing</label>
+                    <label class="laca-seo-checkbox-row"><input type="checkbox" name="export_sections[]" value="modules" checked> Trạng thái các Modules</label>
                 </fieldset>
 
                 <button type="submit" class="button button-primary">
@@ -111,24 +111,24 @@ $pendingImport = get_transient(ImportExportHandler::PENDING_IMPORT_TRANSIENT . $
                 <?php wp_nonce_field('laca_seo_import_action', 'laca_seo_import_nonce'); ?>
                 <input type="hidden" name="action" value="laca_seo_upload_import">
 
-                <div style="margin: 16px 0;">
+                <div class="laca-seo-file-upload-wrap">
                     <input type="file" name="import_file" accept=".json" required>
                     <p class="description">Chỉ chấp nhận tệp <code>.json</code> tối đa 2MB.</p>
                 </div>
 
-                <fieldset class="laca-seo-fieldset" style="margin: 16px 0;">
+                <fieldset class="laca-seo-fieldset">
                     <legend><strong>Tuỳ chọn an toàn khi nhập:</strong></legend>
-                    <label style="display:block;margin:6px 0;">
+                    <label class="laca-seo-checkbox-row">
                         <input type="checkbox" name="replace_domain" value="1" checked>
                         Tự động thay đổi URL trang nguồn cũ thành URL website này (<?php echo esc_html(get_home_url()); ?>)
                     </label>
-                    <label style="display:block;margin:6px 0;">
+                    <label class="laca-seo-checkbox-row">
                         <input type="checkbox" name="preserve_credentials" value="1" checked>
                         Giữ nguyên mã xác minh Google Search Console & GA ID của site này
                     </label>
                 </fieldset>
 
-                <p class="description" style="margin-bottom:14px;"><em>Hệ thống sẽ kiểm tra tệp và hiển thị màn hình xác nhận trước khi ghi đè.</em></p>
+                <p class="description"><em>Hệ thống sẽ kiểm tra tệp và hiển thị màn hình xác nhận trước khi ghi đè.</em></p>
 
                 <button type="submit" class="button button-primary">
                     <span class="dashicons dashicons-upload"></span> Tải lên & Xem trước cấu hình
@@ -253,24 +253,24 @@ $pendingImport = get_transient(ImportExportHandler::PENDING_IMPORT_TRANSIENT . $
     </div>
 
     <!-- CSV Meta Import & Export (Pro) -->
-    <div class="laca-seo-card" style="margin-top: 24px;">
+    <div class="laca-seo-card">
         <h2 class="laca-seo-card__title">
-            <span class="dashicons dashicons-media-spreadsheet" style="vertical-align:middle;color:#2563eb;"></span>
+            <span class="dashicons dashicons-media-spreadsheet" aria-hidden="true"></span>
             CSV Meta Bài viết & Danh mục
         </h2>
         <p>Xuất và nhập hàng loạt tiêu đề SEO, mô tả, từ khoá chính, robots, canonical URL của bài viết hoặc danh mục thông qua tệp tin CSV (chuẩn UTF-8 có BOM).</p>
 
-        <div class="laca-seo-grid-2col" style="margin-top: 16px;">
+        <div class="laca-seo-grid-2col">
             <!-- CSV Export Box -->
-            <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 16px;">
-                <h3 style="margin-top:0; font-size:14px; font-weight:600;">Xuất tệp CSV</h3>
+            <div class="laca-seo-box">
+                <h3 class="laca-seo-box__title">Xuất tệp CSV</h3>
                 <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>">
                     <?php wp_nonce_field('laca_seo_csv_export_action', 'laca_seo_csv_export_nonce'); ?>
                     <input type="hidden" name="action" value="laca_seo_csv_export">
 
                     <p>
                         <label for="csv_object_type"><strong>Chọn loại nội dung:</strong></label><br>
-                        <select name="csv_object_type" id="csv_object_type" style="width: 100%; margin-top: 6px;">
+                        <select name="csv_object_type" id="csv_object_type" class="laca-seo-select-full">
                             <optgroup label="Loại bài viết (Post Types)">
                                 <?php foreach (\App\Features\LacaSeo\Core\Helper::getAccessiblePostTypes() as $slug => $ptObj): ?>
                                     <option value="<?php echo esc_attr($slug); ?>"><?php echo esc_html($ptObj->labels->name ?: $slug); ?> (<?php echo esc_html($slug); ?>)</option>
@@ -291,23 +291,23 @@ $pendingImport = get_transient(ImportExportHandler::PENDING_IMPORT_TRANSIENT . $
             </div>
 
             <!-- CSV Import Box -->
-            <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 16px;">
-                <h3 style="margin-top:0; font-size:14px; font-weight:600;">Nhập tệp CSV</h3>
-                <p style="font-size:12px; color:#64748b;">Hỗ trợ tệp .csv (≤5MB). Tự động khớp theo cột <code>id</code> (hoặc <code>slug</code> + <code>object_type</code>). Không tạo bài mới.</p>
+            <div class="laca-seo-box">
+                <h3 class="laca-seo-box__title">Nhập tệp CSV</h3>
+                <p class="description">Hỗ trợ tệp .csv (≤5MB). Tự động khớp theo cột <code>id</code> (hoặc <code>slug</code> + <code>object_type</code>). Không tạo bài mới.</p>
 
-                <input type="file" id="laca_csv_file_input" accept=".csv" style="margin-bottom: 12px; display:block;">
+                <input type="file" id="laca_csv_file_input" accept=".csv" class="laca-seo-file-input">
                 <button type="button" class="button button-secondary" id="laca_csv_start_import_btn">
                     <span class="dashicons dashicons-upload"></span> Bắt đầu nhập dữ liệu CSV
                 </button>
 
-                <div id="laca_csv_import_progress" style="display:none; margin-top:14px;">
-                    <div style="background:#e2e8f0; border-radius:4px; height:10px; overflow:hidden;">
-                        <div id="laca_csv_progress_bar" style="background:#2563eb; width:0%; height:100%; transition:width 0.2s;"></div>
+                <div id="laca_csv_import_progress" class="laca-seo-progress-box" style="display:none;">
+                    <div class="laca-progress">
+                        <div id="laca_csv_progress_bar" class="laca-progress__bar" style="width:0%;"></div>
                     </div>
-                    <p id="laca_csv_progress_text" style="font-size:12px; margin:6px 0 0; color:#334155;">Đang chuẩn bị...</p>
+                    <p id="laca_csv_progress_text" class="laca-seo-progress-text">Đang chuẩn bị...</p>
                 </div>
 
-                <div id="laca_csv_import_log" style="display:none; margin-top:12px; font-size:12px; max-height:140px; overflow-y:auto; background:#fff; padding:8px; border:1px solid #cbd5e1; border-radius:4px;"></div>
+                <div id="laca_csv_import_log" class="laca-seo-log-box" style="display:none;"></div>
             </div>
         </div>
     </div>
@@ -447,20 +447,20 @@ $pendingImport = get_transient(ImportExportHandler::PENDING_IMPORT_TRANSIENT . $
     </script>
 
     <!-- Backups List -->
-    <div class="laca-seo-card" style="margin-top: 24px;">
+    <div class="laca-seo-card">
         <h2 class="laca-seo-card__title">Lịch sử sao lưu tự động (Tối đa 5 bản gần nhất)</h2>
         <p>Mỗi khi nhập dữ liệu hoặc chuyển từ Rank Math, một bản snapshot sẽ được lưu lại để có thể khôi phục tức thì khi cần.</p>
 
         <?php if (empty($backups)): ?>
             <p><em>Chưa có bản sao lưu nào được ghi nhận.</em></p>
         <?php else: ?>
-            <div class="laca-seo-table-responsive" style="overflow-x: auto; -webkit-overflow-scrolling: touch; max-width: 100%;">
+            <div class="laca-seo-table-responsive">
             <table class="widefat fixed striped">
                 <thead>
                     <tr>
-                        <th style="width: 25%;">Thời gian</th>
-                        <th style="width: 45%;">Lý do sao lưu</th>
-                        <th style="width: 30%;">Hành động</th>
+                        <th class="col-time">Thời gian</th>
+                        <th class="col-reason">Lý do sao lưu</th>
+                        <th class="col-backup-actions">Hành động</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -469,20 +469,20 @@ $pendingImport = get_transient(ImportExportHandler::PENDING_IMPORT_TRANSIENT . $
                             <td><?php echo esc_html($b['time'] ?? ''); ?></td>
                             <td><?php echo esc_html($b['reason'] ?? ''); ?></td>
                             <td>
-                                <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" style="display:inline;" onsubmit="return confirm('Bạn có chắc muốn khôi phục lại bản sao lưu này?');">
+                                <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" class="laca-seo-form-inline" onsubmit="return confirm('Bạn có chắc muốn khôi phục lại bản sao lưu này?');">
                                     <?php wp_nonce_field('laca_seo_backup_action', 'laca_seo_backup_nonce'); ?>
                                     <input type="hidden" name="action" value="laca_seo_restore_backup">
                                     <input type="hidden" name="backup_id" value="<?php echo esc_attr($b['id'] ?? ''); ?>">
                                     <button type="submit" class="button button-small button-primary">Khôi phục</button>
                                 </form>
-                                <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" style="display:inline; margin-left:4px;">
+                                <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" class="laca-seo-form-inline">
                                     <?php wp_nonce_field('laca_seo_backup_action', 'laca_seo_backup_nonce'); ?>
                                     <input type="hidden" name="action" value="laca_seo_download_backup">
                                     <input type="hidden" name="backup_id" value="<?php echo esc_attr($b['id'] ?? ''); ?>">
                                     <button type="submit" class="button button-small button-secondary">Tải JSON</button>
                                 </form>
 
-                                <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" style="display:inline; margin-left:4px;" onsubmit="return confirm('Bạn có chắc muốn xoá bản sao lưu này?');">
+                                <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" class="laca-seo-form-inline" onsubmit="return confirm('Bạn có chắc muốn xoá bản sao lưu này?');">
                                     <?php wp_nonce_field('laca_seo_backup_action', 'laca_seo_backup_nonce'); ?>
                                     <input type="hidden" name="action" value="laca_seo_delete_backup">
                                     <input type="hidden" name="backup_id" value="<?php echo esc_attr($b['id'] ?? ''); ?>">

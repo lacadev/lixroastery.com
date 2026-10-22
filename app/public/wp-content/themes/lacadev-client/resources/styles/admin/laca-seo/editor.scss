@@ -4,19 +4,19 @@
  */
 
 .laca-seo-metabox-wrapper {
-  --laca-seo-primary: #2563eb;
-  --laca-seo-success: #10b981;
-  --laca-seo-warning: #f59e0b;
-  --laca-seo-danger: #ef4444;
-  --laca-seo-border: #e2e8f0;
-  --laca-seo-bg: #f8fafc;
-  --laca-seo-text: #1e293b;
-  --laca-seo-muted: #64748b;
+  --laca-seo-primary: var(--laca-accent);
+  --laca-seo-success: var(--laca-success);
+  --laca-seo-warning: var(--laca-warning);
+  --laca-seo-danger: var(--laca-danger);
+  --laca-seo-border: var(--laca-border);
+  --laca-seo-bg: var(--laca-bg-subtle);
+  --laca-seo-text: var(--laca-fg);
+  --laca-seo-muted: var(--laca-fg-muted);
 
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, sans-serif;
   color: var(--laca-seo-text);
   margin: -6px -12px -12px;
-  background: #ffffff;
+  background: var(--laca-bg);
 
   /* Tabs Nav */
   .laca-seo-tabs-nav {
@@ -53,15 +53,15 @@
       &.active {
         color: var(--laca-seo-primary);
         border-bottom-color: var(--laca-seo-primary);
-        background: #ffffff;
+        background: var(--laca-bg);
       }
 
       .laca-seo-tab-score-badge {
         font-size: 11px;
         padding: 2px 6px;
         border-radius: 10px;
-        background: #e2e8f0;
-        color: #334155;
+        background: var(--laca-border);
+        color: var(--laca-fg);
         font-weight: 700;
       }
     }
@@ -99,7 +99,7 @@
 
       .laca-seo-serp-devices {
         display: inline-flex;
-        background: #e2e8f0;
+        background: var(--laca-border);
         padding: 2px;
         border-radius: 6px;
 
@@ -122,7 +122,7 @@
           }
 
           &.active {
-            background: #ffffff;
+            background: var(--laca-bg);
             color: var(--laca-seo-text);
             box-shadow: 0 1px 2px rgba(0,0,0,0.05);
             font-weight: 600;
@@ -132,7 +132,7 @@
     }
 
     .laca-serp-card {
-      background: #ffffff;
+      background: var(--laca-bg);
       border: 1px solid var(--laca-seo-border);
       border-radius: 6px;
       padding: 14px;
@@ -148,14 +148,14 @@
         align-items: center;
         gap: 6px;
         font-size: 12px;
-        color: #202124;
+        color: var(--laca-fg);
         margin-bottom: 6px;
 
         .laca-serp-favicon {
           font-size: 14px;
           width: 14px;
           height: 14px;
-          color: #4b5563;
+          color: var(--laca-fg-muted);
         }
 
         .laca-serp-domain {
@@ -163,7 +163,7 @@
         }
 
         .laca-serp-breadcrumb-path {
-          color: #5f6368;
+          color: var(--laca-fg-muted);
         }
       }
 
@@ -172,7 +172,7 @@
         font-size: 18px;
         line-height: 1.3;
         font-weight: 400;
-        color: #1a0dab;
+        color: var(--laca-accent);
         cursor: pointer;
 
         &:hover {
@@ -184,7 +184,7 @@
         margin: 0;
         font-size: 13px;
         line-height: 1.5;
-        color: #4d5156;
+        color: var(--laca-fg-muted);
         word-break: break-word;
       }
     }
@@ -253,7 +253,7 @@
     border: 1px solid var(--laca-seo-border);
     border-radius: 6px;
     padding: 6px 10px;
-    background: #ffffff;
+    background: var(--laca-bg);
     min-height: 42px;
 
     .laca-tags-list {
@@ -266,8 +266,8 @@
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      background: #f1f5f9;
-      border: 1px solid #cbd5e1;
+      background: var(--laca-bg-subtle);
+      border: 1px solid var(--laca-border);
       padding: 3px 8px;
       border-radius: 4px;
       font-size: 12px;
@@ -275,16 +275,16 @@
       user-select: none;
 
       &--primary {
-        background: #eff6ff;
-        border-color: #93c5fd;
+        background: var(--laca-accent-subtle);
+        border-color: var(--laca-accent);
         font-weight: 600;
-        color: #1d4ed8;
+        color: var(--laca-accent-fg);
       }
 
       .laca-kw-badge {
         font-size: 10px;
-        background: #2563eb;
-        color: #ffffff;
+        background: var(--laca-accent);
+        color: var(--laca-bg);
         padding: 1px 4px;
         border-radius: 3px;
         font-weight: 700;
@@ -295,11 +295,11 @@
         border: none;
         cursor: pointer;
         font-size: 14px;
-        color: #64748b;
+        color: var(--laca-fg-muted);
         padding: 0;
 
         &:hover {
-          color: #ef4444;
+          color: var(--laca-danger);
         }
       }
     }
@@ -343,7 +343,7 @@
 
   /* SEO Analysis Container */
   .laca-seo-analysis-container {
-    background: #ffffff;
+    background: var(--laca-bg);
     border: 1px solid var(--laca-seo-border);
     border-radius: 8px;
     overflow: hidden;
@@ -368,7 +368,7 @@
         font-weight: 700;
         border: 4px solid var(--laca-seo-danger);
         color: var(--laca-seo-danger);
-        background: #ffffff;
+        background: var(--laca-bg);
 
         &--good {
           border-color: var(--laca-seo-success);
@@ -420,11 +420,11 @@
           padding: 12px 20px;
           cursor: pointer;
           user-select: none;
-          background: #ffffff;
+          background: var(--laca-bg);
           transition: background 0.15s ease;
 
           &:hover {
-            background: #f8fafc;
+            background: var(--laca-bg-subtle);
           }
 
           .laca-group-arrow {
@@ -444,12 +444,12 @@
             font-weight: 700;
             padding: 2px 8px;
             border-radius: 10px;
-            background: #f1f5f9;
+            background: var(--laca-bg-subtle);
             color: var(--laca-seo-muted);
 
             &.is-all-pass {
-              background: #dcfce7;
-              color: #15803d;
+              background: var(--laca-success-subtle);
+              color: var(--laca-success-fg);
             }
           }
         }
@@ -457,7 +457,7 @@
         .laca-group-body {
           display: none;
           padding: 10px 20px 16px;
-          background: #fafafa;
+          background: var(--laca-bg-subtle);
           border-top: 1px dashed var(--laca-seo-border);
         }
 
@@ -547,7 +547,7 @@
       align-items: center;
       gap: 8px;
       padding: 12px 16px;
-      background: #f8fafc;
+      background: var(--laca-bg-subtle);
       border: 1px dashed var(--laca-seo-border);
       border-radius: 6px;
       color: var(--laca-seo-text);
@@ -563,7 +563,7 @@
     }
 
     .laca-schema-item {
-      background: #ffffff;
+      background: var(--laca-bg);
       border: 1px solid var(--laca-seo-border);
       border-radius: 8px;
       margin-bottom: 16px;
@@ -571,8 +571,8 @@
       transition: border-color 0.2s, box-shadow 0.2s;
 
       &.is-primary {
-        border-color: #6366f1;
-        box-shadow: 0 0 0 1px #6366f1;
+        border-color: var(--laca-accent);
+        box-shadow: 0 0 0 1px var(--laca-accent);
       }
 
       &__header {
@@ -580,7 +580,7 @@
         justify-content: space-between;
         align-items: center;
         padding: 12px 16px;
-        background: #f8fafc;
+        background: var(--laca-bg-subtle);
         border-bottom: 1px solid transparent;
         cursor: pointer;
         user-select: none;
@@ -592,7 +592,7 @@
 
           .dashicons-arrow-right-alt2 {
             transition: transform 0.2s;
-            color: #64748b;
+            color: var(--laca-fg-muted);
           }
 
           strong {
@@ -602,8 +602,8 @@
 
           .laca-badge-type {
             font-size: 11px;
-            background: #e2e8f0;
-            color: #334155;
+            background: var(--laca-border);
+            color: var(--laca-fg);
             padding: 2px 8px;
             border-radius: 12px;
             font-weight: 600;
@@ -611,8 +611,8 @@
 
           .laca-badge-primary {
             font-size: 11px;
-            background: #e0e7ff;
-            color: #4338ca;
+            background: var(--laca-accent-subtle);
+            color: var(--laca-accent-fg);
             padding: 2px 8px;
             border-radius: 12px;
             font-weight: 600;
@@ -650,14 +650,14 @@
       &__body {
         display: none;
         padding: 16px;
-        background: #ffffff;
+        background: var(--laca-bg);
       }
     }
 
     /* Subfields & Nested Groups */
     .laca-schema-subgroup {
-      background: #f8fafc;
-      border: 1px solid #e2e8f0;
+      background: var(--laca-bg-subtle);
+      border: 1px solid var(--laca-border);
       border-radius: 6px;
       padding: 14px 16px;
       margin-bottom: 14px;
@@ -665,7 +665,7 @@
       &__title {
         font-size: 13px;
         font-weight: 700;
-        color: #334155;
+        color: var(--laca-fg);
         margin: 0 0 10px 0;
         text-transform: uppercase;
         letter-spacing: 0.5px;
@@ -696,7 +696,7 @@
       }
 
       &__row {
-        background: #f8fafc;
+        background: var(--laca-bg-subtle);
         border: 1px solid var(--laca-seo-border);
         border-radius: 6px;
         padding: 12px 14px;
@@ -709,7 +709,7 @@
           margin-bottom: 10px;
           font-size: 12px;
           font-weight: 600;
-          color: #64748b;
+          color: var(--laca-fg-muted);
         }
       }
     }
@@ -722,17 +722,17 @@
         font-weight: 600;
         font-size: 12px;
         margin-bottom: 4px;
-        color: #334155;
+        color: var(--laca-fg);
 
         .required {
-          color: #ef4444;
+          color: var(--laca-danger);
           margin-left: 2px;
         }
       }
 
       .description {
         font-size: 12px;
-        color: #64748b;
+        color: var(--laca-fg-muted);
         margin-top: 4px;
         margin-bottom: 0;
       }
@@ -746,13 +746,13 @@
       textarea {
         width: 100%;
         font-size: 13px;
-        border: 1px solid #cbd5e1;
+        border: 1px solid var(--laca-border);
         border-radius: 4px;
         padding: 6px 10px;
 
         &:focus {
-          border-color: #6366f1;
-          box-shadow: 0 0 0 1px #6366f1;
+          border-color: var(--laca-accent);
+          box-shadow: 0 0 0 1px var(--laca-accent);
         }
       }
 
@@ -785,7 +785,7 @@
       height: 70px;
       border: 1px solid var(--laca-seo-border);
       border-radius: 4px;
-      background: #f1f5f9;
+      background: var(--laca-bg-subtle);
       display: flex;
       align-items: center;
       justify-content: center;

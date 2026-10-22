@@ -21,8 +21,22 @@ class AdminPage
     {
         add_action('admin_menu', [$this, 'registerMenu'], 20);
         add_action('admin_enqueue_scripts', [$this, 'enqueueAssets']);
+        add_action('current_screen', [$this, 'suppressForeignNotices']);
         add_action('wp_ajax_laca_seo_toggle_module', [$this, 'ajaxToggleModule']);
         add_action('wp_ajax_laca_seo_preview_vars', [$this, 'ajaxPreviewVars']);
+    }
+
+    /**
+     * Suppress foreign third-party admin notices on Laca SEO admin pages.
+     */
+    public function suppressForeignNotices(\WP_Screen $screen): void
+    {
+        if (isset($_GET['page']) && $_GET['page'] === self::MENU_SLUG) {
+            remove_all_actions('admin_notices');
+            remove_all_actions('all_admin_notices');
+            remove_all_actions('network_admin_notices');
+            remove_all_actions('user_admin_notices');
+        }
     }
 
     /**
@@ -108,17 +122,37 @@ class AdminPage
 
         $view = sanitize_key($_GET['view'] ?? 'dashboard');
 
-        $views = [
-            'dashboard'     => ['label' => 'Bảng điều khiển', 'icon' => 'dashicons-dashboard'],
-            'general'       => ['label' => 'Cài đặt chung', 'icon' => 'dashicons-admin-settings'],
-            'titles'        => ['label' => 'Tiêu đề & Thẻ Meta', 'icon' => 'dashicons-heading'],
-            'sitemap'       => ['label' => 'Sơ đồ trang XML (Sitemap)', 'icon' => 'dashicons-networking'],
-            'instant-indexing' => ['label' => 'Index tức thì (IndexNow)', 'icon' => 'dashicons-update'],
-            'redirections'  => ['label' => 'Chuyển hướng (Redirections)', 'icon' => 'dashicons-randomize'],
-            '404-monitor'   => ['label' => 'Theo dõi 404 (404 Monitor)', 'icon' => 'dashicons-dismiss'],
-            'search-console'=> ['label' => 'Search Console', 'icon' => 'dashicons-google'],
-            'import-export' => ['label' => 'Sao lưu & Nhập/Xuất', 'icon' => 'dashicons-migrate'],
-            'guide'         => ['label' => 'Hướng dẫn tối ưu SEO', 'icon' => 'dashicons-book'],
+        $nav_groups = [
+            'overview' => [
+                'title' => 'Tổng quan',
+                'items' => [
+                    'dashboard' => ['label' => 'Bảng điều khiển', 'icon' => 'dashicons-dashboard'],
+                ],
+            ],
+            'settings' => [
+                'title' => 'Cài đặt',
+                'items' => [
+                    'general' => ['label' => 'Cài đặt chung', 'icon' => 'dashicons-admin-settings'],
+                    'titles'  => ['label' => 'Tiêu đề & Thẻ Meta', 'icon' => 'dashicons-heading'],
+                    'sitemap' => ['label' => 'Sơ đồ trang XML', 'icon' => 'dashicons-networking'],
+                ],
+            ],
+            'tools' => [
+                'title' => 'Công cụ',
+                'items' => [
+                    'instant-indexing' => ['label' => 'Index tức thì (IndexNow)', 'icon' => 'dashicons-update'],
+                    'redirections'     => ['label' => 'Chuyển hướng (Redirections)', 'icon' => 'dashicons-randomize'],
+                    '404-monitor'      => ['label' => 'Theo dõi 404 (404 Monitor)', 'icon' => 'dashicons-dismiss'],
+                    'search-console'   => ['label' => 'Search Console', 'icon' => 'dashicons-google'],
+                ],
+            ],
+            'system' => [
+                'title' => 'Hệ thống',
+                'items' => [
+                    'import-export' => ['label' => 'Sao lưu & Nhập/Xuất', 'icon' => 'dashicons-migrate'],
+                    'guide'         => ['label' => 'Hướng dẫn tối ưu SEO', 'icon' => 'dashicons-book'],
+                ],
+            ],
         ];
 
         ?>
@@ -130,11 +164,10 @@ class AdminPage
                 <div class="laca-seo-header__branding">
                     <span class="dashicons dashicons-search laca-seo-header__logo" aria-hidden="true"></span>
                     <h2 class="laca-seo-header__title">Laca SEO</h2>
-                    <span class="laca-seo-header__badge">Professional</span>
                 </div>
                 <div class="laca-seo-header__actions">
                     <a href="<?php echo esc_url(add_query_arg(['page' => 'laca-seo', 'view' => 'guide'], admin_url('admin.php'))); ?>" class="button button-secondary">
-                        <span class="dashicons dashicons-book"></span> Hướng dẫn tối ưu
+                        <span class="dashicons dashicons-book" aria-hidden="true"></span> Hướng dẫn tối ưu
                     </a>
                 </div>
             </header>
@@ -144,70 +177,94 @@ class AdminPage
                 Notices::render();
 
                 if (isset($_GET['updated'])) {
-                    echo '<div class="notice notice-success is-dismissible"><p>' . esc_html__('Cài đặt SEO đã được lưu thành công.', 'lacadev') . '</p></div>';
+                    echo '<div class="notice notice-success is-dismissible laca-seo-notice laca-seo-auto-dismiss laca-alert laca-alert--success"><span class="dashicons dashicons-yes-alt laca-alert__icon" aria-hidden="true"></span><div class="laca-alert__content"><p>' . esc_html__('Cài đặt SEO đã được lưu thành công.', 'lacadev') . '</p></div></div>';
                 }
                 if (isset($_GET['reset'])) {
-                    echo '<div class="notice notice-warning is-dismissible"><p>' . esc_html__('Đã khôi phục cài đặt mặc định của tab này.', 'lacadev') . '</p></div>';
+                    echo '<div class="notice notice-warning is-dismissible laca-seo-notice laca-seo-auto-dismiss laca-alert laca-alert--warning"><span class="dashicons dashicons-warning laca-alert__icon" aria-hidden="true"></span><div class="laca-alert__content"><p>' . esc_html__('Đã khôi phục cài đặt mặc định của tab này.', 'lacadev') . '</p></div></div>';
                 }
                 ?>
             </div>
 
-            <nav class="laca-seo-nav" aria-label="Laca SEO Navigation">
-                <ul class="laca-seo-nav__list">
-                    <?php foreach ($views as $view_key => $view_info): ?>
-                        <li class="laca-seo-nav__item">
-                            <a
-                                href="<?php echo esc_url(add_query_arg(['page' => 'laca-seo', 'view' => $view_key], admin_url('admin.php'))); ?>"
-                                class="laca-seo-nav__link<?php echo ($view === $view_key) ? ' is-active' : ''; ?>"
-                            >
-                                <span class="dashicons <?php echo esc_attr($view_info['icon']); ?>" aria-hidden="true"></span>
-                                <span class="laca-seo-nav__text"><?php echo esc_html($view_info['label']); ?></span>
-                                <?php if (!empty($view_info['badge'])): ?>
-                                    <span class="laca-seo-nav__badge"><?php echo esc_html($view_info['badge']); ?></span>
-                                <?php endif; ?>
-                            </a>
-                        </li>
-                    <?php endforeach; ?>
-                </ul>
-            </nav>
+            <div class="laca-seo-layout">
+                <!-- Mobile Select (< 1024px) -->
+                <div class="laca-seo-nav-select-wrap">
+                    <label for="laca-seo-nav-select" class="screen-reader-text"><?php esc_html_e('Chuyển trang Laca SEO', 'lacadev'); ?></label>
+                    <select id="laca-seo-nav-select" class="laca-select laca-seo-nav-select" onchange="if(this.value) window.location.href=this.value;">
+                        <option value=""><?php esc_html_e('Đi tới...', 'lacadev'); ?></option>
+                        <?php foreach ($nav_groups as $group): ?>
+                            <optgroup label="<?php echo esc_attr($group['title']); ?>">
+                                <?php foreach ($group['items'] as $key => $info): ?>
+                                    <option value="<?php echo esc_url(add_query_arg(['page' => 'laca-seo', 'view' => $key], admin_url('admin.php'))); ?>" <?php selected($view, $key); ?>>
+                                        <?php echo esc_html($info['label']); ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            </optgroup>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
 
-            <main class="laca-seo-content">
-                <?php
-                switch ($view) {
-                    case 'general':
-                        include __DIR__ . '/views/general.php';
-                        break;
-                    case 'titles':
-                        include __DIR__ . '/views/titles.php';
-                        break;
-                    case 'import-export':
-                        include __DIR__ . '/views/import-export.php';
-                        break;
-                    case 'guide':
-                        include __DIR__ . '/views/guide.php';
-                        break;
-                    case 'sitemap':
-                        include __DIR__ . '/views/sitemap.php';
-                        break;
-                    case 'instant-indexing':
-                        include __DIR__ . '/views/instant-indexing.php';
-                        break;
-                    case 'redirections':
-                        include __DIR__ . '/views/redirections.php';
-                        break;
-                    case '404-monitor':
-                        include __DIR__ . '/views/404-monitor.php';
-                        break;
-                    case 'search-console':
-                        include __DIR__ . '/views/search-console.php';
-                        break;
-                    case 'dashboard':
-                    default:
-                        include __DIR__ . '/views/dashboard.php';
-                        break;
-                }
-                ?>
-            </main>
+                <!-- Desktop Sidebar (>= 1024px) -->
+                <aside class="laca-seo-sidebar" aria-label="<?php esc_attr_e('Laca SEO Navigation', 'lacadev'); ?>">
+                    <nav class="laca-seo-nav">
+                        <?php foreach ($nav_groups as $group): ?>
+                            <div class="laca-seo-nav__group">
+                                <div class="laca-seo-nav__group-title"><?php echo esc_html($group['title']); ?></div>
+                                <ul class="laca-seo-nav__list">
+                                    <?php foreach ($group['items'] as $view_key => $view_info): ?>
+                                        <li class="laca-seo-nav__item">
+                                            <a
+                                                href="<?php echo esc_url(add_query_arg(['page' => 'laca-seo', 'view' => $view_key], admin_url('admin.php'))); ?>"
+                                                class="laca-seo-nav__link<?php echo ($view === $view_key) ? ' is-active' : ''; ?>"
+                                            >
+                                                <span class="dashicons <?php echo esc_attr($view_info['icon']); ?>" aria-hidden="true"></span>
+                                                <span class="laca-seo-nav__text"><?php echo esc_html($view_info['label']); ?></span>
+                                            </a>
+                                        </li>
+                                    <?php endforeach; ?>
+                                </ul>
+                            </div>
+                        <?php endforeach; ?>
+                    </nav>
+                </aside>
+
+                <main class="laca-seo-content">
+                    <?php
+                    switch ($view) {
+                        case 'general':
+                            include __DIR__ . '/views/general.php';
+                            break;
+                        case 'titles':
+                            include __DIR__ . '/views/titles.php';
+                            break;
+                        case 'import-export':
+                            include __DIR__ . '/views/import-export.php';
+                            break;
+                        case 'guide':
+                            include __DIR__ . '/views/guide.php';
+                            break;
+                        case 'sitemap':
+                            include __DIR__ . '/views/sitemap.php';
+                            break;
+                        case 'instant-indexing':
+                            include __DIR__ . '/views/instant-indexing.php';
+                            break;
+                        case 'redirections':
+                            include __DIR__ . '/views/redirections.php';
+                            break;
+                        case '404-monitor':
+                            include __DIR__ . '/views/404-monitor.php';
+                            break;
+                        case 'search-console':
+                            include __DIR__ . '/views/search-console.php';
+                            break;
+                        case 'dashboard':
+                        default:
+                            include __DIR__ . '/views/dashboard.php';
+                            break;
+                    }
+                    ?>
+                </main>
+            </div>
         </div>
         <?php
     }

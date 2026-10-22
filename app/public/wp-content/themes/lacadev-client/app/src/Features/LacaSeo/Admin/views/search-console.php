@@ -143,30 +143,30 @@ $sitemaps = $isConnected ? GscClient::getSitemaps($siteUrl) : null;
                 </div>
             </details>
 
-            <form method="post" action="<?php echo esc_url(admin_url('admin.php?page=laca-seo&view=search-console')); ?>" style="max-width: 600px;">
+            <form method="post" action="<?php echo esc_url(admin_url('admin.php?page=laca-seo&view=search-console')); ?>" class="laca-seo-form-limit">
                 <?php wp_nonce_field('laca_gsc_connect_action'); ?>
-                <div class="laca-seo-field-group" style="margin-bottom: 16px;">
+                <div class="laca-seo-field-group">
                     <label for="laca_gsc_client_id"><strong><?php esc_html_e('Google Client ID', 'lacadev'); ?></strong></label>
                     <input type="text" name="client_id" id="laca_gsc_client_id" class="large-text" required placeholder="xxxx.apps.googleusercontent.com">
                 </div>
-                <div class="laca-seo-field-group" style="margin-bottom: 20px;">
+                <div class="laca-seo-field-group">
                     <label for="laca_gsc_client_secret"><strong><?php esc_html_e('Google Client Secret', 'lacadev'); ?></strong></label>
                     <input type="password" name="client_secret" id="laca_gsc_client_secret" class="large-text" required placeholder="GOCSPX-xxxx">
                 </div>
                 <button type="submit" name="laca_gsc_connect_init" class="button button-primary button-large">
-                    <span class="dashicons dashicons-google" style="margin-top:4px;"></span> <?php esc_html_e('Đăng nhập & Cấp quyền với Google', 'lacadev'); ?>
+                    <span class="dashicons dashicons-google" aria-hidden="true"></span> <?php esc_html_e('Đăng nhập & Cấp quyền với Google', 'lacadev'); ?>
                 </button>
             </form>
         </div>
     <?php else: ?>
         <!-- Connected: Dashboard -->
         <div class="laca-seo-card">
-            <div class="laca-seo-card__header" style="display: flex; justify-content: space-between; align-items: center;">
+            <div class="laca-seo-card__header laca-seo-header-flex">
                 <div>
                     <h2 class="laca-seo-card__title"><?php esc_html_e('Hiệu suất tìm kiếm (28 ngày qua)', 'lacadev'); ?></h2>
                     <p class="laca-seo-card__subtitle"><?php printf(esc_html__('Dữ liệu từ tài khoản Google Search Console cho trang web %s', 'lacadev'), esc_html($siteUrl)); ?></p>
                 </div>
-                <form method="post" style="margin: 0;">
+                <form method="post" class="laca-seo-form-inline">
                     <?php wp_nonce_field('laca_gsc_disconnect_action'); ?>
                     <button type="submit" name="laca_gsc_disconnect" class="button button-secondary" onclick="return confirm('Bạn có chắc muốn ngắt kết nối Google Search Console không?');">
                         <?php esc_html_e('Ngắt kết nối', 'lacadev'); ?>
@@ -175,7 +175,7 @@ $sitemaps = $isConnected ? GscClient::getSitemaps($siteUrl) : null;
             </div>
 
             <!-- Stats Grid -->
-            <div class="laca-seo-stats-grid" style="margin: 20px 0;">
+            <div class="laca-seo-stats-grid">
                 <div class="laca-seo-stat-card">
                     <div class="laca-seo-stat-card__icon is-info"><span class="dashicons dashicons-chart-area"></span></div>
                     <div class="laca-seo-stat-card__info">
@@ -208,15 +208,16 @@ $sitemaps = $isConnected ? GscClient::getSitemaps($siteUrl) : null;
 
             <!-- Top Queries Table -->
             <?php if (!empty($perf['rows'])): ?>
-                <h3 style="margin-top: 30px; font-size: 15px;"><?php esc_html_e('Top từ khóa tìm kiếm hàng đầu', 'lacadev'); ?></h3>
+                <h3 class="laca-seo-card__title laca-seo-title-spaced"><?php esc_html_e('Top từ khóa tìm kiếm hàng đầu', 'lacadev'); ?></h3>
+                <div class="laca-seo-table-responsive">
                 <table class="wp-list-table widefat striped">
                     <thead>
                         <tr>
                             <th><?php esc_html_e('Từ khóa truy vấn', 'lacadev'); ?></th>
-                            <th style="width: 100px;"><?php esc_html_e('Clicks', 'lacadev'); ?></th>
-                            <th style="width: 120px;"><?php esc_html_e('Hiển thị', 'lacadev'); ?></th>
-                            <th style="width: 90px;"><?php esc_html_e('CTR', 'lacadev'); ?></th>
-                            <th style="width: 90px;"><?php esc_html_e('Vị trí', 'lacadev'); ?></th>
+                            <th class="col-click"><?php esc_html_e('Clicks', 'lacadev'); ?></th>
+                            <th class="col-imp"><?php esc_html_e('Hiển thị', 'lacadev'); ?></th>
+                            <th class="col-ctr"><?php esc_html_e('CTR', 'lacadev'); ?></th>
+                            <th class="col-pos"><?php esc_html_e('Vị trí', 'lacadev'); ?></th>
                         </tr>
                     </thead>
                     <tbody>
@@ -231,6 +232,7 @@ $sitemaps = $isConnected ? GscClient::getSitemaps($siteUrl) : null;
                         <?php endforeach; ?>
                     </tbody>
                 </table>
+                </div>
             <?php endif; ?>
         </div>
     <?php endif; ?>

@@ -44,14 +44,14 @@ $sitemap_url = home_url('/sitemap_index.xml');
 ?>
 <div class="laca-seo-settings-layout">
     <!-- Notice box pointing to XML sitemap index -->
-    <div class="laca-seo-sitemap-banner" style="background:#fff;border-left:4px solid #2271b1;padding:12px 16px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 1px 2px rgba(0,0,0,.05);">
+    <div class="laca-seo-sitemap-banner">
         <div>
             <strong>Sơ đồ trang XML của bạn:</strong>
-            <a href="<?php echo esc_url($sitemap_url); ?>" target="_blank" style="margin-left:8px;font-family:monospace;font-size:13px;"><?php echo esc_html($sitemap_url); ?></a>
+            <a href="<?php echo esc_url($sitemap_url); ?>" target="_blank" class="laca-seo-sitemap-link"><?php echo esc_html($sitemap_url); ?></a>
         </div>
         <div>
             <a href="<?php echo esc_url($sitemap_url); ?>" target="_blank" class="button button-secondary">
-                <span class="dashicons dashicons-external" style="vertical-align:middle;margin-top:-2px;"></span> Xem Sitemap XML
+                <span class="dashicons dashicons-external" aria-hidden="true"></span> Xem Sitemap XML
             </a>
         </div>
     </div>

@@ -33,14 +33,14 @@ $key_url = home_url('/' . $api_key . '.txt');
 ?>
 <div class="laca-seo-settings-layout">
     <!-- Notice box pointing to IndexNow key location -->
-    <div class="laca-seo-sitemap-banner" style="background:#fff;border-left:4px solid #10b981;padding:12px 16px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 1px 2px rgba(0,0,0,.05);">
+    <div class="laca-seo-sitemap-banner laca-seo-sitemap-banner--green">
         <div>
             <strong>Tệp xác thực IndexNow API:</strong>
-            <a href="<?php echo esc_url($key_url); ?>" target="_blank" style="margin-left:8px;font-family:monospace;font-size:13px;"><?php echo esc_html($key_url); ?></a>
+            <a href="<?php echo esc_url($key_url); ?>" target="_blank" class="laca-seo-sitemap-link"><?php echo esc_html($key_url); ?></a>
         </div>
         <div>
             <a href="<?php echo esc_url($key_url); ?>" target="_blank" class="button button-secondary">
-                <span class="dashicons dashicons-external" style="vertical-align:middle;margin-top:-2px;"></span> Kiểm tra tệp Key
+                <span class="dashicons dashicons-external" aria-hidden="true"></span> Kiểm tra tệp Key
             </a>
         </div>
     </div>
@@ -149,7 +149,7 @@ $key_url = home_url('/' . $api_key . '.txt');
                                         <td><code><?php echo esc_html($log['url'] ?? ''); ?></code></td>
                                         <td>
                                             <?php $st = (int) ($log['status'] ?? 0); ?>
-                                            <span class="badge" style="padding:2px 6px;border-radius:4px;color:#fff;background:<?php echo in_array($st, [200, 202], true) ? '#10b981' : ($st === 0 ? '#6b7280' : '#ef4444'); ?>;">
+                                            <span class="laca-badge <?php echo in_array($st, [200, 202], true) ? 'laca-badge--success' : ($st === 0 ? 'laca-badge--neutral' : 'laca-badge--danger'); ?>">
                                                 <?php echo esc_html((string) $st); ?>
                                             </span>
                                         </td>
