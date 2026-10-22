@@ -55,7 +55,7 @@ if (OUT && !fs.existsSync(OUT)) {
 }
 
 const code = `define('WP_USE_THEMES',false);require 'app/public/wp-load.php';$u=get_user_by('login',${JSON.stringify(LOGIN)});if(!$u){exit(1);}$e=time()+3600;echo json_encode([LOGGED_IN_COOKIE=>wp_generate_auth_cookie($u->ID,$e,'logged_in'),AUTH_COOKIE=>wp_generate_auth_cookie($u->ID,$e,'auth')]);exit(0);`;
-const cookiesRaw = execFileSync(PHP, ['-d', 'mysqli.default_socket=' + SOCK, '-r', code], { cwd: ROOT }).toString();
+const cookiesRaw = execFileSync(PHP, ['-d', 'memory_limit=512M', '-d', 'mysqli.default_socket=' + SOCK, '-r', code], { cwd: ROOT }).toString();
 const cookies = JSON.parse(cookiesRaw);
 
 let pass = 0, fail = 0;

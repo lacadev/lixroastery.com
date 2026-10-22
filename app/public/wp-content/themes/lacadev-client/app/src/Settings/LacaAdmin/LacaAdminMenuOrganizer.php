@@ -131,7 +131,6 @@ class LacaAdminMenuOrganizer
         }
 
         add_action('admin_menu', [$this, 'organize'], PHP_INT_MAX);
-        add_action('admin_head', [$this, 'printStyles']);
         add_action('all_admin_notices', [$this, 'renderNavigationDock']);
         add_filter('admin_body_class', [$this, 'filterAdminBodyClass']);
     }
@@ -262,147 +261,6 @@ class LacaAdminMenuOrganizer
         return trim($classes . ' laca-admin-dock-active');
     }
 
-    public function printStyles(): void
-    {
-        ?>
-        <style>
-            #toplevel_page_laca-admin .wp-submenu {
-                display: none !important;
-            }
-
-            body.laca-admin-dock-active:not(.folded) #wpcontent {
-                padding-left: 304px;
-            }
-
-            body.laca-admin-dock-active.folded #wpcontent {
-                padding-left: 304px;
-            }
-
-            .laca-admin-dock {
-                background: #fff;
-                border-right: 1px solid #e5e7eb;
-                bottom: 0;
-                box-shadow: 10px 0 24px rgba(15, 23, 42, .06);
-                color: #1f2937;
-                left: 160px;
-                overflow-y: auto;
-                padding: 18px 12px;
-                position: fixed;
-                top: 32px;
-                width: 276px;
-                z-index: 99;
-            }
-
-            body.folded .laca-admin-dock {
-                left: 36px;
-            }
-
-            .laca-admin-dock__group {
-                border-top: 1px solid #f1f3f5;
-                margin-bottom: 0;
-                padding: 20px 4px;
-            }
-
-            .laca-admin-dock__group:first-of-type {
-                border-top: 0;
-                padding-top: 0;
-            }
-
-            .laca-admin-dock__group-title {
-                align-items: center;
-                color: #6b7280;
-                display: flex;
-                font-size: 12px;
-                font-weight: 700;
-                gap: 0;
-                letter-spacing: 0;
-                line-height: 1.35;
-                margin: 0 0 6px;
-            }
-
-            .laca-admin-dock__group-title .dashicons {
-                display: none;
-            }
-
-            .laca-admin-dock__group-count {
-                display: none;
-            }
-
-            .laca-admin-dock__items {
-                display: grid;
-                gap: 4px;
-                margin: 0;
-            }
-
-            .laca-admin-dock__item {
-                border: 1px solid transparent;
-                border-radius: 6px;
-                color: #374151;
-                display: block;
-                font-size: 13px;
-                line-height: 1.35;
-                padding: 7px 10px;
-                text-decoration: none;
-                transition: background .15s ease, border-color .15s ease, color .15s ease, box-shadow .15s ease;
-            }
-
-            .laca-admin-dock__item::before {
-                content: none;
-            }
-
-            .laca-admin-dock__item:hover,
-            .laca-admin-dock__item:focus {
-                background: #f8fafc;
-                border-color: #e5e7eb;
-                color: #111827;
-                outline: none;
-            }
-
-            .laca-admin-dock__item.is-active {
-                background: #f3f4f6;
-                border-color: #d1d5db;
-                box-shadow: none;
-                color: #111827;
-                font-weight: 700;
-            }
-
-            .laca-admin-dock__item.is-active::before {
-                content: none;
-            }
-
-            @media (max-width: 960px) {
-                body.auto-fold .laca-admin-dock {
-                    left: 36px;
-                }
-            }
-
-            @media (max-width: 782px) {
-                body.laca-admin-dock-active #wpcontent,
-                body.laca-admin-dock-active.folded #wpcontent,
-                body.laca-admin-dock-active:not(.folded) #wpcontent {
-                    padding-left: 10px;
-                }
-
-                .laca-admin-dock {
-                    border-radius: 10px;
-                    bottom: auto;
-                    left: auto;
-                    margin: 12px 10px 18px;
-                    max-height: none;
-                    position: relative;
-                    top: auto;
-                    width: auto;
-                }
-
-                body.folded .laca-admin-dock,
-                body.auto-fold .laca-admin-dock {
-                    left: auto;
-                }
-            }
-        </style>
-        <?php
-    }
-
     public function renderNavigationDock(): void
     {
         if (!$this->isLacaAdminRequest()) {
@@ -417,26 +275,45 @@ class LacaAdminMenuOrganizer
         $currentPage = $this->getCurrentPageSlug();
         ?>
         <nav class="laca-admin-dock" aria-label="<?php echo esc_attr__('Laca Admin', 'laca'); ?>">
-            <?php foreach ($groups as $group): ?>
-                <section class="laca-admin-dock__group" aria-labelledby="laca-admin-dock-group-<?php echo esc_attr($group['key']); ?>">
-                    <h2 class="laca-admin-dock__group-title" id="laca-admin-dock-group-<?php echo esc_attr($group['key']); ?>">
-                        <span class="dashicons <?php echo esc_attr($group['icon']); ?>" aria-hidden="true"></span>
-                        <span><?php echo esc_html($group['label']); ?></span>
-                        <span class="laca-admin-dock__group-count"><?php echo esc_html((string) count($group['items'])); ?></span>
-                    </h2>
-                    <div class="laca-admin-dock__items">
-                        <?php foreach ($group['items'] as $item): ?>
-                            <a
-                                class="laca-admin-dock__item<?php echo $currentPage === $item['slug'] ? ' is-active' : ''; ?>"
-                                href="<?php echo esc_url($item['url']); ?>"
-                                <?php echo $currentPage === $item['slug'] ? 'aria-current="page"' : ''; ?>
-                            >
-                                <?php echo esc_html($item['label']); ?>
-                            </a>
-                        <?php endforeach; ?>
-                    </div>
-                </section>
-            <?php endforeach; ?>
+            <!-- Mobile / Tablet select (< 1024px) -->
+            <div class="laca-admin-dock__mobile">
+                <label class="laca-admin-dock__mobile-label" for="laca-admin-dock-select"><?php echo esc_html__('Menu Laca Admin', 'laca'); ?></label>
+                <select id="laca-admin-dock-select" class="laca-admin-dock__select" onchange="if (this.value) window.location.href=this.value;">
+                    <?php foreach ($groups as $group): ?>
+                        <optgroup label="<?php echo esc_attr($group['label']); ?>">
+                            <?php foreach ($group['items'] as $item): ?>
+                                <option value="<?php echo esc_url($item['url']); ?>" <?php selected($currentPage, $item['slug']); ?>>
+                                    <?php echo esc_html($item['label']); ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </optgroup>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+
+            <!-- Desktop columnar dock (>= 1024px) -->
+            <div class="laca-admin-dock__desktop">
+                <?php foreach ($groups as $group): ?>
+                    <section class="laca-admin-dock__group" aria-labelledby="laca-admin-dock-group-<?php echo esc_attr($group['key']); ?>">
+                        <h2 class="laca-admin-dock__group-title" id="laca-admin-dock-group-<?php echo esc_attr($group['key']); ?>">
+                            <span class="dashicons <?php echo esc_attr($group['icon']); ?>" aria-hidden="true"></span>
+                            <span><?php echo esc_html($group['label']); ?></span>
+                            <span class="laca-admin-dock__group-count"><?php echo esc_html((string) count($group['items'])); ?></span>
+                        </h2>
+                        <div class="laca-admin-dock__items">
+                            <?php foreach ($group['items'] as $item): ?>
+                                <a
+                                    class="laca-admin-dock__item<?php echo $currentPage === $item['slug'] ? ' is-active' : ''; ?>"
+                                    href="<?php echo esc_url($item['url']); ?>"
+                                    <?php echo $currentPage === $item['slug'] ? 'aria-current="page"' : ''; ?>
+                                >
+                                    <?php echo esc_html($item['label']); ?>
+                                </a>
+                            <?php endforeach; ?>
+                        </div>
+                    </section>
+                <?php endforeach; ?>
+            </div>
         </nav>
         <?php
     }

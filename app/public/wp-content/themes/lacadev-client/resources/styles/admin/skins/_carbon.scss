@@ -1,0 +1,352 @@
+// =============================================================================
+// Carbon Fields Skin (Chakra UI v3 tokens)
+// =============================================================================
+
+.cf-container {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+
+  // 1. Line variant Tabs
+  &__tabs,
+  .cf-tabs,
+  .carbon-tabs {
+    background: transparent !important;
+    border: none !important;
+    border-bottom: 1px solid var(--laca-border) !important;
+    padding: 0 !important;
+    margin: 0 0 var(--laca-spacing-6) 0 !important;
+  }
+
+  &__tabs-list,
+  .cf-tabs__list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--laca-spacing-6);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    border: none;
+  }
+
+  &__tabs-item,
+  .cf-tabs__item {
+    background: transparent !important;
+    border: none !important;
+    border-radius: 0 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+
+    button,
+    a {
+      display: inline-flex;
+      align-items: center;
+      padding: var(--laca-spacing-2-5) 0 !important;
+      font-family: var(--laca-font);
+      font-size: var(--laca-font-size-sm);
+      font-weight: 500;
+      line-height: var(--laca-line-height-sm);
+      color: var(--laca-fg-muted);
+      background: transparent !important;
+      border: none !important;
+      border-bottom: 2px solid transparent !important;
+      margin-bottom: -1px;
+      cursor: pointer;
+      text-decoration: none;
+      transition: color var(--laca-durations-fast), border-color var(--laca-durations-fast);
+      outline: none;
+
+      &:hover {
+        color: var(--laca-fg);
+        border-bottom-color: var(--laca-border-emphasized) !important;
+      }
+    }
+
+    &--current,
+    &.is-current,
+    &[aria-selected="true"] {
+      button,
+      a {
+        color: var(--laca-fg) !important;
+        font-weight: 600;
+        border-bottom-color: var(--laca-accent) !important;
+      }
+    }
+  }
+
+  // 2. Field grid without column dividing borders
+  &__fields {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--laca-spacing-6);
+    border: none !important;
+    background: transparent;
+  }
+}
+
+// Field layout & typography (.laca-field pattern)
+.cf-field {
+  background: transparent;
+  border: none !important;
+  box-shadow: none !important;
+  box-sizing: border-box;
+  padding: 0 !important;
+  margin-bottom: var(--laca-spacing-5);
+
+  &::before,
+  &::after {
+    display: none !important;
+    border: none !important;
+  }
+
+  &--has-width {
+    border: none !important;
+  }
+
+  &__head,
+  &__title,
+  &__label {
+    display: block;
+    font-family: var(--laca-font);
+    font-size: var(--laca-font-size-sm);
+    font-weight: 500;
+    line-height: var(--laca-line-height-sm);
+    color: var(--laca-fg);
+    margin-bottom: var(--laca-spacing-1-5);
+    text-transform: none;
+  }
+
+  &__help,
+  &__description {
+    font-family: var(--laca-font);
+    font-size: var(--laca-font-size-xs);
+    line-height: var(--laca-line-height-xs);
+    color: var(--laca-fg-muted);
+    margin-top: var(--laca-spacing-1-5);
+  }
+
+  // Controls styling
+  input[type="text"]:not(.wp-color-picker),
+  input[type="password"],
+  input[type="email"],
+  input[type="url"],
+  input[type="number"],
+  select {
+    height: 36px;
+    border: 1px solid var(--laca-border);
+    border-radius: var(--laca-radii-l2);
+    padding: 0 var(--laca-spacing-3);
+    background-color: var(--laca-bg);
+    color: var(--laca-fg);
+    font-family: var(--laca-font);
+    font-size: var(--laca-font-size-sm);
+    line-height: var(--laca-line-height-sm);
+    box-sizing: border-box;
+    transition: border-color var(--laca-durations-fast), box-shadow var(--laca-durations-fast);
+
+    &:focus {
+      border-color: var(--laca-focus-ring);
+      box-shadow: 0 0 0 1px var(--laca-focus-ring);
+      outline: none;
+    }
+  }
+
+  textarea {
+    border: 1px solid var(--laca-border);
+    border-radius: var(--laca-radii-l2);
+    padding: var(--laca-spacing-2) var(--laca-spacing-3);
+    background-color: var(--laca-bg);
+    color: var(--laca-fg);
+    font-family: var(--laca-font);
+    font-size: var(--laca-font-size-sm);
+    line-height: var(--laca-line-height-sm);
+    box-sizing: border-box;
+    transition: border-color var(--laca-durations-fast), box-shadow var(--laca-durations-fast);
+
+    &:focus {
+      border-color: var(--laca-focus-ring);
+      box-shadow: 0 0 0 1px var(--laca-focus-ring);
+      outline: none;
+    }
+  }
+}
+
+// 3. Color field swatch & inputs
+.cf-color {
+  .wp-picker-container {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--laca-spacing-2);
+  }
+
+  .wp-color-result.button {
+    width: 28px !important;
+    height: 28px !important;
+    min-height: 28px !important;
+    border-radius: var(--laca-radii-l2) !important;
+    border: 1px solid var(--laca-border) !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    cursor: pointer;
+
+    .wp-color-result-text {
+      display: none !important;
+    }
+  }
+
+  .wp-picker-input-wrap {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--laca-spacing-2);
+
+    input.wp-color-picker[type="text"] {
+      height: 32px !important;
+      border: 1px solid var(--laca-border) !important;
+      border-radius: var(--laca-radii-l2) !important;
+      font-family: monospace;
+      font-size: var(--laca-font-size-xs) !important;
+      padding: 0 var(--laca-spacing-2) !important;
+      width: 90px !important;
+      box-sizing: border-box;
+
+      &:focus {
+        border-color: var(--laca-focus-ring) !important;
+        box-shadow: 0 0 0 1px var(--laca-focus-ring) !important;
+        outline: none;
+      }
+    }
+
+    .wp-picker-clear.button {
+      height: 32px !important;
+      padding: 0 var(--laca-spacing-2-5) !important;
+      font-family: var(--laca-font);
+      font-size: var(--laca-font-size-xs) !important;
+      border-radius: var(--laca-radii-l2) !important;
+      background-color: transparent !important;
+      border: 1px solid var(--laca-border) !important;
+      color: var(--laca-fg-muted) !important;
+      box-shadow: none !important;
+      cursor: pointer;
+      transition: background-color var(--laca-durations-fast), color var(--laca-durations-fast);
+
+      &:hover {
+        background-color: var(--laca-bg-muted) !important;
+        color: var(--laca-fg) !important;
+      }
+    }
+  }
+}
+
+// 4. Complex / Repeater fields as collapsible Cards
+.cf-complex {
+  &__group {
+    border: 1px solid var(--laca-border) !important;
+    border-radius: var(--laca-radii-l2) !important;
+    background-color: var(--laca-bg) !important;
+    box-shadow: var(--laca-shadow-xs) !important;
+    margin-bottom: var(--laca-spacing-3) !important;
+    overflow: hidden;
+  }
+
+  &__group-head,
+  &__tabs-item {
+    height: 44px;
+    display: flex;
+    align-items: center;
+    padding: 0 var(--laca-spacing-4);
+    background-color: var(--laca-bg-subtle);
+    border-bottom: 1px solid var(--laca-border);
+    font-family: var(--laca-font);
+    font-size: var(--laca-font-size-sm);
+    font-weight: 600;
+    color: var(--laca-fg);
+  }
+
+  &__group-body {
+    padding: var(--laca-spacing-4);
+    background-color: var(--laca-bg);
+  }
+
+  &__inserter-button,
+  &__inserter button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 32px;
+    padding: 0 var(--laca-spacing-3);
+    font-family: var(--laca-font);
+    font-size: var(--laca-font-size-sm);
+    font-weight: 500;
+    border-radius: var(--laca-radii-l2);
+    border: 1px solid var(--laca-border);
+    background-color: var(--laca-bg);
+    color: var(--laca-fg);
+    cursor: pointer;
+    transition: background-color var(--laca-durations-fast);
+
+    &:hover {
+      background-color: var(--laca-bg-muted);
+    }
+  }
+}
+
+// 5. Actions Card & Sticky on >= 1280px
+#submitdiv.postbox,
+.cf-container__actions,
+.cf-actions {
+  border: 1px solid var(--laca-border) !important;
+  border-radius: var(--laca-radii-l2) !important;
+  background-color: var(--laca-bg) !important;
+  box-shadow: var(--laca-shadow-xs) !important;
+
+  h3,
+  .postbox-header {
+    font-family: var(--laca-font) !important;
+    font-size: var(--laca-font-size-sm) !important;
+    font-weight: 600 !important;
+    color: var(--laca-fg) !important;
+    border-bottom: 1px solid var(--laca-border) !important;
+    padding: var(--laca-spacing-3) var(--laca-spacing-4) !important;
+  }
+
+  #major-publishing-actions {
+    background: transparent !important;
+    border: none !important;
+    padding: var(--laca-spacing-4) !important;
+  }
+
+  #publish.button-primary {
+    width: 100%;
+    height: 36px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--laca-radii-l2) !important;
+    font-weight: 600;
+    background-color: var(--laca-accent) !important;
+    border-color: var(--laca-accent) !important;
+    color: var(--laca-bg) !important;
+  }
+}
+
+@media (min-width: 1280px) {
+  #submitdiv {
+    position: sticky !important;
+    top: 48px !important;
+    z-index: 20;
+  }
+}
+
+// 6. Carbon Save Notifications (Alert success)
+.carbon-notification,
+.cf-notification,
+.notice.cf-notice {
+  background-color: var(--laca-success-bg) !important;
+  border: 1px solid var(--laca-success-border) !important;
+  border-radius: var(--laca-radii-l2) !important;
+  color: var(--laca-success) !important;
+  padding: var(--laca-spacing-3) var(--laca-spacing-4) !important;
+  font-family: var(--laca-font);
+  font-weight: 500;
+  box-shadow: none !important;
+}

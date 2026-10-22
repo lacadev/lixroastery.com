@@ -1,0 +1,173 @@
+// =============================================================================
+// Laca Admin Dock Skin (Chakra UI v3 tokens)
+// =============================================================================
+
+#toplevel_page_laca-admin .wp-submenu {
+  display: none !important;
+}
+
+// Desktop layout (>= 1024px)
+@media (min-width: 1024px) {
+  body.laca-admin-dock-active:not(.folded) #wpcontent,
+  body.laca-admin-dock-active.folded #wpcontent {
+    padding-left: 268px !important; // 240px dock + 28px breathing room
+  }
+
+  .laca-admin-dock {
+    position: fixed;
+    top: 32px;
+    bottom: 0;
+    left: 160px;
+    width: 240px;
+    background-color: var(--laca-bg);
+    border-right: 1px solid var(--laca-border);
+    box-shadow: var(--laca-shadow-xs);
+    color: var(--laca-fg);
+    overflow-y: auto;
+    padding: var(--laca-spacing-4) var(--laca-spacing-3);
+    z-index: 99;
+
+    body.folded & {
+      left: 36px;
+    }
+
+    body.auto-fold & {
+      left: 36px;
+    }
+
+    &__mobile {
+      display: none;
+    }
+
+    &__desktop {
+      display: block;
+    }
+
+    &__group {
+      border-top: 1px solid var(--laca-border);
+      margin-bottom: 0;
+      padding: var(--laca-spacing-3) 0;
+
+      &:first-of-type {
+        border-top: 0;
+        padding-top: 0;
+      }
+    }
+
+    &__group-title {
+      align-items: center;
+      color: var(--laca-fg-muted);
+      display: flex;
+      font-family: var(--laca-font);
+      font-size: var(--laca-font-size-xs);
+      font-weight: 500;
+      line-height: var(--laca-line-height-xs);
+      letter-spacing: normal;
+      text-transform: none; // sentence-case
+      margin: 0 0 var(--laca-spacing-1-5);
+      padding: 0 var(--laca-spacing-2);
+
+      .dashicons,
+      .laca-admin-dock__group-count {
+        display: none;
+      }
+    }
+
+    &__items {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      margin: 0;
+    }
+
+    &__item {
+      display: flex;
+      align-items: center;
+      height: 32px;
+      padding: 0 var(--laca-spacing-2-5);
+      font-family: var(--laca-font);
+      font-size: var(--laca-font-size-sm);
+      font-weight: 400;
+      line-height: var(--laca-line-height-sm);
+      color: var(--laca-fg-muted);
+      text-decoration: none;
+      border-radius: var(--laca-radii-l2);
+      border: 1px solid transparent;
+      transition: background-color var(--laca-durations-fast), color var(--laca-durations-fast);
+
+      &:hover,
+      &:focus {
+        background-color: var(--laca-bg-muted);
+        color: var(--laca-fg);
+        outline: none;
+      }
+
+      &.is-active,
+      &[aria-current="page"] {
+        background-color: var(--laca-accent-subtle);
+        color: var(--laca-accent-fg);
+        font-weight: 500;
+        border-color: transparent;
+      }
+    }
+  }
+}
+
+// Tablet & Mobile layout (< 1024px)
+@media (max-width: 1023px) {
+  body.laca-admin-dock-active #wpcontent,
+  body.laca-admin-dock-active.folded #wpcontent,
+  body.laca-admin-dock-active:not(.folded) #wpcontent {
+    padding-left: 12px !important;
+    padding-right: 12px !important;
+  }
+
+  .laca-admin-dock {
+    position: static;
+    width: 100%;
+    max-width: 100%;
+    margin: var(--laca-spacing-3) 0 var(--laca-spacing-4);
+    padding: var(--laca-spacing-3) var(--laca-spacing-4);
+    background-color: var(--laca-bg);
+    border: 1px solid var(--laca-border);
+    border-radius: var(--laca-radii-l2);
+    box-shadow: var(--laca-shadow-xs);
+    box-sizing: border-box;
+
+    &__desktop {
+      display: none;
+    }
+
+    &__mobile {
+      display: flex;
+      flex-direction: column;
+      gap: var(--laca-spacing-1-5);
+    }
+
+    &__mobile-label {
+      font-family: var(--laca-font);
+      font-size: var(--laca-font-size-xs);
+      font-weight: 500;
+      color: var(--laca-fg-muted);
+      text-transform: none;
+    }
+
+    &__select {
+      width: 100%;
+      height: 36px;
+      padding: 0 var(--laca-spacing-3);
+      font-family: var(--laca-font);
+      font-size: var(--laca-font-size-sm);
+      color: var(--laca-fg);
+      background-color: var(--laca-bg);
+      border: 1px solid var(--laca-border);
+      border-radius: var(--laca-radii-l2);
+      outline: none;
+
+      &:focus {
+        border-color: var(--laca-focus-ring);
+        box-shadow: 0 0 0 1px var(--laca-focus-ring);
+      }
+    }
+  }
+}

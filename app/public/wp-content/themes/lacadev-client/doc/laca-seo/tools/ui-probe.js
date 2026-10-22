@@ -17,7 +17,7 @@ const VIEWS = ['dashboard', 'general', 'titles', 'sitemap', 'instant-indexing', 
 const WIDTHS = [1440, 1024, 390];
 
 const code = `define('WP_USE_THEMES',false);require 'app/public/wp-load.php';$u=get_user_by('login',${JSON.stringify(LOGIN)});if(!$u){exit(1);}$e=time()+3600;echo json_encode([LOGGED_IN_COOKIE=>wp_generate_auth_cookie($u->ID,$e,'logged_in'),AUTH_COOKIE=>wp_generate_auth_cookie($u->ID,$e,'auth')]);`;
-const cookies = JSON.parse(execFileSync(PHP, ['-d', 'mysqli.default_socket=' + SOCK, '-r', code], { cwd: ROOT }).toString());
+const cookies = JSON.parse(execFileSync(PHP, ['-d', 'memory_limit=512M', '-d', 'mysqli.default_socket=' + SOCK, '-r', code], { cwd: ROOT }).toString());
 
 let pass = 0, fail = 0;
 const report = (ok, check, view, w, detail = '') => {
