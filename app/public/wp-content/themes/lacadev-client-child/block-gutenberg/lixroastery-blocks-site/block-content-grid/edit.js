@@ -9,6 +9,8 @@ import { useInserterPreview, BlockPreviewMock } from '../../utils/preview';
 import {
 	ResponsiveRangeControl,
 	ResponsiveSelectControl,
+	ContainerModeControl,
+	getBlockLayoutClass,
 } from '../../utils/inspector-panels';
 import previewImage from './preview.png';
 
@@ -44,9 +46,9 @@ const FONT_SIZE_DEFAULTS = {
 
 export default function Edit( { attributes, setAttributes } ) {
 	const isPreview = useInserterPreview( attributes );
-	const blockProps = useBlockProps( { className: 'container-fluid' } );
 
 	const {
+		containerMode = 'inherit',
 		columns,
 		maxWidth,
 		maxWidthTablet,
@@ -78,6 +80,11 @@ export default function Edit( { attributes, setAttributes } ) {
 		'--align-margin-mobile':
 			MARGIN_MAP[ contentAlignMobile ] || MARGIN_MAP.center,
 	};
+
+	const layoutClass = getBlockLayoutClass( containerMode );
+	const blockProps = useBlockProps( {
+		className: `container-fluid ${ layoutClass }`.trim(),
+	} );
 
 	if ( isPreview ) {
 		return (
@@ -111,6 +118,12 @@ export default function Edit( { attributes, setAttributes } ) {
 					title={ __( 'Bố cục', 'laca' ) }
 					initialOpen={ true }
 				>
+					<ContainerModeControl
+						value={ containerMode }
+						onChange={ ( v ) =>
+							setAttributes( { containerMode: v } )
+						}
+					/>
 					<RangeControl
 						label={ __( 'Số cột', 'laca' ) }
 						value={ columns }

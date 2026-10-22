@@ -77,13 +77,14 @@ $style_vars = [
     '--spacing-mobile:' . $spacing_mobile . 'px',
 ];
 
+$layout_class = function_exists('laca_block_layout_class') ? laca_block_layout_class($attributes) : '';
 $wrapper_attrs = get_block_wrapper_attributes([
-    'class' => 'block-container',
+    'class' => trim("block-container {$layout_class}"),
     'style' => implode(';', $style_vars) . ';',
 ]);
 ?>
 
-<section class="container-fluid">
+<section class="container-fluid<?php echo $layout_class ? ' ' . esc_attr($layout_class) : ''; ?>">
     <div <?php echo $wrapper_attrs; ?>>
         <?php echo $content; ?>
     </div>

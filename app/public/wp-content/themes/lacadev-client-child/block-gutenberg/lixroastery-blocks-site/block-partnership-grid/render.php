@@ -90,7 +90,8 @@ $get_cat = static function (WP_Post $post, string $taxonomy): string {
     return ($terms && !is_wp_error($terms)) ? esc_html($terms[0]->name) : '';
 };
 
-$wrapper_attrs = get_block_wrapper_attributes(['class' => 'block-partnership-grid']);
+$layout_class = function_exists('laca_block_layout_class') ? laca_block_layout_class($attributes) : '';
+$wrapper_attrs = get_block_wrapper_attributes(['class' => trim("block-partnership-grid {$layout_class}")]);
 ?>
 <section <?php echo $wrapper_attrs; ?>>
     <div class="container-fluid">

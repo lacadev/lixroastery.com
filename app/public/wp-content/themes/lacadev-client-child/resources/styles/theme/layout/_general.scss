@@ -17,12 +17,44 @@ body:not(.home) main#main_content {
   }
 }
 
+:root {
+  --laca-container-max: 100%;
+}
+
+body.laca-layout-boxed {
+  --laca-container-max: #{$xl};
+}
+
+body.laca-layout-fluid {
+  --laca-container-max: 100%;
+}
+
+.is-layout-boxed {
+  --laca-container-max: #{$xl};
+}
+
+.is-layout-fluid {
+  --laca-container-max: 100%;
+}
+
 .container {
-  max-width: $xl;
+  --laca-container-max: #{$xl};
+  max-width: var(--laca-container-max, #{$xl});
+  margin-inline: auto;
 }
 
 .container-fluid {
-  max-width: 100% !important;
+  max-width: var(--laca-container-max, 100%);
+  margin-inline: auto;
+
+  &.is-layout-boxed {
+    --laca-container-max: #{$xl};
+  }
+
+  &.is-layout-fluid {
+    --laca-container-max: 100%;
+  }
+
   @include container-gutter;
 }
 
@@ -41,6 +73,8 @@ body:not(.home) main#main_content {
   width: 100%;
 
   > :not(section):not(.alignfull):not(.alignwide) {
+    max-width: var(--laca-container-max, 100%);
+    margin-inline: auto;
     @include container-gutter;
   }
 

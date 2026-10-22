@@ -212,7 +212,7 @@ function mergeSpacing( spacing ) {
 	}, {} );
 }
 
-function ResponsiveSpacingControls( { textdomain, spacing, onChangeSpacing } ) {
+function ResponsiveSpacingControls( { spacing, onChangeSpacing } ) {
 	const [ activeDevice, setActiveDevice ] = useState( 'desktop' );
 
 	const resolvedSpacing = useMemo(
@@ -712,4 +712,63 @@ export function SpacingPanel( {
 			/>
 		</PanelBody>
 	);
+}
+
+/**
+ * Control chọn chế độ khung (Fluid/Boxed/Inherit) cho block.
+ *
+ * @param {Object}   props          Component props.
+ * @param {string}   props.value    Giá trị hiện tại: 'inherit' | 'fluid' | 'boxed'.
+ * @param {Function} props.onChange Callback khi thay đổi giá trị.
+ * @param {string}   [props.label]  Nhãn control.
+ * @param {string}   [props.help]   Text hướng dẫn.
+ * @return {JSX.Element} SelectControl.
+ */
+export function ContainerModeControl( {
+	value = 'inherit',
+	onChange,
+	label = __( 'Khung', 'laca' ),
+	help = __(
+		'Chế độ khung của block: Kế thừa (mặc định), Fluid (toàn rộng) hoặc Boxed (căn giữa 1440px).',
+		'laca'
+	),
+} ) {
+	return (
+		<SelectControl
+			label={ label }
+			help={ help }
+			value={ value || 'inherit' }
+			options={ [
+				{
+					label: __( 'Kế thừa', 'laca' ),
+					value: 'inherit',
+				},
+				{
+					label: __( 'Fluid (Toàn rộng)', 'laca' ),
+					value: 'fluid',
+				},
+				{
+					label: __( 'Boxed (Cố định chiều rộng, căn giữa)', 'laca' ),
+					value: 'boxed',
+				},
+			] }
+			onChange={ onChange }
+		/>
+	);
+}
+
+/**
+ * Trả về class layout mode tương ứng ('is-layout-boxed' | 'is-layout-fluid' | '').
+ *
+ * @param {string} containerMode Giá trị mode.
+ * @return {string} Class CSS.
+ */
+export function getBlockLayoutClass( containerMode ) {
+	if ( containerMode === 'boxed' ) {
+		return 'is-layout-boxed';
+	}
+	if ( containerMode === 'fluid' ) {
+		return 'is-layout-fluid';
+	}
+	return '';
 }

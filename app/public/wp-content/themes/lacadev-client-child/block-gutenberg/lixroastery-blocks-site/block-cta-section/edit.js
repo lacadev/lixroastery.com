@@ -18,6 +18,8 @@ import { hexToRgba } from '../../utils/style';
 import {
 	ResponsiveRangeControl,
 	ResponsiveSelectControl,
+	ContainerModeControl,
+	getBlockLayoutClass,
 } from '../../utils/inspector-panels';
 import previewImage from './preview.png';
 
@@ -53,7 +55,10 @@ const CONTENT_ALIGN_KEYS = {
 
 export default function Edit( { attributes, setAttributes, clientId } ) {
 	const isPreview = useInserterPreview( attributes );
-	const blockProps = useBlockProps( { className: 'container-fluid' } );
+	const layoutClass = getBlockLayoutClass( attributes.containerMode );
+	const blockProps = useBlockProps( {
+		className: `container-fluid ${ layoutClass }`.trim(),
+	} );
 
 	// Sinh 1 ID cố định cho block ngay khi tạo — dùng để scope "Custom CSS
 	// nút bấm" (mỗi block instance 1 ID riêng, tránh CSS đè lẫn nhau khi có
@@ -78,6 +83,7 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 	}
 
 	const {
+		containerMode = 'inherit',
 		maxWidth,
 		maxWidthTablet,
 		maxWidthMobile,
@@ -152,6 +158,12 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 					title={ __( 'Bố cục', 'laca' ) }
 					initialOpen={ true }
 				>
+					<ContainerModeControl
+						value={ containerMode }
+						onChange={ ( v ) =>
+							setAttributes( { containerMode: v } )
+						}
+					/>
 					<ResponsiveRangeControl
 						label={ __( 'Kích thước tối đa (%)', 'laca' ) }
 						help={ __(

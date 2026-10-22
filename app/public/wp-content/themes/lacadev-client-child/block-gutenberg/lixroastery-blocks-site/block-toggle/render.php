@@ -36,8 +36,9 @@ if (empty($items)) {
 // giữa nhiều instance của cùng 1 block trên 1 trang (đã gặp ở block-projects-slider).
 $unique_id = wp_unique_id('lix-toggle-');
 
+$layout_class = function_exists('laca_block_layout_class') ? laca_block_layout_class($attributes) : '';
 $wrapper_attrs = get_block_wrapper_attributes([
-    'class' => 'block-toggle container-fluid',
+    'class' => trim("block-toggle container-fluid {$layout_class}"),
     'id' => $unique_id,
 ]);
 

@@ -91,9 +91,30 @@ p:empty {
   display: none;
 }
 
+:root {
+  --laca-container-max: 100%;
+}
+
+body.laca-layout-boxed {
+  --laca-container-max: #{$xl};
+}
+
+body.laca-layout-fluid {
+  --laca-container-max: 100%;
+}
+
+.is-layout-boxed {
+  --laca-container-max: #{$xl};
+}
+
+.is-layout-fluid {
+  --laca-container-max: 100%;
+}
+
 .container {
   width: 100%;
-  max-width: $xl;
+  --laca-container-max: #{$xl};
+  max-width: var(--laca-container-max, #{$xl});
   padding-right: 0.9375rem;
   padding-left: 0.9375rem;
   margin-right: auto;
@@ -101,6 +122,8 @@ p:empty {
 }
 
 .container-fluid {
+  max-width: var(--laca-container-max, 100%);
+  margin-inline: auto;
   padding-right: 6.25rem;
   padding-left: 6.25rem;
 

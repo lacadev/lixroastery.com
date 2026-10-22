@@ -83,7 +83,7 @@
 
 ---
 
-## 📐 6. QUY CÁCH LAYOUT CONTAINER / CONTAINER-FLUID (R1–R6)
+## 📐 6. QUY CÁCH LAYOUT CONTAINER / CONTAINER-FLUID (R1–R7)
 * **R1 — Template không bọc `the_content()`**: Template (`page.php`, `single.php`, custom page template...) không bọc `the_content()` trong `.container` hay `.container-fluid`. Vùng nội dung dùng wrapper `<div class="entry-content">` (không padding ngang).
 * **R2 — Block custom tự lo lề ngang**:
   * Tràn viền theo setting của block, không theo class `alignfull` đã lưu trong nội dung.
@@ -93,6 +93,7 @@
 * **R4 — Phần ngoài nội dung dùng đúng 1 lớp container**: Header, footer, breadcrumb, page-hero, archive header... dùng đúng 1 lớp `.container-fluid` (hoặc `.container` khi cần max-width `$xl`), không lồng container trong container.
 * **R5 — Bản vá lồng hợp lệ**: Duy trì `.container-fluid .container-fluid { padding: 0 !important; }` để hỗ trợ các block dạng container (Tabs, Container) chứa block con mà không bị thụt lề lặp. Mép trái chữ luôn thẳng hàng với logo header ở mọi breakpoint.
 * **R6 — Dùng chung `@mixin container-gutter`**: Không hardcode lề (100px / 50px / 20px / 15px), luôn dùng `@mixin container-gutter` trong `abstracts/_mixin.scss`.
+* **R7 — Không chọn container/container-fluid để đổi độ rộng**: Không chọn container/container-fluid trong template/block để đổi độ rộng — luôn dùng `.container-fluid` + chế độ khung (site/trang/block qua `--laca-container-max`).
 
 **Ví dụ markup:**
 ```html

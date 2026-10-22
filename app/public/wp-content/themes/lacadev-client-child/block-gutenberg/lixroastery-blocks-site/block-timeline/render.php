@@ -30,7 +30,8 @@ if (empty($items)) {
     return;
 }
 
-$wrapper_attrs = get_block_wrapper_attributes(['class' => 'block-timeline container-fluid']);
+$layout_class = function_exists('laca_block_layout_class') ? laca_block_layout_class($attributes) : '';
+$wrapper_attrs = get_block_wrapper_attributes(['class' => trim("block-timeline container-fluid {$layout_class}")]);
 $prev_year     = null;
 ?>
 <section <?php echo $wrapper_attrs; ?>>

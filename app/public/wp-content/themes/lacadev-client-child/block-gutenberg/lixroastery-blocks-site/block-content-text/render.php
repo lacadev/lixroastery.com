@@ -56,8 +56,9 @@ if ($variant === 'quote') {
     }
 }
 
+$layout_class = laca_block_layout_class($attributes);
 $wrapper_attrs = get_block_wrapper_attributes([
-    'class' => 'block-content-text block-content-text--' . $variant . ' container-fluid',
+    'class' => trim('block-content-text block-content-text--' . $variant . ' container-fluid ' . $layout_class),
 ]);
 ?>
 <?php if ($variant === 'quote' && $quote_font_family) : ?>

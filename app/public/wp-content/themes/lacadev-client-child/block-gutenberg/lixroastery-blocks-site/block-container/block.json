@@ -13,6 +13,10 @@
         "html": false
     },
     "attributes": {
+        "containerMode": {
+            "type": "string",
+            "default": "inherit"
+        },
         "maxWidth": {
             "type": "number",
             "default": 50

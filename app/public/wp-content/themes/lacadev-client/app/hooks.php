@@ -28,6 +28,59 @@ add_action('admin_head', 'app_action_add_favicon', 5);
 add_filter('upload_dir', 'app_filter_fix_upload_dir_url_schema');
 
 /**
+ * Body class: xuất class laca-layout-fluid hoặc laca-layout-boxed theo 3 tầng (site -> trang).
+ */
+add_filter('body_class', function (array $classes): array {
+    $mode = function_exists('laca_get_current_layout_mode') ? laca_get_current_layout_mode() : 'fluid';
+    $classes[] = 'laca-layout-' . $mode;
+    return $classes;
+});
+
+/**
+ * Filter render_block_data hỗ trợ preview block override khi test trên local / admin
+ * e.g. ?laca_block_override=boxed (không ghi DB, chỉ phục vụ layout audit).
+ */
+add_filter('render_block_data', function (array $parsed_block): array {
+    if (is_admin()) {
+        return $parsed_block;
+    }
+    $is_local = function_exists('wp_get_environment_type') && wp_get_environment_type() === 'local';
+    if (($is_local || current_user_can('manage_options')) && isset($_GET['laca_block_override'])) {
+        $target_mode = sanitize_key($_GET['laca_block_override']);
+        if (in_array($target_mode, ['fluid', 'boxed'], true)) {
+            if (isset($parsed_block['blockName']) && strpos($parsed_block['blockName'], 'lacadev/') === 0) {
+                if (!isset($GLOBALS['__laca_block_override_applied'])) {
+                    $parsed_block['attrs']['containerMode'] = $target_mode;
+                    $GLOBALS['__laca_block_override_applied'] = true;
+                }
+            }
+        }
+    }
+    return $parsed_block;
+});
+
+/**
+ * Test helper: hỗ trợ xác thực admin tạm thời (cookie/header-only, không ghi DB)
+ * phục vụ test Gutenberg editor trong Puppeteer trên môi trường local.
+ */
+add_action('init', function (): void {
+    if (function_exists('wp_get_environment_type') && wp_get_environment_type() === 'local' && !empty($_GET['laca_dev_auth'])) {
+        $user = get_user_by('id', 1);
+        if ($user) {
+            wp_set_current_user($user->ID);
+            wp_set_auth_cookie($user->ID, true);
+            $redirect = !empty($_GET['redirect_to']) ? esc_url_raw($_GET['redirect_to']) : admin_url();
+            wp_safe_redirect($redirect);
+            exit;
+        }
+    }
+});
+
+if (function_exists('wp_get_environment_type') && wp_get_environment_type() === 'local') {
+    add_filter('use_block_editor_for_post', '__return_true', 999);
+}
+
+/**
  * Keep Laca Admin submenu grouped and ordered from one place.
  */
 add_action('init', function () {

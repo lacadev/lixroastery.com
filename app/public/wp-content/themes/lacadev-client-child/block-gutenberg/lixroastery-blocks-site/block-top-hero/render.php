@@ -45,7 +45,11 @@ $overlay_style = 'background:linear-gradient(' . $direction . 'deg, ' . $overlay
 $tiers = ['pc' => '', 'tablet' => 'Tablet', 'mobile' => 'Mobile'];
 $vertical_defaults = ['pc' => 'bottom', 'tablet' => 'center', 'mobile' => 'center'];
 $offset_y_defaults = ['pc' => 20, 'tablet' => 10, 'mobile' => 10];
+$layout_class = function_exists('laca_block_layout_class') ? laca_block_layout_class($attributes) : '';
 $classes = ['block-top-hero', 'block-top-hero--' . $height_mode];
+if ($layout_class) {
+    $classes[] = $layout_class;
+}
 $content_vars = '';
 
 if ($full_bleed) {
@@ -149,7 +153,7 @@ $hero_priority = $is_first_hero ? 'high' : 'auto';
     <?php endif; ?>
 
     <?php if ($full_bleed) : ?>
-    <div class="container-fluid block-top-hero__content-wrap">
+    <div class="container-fluid block-top-hero__content-wrap<?php echo $layout_class ? ' ' . esc_attr($layout_class) : ''; ?>">
     <?php endif; ?>
         <div class="block-top-hero__content" style="<?php echo esc_attr($content_vars); ?>">
             <?php if ($headline) : ?>

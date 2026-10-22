@@ -20,6 +20,8 @@ import { hexToRgba } from '../../utils/style';
 import {
 	ResponsiveRangeControl,
 	ResponsiveSelectControl,
+	ContainerModeControl,
+	getBlockLayoutClass,
 } from '../../utils/inspector-panels';
 import previewImage from './preview.png';
 
@@ -151,6 +153,7 @@ export default function Edit( { attributes, setAttributes } ) {
 	}
 
 	const {
+		containerMode = 'inherit',
 		heroImageId,
 		heroImageUrl,
 		headline,
@@ -183,10 +186,12 @@ export default function Edit( { attributes, setAttributes } ) {
 	}
 
 	// Class + biến CSS y hệt render.php để canvas giống frontend.
+	const layoutClass = getBlockLayoutClass( containerMode );
 	const classNames = [
 		blockProps.className,
 		`block-top-hero--${ heightMode }`,
 		fullBleed ? 'block-top-hero--bleed' : '',
+		layoutClass,
 	];
 	const contentStyle = {};
 	Object.entries( TIERS ).forEach( ( [ tier, suffix ] ) => {
@@ -229,6 +234,12 @@ export default function Edit( { attributes, setAttributes } ) {
 					title={ __( 'Bố cục', 'laca' ) }
 					initialOpen={ true }
 				>
+					<ContainerModeControl
+						value={ containerMode }
+						onChange={ ( v ) =>
+							setAttributes( { containerMode: v } )
+						}
+					/>
 					<ToggleControl
 						label={ __( 'Tràn viền 2 bên màn hình', 'laca' ) }
 						help={ __(

@@ -53,7 +53,8 @@ if (empty($items)) {
     return;
 }
 
-$wrapper_attrs = get_block_wrapper_attributes(['class' => 'block-stats-info']);
+$layout_class = function_exists('laca_block_layout_class') ? laca_block_layout_class($attributes) : '';
+$wrapper_attrs = get_block_wrapper_attributes(['class' => trim("block-stats-info {$layout_class}")]);
 ?>
 <section <?php echo $wrapper_attrs; ?> style="background:<?php echo esc_attr($bg_rgba); ?>;">
     <div class="container-fluid">

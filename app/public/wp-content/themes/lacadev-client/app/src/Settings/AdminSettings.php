@@ -889,6 +889,15 @@ class AdminSettings
 						->set_html('<i class="fa-regular fa-lightbulb-on"></i> Khi bật chế độ này, bạn sẽ không thể xem menu bình luận trong trang admin.'),
 
 				])
+				->add_tab(__('Giao diện', 'laca'), [
+					Field::make('select', 'layout_container_mode', __('Khung giao diện website', 'laca'))
+						->set_options([
+							'fluid' => __('Fluid (Toàn chiều rộng + lề chuẩn)', 'laca'),
+							'boxed' => __('Boxed (Cố định chiều rộng tối đa, căn giữa)', 'laca'),
+						])
+						->set_default_value('fluid')
+						->set_help_text(__('Mặc định website dùng Fluid (toàn rộng). Chọn Boxed nếu muốn giới hạn độ rộng tối đa toàn site.', 'laca')),
+				])
 				->add_tab(__('SMTP', 'laca'), [
 					Field::make('checkbox', 'use_smtp', __('Sử dụng SMTP để gửi mail', 'laca')),
 

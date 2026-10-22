@@ -69,7 +69,8 @@ $g = hexdec(substr($bg_color, 3, 2));
 $b = hexdec(substr($bg_color, 5, 2));
 $bg_rgba = 'rgba(' . $r . ',' . $g . ',' . $b . ',' . ($bg_opacity / 100) . ')';
 
-$wrapper_extra = ['class' => 'block-cta-section container-fluid'];
+$layout_class = laca_block_layout_class($attributes);
+$wrapper_extra = ['class' => trim('block-cta-section container-fluid ' . $layout_class)];
 if ($block_id) {
     $wrapper_extra['id'] = $block_id;
 }

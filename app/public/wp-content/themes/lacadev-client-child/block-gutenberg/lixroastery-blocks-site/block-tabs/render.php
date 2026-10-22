@@ -21,7 +21,8 @@ $content_align_mobile = in_array($attributes['contentAlignMobile'] ?? '', ['left
 $show_nav_buttons = (bool) ($attributes['showNavButtons'] ?? true);
 $margin_map = ['left' => '0 auto 0 0', 'center' => '0 auto', 'right' => '0 0 0 auto'];
 
-$wrapper_attrs = get_block_wrapper_attributes(['class' => 'tabs-block']);
+$layout_class = function_exists('laca_block_layout_class') ? laca_block_layout_class($attributes) : '';
+$wrapper_attrs = get_block_wrapper_attributes(['class' => trim("tabs-block {$layout_class}")]);
 
 // Ẩn/hiện theo tab CHỈ áp dụng ở đây (render.php chỉ chạy ở frontend, không
 // bao giờ được editor gọi tới) — không đặt rule này trong style.scss vì

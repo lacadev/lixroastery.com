@@ -116,9 +116,10 @@ if (empty($products)) {
     return;
 }
 
-$wrapper_attrs = get_block_wrapper_attributes(['class' => 'block-product-grid']);
+$layout_class = function_exists('laca_block_layout_class') ? laca_block_layout_class($attributes) : '';
+$wrapper_attrs = get_block_wrapper_attributes(['class' => trim("block-product-grid container-fluid {$layout_class}")]);
 ?>
-<section <?php echo $wrapper_attrs; ?> class="container-fluid">
+<section <?php echo $wrapper_attrs; ?>>
     <div class="block-product-grid__maxwidth"
         style="--mw-pc:<?php echo esc_attr($max_width); ?>%;--mw-tablet:<?php echo esc_attr($max_width_tablet); ?>%;--mw-mobile:<?php echo esc_attr($max_width_mobile); ?>%;--align-margin-pc:<?php echo esc_attr($margin_map[$content_align]); ?>;--align-margin-tablet:<?php echo esc_attr($margin_map[$content_align_tablet]); ?>;--align-margin-mobile:<?php echo esc_attr($margin_map[$content_align_mobile]); ?>;">
         <div class="block-product-grid__header">

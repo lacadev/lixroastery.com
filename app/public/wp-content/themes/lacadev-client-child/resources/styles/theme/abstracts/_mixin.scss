@@ -7,6 +7,24 @@
 // R6: Mixin container-gutter chuẩn hoá lề ngang toàn site theo breakpoint
 // Mặc định áp dụng cho padding (container-fluid, core blocks).
 // Hỗ trợ $property: margin cho các block không tràn viền (vd: block-top-hero khi fullBleed tắt).
+// Lề ngoài để 1 khối (vd Top Hero không tràn viền) thẳng hàng với .container-fluid cả khi site/trang ở chế độ boxed:
+// margin = max(gutter, (bề rộng cha − --laca-container-max)/2 + gutter). Fluid (max = 100%) ⇒ đúng bằng gutter.
+@mixin container-inset() {
+  $gutters: (null: rem(100), $lg: rem(50), $md: rem(20), $sm: rem(15));
+
+  @each $bp, $g in $gutters {
+    @if $bp == null {
+      margin-left: max(#{$g}, calc((100% - var(--laca-container-max, 100%)) / 2 + #{$g})) !important;
+      margin-right: max(#{$g}, calc((100% - var(--laca-container-max, 100%)) / 2 + #{$g})) !important;
+    } @else {
+      @include maxWidth($bp) {
+        margin-left: max(#{$g}, calc((100% - var(--laca-container-max, 100%)) / 2 + #{$g})) !important;
+        margin-right: max(#{$g}, calc((100% - var(--laca-container-max, 100%)) / 2 + #{$g})) !important;
+      }
+    }
+  }
+}
+
 @mixin container-gutter($property: padding) {
   #{$property}-right: rem(100) !important;
   #{$property}-left: rem(100) !important;

@@ -12,6 +12,8 @@ import { useInserterPreview, BlockPreviewMock } from '../../utils/preview';
 import {
 	ResponsiveRangeControl,
 	ResponsiveSelectControl,
+	ContainerModeControl,
+	getBlockLayoutClass,
 } from '../../utils/inspector-panels';
 import previewImage from './preview.png';
 
@@ -60,6 +62,7 @@ const TEMPLATE = [
 export default function Edit( { attributes, setAttributes, clientId } ) {
 	const isPreview = useInserterPreview( attributes );
 	const {
+		containerMode = 'inherit',
 		maxWidth,
 		maxWidthTablet,
 		maxWidthMobile,
@@ -83,7 +86,10 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 	// padding-left/right của container-fluid (đúng cảnh báo ở skill lacadev-theme
 	// mục 2.3). Ngoài trang thật, "container-fluid" nằm ở div con
 	// ".tabs-block__inner" riêng (xem render.php) nên không bị lỗi này.
-	const blockProps = useBlockProps( { className: 'tabs-block' } );
+	const layoutClass = getBlockLayoutClass( containerMode );
+	const blockProps = useBlockProps( {
+		className: [ 'tabs-block', layoutClass ].filter( Boolean ).join( ' ' ),
+	} );
 
 	// ── Hiển thị như frontend: 1 thanh tab bấm được + chỉ panel đang chọn mới
 	// hiện, thay vì xếp chồng hết tất cả để soạn (cách làm cũ) ─────────────────
@@ -185,6 +191,12 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 					title={ __( 'Bố cục', 'laca' ) }
 					initialOpen={ true }
 				>
+					<ContainerModeControl
+						value={ containerMode }
+						onChange={ ( v ) =>
+							setAttributes( { containerMode: v } )
+						}
+					/>
 					<ResponsiveRangeControl
 						label={ __( 'Kích thước tối đa (%)', 'laca' ) }
 						help={ __(

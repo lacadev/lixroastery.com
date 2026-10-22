@@ -242,7 +242,7 @@ body:not(.wp-admin):not(.editor-styles-wrapper) .block-top-hero--bleed {
 
 // Khi TẮT tràn viền: khối nằm trong lề chuẩn của site (đồng bộ gutter header)
 body:not(.wp-admin):not(.editor-styles-wrapper) .block-top-hero:not(.block-top-hero--bleed) {
-    @include childMixin.container-gutter(margin);
+    @include childMixin.container-inset;
 }
 
 .block-top-hero__content-wrap {

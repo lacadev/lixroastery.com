@@ -17,6 +17,8 @@ import { useInserterPreview, BlockPreviewMock } from '../../utils/preview';
 import {
 	ResponsiveRangeControl,
 	ResponsiveSelectControl,
+	ContainerModeControl,
+	getBlockLayoutClass,
 } from '../../utils/inspector-panels';
 import {
 	GOOGLE_FONT_OPTIONS,
@@ -100,9 +102,8 @@ function ImagePicker( { imageUrl, imageId, onSelect } ) {
 
 export default function Edit( { attributes, setAttributes } ) {
 	const isPreview = useInserterPreview( attributes );
-	const blockProps = useBlockProps( { className: 'container-fluid' } );
-
 	const {
+		containerMode = 'inherit',
 		mainTitle,
 		maxWidth,
 		maxWidthTablet,
@@ -112,6 +113,11 @@ export default function Edit( { attributes, setAttributes } ) {
 		contentAlignMobile,
 		rows,
 	} = attributes;
+
+	const layoutClass = getBlockLayoutClass( containerMode );
+	const blockProps = useBlockProps( {
+		className: `container-fluid ${ layoutClass }`.trim(),
+	} );
 
 	const maxWidthStyle = {
 		'--mw-pc': `${ maxWidth }%`,
@@ -253,6 +259,12 @@ export default function Edit( { attributes, setAttributes } ) {
 					title={ __( 'Bố cục', 'laca' ) }
 					initialOpen={ true }
 				>
+					<ContainerModeControl
+						value={ containerMode }
+						onChange={ ( v ) =>
+							setAttributes( { containerMode: v } )
+						}
+					/>
 					<ResponsiveRangeControl
 						label={ __( 'Kích thước tối đa (%)', 'laca' ) }
 						help={ __(

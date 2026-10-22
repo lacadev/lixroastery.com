@@ -129,7 +129,7 @@ Sử dụng helper functions (xem phần [Responsive Images](#71-responsive-imag
 - **Links:** Link "Xem thêm" phải có `aria-label="Xem thêm về [Tiêu đề]"`.
 - **Colors:** Đảm bảo độ tương phản (Contrast ratio >= 4.5:1).
 
-### 3.4. Layout Container & Container-Fluid Guidelines (R1–R6)
+### 3.4. Layout Container & Container-Fluid Guidelines (R1–R7)
 
 Quy chuẩn cấu trúc container đảm bảo mép trái nội dung luôn thẳng hàng với logo header và không xung đột padding:
 
@@ -142,6 +142,7 @@ Quy chuẩn cấu trúc container đảm bảo mép trái nội dung luôn thẳ
 - **R4 — Phần ngoài nội dung**: Header, footer, breadcrumb, page-hero, archive header... dùng đúng 1 lớp container, không lồng container trong container.
 - **R5 — Bản vá container lồng hợp lệ**: Giữ `.container-fluid .container-fluid { padding: 0 !important; }` để triệt tiêu padding cộng dồn khi các block dạng container lồng nhau (như Tabs, Container).
 - **R6 — Dùng chung Mixin**: Luôn dùng `@mixin container-gutter` trong `abstracts/_mixin.scss`, không hardcode kích thước padding.
+- **R7 — Không chọn container/container-fluid để đổi độ rộng**: Không chọn container/container-fluid trong template/block để đổi độ rộng — luôn dùng `.container-fluid` + chế độ khung (site/trang/block qua `--laca-container-max`).
 
 ```html
 <!-- ĐÚNG: Block thường -->

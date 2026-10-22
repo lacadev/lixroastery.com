@@ -13,6 +13,10 @@
         "align": ["wide", "full"]
     },
     "attributes": {
+        "containerMode": {
+            "type": "string",
+            "default": "inherit"
+        },
         "columns": {
             "type": "number",
             "default": 2

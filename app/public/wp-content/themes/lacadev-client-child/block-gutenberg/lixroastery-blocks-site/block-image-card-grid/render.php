@@ -35,7 +35,8 @@ if (empty($items)) {
     return;
 }
 
-$wrapper_attrs = get_block_wrapper_attributes(['class' => 'block-image-card-grid container-fluid']);
+$layout_class = laca_block_layout_class($attributes);
+$wrapper_attrs = get_block_wrapper_attributes(['class' => trim('block-image-card-grid container-fluid ' . $layout_class)]);
 ?>
 <section <?php echo $wrapper_attrs; ?>>
     <div class="block-image-card-grid__maxwidth"

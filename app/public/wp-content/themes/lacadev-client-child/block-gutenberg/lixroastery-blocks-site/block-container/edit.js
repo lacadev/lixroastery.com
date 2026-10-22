@@ -10,6 +10,8 @@ import { useInserterPreview, BlockPreviewMock } from '../../utils/preview';
 import {
 	ResponsiveRangeControl,
 	ResponsiveSelectControl,
+	ContainerModeControl,
+	getBlockLayoutClass,
 } from '../../utils/inspector-panels';
 
 const ALIGN_OPTIONS = [
@@ -78,6 +80,7 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 	const { selectBlock } = useDispatch( 'core/block-editor' );
 
 	const {
+		containerMode = 'inherit',
 		maxWidth,
 		maxWidthTablet,
 		maxWidthMobile,
@@ -98,8 +101,11 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 		blockSpacingMobile = 14,
 	} = attributes;
 
+	const layoutClass = getBlockLayoutClass( containerMode );
 	const blockProps = useBlockProps( {
-		className: 'block-container block-container--editor',
+		className: [ 'block-container', 'block-container--editor', layoutClass ]
+			.filter( Boolean )
+			.join( ' ' ),
 		style: {
 			'--mw-pc': `${ maxWidth }%`,
 			'--mw-tablet': `${ maxWidthTablet }%`,
@@ -148,6 +154,12 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 					title={ __( 'Bố cục', 'laca' ) }
 					initialOpen={ true }
 				>
+					<ContainerModeControl
+						value={ containerMode }
+						onChange={ ( v ) =>
+							setAttributes( { containerMode: v } )
+						}
+					/>
 					<ResponsiveRangeControl
 						label={ __( 'Kích thước tối đa (%)', 'laca' ) }
 						help={ __(

@@ -71,7 +71,8 @@ $config = [
 
 // Section ngoài LUÔN container-fluid — độ rộng NỘI DUNG điều chỉnh riêng qua
 // maxWidth (%) + contentAlign, giống hệt block Container.
-$wrapper_attrs = get_block_wrapper_attributes(['class' => 'block-cpt-grid container-fluid']);
+$layout_class = laca_block_layout_class($attributes);
+$wrapper_attrs = get_block_wrapper_attributes(['class' => trim('block-cpt-grid container-fluid ' . $layout_class)]);
 ?>
 <section <?php echo $wrapper_attrs; ?>>
     <div class="block-cpt-grid__maxwidth" style="--mw-pc:<?php echo esc_attr($max_width); ?>%;--mw-tablet:<?php echo esc_attr($max_width_tablet); ?>%;--mw-mobile:<?php echo esc_attr($max_width_mobile); ?>%;--align-margin-pc:<?php echo esc_attr($margin_map[$content_align]); ?>;--align-margin-tablet:<?php echo esc_attr($margin_map[$content_align_tablet]); ?>;--align-margin-mobile:<?php echo esc_attr($margin_map[$content_align_mobile]); ?>;">

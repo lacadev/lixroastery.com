@@ -44,7 +44,8 @@ foreach ($rows as $row) {
 
 // Section ngoài LUÔN container-fluid — độ rộng NỘI DUNG điều chỉnh riêng qua
 // maxWidth (%) + contentAlign, giống hệt block Container.
-$wrapper_attrs = get_block_wrapper_attributes(['class' => 'block-content-rows container-fluid']);
+$layout_class = laca_block_layout_class($attributes);
+$wrapper_attrs = get_block_wrapper_attributes(['class' => trim('block-content-rows container-fluid ' . $layout_class)]);
 ?>
 <?php foreach ($quote_fonts_needed as $fam) : ?>
     <link rel="stylesheet" href="<?php echo esc_url(laca_google_font_css_url($fam)); ?>">

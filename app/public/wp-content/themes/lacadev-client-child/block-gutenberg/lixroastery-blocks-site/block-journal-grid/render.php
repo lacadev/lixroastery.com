@@ -172,7 +172,8 @@ $get_read_time_from_text = static function (string $text): int {
     return max(1, (int) ceil($word_count / 200));
 };
 
-$wrapper_attrs = get_block_wrapper_attributes(['class' => 'block-journal-grid container-fluid']);
+$layout_class = function_exists('laca_block_layout_class') ? laca_block_layout_class($attributes) : '';
+$wrapper_attrs = get_block_wrapper_attributes(['class' => trim("block-journal-grid container-fluid {$layout_class}")]);
 ?>
 <section <?php echo $wrapper_attrs; ?>>
     <div class="block-journal-grid__maxwidth"

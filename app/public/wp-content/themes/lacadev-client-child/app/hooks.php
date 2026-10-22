@@ -16,6 +16,9 @@ if (!defined('ABSPATH')) {
 // CHILD HOOKS — thêm hooks của bạn bên dưới
 // =============================================================================
 
+// ── Layout Mode helper (laca_block_layout_class) ───────────────────────────
+require_once CHILD_APP_DIR . 'helpers/layout-mode.php';
+
 // ── Trang bắt đầu bằng block Top Hero (header overlay trong suốt + bỏ
 // breadcrumb) — dùng chung giữa theme/header.php và theme/page.php ─────────
 require_once CHILD_APP_DIR . 'helpers/top-hero-helpers.php';
