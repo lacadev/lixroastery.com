@@ -3,6 +3,7 @@
 @use "../../../resources/styles/theme/abstracts/variables" as *;
 
 
+body:not(.home) main#main_content .entry-content > .block-top-hero:first-child,
 body:not(.home) main#main_content .wrapper-content > .block-top-hero:first-child,
 body:not(.home) main#main_content > .block-top-hero:first-child {
     margin-top: rem(-90);

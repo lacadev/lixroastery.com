@@ -16,7 +16,7 @@ if (!defined('ABSPATH')) {
 $site_key = carbon_get_theme_option('recaptcha_site_key');
 ?>
 
-<main id="main-content" class="contact-page-template">
+<div class="contact-page-template">
     <?php get_template_part('template-parts/page-hero'); ?>
 
     <section class="contact-section">
@@ -187,4 +187,4 @@ $site_key = carbon_get_theme_option('recaptcha_site_key');
             </div>
         </div>
     </section>
-</main>
+</div>

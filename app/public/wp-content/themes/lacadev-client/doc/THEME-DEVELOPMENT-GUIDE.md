@@ -129,6 +129,37 @@ Sử dụng helper functions (xem phần [Responsive Images](#71-responsive-imag
 - **Links:** Link "Xem thêm" phải có `aria-label="Xem thêm về [Tiêu đề]"`.
 - **Colors:** Đảm bảo độ tương phản (Contrast ratio >= 4.5:1).
 
+### 3.4. Layout Container & Container-Fluid Guidelines (R1–R6)
+
+Quy chuẩn cấu trúc container đảm bảo mép trái nội dung luôn thẳng hàng với logo header và không xung đột padding:
+
+- **R1 — Template không bọc `the_content()`**: Template (`page.php`, `single.php`, custom page template...) không bọc `the_content()` trong `.container` hay `.container-fluid`. Vùng nội dung dùng wrapper `<div class="entry-content">` (không padding ngang).
+- **R2 — Block custom tự lo lề ngang**:
+  - Block thông thường: Thẻ root `<section class="container-fluid [block-class]">`.
+  - Block tràn viền (full-bleed): Thẻ root `<section class="[block-class] alignfull">` (KHÔNG có `container-fluid`), nội dung văn bản bên trong bọc qua `<div class="container-fluid">`.
+- **R3 — Core blocks trực tiếp trong `.entry-content`**: Tự động nhận lề qua `@mixin container-gutter`; `.alignwide` = max-width `$xl` căn giữa; `.alignfull` = tràn viền viewport 100vw.
+- **R4 — Phần ngoài nội dung**: Header, footer, breadcrumb, page-hero, archive header... dùng đúng 1 lớp container, không lồng container trong container.
+- **R5 — Bản vá container lồng hợp lệ**: Giữ `.container-fluid .container-fluid { padding: 0 !important; }` để triệt tiêu padding cộng dồn khi các block dạng container lồng nhau (như Tabs, Container).
+- **R6 — Dùng chung Mixin**: Luôn dùng `@mixin container-gutter` trong `abstracts/_mixin.scss`, không hardcode kích thước padding.
+
+```html
+<!-- ĐÚNG: Block thường -->
+<section class="container-fluid block-banner">
+    <div class="block-banner__inner">...</div>
+</section>
+
+<!-- ĐÚNG: Block tràn viền -->
+<section class="block-hero alignfull">
+    <img class="block-hero__bg" src="..." alt="">
+    <div class="container-fluid block-hero__content">...</div>
+</section>
+
+<!-- SAI: Tránh lồng container ngoài template -->
+<div class="container-fluid entry-content">
+    <?php the_content(); ?>
+</div>
+```
+
 ---
 
 ## 4. PHP & WORDPRESS BEST PRACTICES

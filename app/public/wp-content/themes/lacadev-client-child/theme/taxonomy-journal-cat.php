@@ -92,7 +92,7 @@ $config = [
 ?>
 
 <section class="journal-archive">
-    <div class="container">
+    <div class="container-fluid">
         <h1 class="journal-archive__title"><?php echo esc_html($current_term->name); ?></h1>
         <div class="journal-archive__desc"<?php echo $current_term->description ? '' : ' hidden'; ?>><?php echo wp_kses_post(wpautop($current_term->description)); ?></div>
 

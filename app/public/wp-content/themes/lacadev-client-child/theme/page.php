@@ -25,14 +25,11 @@ endif;
 if (is_front_page()):
 	the_content();
 else:
-	// .container — block mặc định (paragraph/heading/list/table...) không tự
-	// có khung như các block riêng của theme (mỗi block custom đã tự gắn
-	// class container/container-fluid vào section của chính nó), nên trước
-	// đây in ra sát mép trái/phải màn hình, không đọc được. Page thường
-	// (About/Terms/Privacy...) hầu như chỉ dùng block mặc định nên đóng khung
-	// theo .container y hệt phần còn lại của site.
+	// R1: Template KHÔNG bọc nội dung block trong container/container-fluid.
+	// Bọc bằng div.entry-content (không padding ngang).
+	// Core block tự nhận lề qua container-gutter trong CSS (R3).
 	?>
-	<div class="wrapper-content">
+	<div class="entry-content">
 		<?php
 		the_content();
 		?>

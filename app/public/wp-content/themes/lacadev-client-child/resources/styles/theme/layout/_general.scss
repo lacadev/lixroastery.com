@@ -6,6 +6,7 @@ body:not(.wp-admin) {
   line-height: 1.7 !important;
 
   @include resFont(rem(14), rem(16));
+  @include breakText;
 }
 
 body:not(.home) main#main_content {
@@ -22,33 +23,40 @@ body:not(.home) main#main_content {
 
 .container-fluid {
   max-width: 100% !important;
-  padding-right: rem(100) !important;
-  padding-left: rem(100) !important;
-
-  @include maxWidth($lg) {
-    padding-right: rem(50) !important;
-    padding-left: rem(50) !important;
-  }
-
-  @include maxWidth($md) {
-    padding-right: rem(20) !important;
-    padding-left: rem(20) !important;
-  }
-
-  @include maxWidth($sm) {
-    padding-right: rem(15) !important;
-    padding-left: rem(15) !important;
-  }
+  @include container-gutter;
 }
 
-// Mọi block custom tự gắn .container-fluid; khi bị đặt trong 1 container-fluid
-// khác (single.php bọc the_content, block Container, block Tabs...) thì padding
-// cộng dồn làm block tụt vào trong, lệch lề với header/footer. Chỉ lớp ngoài
-// cùng giữ padding. Specificity 2 class + !important để thắng rule ở trên
-// ở mọi breakpoint.
+// R5: Khi block Container hoặc block Tabs (vốn có container-fluid ở ngoài) chứa
+// các block con cũng có class .container-fluid bên trong, padding cộng dồn
+// làm block con tụt vào trong, lệch lề với header/footer. Rule này triệt tiêu
+// padding của các container-fluid lồng bên trong.
 .container-fluid .container-fluid {
   padding-right: 0 !important;
   padding-left: 0 !important;
+}
+
+// R1 & R3: Vùng nội dung bài viết/trang (.entry-content) không có padding ngang ở wrapper;
+// Các khối con trực tiếp (core blocks, đoạn văn, heading, list...) tự nhận lề qua container-gutter.
+.entry-content {
+  width: 100%;
+
+  > :not(section):not(.alignfull):not(.alignwide) {
+    @include container-gutter;
+  }
+
+  > .alignwide {
+    max-width: $xl;
+    margin-left: auto;
+    margin-right: auto;
+    @include container-gutter;
+  }
+
+  > .alignfull {
+    width: 100vw;
+    max-width: 100vw;
+    margin-left: calc(50% - 50vw);
+    margin-right: calc(50% - 50vw);
+  }
 }
 
 h1.page-title {

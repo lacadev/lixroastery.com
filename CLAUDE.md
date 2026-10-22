@@ -83,6 +83,34 @@
 
 ---
 
+## 📐 6. QUY CÁCH LAYOUT CONTAINER / CONTAINER-FLUID (R1–R6)
+* **R1 — Template không bọc `the_content()`**: Template (`page.php`, `single.php`, custom page template...) không bọc `the_content()` trong `.container` hay `.container-fluid`. Vùng nội dung dùng wrapper `<div class="entry-content">` (không padding ngang).
+* **R2 — Block custom tự lo lề ngang**:
+  * Block thường: Root `<section class="container-fluid [block-class]">` (lề chuẩn đồng bộ header/footer).
+  * Block tràn viền (hero, banner nền...): Root `<section class="[block-class] alignfull">` (KHÔNG có class `container-fluid`), đặt nội dung chữ bên trong `<div class="container-fluid">`.
+* **R3 — Core blocks trực tiếp nhận lề qua mixin**: Các thẻ core (p, h2, ul, ol, blockquote...) nằm trực tiếp trong `.entry-content` tự nhận lề qua `@mixin container-gutter`; `.alignwide` = max-width `$xl` + căn giữa; `.alignfull` = full viewport width.
+* **R4 — Phần ngoài nội dung dùng đúng 1 lớp container**: Header, footer, breadcrumb, page-hero, archive header... dùng đúng 1 lớp `.container-fluid` (hoặc `.container` khi cần max-width `$xl`), không lồng container trong container.
+* **R5 — Bản vá lồng hợp lệ**: Duy trì `.container-fluid .container-fluid { padding: 0 !important; }` để hỗ trợ các block dạng container (Tabs, Container) chứa block con mà không bị thụt lề lặp. Mép trái chữ luôn thẳng hàng với logo header ở mọi breakpoint.
+* **R6 — Dùng chung `@mixin container-gutter`**: Không hardcode lề (100px / 50px / 20px / 15px), luôn dùng `@mixin container-gutter` trong `abstracts/_mixin.scss`.
+
+**Ví dụ markup:**
+```html
+<!-- ĐÚNG (Block thường): -->
+<section class="container-fluid block-my-feature">...</section>
+
+<!-- ĐÚNG (Block tràn viền full-bleed): -->
+<section class="block-top-hero alignfull">
+    <img class="block-top-hero__bg" src="..." alt="">
+    <div class="container-fluid block-top-hero__content">...</div>
+</section>
+
+<!-- SAI: -->
+<section class="container-fluid alignfull">...</section> <!-- Xung đột lề -->
+<div class="entry-content container-fluid"><?php the_content(); ?></div> <!-- Lồng padding template -->
+```
+
+---
+
 ## 🛠️ CÁC LỆNH BUILD PHỔ BIẾN
 * `yarn dev` : Chạy đồng thời dev theme và dev blocks
 * `yarn dev:blocks` : Compile và watch Gutenberg blocks

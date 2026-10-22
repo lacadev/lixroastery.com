@@ -19,7 +19,7 @@ if (is_front_page()):
 else:
     ?>
 		<?php get_template_part('template-parts/page-hero'); ?>
-		<div class="wrapper-content">
+		<div class="entry-content">
 			<?php
 			the_content();
 			?>

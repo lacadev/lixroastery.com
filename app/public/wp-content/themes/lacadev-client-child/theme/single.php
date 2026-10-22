@@ -15,23 +15,23 @@ $is_journal = get_post_type() === 'journal';
 ?>
 
 <article class="single-post">
-	<div class="container-fluid">
-		<div class="single-post__content">
-			<?php if ($is_journal && function_exists('laca_journal_render_content')): ?>
-				<?php laca_journal_render_content($post_id); ?>
-			<?php else: ?>
-				<?php
-				// the_content() thay cho theContent() của parent — theContent() bọc
-				// wp_kses_post() lên output đã render, xoá <style> của block Tabs.
-				the_content();
-				?>
-			<?php endif; ?>
-		</div>
-
-		<?php if ($is_journal && function_exists('laca_journal_render_footer')): ?>
-			<?php laca_journal_render_footer($post_id); ?>
+	<div class="entry-content single-post__content">
+		<?php if ($is_journal && function_exists('laca_journal_render_content')): ?>
+			<?php laca_journal_render_content($post_id); ?>
+		<?php else: ?>
+			<?php
+			// the_content() thay cho theContent() của parent — theContent() bọc
+			// wp_kses_post() lên output đã render, xoá <style> của block Tabs.
+			the_content();
+			?>
 		<?php endif; ?>
 	</div>
+
+	<?php if ($is_journal && function_exists('laca_journal_render_footer')): ?>
+		<div class="container-fluid">
+			<?php laca_journal_render_footer($post_id); ?>
+		</div>
+	<?php endif; ?>
 
 	<?php if ($is_journal && function_exists('laca_render_journal_related_products')): ?>
 		<?php laca_render_journal_related_products($post_id); ?>
