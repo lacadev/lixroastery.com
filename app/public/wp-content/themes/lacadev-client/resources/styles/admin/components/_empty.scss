@@ -1,0 +1,43 @@
+// -------------------------------------------------------------
+// Empty State Component (Chakra v3)
+// -------------------------------------------------------------
+
+.laca-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: var(--laca-space-8) var(--laca-space-5);
+  font-family: var(--laca-font);
+  box-sizing: border-box;
+
+  &__icon {
+    width: 32px;
+    height: 32px;
+    font-size: 32px;
+    line-height: 32px;
+    color: var(--laca-fg-subtle);
+    margin-bottom: var(--laca-space-3);
+  }
+
+  &__title {
+    margin: 0 0 var(--laca-space-1) 0;
+    font-size: var(--laca-font-size-md);
+    font-weight: 600;
+    line-height: var(--laca-line-height-md);
+    color: var(--laca-fg);
+  }
+
+  &__description {
+    margin: 0 0 var(--laca-space-4) 0;
+    font-size: var(--laca-font-size-sm);
+    line-height: var(--laca-line-height-sm);
+    color: var(--laca-fg-muted);
+    max-width: 420px;
+  }
+
+  &__action {
+    display: inline-flex;
+  }
+}

@@ -1,0 +1,82 @@
+// -------------------------------------------------------------
+// Tabs Component (Chakra v3)
+// -------------------------------------------------------------
+
+.laca-tabs {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  width: 100%;
+  overflow-x: auto;
+  white-space: nowrap;
+  scrollbar-width: none;
+  box-sizing: border-box;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+
+  &__item {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--laca-space-2);
+    padding: var(--laca-space-2) var(--laca-space-4);
+    font-family: var(--laca-font);
+    font-size: var(--laca-font-size-sm);
+    font-weight: 500;
+    line-height: var(--laca-line-height-sm);
+    color: var(--laca-fg-muted);
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    text-decoration: none;
+    transition: var(--laca-transition);
+    position: relative;
+    user-select: none;
+
+    &:hover:not(.is-active) {
+      color: var(--laca-fg);
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--laca-focus-ring);
+      outline-offset: -2px;
+    }
+  }
+
+  // Variant: Line (Default)
+  &--line {
+    border-bottom: 1px solid var(--laca-border);
+
+    .laca-tabs__item {
+      border-bottom: 2px solid transparent;
+      margin-bottom: -1px;
+
+      &.is-active,
+      &[aria-selected="true"] {
+        color: var(--laca-fg);
+        border-bottom-color: var(--laca-accent);
+      }
+    }
+  }
+
+  // Variant: Subtle
+  &--subtle {
+    gap: var(--laca-space-1);
+    padding: var(--laca-space-1);
+    background-color: var(--laca-bg-muted);
+    border-radius: var(--laca-radius-l2);
+
+    .laca-tabs__item {
+      border-radius: calc(var(--laca-radius-l2) - 1px);
+      padding: var(--laca-space-1) var(--laca-space-3);
+
+      &.is-active,
+      &[aria-selected="true"] {
+        background-color: var(--laca-bg);
+        color: var(--laca-fg);
+        box-shadow: 0 1px 2px rgba(24, 24, 27, 0.06);
+      }
+    }
+  }
+}

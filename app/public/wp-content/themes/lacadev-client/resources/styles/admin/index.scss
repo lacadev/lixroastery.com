@@ -1,3 +1,21 @@
+// Chakra UI v3 Design Tokens & Components
+@use "tokens";
+@use "components/button";
+@use "components/input";
+@use "components/field";
+@use "components/selection";
+@use "components/tabs";
+@use "components/card";
+@use "components/badge";
+@use "components/alert";
+@use "components/table";
+@use "components/accordion";
+@use "components/empty";
+@use "components/stat";
+@use "components/progress";
+@use "components/page-header";
+@use "components/actionbar";
+
 // Shared font declarations used by both frontend and admin.
 @use "../theme/base/fonts";
 @use "../theme/abstracts/variables.scss" as *;

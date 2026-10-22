@@ -1,0 +1,43 @@
+// -------------------------------------------------------------
+// Badge Component (Chakra v3 — Subtle variant)
+// -------------------------------------------------------------
+
+.laca-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 20px;
+  padding: 0 var(--laca-space-2);
+  font-family: var(--laca-font);
+  font-size: var(--laca-font-size-xs);
+  font-weight: 500;
+  line-height: 1;
+  border-radius: var(--laca-radius-l2);
+  white-space: nowrap;
+  box-sizing: border-box;
+
+  &--neutral {
+    background-color: var(--laca-bg-muted);
+    color: var(--laca-fg-muted);
+  }
+
+  &--accent {
+    background-color: var(--laca-accent-subtle);
+    color: var(--laca-accent-fg);
+  }
+
+  &--success {
+    background-color: var(--laca-success-bg);
+    color: var(--laca-success);
+  }
+
+  &--warning {
+    background-color: var(--laca-warning-bg);
+    color: var(--laca-warning);
+  }
+
+  &--danger {
+    background-color: var(--laca-danger-bg);
+    color: var(--laca-danger);
+  }
+}

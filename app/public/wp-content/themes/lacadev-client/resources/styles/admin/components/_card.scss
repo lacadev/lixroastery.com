@@ -1,0 +1,48 @@
+// -------------------------------------------------------------
+// Card Component (Chakra v3 — Outline variant)
+// -------------------------------------------------------------
+
+.laca-card {
+  background-color: var(--laca-bg);
+  border: 1px solid var(--laca-border);
+  border-radius: var(--laca-radius-l3);
+  box-shadow: none;
+  overflow: hidden;
+  box-sizing: border-box;
+
+  &__header {
+    padding: var(--laca-space-4) var(--laca-space-5);
+    border-bottom: 1px solid var(--laca-border);
+
+    &-title {
+      margin: 0;
+      font-family: var(--laca-font);
+      font-size: var(--laca-font-size-md);
+      font-weight: 600;
+      line-height: var(--laca-line-height-md);
+      color: var(--laca-fg);
+    }
+
+    &-description {
+      margin: var(--laca-space-1) 0 0 0;
+      font-family: var(--laca-font);
+      font-size: var(--laca-font-size-sm);
+      line-height: var(--laca-line-height-sm);
+      color: var(--laca-fg-muted);
+    }
+  }
+
+  &__body {
+    padding: var(--laca-space-5);
+  }
+
+  &__footer {
+    padding: var(--laca-space-4) var(--laca-space-5);
+    border-top: 1px solid var(--laca-border);
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: var(--laca-space-3);
+    background-color: var(--laca-bg);
+  }
+}

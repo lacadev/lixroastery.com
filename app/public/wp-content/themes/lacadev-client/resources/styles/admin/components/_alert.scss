@@ -1,0 +1,81 @@
+// -------------------------------------------------------------
+// Alert Component (Chakra v3 — Subtle variant)
+// -------------------------------------------------------------
+
+.laca-alert {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--laca-space-3);
+  padding: var(--laca-space-3) var(--laca-space-4);
+  border-radius: var(--laca-radius-l3);
+  border: 1px solid transparent;
+  font-family: var(--laca-font);
+  box-sizing: border-box;
+
+  &__icon {
+    width: 20px;
+    height: 20px;
+    font-size: 20px;
+    line-height: 20px;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  &__content {
+    flex: 1;
+    min-width: 0;
+  }
+
+  &__title {
+    margin: 0;
+    font-size: var(--laca-font-size-sm);
+    font-weight: 600;
+    line-height: var(--laca-line-height-sm);
+  }
+
+  &__description {
+    margin: 2px 0 0 0;
+    font-size: var(--laca-font-size-sm);
+    line-height: var(--laca-line-height-sm);
+  }
+
+  &--info {
+    background-color: var(--laca-info-bg);
+    border-color: var(--laca-info-border);
+    color: var(--laca-info);
+
+    .laca-alert__icon {
+      color: var(--laca-accent);
+    }
+  }
+
+  &--success {
+    background-color: var(--laca-success-bg);
+    border-color: var(--laca-success-border);
+    color: var(--laca-success);
+
+    .laca-alert__icon {
+      color: var(--laca-success);
+    }
+  }
+
+  &--warning {
+    background-color: var(--laca-warning-bg);
+    border-color: var(--laca-warning-border);
+    color: var(--laca-warning);
+
+    .laca-alert__icon {
+      color: var(--laca-warning);
+    }
+  }
+
+  &--danger {
+    background-color: var(--laca-danger-bg);
+    border-color: var(--laca-danger-border);
+    color: var(--laca-danger);
+
+    .laca-alert__icon {
+      color: var(--laca-danger);
+    }
+  }
+}

@@ -1,0 +1,54 @@
+// -------------------------------------------------------------
+// Page Header Component (Chakra v3)
+// -------------------------------------------------------------
+
+.laca-page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--laca-space-4);
+  margin-bottom: var(--laca-space-6);
+  padding-bottom: var(--laca-space-4);
+  border-bottom: 1px solid var(--laca-border);
+  box-sizing: border-box;
+
+  &__content {
+    flex: 1;
+    min-width: 200px;
+  }
+
+  &__title {
+    margin: 0;
+    font-family: var(--laca-font);
+    font-size: var(--laca-font-size-xl);
+    font-weight: 600;
+    line-height: var(--laca-line-height-xl);
+    color: var(--laca-fg);
+  }
+
+  &__description {
+    margin: var(--laca-space-1) 0 0 0;
+    font-family: var(--laca-font);
+    font-size: var(--laca-font-size-sm);
+    line-height: var(--laca-line-height-sm);
+    color: var(--laca-fg-muted);
+  }
+
+  &__actions {
+    display: flex;
+    align-items: center;
+    gap: var(--laca-space-3);
+    flex-wrap: wrap;
+  }
+
+  @media (max-width: 781.98px) {
+    flex-direction: column;
+    align-items: flex-start;
+
+    &__actions {
+      width: 100%;
+      justify-content: flex-start;
+    }
+  }
+}

@@ -1,0 +1,183 @@
+// -------------------------------------------------------------
+// Selection Controls: Checkbox, Radio, Switch, Segmented (Chakra v3)
+// -------------------------------------------------------------
+
+.laca-checkbox,
+.laca-radio {
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  vertical-align: middle;
+  background-color: var(--laca-bg);
+  border: 1px solid var(--laca-border-emphasized);
+  transition: var(--laca-transition);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  flex-shrink: 0;
+
+  &:hover:not(:disabled) {
+    border-color: var(--laca-fg-muted);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--laca-focus-ring);
+    outline-offset: 2px;
+  }
+
+  &:checked {
+    background-color: var(--laca-accent);
+    border-color: var(--laca-accent);
+  }
+
+  &:disabled {
+    background-color: var(--laca-bg-muted);
+    border-color: var(--laca-border);
+    cursor: not-allowed;
+    opacity: 0.6;
+  }
+}
+
+.laca-checkbox {
+  border-radius: var(--laca-radius-l1);
+
+  &:checked::after {
+    content: "";
+    width: 4px;
+    height: 8px;
+    border: solid var(--laca-bg);
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+    margin-bottom: 2px;
+  }
+}
+
+.laca-radio {
+  border-radius: var(--laca-radius-full);
+
+  &:checked::after {
+    content: "";
+    width: 6px;
+    height: 6px;
+    border-radius: var(--laca-radius-full);
+    background-color: var(--laca-bg);
+  }
+}
+
+// Switch
+.laca-switch {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--laca-space-2);
+  cursor: pointer;
+  user-select: none;
+
+  &__input {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+    margin: 0;
+    pointer-events: none;
+
+    &:checked + .laca-switch__track {
+      background-color: var(--laca-accent);
+
+      .laca-switch__thumb {
+        transform: translateX(16px);
+      }
+    }
+
+    &:focus-visible + .laca-switch__track {
+      outline: 2px solid var(--laca-focus-ring);
+      outline-offset: 2px;
+    }
+
+    &:disabled + .laca-switch__track {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+  }
+
+  &__track {
+    position: relative;
+    display: inline-block;
+    width: 36px;
+    height: 20px;
+    background-color: var(--laca-bg-emphasized);
+    border-radius: var(--laca-radius-full);
+    transition: var(--laca-transition);
+    box-sizing: border-box;
+  }
+
+  &__thumb {
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 16px;
+    height: 16px;
+    background-color: var(--laca-bg);
+    border-radius: var(--laca-radius-full);
+    transition: transform 0.15s ease;
+    box-shadow: 0 1px 2px rgba(24, 24, 27, 0.15);
+  }
+
+  &__label {
+    font-family: var(--laca-font);
+    font-size: var(--laca-font-size-sm);
+    color: var(--laca-fg);
+  }
+}
+
+// Segmented Control
+.laca-segmented {
+  display: inline-flex;
+  align-items: center;
+  background-color: var(--laca-bg-muted);
+  padding: 2px;
+  border-radius: var(--laca-radius-l2);
+  gap: 2px;
+
+  &__item {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--laca-space-1) var(--laca-space-3);
+    font-family: var(--laca-font);
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--laca-fg-muted);
+    border-radius: calc(var(--laca-radius-l2) - 1px);
+    cursor: pointer;
+    border: none;
+    background: transparent;
+    transition: var(--laca-transition);
+    text-decoration: none;
+    white-space: nowrap;
+
+    &:hover:not(.is-active):not(:disabled) {
+      color: var(--laca-fg);
+    }
+
+    &.is-active,
+    &[aria-selected="true"] {
+      background-color: var(--laca-bg);
+      color: var(--laca-fg);
+      box-shadow: 0 1px 2px rgba(24, 24, 27, 0.06);
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--laca-focus-ring);
+      outline-offset: 1px;
+    }
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+  }
+}

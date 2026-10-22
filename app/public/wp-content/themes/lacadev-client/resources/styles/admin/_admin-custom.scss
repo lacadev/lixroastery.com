@@ -8,8 +8,8 @@
 // ─── Base ────────────────────────────────────────────────────
 
 body.wp-admin {
-  background: var(--bg-color-ad, #f0f0f1);
-  font-family: $themeFont !important;
+  background: var(--laca-bg-subtle);
+  font-family: var(--laca-font) !important;
 }
 
 h1.wp-block-post-title {
@@ -123,9 +123,9 @@ h1.wp-block-post-title {
   // Active parent
   li.current a.menu-top,
   li.wp-has-current-submenu a.wp-has-current-submenu {
-    background: rgba(var(--primary-color-ad-rgb, 46 162 204) / 0.18) !important;
-    color: var(--primary-color-ad, #2ea2cc) !important;
-    border-left: 3px solid var(--primary-color-ad, #2ea2cc);
+    background: var(--laca-accent-subtle) !important;
+    color: var(--laca-accent) !important;
+    border-left: 3px solid var(--laca-accent);
     font-weight: 600;
   }
 
@@ -133,7 +133,7 @@ h1.wp-block-post-title {
   .wp-has-current-submenu div.wp-menu-image::before,
   li.current a.menu-top div.wp-menu-image::before,
   li.wp-has-current-submenu div.wp-menu-image::before {
-    color: var(--primary-color-ad, #2ea2cc) !important;
+    color: var(--laca-accent) !important;
   }
 
   // Badge
@@ -155,7 +155,7 @@ h1.wp-block-post-title {
 
     li.current a,
     li.current a:hover {
-      color: var(--primary-color-ad, #2ea2cc) !important;
+      color: var(--laca-accent) !important;
     }
   }
 
@@ -189,13 +189,13 @@ ul#adminmenu {
 // ─── Main Content ────────────────────────────────────────────
 
 #wpcontent {
-  background: var(--bg-color-ad, #f0f0f1);
+  background: var(--laca-bg-subtle);
 }
 
 #wpfooter {
   border-top: 1px solid rgba(0,0,0,0.08);
   p, a { color: rgba(0,0,0,0.45); font-size: 12px; }
-  a:hover { color: var(--primary-color-ad, #2ea2cc); }
+  a:hover { color: var(--laca-accent); }
 }
 
 // ─── Post Boxes / Meta Boxes ──────────────────────────────────
@@ -260,7 +260,7 @@ ul#adminmenu {
 
   .row-actions {
     color: rgba(0,0,0,0.45);
-    a { color: var(--primary-color-ad, #2ea2cc); }
+    a { color: var(--laca-accent); }
     .delete a, .trash a { color: #f15d4f; }
   }
 }
@@ -269,8 +269,8 @@ ul#adminmenu {
 
 .button-primary,
 #publish {
-  background: var(--primary-color-ad, #8aadf7) !important;
-  border-color: var(--primary-color-ad, #8aadf7) !important;
+  background: var(--laca-accent) !important;
+  border-color: var(--laca-accent) !important;
   color: #fff !important;
   border-radius: 6px !important;
   font-weight: 600;
@@ -318,7 +318,7 @@ div.error {
     width: 48px;
     height: 48px;
     border-radius: 12px;
-    background: linear-gradient(135deg, var(--primary-color-ad, #2ea2cc), rgba(46,162,204,0.6));
+    background: var(--laca-accent);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -353,7 +353,7 @@ div.error {
   width: 52px;
   height: 52px;
   border-radius: 50%;
-  background: linear-gradient(135deg, var(--primary-color-ad, #2ea2cc), #1a87aa);
+  background: var(--laca-accent);
   color: #fff;
   border: none;
   cursor: pointer;
@@ -485,7 +485,7 @@ div.error {
 
   &--user {
     align-self: flex-end;
-    background: var(--primary-color-ad, #2ea2cc);
+    background: var(--laca-accent);
     color: #fff;
     border-radius: 12px 12px 3px 12px;
   }
@@ -566,7 +566,7 @@ div.error {
     transition: border-color 0.15s ease;
     color: #1a1a2e;
 
-    &:focus { border-color: var(--primary-color-ad, #2ea2cc); }
+    &:focus { border-color: var(--laca-accent); }
     &::placeholder { color: rgba(0,0,0,0.3); }
   }
 
@@ -574,7 +574,7 @@ div.error {
     width: 38px;
     height: 38px;
     border-radius: 10px;
-    background: var(--primary-color-ad, #2ea2cc);
+    background: var(--laca-accent);
     color: #fff;
     border: none;
     cursor: pointer;

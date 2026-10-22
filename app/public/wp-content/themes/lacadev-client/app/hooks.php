@@ -90,6 +90,15 @@ add_action('init', function () {
 });
 
 /**
+ * UI Kit trang mẫu (style guide sống) để review.
+ */
+add_action('init', function () {
+    if (is_admin() && class_exists('\App\Settings\LacaAdmin\UiKitPage')) {
+        (new \App\Settings\LacaAdmin\UiKitPage())->register();
+    }
+});
+
+/**
  * Checklist phát hành production — đầu trang Laca Admin (chỉ Super User).
  */
 add_action('init', function () {

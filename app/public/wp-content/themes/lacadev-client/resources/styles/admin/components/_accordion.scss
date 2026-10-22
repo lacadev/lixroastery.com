@@ -1,0 +1,65 @@
+// -------------------------------------------------------------
+// Accordion Component (Chakra v3)
+// -------------------------------------------------------------
+
+.laca-accordion {
+  border: 1px solid var(--laca-border);
+  border-radius: var(--laca-radius-l3);
+  background-color: var(--laca-bg);
+  overflow: hidden;
+  box-sizing: border-box;
+
+  &__item {
+    border-bottom: 1px solid var(--laca-border);
+
+    &:last-child {
+      border-bottom: none;
+    }
+  }
+
+  &__trigger {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    height: 44px;
+    padding: 0 var(--laca-space-4);
+    font-family: var(--laca-font);
+    font-size: var(--laca-font-size-sm);
+    font-weight: 500;
+    color: var(--laca-fg);
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    text-align: left;
+    transition: var(--laca-transition);
+
+    &:hover {
+      background-color: var(--laca-bg-subtle);
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--laca-focus-ring);
+      outline-offset: -2px;
+    }
+
+    &[aria-expanded="true"] .laca-accordion__chevron {
+      transform: rotate(180deg);
+    }
+  }
+
+  &__chevron {
+    transition: transform 0.2s ease;
+    font-size: 16px;
+    color: var(--laca-fg-muted);
+  }
+
+  &__content {
+    padding: var(--laca-space-4);
+    border-top: 1px solid var(--laca-border);
+    font-family: var(--laca-font);
+    font-size: var(--laca-font-size-sm);
+    line-height: var(--laca-line-height-sm);
+    color: var(--laca-fg);
+  }
+}

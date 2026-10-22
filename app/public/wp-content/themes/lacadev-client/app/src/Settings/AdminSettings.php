@@ -36,7 +36,6 @@ class AdminSettings
 		// bên trong nên gọi không điều kiện ở đây là an toàn.
 		$this->restrictExtraSuperUserAccess();
 
-		$this->applyAdminColorVariables();
 		$this->addDashboardContactWidget();
 		$this->removeDefaultWidgets();
 		$this->removeDashboardWidgets();
@@ -95,26 +94,6 @@ class AdminSettings
 			}
 			die($url ? esc_url_raw($url) : '');
 		});
-	}
-
-	public function applyAdminColorVariables(): void
-	{
-		$printColors = static function () {
-			$primary = carbon_get_theme_option('primary_color_ad') ?: '#566a7f';
-			$secondary = carbon_get_theme_option('secondary_color_ad') ?: '#566a7f';
-			$bg = carbon_get_theme_option('bg_color_ad') ?: '#E6E4FC';
-			$text = carbon_get_theme_option('text_color_ad') ?: '#000';
-
-			echo '<style>:root{'
-				. '--primary-color-ad:' . esc_attr($primary) . ';'
-				. '--secondary-color-ad:' . esc_attr($secondary) . ';'
-				. '--bg-color-ad:' . esc_attr($bg) . ';'
-				. '--text-color-ad:' . esc_attr($text) . ';'
-				. '}</style>';
-		};
-
-		add_action('admin_head', $printColors);
-		add_action('login_head', $printColors);
 	}
 
 	public function disableCheckboxUseWeakPassword()
@@ -840,16 +819,6 @@ class AdminSettings
 			$options = Container::make('theme_options', __('Laca Admin', 'laca'))
 				->set_page_file(__('laca-admin', 'laca'))
 				->set_page_menu_position(3)
-				->add_tab(__('ADMIN COLOR', 'laca'), [
-					Field::make('color', 'primary_color_ad', __('Primary color', 'laca'))
-						->set_width(25),
-					Field::make('color', 'secondary_color_ad', __('Secondary color', 'laca'))
-						->set_width(25),
-					Field::make('color', 'bg_color_ad', __('Background color', 'laca'))
-						->set_width(25),
-					Field::make('color', 'text_color_ad', __('Text color', 'laca'))
-						->set_width(25),
-				])
 				->add_tab(__('ADMIN', 'laca'), [
 					Field::make('checkbox', 'is_maintenance', __('Bật chế độ bảo trì', 'laca'))
 						->set_width(30),

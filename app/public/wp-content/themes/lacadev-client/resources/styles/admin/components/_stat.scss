@@ -1,0 +1,31 @@
+// -------------------------------------------------------------
+// Stat Component (Chakra v3)
+// -------------------------------------------------------------
+
+.laca-stat {
+  display: flex;
+  flex-direction: column;
+  gap: var(--laca-space-1);
+  font-family: var(--laca-font);
+  box-sizing: border-box;
+
+  &__label {
+    font-size: var(--laca-font-size-sm);
+    color: var(--laca-fg-muted);
+    font-weight: 400;
+    line-height: var(--laca-line-height-sm);
+  }
+
+  &__value {
+    font-size: 24px;
+    font-weight: 600;
+    color: var(--laca-fg);
+    line-height: 1.2;
+  }
+
+  &__help {
+    font-size: var(--laca-font-size-xs);
+    color: var(--laca-fg-subtle);
+    line-height: var(--laca-line-height-xs);
+  }
+}

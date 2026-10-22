@@ -1,0 +1,71 @@
+// -------------------------------------------------------------
+// Field & Field Row Components (Chakra v3)
+// -------------------------------------------------------------
+
+.laca-field {
+  margin-bottom: var(--laca-space-5);
+
+  &__label {
+    display: block;
+    margin-bottom: var(--laca-space-2);
+    font-family: var(--laca-font);
+    font-size: var(--laca-font-size-sm);
+    font-weight: 500;
+    line-height: var(--laca-line-height-sm);
+    color: var(--laca-fg);
+    text-transform: none;
+  }
+
+  &__help {
+    margin-top: 6px;
+    font-family: var(--laca-font);
+    font-size: var(--laca-font-size-xs);
+    line-height: var(--laca-line-height-xs);
+    color: var(--laca-fg-muted);
+  }
+
+  &__error {
+    margin-top: var(--laca-space-1);
+    font-family: var(--laca-font);
+    font-size: var(--laca-font-size-xs);
+    line-height: var(--laca-line-height-xs);
+    color: var(--laca-danger);
+  }
+}
+
+.laca-field-row {
+  display: grid;
+  grid-template-columns: minmax(200px, 260px) 1fr;
+  gap: var(--laca-space-6);
+  padding: var(--laca-space-4) 0;
+  border-bottom: 1px solid var(--laca-border);
+  align-items: start;
+
+  &__label {
+    padding-top: var(--laca-space-2);
+
+    label {
+      display: block;
+      font-family: var(--laca-font);
+      font-size: var(--laca-font-size-sm);
+      font-weight: 500;
+      color: var(--laca-fg);
+      text-transform: none;
+    }
+
+    .laca-field__help {
+      margin-top: var(--laca-space-1);
+    }
+  }
+
+  &__control {
+    width: 100%;
+    max-width: 640px;
+  }
+
+  @media (max-width: 781.98px) {
+    grid-template-columns: 1fr;
+    gap: var(--laca-space-2);
+    padding: var(--laca-space-3) 0;
+  }
+}

@@ -1,11 +1,11 @@
 // Fonts
 $themeFont: "Quicksand", sans-serif;
 
-// Admin colors
-$primaryColorAd: var(--primary-color-ad);
-$secondaryColorAd: var(--secondary-color-ad);
-$backgroundColorAd: var(--bg-color-ad);
-$textColorAd: var(--text-color-ad);
+// Admin colors (mapped to Chakra design tokens)
+$primaryColorAd: var(--laca-accent);
+$secondaryColorAd: var(--laca-fg);
+$backgroundColorAd: var(--laca-bg-subtle);
+$textColorAd: var(--laca-fg);
 
 // Font weights
 $thin: 100;

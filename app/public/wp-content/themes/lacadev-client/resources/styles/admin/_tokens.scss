@@ -1,0 +1,99 @@
+:root {
+  // 2.1 Colors — Slate soft + Blue gentle (Chakra v3)
+  --laca-bg: #ffffff;
+  --laca-bg-subtle: #fafafa;
+  --laca-bg-muted: #f4f4f5;
+  --laca-bg-emphasized: #e4e4e7;
+  --laca-fg: #18181b;
+  --laca-fg-muted: #52525b;
+  --laca-fg-subtle: #a1a1aa;
+  --laca-border: #e4e4e7;
+  --laca-border-emphasized: #d4d4d8;
+  --laca-accent: #2563eb;
+  --laca-accent-hover: #1d4ed8;
+  --laca-accent-subtle: #eff6ff;
+  --laca-accent-muted: #dbeafe;
+  --laca-accent-fg: #1e40af;
+  --laca-focus-ring: #3b82f6;
+
+  --laca-success: #15803d;
+  --laca-success-bg: #f0fdf4;
+  --laca-success-border: #bbf7d0;
+
+  --laca-warning: #c2410c;
+  --laca-warning-bg: #fff7ed;
+  --laca-warning-border: #fed7aa;
+
+  --laca-danger: #dc2626;
+  --laca-danger-bg: #fef2f2;
+  --laca-danger-border: #fecaca;
+
+  --laca-info: var(--laca-accent-fg);
+  --laca-info-bg: var(--laca-accent-subtle);
+  --laca-info-border: #bfdbfe;
+
+  // 2.2 Typography
+  --laca-font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --laca-font-size-xs: 12px;
+  --laca-line-height-xs: 16px;
+  --laca-font-size-sm: 14px;
+  --laca-line-height-sm: 20px;
+  --laca-font-size-md: 16px;
+  --laca-line-height-md: 24px;
+  --laca-font-size-lg: 18px;
+  --laca-line-height-lg: 28px;
+  --laca-font-size-xl: 20px;
+  --laca-line-height-xl: 28px;
+
+  // 2.3 Spacing scale (4px base)
+  --laca-space-1: 4px;
+  --laca-space-2: 8px;
+  --laca-space-3: 12px;
+  --laca-space-4: 16px;
+  --laca-space-5: 20px;
+  --laca-space-6: 24px;
+  --laca-space-7: 32px;
+  --laca-space-8: 40px;
+  --laca-space-9: 48px;
+  --laca-space-10: 64px;
+
+  // Radii
+  --laca-radius-l1: 2px;
+  --laca-radius-l2: 4px;
+  --laca-radius-l3: 6px;
+  --laca-radius-full: 9999px;
+
+  // Control heights
+  --laca-height-xs: 32px;
+  --laca-height-sm: 36px;
+  --laca-height-md: 40px;
+
+  // Shadow
+  --laca-shadow-md: 0 4px 8px rgba(24, 24, 27, 0.1), 0 0 1px rgba(24, 24, 27, 0.3);
+
+  // Transitions
+  --laca-transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+
+  // Backwards compatibility aliases
+  --primary-color-ad: var(--laca-accent);
+  --secondary-color-ad: var(--laca-fg);
+  --bg-color-ad: var(--laca-bg-subtle);
+  --text-color-ad: var(--laca-fg);
+
+  --laca-primary: var(--laca-accent);
+  --laca-primary-lt: var(--laca-accent-subtle);
+  --laca-blue: var(--laca-accent);
+  --laca-blue-soft: var(--laca-accent-subtle);
+  --laca-green: var(--laca-success);
+  --laca-green-soft: var(--laca-success-bg);
+  --laca-amber: var(--laca-warning);
+  --laca-amber-soft: var(--laca-warning-bg);
+  --laca-red: var(--laca-danger);
+  --laca-red-soft: var(--laca-danger-bg);
+  --laca-text-main: var(--laca-fg);
+  --laca-text-muted: var(--laca-fg-muted);
+  --laca-bg-soft: var(--laca-bg-subtle);
+  --laca-border: var(--laca-border);
+  --laca-radius: var(--laca-radius-l3);
+  --laca-shadow-sm: none;
+}

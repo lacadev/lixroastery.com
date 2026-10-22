@@ -3,30 +3,6 @@
 // Extracted from DashboardWidgets.php – do NOT add inline
 // ============================================================
 
-// ─── CSS Custom Properties ───────────────────────────────────
-
-:root {
-    // Pastel palette
-    --laca-blue:       #8aadf7;
-    --laca-blue-soft:  #eef3fe;
-    --laca-green:      #7dd3a8;
-    --laca-green-soft: #edf9f2;
-    --laca-amber:      #f5c97a;
-    --laca-amber-soft: #fef7ea;
-    --laca-red:        #f29b9b;
-    --laca-red-soft:   #fef0f0;
-
-    // Aliases
-    --laca-primary:    #8aadf7;
-    --laca-primary-lt: #eef3fe;
-    --laca-text-main:  #3d4654;
-    --laca-text-muted: #8b95a5;
-    --laca-bg-soft:    #fafbfc;
-    --laca-border:     #e8ecf0;
-    --laca-radius:     6px;
-    --laca-shadow-sm:  0 1px 3px rgba(0, 0, 0, 0.06);
-}
-
 // ─── Reusable status dot ─────────────────────────────────────
 .laca-dot {
     display: inline-block;
@@ -41,7 +17,7 @@
     &--warning { background: var(--laca-amber); }
     &--danger  { background: var(--laca-red); }
     &--info    { background: var(--laca-blue); }
-    &--muted   { background: #b8c0cc; }
+    &--muted   { background: var(--laca-fg-subtle); }
 }
 
 // ─── Shared Widget Layout ────────────────────────────────────

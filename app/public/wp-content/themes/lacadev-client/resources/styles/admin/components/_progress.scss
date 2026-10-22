@@ -1,0 +1,19 @@
+// -------------------------------------------------------------
+// Progress Component (Chakra v3)
+// -------------------------------------------------------------
+
+.laca-progress {
+  width: 100%;
+  height: 8px;
+  background-color: var(--laca-bg-emphasized);
+  border-radius: var(--laca-radius-full);
+  overflow: hidden;
+  box-sizing: border-box;
+
+  &__bar {
+    height: 100%;
+    background-color: var(--laca-accent);
+    border-radius: var(--laca-radius-full);
+    transition: width 0.3s ease;
+  }
+}

@@ -1,0 +1,56 @@
+// -------------------------------------------------------------
+// Table Component (Chakra v3)
+// -------------------------------------------------------------
+
+.laca-table-wrap {
+  width: 100%;
+  overflow-x: auto;
+  border: 1px solid var(--laca-border);
+  border-radius: var(--laca-radius-l3);
+  background-color: var(--laca-bg);
+  box-sizing: border-box;
+}
+
+.laca-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-family: var(--laca-font);
+  font-size: var(--laca-font-size-sm);
+
+  thead {
+    th {
+      background-color: var(--laca-bg-muted);
+      color: var(--laca-fg-muted);
+      font-size: var(--laca-font-size-xs);
+      font-weight: 500;
+      text-transform: none;
+      padding: var(--laca-space-3) var(--laca-space-4);
+      border-bottom: 1px solid var(--laca-border);
+      white-space: nowrap;
+    }
+  }
+
+  tbody {
+    tr {
+      height: 44px;
+      transition: var(--laca-transition);
+
+      &:hover {
+        background-color: var(--laca-bg-subtle);
+      }
+
+      &:last-child td {
+        border-bottom: none;
+      }
+    }
+
+    td {
+      padding: var(--laca-space-2) var(--laca-space-4);
+      border-bottom: 1px solid var(--laca-border);
+      color: var(--laca-fg);
+      box-sizing: border-box;
+      vertical-align: middle;
+    }
+  }
+}
