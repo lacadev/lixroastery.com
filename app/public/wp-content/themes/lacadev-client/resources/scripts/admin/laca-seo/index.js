@@ -37,38 +37,94 @@ function initNotesToggle() {
  */
 function initShowIfDependencies() {
     const dependentRows = document.querySelectorAll('.laca-seo-field-row[data-show-if-field]');
+    if (!dependentRows.length) return;
 
-    function evaluateDependencies() {
-        dependentRows.forEach((row) => {
-            const masterFieldId = row.getAttribute('data-show-if-field');
-            const expectedVal = row.getAttribute('data-show-if-value');
+    function getMasterControl(fieldId) {
+        const selectorBase = `[name="laca_seo[${fieldId}]"], [name="laca_seo[${fieldId}][]"]`;
 
-            // Find master input
-            const masterInput = document.querySelector(`[name="laca_seo[${masterFieldId}]"], [name="laca_seo[${masterFieldId}][]"]`);
-            if (!masterInput) return;
+        // 1. Checkbox
+        const checkbox = document.querySelector(`input[type="checkbox"]${selectorBase}`);
+        if (checkbox) return checkbox;
 
-            let currentVal = '';
-            if (masterInput.type === 'checkbox') {
-                currentVal = masterInput.checked ? 'on' : 'off';
-            } else if (masterInput.type === 'radio') {
-                const checkedRadio = document.querySelector(`[name="laca_seo[${masterFieldId}]"]:checked`);
-                currentVal = checkedRadio ? checkedRadio.value : '';
-            } else {
-                currentVal = masterInput.value;
-            }
+        // 2. Radio: checked first, else any radio in the group
+        const checkedRadio = document.querySelector(`input[type="radio"]${selectorBase}:checked`);
+        if (checkedRadio) return checkedRadio;
+        const anyRadio = document.querySelector(`input[type="radio"]${selectorBase}`);
+        if (anyRadio) return anyRadio;
 
-            if (currentVal === expectedVal) {
-                row.style.display = '';
-            } else {
-                row.style.display = 'none';
-            }
-        });
+        // 3. Select
+        const select = document.querySelector(`select${selectorBase}`);
+        if (select) return select;
+
+        // 4. Other inputs (skip type=hidden)
+        const otherInput = document.querySelector(`input:not([type="hidden"])${selectorBase}, textarea${selectorBase}`);
+        if (otherInput) return otherInput;
+
+        return null;
     }
 
-    // Attach change listener to all inputs
-    document.querySelectorAll('.laca-seo-form input, .laca-seo-form select').forEach((input) => {
+    function getControlValue(control, fieldId) {
+        if (!control) return '';
+        if (control.type === 'checkbox') {
+            return control.checked ? 'on' : 'off';
+        }
+        if (control.type === 'radio') {
+            const checked = document.querySelector(`input[type="radio"][name="laca_seo[${fieldId}]"]:checked`);
+            return checked ? checked.value : '';
+        }
+        return control.value || '';
+    }
+
+    function evaluateDependencies() {
+        let changed = true;
+        let iteration = 0;
+        while (changed && iteration < 5) {
+            changed = false;
+            iteration++;
+
+            dependentRows.forEach((row) => {
+                const masterFieldId = row.getAttribute('data-show-if-field');
+                const expectedVal = row.getAttribute('data-show-if-value') || '';
+                const masterControl = getMasterControl(masterFieldId);
+
+                if (!masterControl) {
+                    if (row.style.display !== 'none') {
+                        row.style.display = 'none';
+                        changed = true;
+                    }
+                    return;
+                }
+
+                // If master row itself is inside a dependent row that is hidden
+                const masterRow = masterControl.closest('.laca-seo-field-row');
+                const masterIsHidden = masterRow ? masterRow.style.display === 'none' : false;
+
+                const currentVal = getControlValue(masterControl, masterFieldId);
+                const expectedVals = expectedVal.split(',').map((s) => s.trim());
+                const matches = expectedVals.includes(currentVal);
+
+                const shouldShow = !masterIsHidden && matches;
+                const newDisplay = shouldShow ? '' : 'none';
+
+                if (row.style.display !== newDisplay) {
+                    row.style.display = newDisplay;
+                    changed = true;
+                }
+            });
+        }
+    }
+
+    // Attach change and input listeners to form inputs
+    document.querySelectorAll('.laca-seo-form input, .laca-seo-form select, .laca-seo-form textarea').forEach((input) => {
         input.addEventListener('change', evaluateDependencies);
+        input.addEventListener('input', evaluateDependencies);
     });
+
+    const form = document.querySelector('.laca-seo-form');
+    if (form) {
+        form.addEventListener('change', evaluateDependencies);
+        form.addEventListener('input', evaluateDependencies);
+    }
 
     // Initial run
     evaluateDependencies();

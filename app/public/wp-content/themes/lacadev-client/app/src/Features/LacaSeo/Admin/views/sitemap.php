@@ -9,9 +9,11 @@ defined('ABSPATH') || exit;
 
 // Build tabs list: Chung, Sitemap HTML, Tác giả, post types, taxonomies
 $static_tabs = [
-    'general'      => 'Cài đặt chung (General)',
-    'html-sitemap' => 'Sitemap HTML',
-    'authors'      => 'Tác giả (Authors)',
+    'general'       => 'Cài đặt chung (General)',
+    'html-sitemap'  => 'Sitemap HTML',
+    'authors'       => 'Tác giả (Authors)',
+    'news-sitemap'  => 'Google News Sitemap',
+    'video-sitemap' => 'Video Sitemap',
 ];
 
 $post_types = Helper::getAccessiblePostTypes();

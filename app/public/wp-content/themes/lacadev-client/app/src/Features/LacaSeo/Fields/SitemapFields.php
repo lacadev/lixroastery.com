@@ -17,9 +17,11 @@ class SitemapFields
     public static function get(): array
     {
         $tabs = [
-            'general'      => self::getGeneralFields(),
-            'html-sitemap' => self::getHtmlSitemapFields(),
-            'authors'      => self::getAuthorsFields(),
+            'general'       => self::getGeneralFields(),
+            'html-sitemap'  => self::getHtmlSitemapFields(),
+            'authors'       => self::getAuthorsFields(),
+            'news-sitemap'  => self::getNewsSitemapFields(),
+            'video-sitemap' => self::getVideoSitemapFields(),
         ];
 
         // Dynamic Post Types tabs
@@ -73,6 +75,17 @@ class SitemapFields
                     'Bao gồm cả ảnh đại diện của bài viết ngay cả khi nó không xuất hiện trực tiếp trong nội dung bài.',
                     'Bật nếu giao diện bài viết hiển thị ảnh đại diện riêng bên ngoài khối bài viết.',
                     'Ảnh đại diện được tự động bổ sung vào danh sách ảnh của URL bài viết trong sitemap.'
+                ),
+
+            Field::make('include_acf_images', 'toggle', 'Bao gồm ảnh từ các trường ACF (Include ACF Images)')
+                ->default('off')
+                ->tab('general')
+                ->group('sitemap')
+                ->showIf('include_images', 'on')
+                ->note(
+                    'Tự động quét và bổ sung các hình ảnh được tải lên thông qua Advanced Custom Fields (ACF) vào Sitemap.',
+                    'Bật nếu bài viết hoặc sản phẩm dùng ACF Image để hiển thị thư viện ảnh.',
+                    'Các ảnh từ trường ACF sẽ xuất hiện trong thẻ <image:image> của XML Sitemap.'
                 ),
 
             Field::make('exclude_posts', 'text', 'Loại trừ bài viết khỏi Sitemap (Exclude Posts)')
@@ -368,6 +381,125 @@ class SitemapFields
                     "Đưa cả các term thuộc {$label} chưa có bất kỳ bài viết nào vào sitemap.",
                     'Khuyên dùng: TẮT để tránh trang rỗng không có nội dung bị Google phạt.',
                     'Chỉ các term có bài viết (count > 0) mới xuất hiện trong sitemap.'
+                ),
+        ];
+    }
+
+    /**
+     * @return Field[]
+     */
+    private static function getNewsSitemapFields(): array
+    {
+        return [
+            Field::make('news_sitemap', 'toggle', 'Kích hoạt Google News Sitemap')
+                ->default('off')
+                ->tab('news-sitemap')
+                ->group('sitemap')
+                ->note(
+                    'Tạo tệp sơ đồ trang web tin tức news-sitemap.xml tuân thủ chuẩn Google News.',
+                    'Bật nếu trang web của bạn là trang báo, tạp chí hoặc có chuyên mục tin tức được duyệt Google News.',
+                    'Sitemap tin tức chỉ chứa các bài viết xuất bản trong vòng 48 giờ qua.'
+                ),
+
+            Field::make('news_sitemap_publication_name', 'text', 'Tên ấn phẩm tin tức (Publication Name)')
+                ->default(get_bloginfo('name'))
+                ->tab('news-sitemap')
+                ->group('sitemap')
+                ->showIf('news_sitemap', 'on')
+                ->note(
+                    'Tên chính xác của tòa soạn / ấn phẩm đã đăng ký trong Google News Publisher Center.',
+                    'Nhập trùng khớp 100% với tên trên Google News (không kèm dấu ngoặc thừa).',
+                    'Xuất hiện trong thẻ <news:publication><news:name>.'
+                ),
+
+            Field::make('news_sitemap_publication_language', 'text', 'Ngôn ngữ ấn phẩm (Language Code)')
+                ->default(substr(get_bloginfo('language') ?: 'vi', 0, 2))
+                ->tab('news-sitemap')
+                ->group('sitemap')
+                ->showIf('news_sitemap', 'on')
+                ->note(
+                    'Mã ngôn ngữ 2 chữ cái theo chuẩn ISO 639 (ví dụ: vi, en).',
+                    'Mặc định lấy theo ngôn ngữ của website.',
+                    'Xuất hiện trong thẻ <news:language>.'
+                ),
+
+            Field::make('news_sitemap_post_type', 'multicheck', 'Loại bài viết đưa vào News Sitemap (News Post Types)')
+                ->default(['post'])
+                ->tab('news-sitemap')
+                ->group('sitemap')
+                ->choices(Helper::choicesPostTypes())
+                ->showIf('news_sitemap', 'on')
+                ->note(
+                    'Chọn các loại nội dung chứa bài viết tin tức cần gửi tới Google News.',
+                    'Thông thường chọn Bài viết (Posts) hoặc CPT Tin tức.',
+                    'Chỉ các bài viết thuộc post type này mới xuất hiện trong news-sitemap.xml.'
+                ),
+        ];
+    }
+
+    /**
+     * @return Field[]
+     */
+    private static function getVideoSitemapFields(): array
+    {
+        $ptChoices = Helper::choicesPostTypes();
+        unset($ptChoices['attachment']);
+
+        return [
+            Field::make('video_sitemap', 'toggle', 'Kích hoạt Video Sitemap')
+                ->default('off')
+                ->tab('video-sitemap')
+                ->group('sitemap')
+                ->note(
+                    'Tạo tệp video-sitemap.xml giúp Google tìm kiếm và lập chỉ mục video trên website.',
+                    'Bật nếu trang web có nhúng video YouTube, Vimeo hoặc video tự lưu trữ.',
+                    'Hỗ trợ xuất hiện trên tab Google Video Search và video rich snippets.'
+                ),
+
+            Field::make('hide_video_sitemap', 'toggle', 'Ẩn Video Sitemap khỏi khách truy cập')
+                ->default('off')
+                ->tab('video-sitemap')
+                ->group('sitemap')
+                ->showIf('video_sitemap', 'on')
+                ->note(
+                    'Chỉ cho phép bọ tìm kiếm đọc video-sitemap.xml, ẩn với người dùng thông thường.',
+                    'Giữ tuỳ chọn tắt để các công cụ kiểm tra sitemap hoạt động bình thường.',
+                    'Trả về mã lỗi hoặc chuyển hướng khi người dùng thông thường truy cập URL sitemap.'
+                ),
+
+            Field::make('video_sitemap_post_type', 'multicheck', 'Loại bài viết quét video (Video Post Types)')
+                ->default(['post', 'page'])
+                ->tab('video-sitemap')
+                ->group('sitemap')
+                ->choices($ptChoices)
+                ->showIf('video_sitemap', 'on')
+                ->note(
+                    'Chọn các loại bài viết bạn có nhúng video và muốn đưa vào Video Sitemap.',
+                    'Mặc định chọn Bài viết và Trang tĩnh.',
+                    'Các video tìm thấy trong nội dung bài viết thuộc post type này sẽ được đưa vào sitemap.'
+                ),
+
+            Field::make('youtube_api_key', 'text', 'YouTube API Key')
+                ->default('')
+                ->tab('video-sitemap')
+                ->group('sitemap')
+                ->attributes(['type' => 'password'])
+                ->showIf('video_sitemap', 'on')
+                ->note(
+                    'Mã khoá API YouTube Data v3 dùng để tự động lấy tiêu đề, mô tả và thumbnail của video.',
+                    'Tạo trên Google Cloud Console để tăng tốc độ phân tích và độ chính xác dữ liệu video.',
+                    'Tự động điền đầy đủ siêu dữ liệu video trong Video Schema và Sitemap.'
+                ),
+
+            Field::make('video_sitemap_custom_fields', 'textarea', 'Tên trường tùy biến chứa Video (Custom Fields)')
+                ->default('')
+                ->tab('video-sitemap')
+                ->group('sitemap')
+                ->showIf('video_sitemap', 'on')
+                ->note(
+                    'Danh sách tên các trường tùy biến (custom fields) lưu link video (mỗi dòng một trường).',
+                    'Dùng khi bạn lưu link video trong ACF hoặc Meta Box thay vì chèn vào nội dung bài.',
+                    'Hệ thống sẽ quét các trường này để trích xuất URL video.'
                 ),
         ];
     }

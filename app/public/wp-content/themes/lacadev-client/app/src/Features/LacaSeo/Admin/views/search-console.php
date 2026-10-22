@@ -41,26 +41,46 @@ if (isset($_POST['laca_gsc_connect_init'])) {
 }
 
 // Handle OAuth callback
-if (isset($_GET['laca_gsc_oauth']) && isset($_GET['code'])) {
-    $code = sanitize_text_field(wp_unslash($_GET['code']));
+if (isset($_GET['laca_gsc_oauth'])) {
     $state = sanitize_text_field(wp_unslash($_GET['state'] ?? ''));
 
-    if (!GscOAuth::verifyState($state)) {
-        $connectError = __('Mã trạng thái bảo mật (State Nonce) không hợp lệ.', 'lacadev');
-    } else {
-        $pending = get_option('laca_seo_gsc_pending', []);
-        delete_option('laca_seo_gsc_pending');
-
-        if (!empty($pending['client_id']) && !empty($pending['client_secret'])) {
-            $exchange = GscOAuth::handleCallback($code, $pending['client_id'], $pending['client_secret']);
-            if ($exchange['success']) {
-                wp_safe_redirect(admin_url('admin.php?page=laca-seo&view=search-console&connected=1'));
-                exit;
-            } else {
-                $connectError = $exchange['error'] ?? __('Lỗi xác thực OAuth từ Google.', 'lacadev');
-            }
+    if (isset($_GET['error'])) {
+        if (!GscOAuth::verifyState($state)) {
+            $connectError = __('Mã trạng thái bảo mật (State Nonce) không hợp lệ.', 'lacadev');
         } else {
-            $connectError = __('Không tìm thấy Client ID hoặc Client Secret đang chờ xác thực.', 'lacadev');
+            delete_option('laca_seo_gsc_pending');
+            $errorCode = sanitize_text_field(wp_unslash($_GET['error']));
+            $errorDesc = sanitize_text_field(wp_unslash($_GET['error_description'] ?? ''));
+
+            if ($errorCode === 'access_denied') {
+                $connectError = __('Google từ chối quyền truy cập. Nếu ứng dụng OAuth đang ở chế độ Testing, hãy thêm email của bạn vào Test users (Google Cloud → Google Auth Platform → Audience) hoặc bấm Publish app, rồi thử lại.', 'lacadev');
+            } else {
+                $connectError = sprintf(
+                    __('Lỗi kết nối từ Google (%s)%s.', 'lacadev'),
+                    esc_html($errorCode),
+                    $errorDesc !== '' ? ': ' . esc_html($errorDesc) : ''
+                );
+            }
+        }
+    } elseif (isset($_GET['code'])) {
+        $code = sanitize_text_field(wp_unslash($_GET['code']));
+        if (!GscOAuth::verifyState($state)) {
+            $connectError = __('Mã trạng thái bảo mật (State Nonce) không hợp lệ.', 'lacadev');
+        } else {
+            $pending = get_option('laca_seo_gsc_pending', []);
+            delete_option('laca_seo_gsc_pending');
+
+            if (!empty($pending['client_id']) && !empty($pending['client_secret'])) {
+                $exchange = GscOAuth::handleCallback($code, $pending['client_id'], $pending['client_secret']);
+                if ($exchange['success']) {
+                    wp_safe_redirect(admin_url('admin.php?page=laca-seo&view=search-console&connected=1'));
+                    exit;
+                } else {
+                    $connectError = $exchange['error'] ?? __('Lỗi xác thực OAuth từ Google.', 'lacadev');
+                }
+            } else {
+                $connectError = __('Không tìm thấy Client ID hoặc Client Secret đang chờ xác thực.', 'lacadev');
+            }
         }
     }
 }
@@ -89,18 +109,39 @@ $sitemaps = $isConnected ? GscClient::getSitemaps($siteUrl) : null;
                 <p class="laca-seo-card__subtitle"><?php esc_html_e('Đồng bộ dữ liệu thứ hạng từ khóa, lượt click, lỗi sitemap và kiểm tra trạng thái index trực tiếp từ Google.', 'lacadev'); ?></p>
             </div>
 
-            <div class="laca-seo-guide-steps" style="margin: 20px 0; background: #f8fafc; padding: 18px; border-radius: 8px; border-left: 4px solid #3b82f6;">
-                <h4 style="margin: 0 0 10px 0; font-size: 14px;"><?php esc_html_e('Hướng dẫn thiết lập Google Cloud OAuth Client:', 'lacadev'); ?></h4>
-                <ol style="margin: 0; padding-left: 20px; line-height: 1.8; font-size: 13px;">
-                    <li><?php esc_html_e('Truy cập Google Cloud Console › Credentials và tạo mới một OAuth client ID kiểu Web application.', 'lacadev'); ?></li>
-                    <li>
-                        <?php esc_html_e('Tại mục Authorized redirect URIs, dán chính xác URL sau:', 'lacadev'); ?><br>
-                        <code style="display:inline-block; padding: 4px 8px; background: #e2e8f0; border-radius: 4px; font-weight: 600; margin-top: 4px;"><?php echo esc_html($redirectUri); ?></code>
-                    </li>
-                    <li><?php esc_html_e('Bật Google Search Console API trong Library của Google Cloud Project.', 'lacadev'); ?></li>
-                    <li><?php esc_html_e('Sao chép Client ID và Client Secret vào biểu mẫu bên dưới và bấm nút Kết nối.', 'lacadev'); ?></li>
-                </ol>
-            </div>
+            <details class="laca-seo-prep-details" open>
+                <summary class="laca-seo-prep-details__summary">
+                    <span class="dashicons dashicons-info"></span>
+                    <strong><?php esc_html_e('Chuẩn bị Google Cloud (4 bước bắt buộc)', 'lacadev'); ?></strong>
+                </summary>
+                <div class="laca-seo-prep-details__content">
+                    <ol class="laca-seo-prep-details__list">
+                        <li>
+                            <strong><?php esc_html_e('Bật Google Search Console API:', 'lacadev'); ?></strong>
+                            <?php esc_html_e('Vào Google Cloud Console › APIs & Services › Library, tìm kiếm và bật "Google Search Console API".', 'lacadev'); ?>
+                        </li>
+                        <li>
+                            <strong><?php esc_html_e('OAuth Consent / Audience (Tránh lỗi 403 access_denied):', 'lacadev'); ?></strong>
+                            <?php esc_html_e('Nếu ứng dụng OAuth đang ở chế độ Testing, hãy thêm email của bạn vào danh sách Test users (Google Cloud → Google Auth Platform → Audience) hoặc bấm Publish app để chuyển sang Production, rồi thử lại.', 'lacadev'); ?>
+                        </li>
+                        <li>
+                            <strong><?php esc_html_e('Tạo OAuth Client ID:', 'lacadev'); ?></strong>
+                            <?php esc_html_e('Tại mục Credentials, tạo Client ID loại Web application. Thêm địa chỉ sau vào mục Authorized redirect URIs:', 'lacadev'); ?>
+                            <div class="laca-seo-prep-details__uri-row">
+                                <code class="laca-seo-code-badge" id="laca-gsc-redirect-uri"><?php echo esc_html($redirectUri); ?></code>
+                                <button type="button" class="button button-small laca-seo-copy-btn" onclick="navigator.clipboard.writeText('<?php echo esc_js($redirectUri); ?>'); alert(lacaSeoData.i18n.copied);">
+                                    <span class="dashicons dashicons-admin-page"></span> <?php esc_html_e('Sao chép URI', 'lacadev'); ?>
+                                </button>
+                            </div>
+                        </li>
+                        <li>
+                            <strong><?php esc_html_e('Scope (Phạm vi truy cập):', 'lacadev'); ?></strong>
+                            <?php esc_html_e('Đảm bảo đã cho phép phạm vi đọc dữ liệu tìm kiếm:', 'lacadev'); ?>
+                            <code class="laca-seo-code-badge">webmasters.readonly</code>
+                        </li>
+                    </ol>
+                </div>
+            </details>
 
             <form method="post" action="<?php echo esc_url(admin_url('admin.php?page=laca-seo&view=search-console')); ?>" style="max-width: 600px;">
                 <?php wp_nonce_field('laca_gsc_connect_action'); ?>

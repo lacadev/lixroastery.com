@@ -2,6 +2,7 @@
 
 namespace App\Features\LacaSeo\Admin;
 
+use App\Features\LacaSeo\Core\Settings;
 use App\Features\LacaSeo\Fields\Field;
 
 defined('ABSPATH') || exit;
@@ -26,11 +27,20 @@ class Renderer
         // để 2 cột thì ô chỉ còn ~200px khi có dock Laca Admin + tab dọc, chữ bị cắt.
         $stacked = in_array($type, ['variable_text', 'variable_textarea', 'textarea', 'code'], true);
         $rowAttrs = ' class="laca-seo-field-row' . ($stacked ? ' laca-seo-field-row--stack' : '') . '" data-field-id="' . esc_attr($id) . '"';
+        $rowStyle = '';
         if ($showIf !== null) {
             $rowAttrs .= ' data-show-if-field="' . esc_attr($showIf['field']) . '" data-show-if-value="' . esc_attr((string) $showIf['value']) . '"';
+            $group = $field->getGroup() ?? 'general';
+            $masterVal = Settings::get($group . '.' . $showIf['field']);
+            $expectedVal = (string) $showIf['value'];
+            $expectedArr = array_map('trim', explode(',', $expectedVal));
+            $masterStr = is_bool($masterVal) ? ($masterVal ? 'on' : 'off') : (string) ($masterVal ?? '');
+            if (!in_array($masterStr, $expectedArr, true)) {
+                $rowStyle = ' style="display:none"';
+            }
         }
 
-        echo '<div' . $rowAttrs . '>';
+        echo '<div' . $rowAttrs . $rowStyle . '>';
 
         // Left column: Label & Note
         echo '<div class="laca-seo-field-row__label-col">';
@@ -270,6 +280,9 @@ class Renderer
 
             case 'group':
                 $items = is_array($val) ? $val : [];
+                if (empty($items) && $id === 'image_replacements') {
+                    $items = [['find' => '', 'replace' => '', 'replace_in' => ['alt', 'title']]];
+                }
                 echo '<div class="laca-seo-group-repeater" data-group-name="' . esc_attr($name) . '">';
                 echo '<div class="laca-seo-group-items">';
                 foreach ($items as $idx => $item) {
@@ -327,6 +340,16 @@ class Renderer
             }
             echo '</select>';
             echo '<input type="text" name="' . esc_attr($groupName) . '[' . $idx . '][value]" value="' . esc_attr($item['value'] ?? '') . '" placeholder="Giá trị..." class="regular-text">';
+        } elseif ($groupId === 'image_replacements') {
+            $find = $item['find'] ?? '';
+            $replace = $item['replace'] ?? '';
+            $replaceIn = (array) ($item['replace_in'] ?? ['alt', 'title']);
+
+            echo '<input type="text" name="' . esc_attr($groupName) . '[' . $idx . '][find]" value="' . esc_attr($find) . '" placeholder="Tìm kiếm (Find)..." class="regular-text" style="width:180px;margin-right:8px;">';
+            echo '<input type="text" name="' . esc_attr($groupName) . '[' . $idx . '][replace]" value="' . esc_attr($replace) . '" placeholder="Thay thế (Replace)..." class="regular-text" style="width:180px;margin-right:12px;">';
+            echo '<label style="margin-right:8px;"><input type="checkbox" name="' . esc_attr($groupName) . '[' . $idx . '][replace_in][]" value="alt"' . (in_array('alt', $replaceIn, true) ? ' checked' : '') . '> Alt</label>';
+            echo '<label style="margin-right:8px;"><input type="checkbox" name="' . esc_attr($groupName) . '[' . $idx . '][replace_in][]" value="title"' . (in_array('title', $replaceIn, true) ? ' checked' : '') . '> Title</label>';
+            echo '<label style="margin-right:12px;"><input type="checkbox" name="' . esc_attr($groupName) . '[' . $idx . '][replace_in][]" value="caption"' . (in_array('caption', $replaceIn, true) ? ' checked' : '') . '> Caption</label>';
         } else {
             foreach ($item as $k => $v) {
                 echo '<input type="text" name="' . esc_attr($groupName) . '[' . $idx . '][' . esc_attr($k) . ']" value="' . esc_attr((string) $v) . '" class="regular-text">';

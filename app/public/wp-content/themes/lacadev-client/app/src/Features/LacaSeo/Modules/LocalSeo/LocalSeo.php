@@ -125,20 +125,28 @@ class LocalSeo
 
         $name = Settings::get('titles.knowledgegraph_name', get_bloginfo('name'));
 
+        $rawAddr = Settings::get('titles.local_address', []);
+        if (!is_array($rawAddr)) {
+            $rawAddr = [];
+        }
         $address = [
             '@type'           => 'PostalAddress',
-            'streetAddress'   => Settings::get('titles.local_address_street', ''),
-            'addressLocality' => Settings::get('titles.local_address_locality', ''),
-            'addressRegion'   => Settings::get('titles.local_address_region', ''),
-            'postalCode'      => Settings::get('titles.local_address_postalcode', ''),
-            'addressCountry'  => Settings::get('titles.local_address_country', ''),
+            'streetAddress'   => $rawAddr['streetAddress'] ?? (Settings::getRaw('titles.local_address_street') ?: ''),
+            'addressLocality' => $rawAddr['addressLocality'] ?? (Settings::getRaw('titles.local_address_locality') ?: ''),
+            'addressRegion'   => $rawAddr['addressRegion'] ?? (Settings::getRaw('titles.local_address_region') ?: ''),
+            'postalCode'      => $rawAddr['postalCode'] ?? (Settings::getRaw('titles.local_address_postalcode') ?: ''),
+            'addressCountry'  => $rawAddr['addressCountry'] ?? (Settings::getRaw('titles.local_address_country') ?: ''),
         ];
         $address = array_filter($address);
 
+        $rawGeo = (string) Settings::get('titles.geo', '');
+        $geoParts = $rawGeo !== '' ? array_map('trim', explode(',', $rawGeo)) : [];
+        $lat = !empty($geoParts[0]) ? $geoParts[0] : (Settings::getRaw('titles.geo_latitude') ?: '');
+        $lng = !empty($geoParts[1]) ? $geoParts[1] : (Settings::getRaw('titles.geo_longitude') ?: '');
         $geo = [
             '@type'     => 'GeoCoordinates',
-            'latitude'  => Settings::get('titles.geo_latitude', ''),
-            'longitude' => Settings::get('titles.geo_longitude', ''),
+            'latitude'  => $lat,
+            'longitude' => $lng,
         ];
         $geo = array_filter($geo);
 

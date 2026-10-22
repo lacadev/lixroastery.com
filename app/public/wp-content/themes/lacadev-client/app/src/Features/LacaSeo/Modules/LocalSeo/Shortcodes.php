@@ -219,6 +219,11 @@ class Shortcodes
             }
         }
 
+        $rawAddr = Settings::get('titles.local_address', []);
+        if (!is_array($rawAddr)) {
+            $rawAddr = [];
+        }
+
         // Fallback to global options
         $global = [
             '@type'                     => Settings::get('titles.local_business_type', 'LocalBusiness'),
@@ -229,11 +234,11 @@ class Shortcodes
             'email'                     => Settings::get('titles.email', get_bloginfo('admin_email')),
             'address'                   => [
                 '@type'           => 'PostalAddress',
-                'streetAddress'   => Settings::get('titles.local_address_street', ''),
-                'addressLocality' => Settings::get('titles.local_address_locality', ''),
-                'addressRegion'   => Settings::get('titles.local_address_region', ''),
-                'postalCode'      => Settings::get('titles.local_address_postalcode', ''),
-                'addressCountry'  => Settings::get('titles.local_address_country', ''),
+                'streetAddress'   => $rawAddr['streetAddress'] ?? (Settings::getRaw('titles.local_address_street') ?: ''),
+                'addressLocality' => $rawAddr['addressLocality'] ?? (Settings::getRaw('titles.local_address_locality') ?: ''),
+                'addressRegion'   => $rawAddr['addressRegion'] ?? (Settings::getRaw('titles.local_address_region') ?: ''),
+                'postalCode'      => $rawAddr['postalCode'] ?? (Settings::getRaw('titles.local_address_postalcode') ?: ''),
+                'addressCountry'  => $rawAddr['addressCountry'] ?? (Settings::getRaw('titles.local_address_country') ?: ''),
             ],
             'openingHoursSpecification' => Settings::get('titles.opening_hours', []),
         ];

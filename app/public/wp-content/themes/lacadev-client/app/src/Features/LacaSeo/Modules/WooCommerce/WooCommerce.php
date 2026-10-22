@@ -43,6 +43,9 @@ class WooCommerce
     public static function getBrand(int $productId): string
     {
         $tax = (string) Settings::get('general.product_brand', '');
+        if ($tax === 'custom') {
+            return (string) Settings::get('general.custom_product_brand', '');
+        }
         if ($tax !== '' && taxonomy_exists($tax)) {
             $terms = get_the_terms($productId, $tax);
             if (!is_wp_error($terms) && !empty($terms[0])) {

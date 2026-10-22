@@ -179,6 +179,14 @@ class Settings
             }
         }
 
+        // Llms fields
+        foreach (\App\Features\LacaSeo\Fields\LlmsFields::get() as $tab => $fields) {
+            foreach ($fields as $field) {
+                $grp = $field->getGroup() ?: 'general';
+                $map[$grp][$field->getId()] = $field;
+            }
+        }
+
         self::$registryMap = $map;
         return self::$registryMap;
     }

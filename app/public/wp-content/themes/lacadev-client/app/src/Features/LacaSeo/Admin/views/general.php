@@ -10,6 +10,7 @@ $tabs = [
     'links'       => 'Đường dẫn (Links)',
     'images'      => 'Tối ưu hình ảnh (Images)',
     'breadcrumbs' => 'Breadcrumbs',
+    'podcast'     => 'Podcast',
     'webmaster'   => 'Webmaster Tools',
     'analytics'   => 'Google Analytics / GTM',
     'robots'      => 'Chỉnh sửa robots.txt',

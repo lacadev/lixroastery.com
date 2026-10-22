@@ -122,13 +122,18 @@ class TitlesFields
                     'Khi gửi link trang qua Facebook Messenger, Zalo sẽ xuất hiện tấm ảnh này.'
                 ),
 
+            Field::make('open_graph_image_id', 'hidden', 'ID Ảnh đại diện mặc định OpenGraph')
+                ->default(0)
+                ->tab('global')
+                ->group('titles'),
+
             Field::make('twitter_card_type', 'select', 'Kiểu thẻ Twitter Card mặc định')
                 ->default('summary_large_image')
                 ->tab('global')
                 ->group('titles')
                 ->choices([
-                    'summary'             => __('Thẻ nhỏ kèm ảnh vuông (Summary Card)', 'lacadev'),
                     'summary_large_image' => __('Thẻ lớn kèm ảnh biểu ngữ lớn (Summary with Large Image)', 'lacadev'),
+                    'summary_card'        => __('Thẻ nhỏ kèm ảnh vuông (Summary Card)', 'lacadev'),
                 ])
                 ->note(
                     'Kiểu hiển thị bài viết khi được chia sẻ lên Twitter/X.',
@@ -212,6 +217,11 @@ class TitlesFields
                     'Tải lên logo vuông hoặc ngang rõ nét (tối thiểu 112 x 112 pixels, chuẩn nét 512 x 512 pixels).',
                     'Google sử dụng logo này cho kết quả tìm kiếm thương hiệu và Schema Organization.'
                 ),
+
+            Field::make('knowledgegraph_logo_id', 'hidden', 'ID Logo thương hiệu chính thức')
+                ->default(0)
+                ->tab('local')
+                ->group('titles'),
 
             Field::make('url', 'text', 'URL trang chủ chính thức')
                 ->default(home_url())
@@ -377,6 +387,208 @@ class TitlesFields
                     'Toạ độ địa lý chính xác của cơ sở kinh doanh (Ví dụ: 10.776889, 106.700806).',
                     'Lấy toạ độ từ Google Maps bằng cách click chuột phải vào vị trí và copy toạ độ.',
                     'Khai báo geo: { latitude, longitude } trong Schema LocalBusiness.'
+                ),
+
+            Field::make('use_multiple_locations', 'toggle', 'Sử dụng nhiều địa điểm (Use Multiple Locations)')
+                ->default('off')
+                ->tab('local')
+                ->group('titles')
+                ->note(
+                    'Kích hoạt quản lý nhiều chi nhánh/địa điểm kinh doanh của tổ chức thông qua Custom Post Type Locations.',
+                    'Bật nếu doanh nghiệp có chuỗi cửa hàng, nhiều văn phòng hoặc nhiều cơ sở chi nhánh.',
+                    'Hệ thống sẽ bật CPT Locations để thêm và quản lý từng địa chỉ riêng biệt.'
+                ),
+
+            Field::make('hide_opening_hours', 'toggle', 'Ẩn giờ mở cửa trong Schema')
+                ->default('off')
+                ->tab('local')
+                ->group('titles')
+                ->showIf('use_multiple_locations', 'on')
+                ->note(
+                    'Không xuất dữ liệu giờ mở cửa vào cấu trúc Schema chung của tổ chức.',
+                    'Bật nếu mỗi chi nhánh có giờ làm việc hoàn toàn khác nhau.',
+                    'Dữ liệu openingHoursSpecification sẽ được quản lý ở cấp từng chi nhánh.'
+                ),
+
+            Field::make('closed_label', 'text', 'Nhãn hiển thị khi đóng cửa (Closed Label)')
+                ->default('Closed')
+                ->tab('local')
+                ->group('titles')
+                ->showIf('use_multiple_locations', 'on')
+                ->note(
+                    'Văn bản hiển thị khi địa điểm đang trong giờ nghỉ/đóng cửa.',
+                    'Nhập nhãn tùy chỉnh (ví dụ: "Đã đóng cửa" hoặc "Closed").',
+                    'Hiển thị trong khung thông tin giờ làm việc.'
+                ),
+
+            Field::make('open_24_7', 'text', 'Nhãn mở cửa 24/7')
+                ->default('Open 24/7')
+                ->tab('local')
+                ->group('titles')
+                ->showIf('use_multiple_locations', 'on')
+                ->note(
+                    'Văn bản hiển thị khi địa điểm mở cửa liên tục suốt ngày đêm 24/7.',
+                    'Nhập nhãn tùy chỉnh (ví dụ: "Mở cửa 24/7").',
+                    'Hiển thị cạnh giờ mở cửa trên giao diện.'
+                ),
+
+            Field::make('open_24h', 'text', 'Nhãn mở cửa 24 giờ')
+                ->default('Open 24h')
+                ->tab('local')
+                ->group('titles')
+                ->showIf('use_multiple_locations', 'on')
+                ->note(
+                    'Văn bản hiển thị khi địa điểm mở cửa 24 giờ trong ngày.',
+                    'Nhập nhãn phù hợp với phong cách website.',
+                    'Hiển thị trong bảng giờ mở cửa.'
+                ),
+
+            Field::make('map_unit', 'select', 'Đơn vị đo khoảng cách (Measurement system)')
+                ->default('kilometers')
+                ->tab('local')
+                ->group('titles')
+                ->choices([
+                    'kilometers' => 'Kilometers (km)',
+                    'miles'      => 'Miles (dặm)',
+                ])
+                ->showIf('use_multiple_locations', 'on')
+                ->note(
+                    'Đơn vị đo khoảng cách khi người dùng tìm kiếm địa điểm gần nhất.',
+                    'Khuyên dùng Kilometers cho thị trường Việt Nam.',
+                    'Khoảng cách tới các chi nhánh trên Store Locator hiển thị theo đơn vị này.'
+                ),
+
+            Field::make('map_style', 'select', 'Kiểu hiển thị bản đồ (Map Style)')
+                ->default('hybrid')
+                ->tab('local')
+                ->group('titles')
+                ->choices([
+                    'hybrid'    => 'Hybrid (Kết hợp)',
+                    'satellite' => 'Satellite (Vệ tinh)',
+                    'roadmap'   => 'Roadmap (Bản đồ đường xá)',
+                    'terrain'   => 'Terrain (Địa hình)',
+                ])
+                ->showIf('use_multiple_locations', 'on')
+                ->note(
+                    'Kiểu lớp bản đồ Google Maps hiển thị trên trang tìm chi nhánh.',
+                    'Chọn phong cách phù hợp với giao diện website của bạn.',
+                    'Bản đồ sẽ hiển thị theo đúng phong cách đã chọn.'
+                ),
+
+            Field::make('limit_results', 'text', 'Số lượng địa điểm tối đa hiển thị')
+                ->default('10')
+                ->tab('local')
+                ->group('titles')
+                ->attributes(['type' => 'number', 'min' => 1])
+                ->showIf('use_multiple_locations', 'on')
+                ->note(
+                    'Giới hạn số địa điểm gần nhất được trả về khi người dùng tìm kiếm vị trí.',
+                    'Mặc định 10 địa điểm gần nhất.',
+                    'Giúp danh sách tìm kiếm gọn gàng và tải nhanh hơn.'
+                ),
+
+            Field::make('primary_country', 'select', 'Quốc gia hoạt động chính (Primary Country)')
+                ->default('')
+                ->tab('local')
+                ->group('titles')
+                ->choices([
+                    ''   => __('— Chọn quốc gia —', 'lacadev'),
+                    'VN' => 'Việt Nam (VN)',
+                    'US' => 'Hoa Kỳ (US)',
+                ])
+                ->showIf('use_multiple_locations', 'on')
+                ->note(
+                    'Quốc gia hoạt động chính của hệ thống chi nhánh.',
+                    'Giúp tăng độ chuẩn xác khi định vị và gợi ý địa chỉ tìm kiếm.',
+                    'Bộ lọc địa chỉ ưu tiên quốc gia này.'
+                ),
+
+            Field::make('route_label', 'text', 'Nhãn nút chỉ đường (Show Route label)')
+                ->default('My Route')
+                ->tab('local')
+                ->group('titles')
+                ->showIf('use_multiple_locations', 'on')
+                ->note(
+                    'Chữ hiển thị trên nút bấm dẫn đường tới chi nhánh trên bản đồ.',
+                    'Nhập nhãn như "Chỉ đường" hoặc "Tìm đường đi".',
+                    'Nút chỉ đường trên Store Locator sẽ mang nhãn này.'
+                ),
+
+            Field::make('enable_location_detection', 'toggle', 'Tự động phát hiện vị trí người dùng')
+                ->default('off')
+                ->tab('local')
+                ->group('titles')
+                ->showIf('use_multiple_locations', 'on')
+                ->note(
+                    'Yêu cầu trình duyệt chia sẻ toạ độ GPS của người dùng làm điểm bắt đầu tìm kiếm.',
+                    'Bật để tự động tính khoảng cách tới cửa hàng gần người xem nhất.',
+                    'Trình duyệt sẽ hiển thị thông báo xin quyền truy cập vị trí.'
+                ),
+
+            Field::make('same_organization_locations', 'toggle', 'Mọi chi nhánh thuộc cùng một pháp nhân tổ chức')
+                ->default('off')
+                ->tab('local')
+                ->group('titles')
+                ->showIf('use_multiple_locations', 'on')
+                ->note(
+                    'Khai báo tất cả các địa điểm đều là chi nhánh trực thuộc cùng một công ty pháp nhân.',
+                    'Bật nếu các địa điểm là chi nhánh của bạn, không phải đối tác nhượng quyền riêng lẻ.',
+                    'Schema của mỗi chi nhánh sẽ liên kết thuộc tính parentOrganization tới công ty chính.'
+                ),
+
+            Field::make('locations_enhanced_search', 'toggle', 'Tìm kiếm địa điểm nâng cao (Enhanced Search)')
+                ->default('off')
+                ->tab('local')
+                ->group('titles')
+                ->showIf('use_multiple_locations', 'on')
+                ->note(
+                    'Đưa các bài viết chi nhánh vào kết quả tìm kiếm chung trên toàn bộ website.',
+                    'Bật nếu bạn muốn khách tìm kiếm từ khoá bất kỳ trên thanh search có thể thấy tên chi nhánh.',
+                    'Các trang chi nhánh sẽ xuất hiện trong kết quả search thông thường.'
+                ),
+
+            Field::make('locations_post_type_base', 'text', 'Đường dẫn tĩnh cơ sở của địa điểm (Post Type Base)')
+                ->default('locations')
+                ->tab('local')
+                ->group('titles')
+                ->showIf('use_multiple_locations', 'on')
+                ->note(
+                    'Tiền tố URL của các bài viết chi nhánh (vd: domain.com/locations/chi-nhanh-da-nang/).',
+                    'Nhập slug không dấu, viết liền có gạch ngang (mặc định: locations hoặc chi-nhanh).',
+                    'Đường dẫn của từng chi nhánh sẽ có tiền tố này.'
+                ),
+
+            Field::make('locations_category_base', 'text', 'Đường dẫn danh mục địa điểm (Category Base)')
+                ->default('locations-category')
+                ->tab('local')
+                ->group('titles')
+                ->showIf('use_multiple_locations', 'on')
+                ->note(
+                    'Tiền tố URL của danh mục phân loại chi nhánh theo khu vực (vd: domain.com/locations-category/mien-trung/).',
+                    'Mặc định: locations-category.',
+                    'Đường dẫn danh mục chi nhánh sẽ nhận tiền tố này.'
+                ),
+
+            Field::make('locations_post_type_label', 'text', 'Tên hiển thị CPT Địa điểm (Post Type Name)')
+                ->default('RM Locations')
+                ->tab('local')
+                ->group('titles')
+                ->showIf('use_multiple_locations', 'on')
+                ->note(
+                    'Tên xuất hiện trên menu quản trị WordPress bên cột trái.',
+                    'Nhập nhãn dễ nhận biết như "Chi nhánh" hoặc "Địa điểm".',
+                    'Menu quản trị sẽ mang tên này.'
+                ),
+
+            Field::make('locations_post_type_plural_label', 'text', 'Tên CPT số nhiều (Plural Name)')
+                ->default('RM Locations')
+                ->tab('local')
+                ->group('titles')
+                ->showIf('use_multiple_locations', 'on')
+                ->note(
+                    'Tên ở dạng số nhiều cho danh sách bài viết chi nhánh.',
+                    'Mặc định: RM Locations.',
+                    'Xuất hiện trên tiêu đề trang quản lý danh sách địa điểm.'
                 ),
         ];
     }
@@ -779,6 +991,16 @@ class TitlesFields
                     'Gắn noindex cho toàn bộ các trang từ trang 2 trở đi của danh mục, blog.',
                     'Chỉ bật nếu bạn muốn dồn toàn bộ sức mạnh cho trang số 1; thông thường nên để Tắt để bot crawl bài cũ.',
                     'Các trang /page/2/ sẽ có thẻ noindex.'
+                ),
+
+            Field::make('noindex_paginated_pages', 'toggle', 'Noindex trang con phân trang của bài viết đơn (Paginated Single Pages)')
+                ->default('off')
+                ->tab('misc')
+                ->group('titles')
+                ->note(
+                    'Ngăn các trang phân trang con của bài viết đơn lẻ (<!--nextpage-->) xuất hiện trên kết quả tìm kiếm.',
+                    'Bật nếu muốn bot chỉ lập chỉ mục trang đầu tiên của bài viết nhiều trang.',
+                    'Các trang con phân trang của bài viết sẽ có thẻ noindex.'
                 ),
 
             Field::make('noindex_password_protected', 'toggle', 'Noindex các trang/bài có cài Mật khẩu bảo vệ')

@@ -114,13 +114,6 @@ class LacaAdminMenuOrganizer
                 'laca-discord-hub',
             ],
         ],
-        'seo' => [
-            'label' => 'SEO & Tối ưu tìm kiếm',
-            'icon' => 'dashicons-search',
-            'items' => [
-                'laca-seo',
-            ],
-        ],
         'marketing' => [
             'label' => 'Marketing & AI',
             'icon' => 'dashicons-megaphone',
@@ -502,7 +495,6 @@ class LacaAdminMenuOrganizer
             'laca-discord-hub' => 'Discord Hub',
             'laca-exit-popup' => 'Exit Popup',
             'laca-chatbot' => 'Chatbot',
-            'laca-seo' => 'Laca SEO',
         ];
 
         return $labels[$slug] ?? $slug;

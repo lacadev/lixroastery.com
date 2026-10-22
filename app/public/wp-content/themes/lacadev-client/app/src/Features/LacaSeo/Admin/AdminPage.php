@@ -26,14 +26,24 @@ class AdminPage
     }
 
     /**
-     * Register SEO menu entry under Laca Theme group.
+     * Register Laca SEO as a top-level menu entry between Laca Admin (3) and Laca Theme (3.1).
      */
     public function registerMenu(): void
     {
-        add_submenu_page(
-            'laca-admin',
+        add_menu_page(
             'Laca SEO',
-            'SEO',
+            'Laca SEO',
+            'manage_options',
+            self::MENU_SLUG,
+            [$this, 'renderPage'],
+            'dashicons-search',
+            '3.05'
+        );
+
+        add_submenu_page(
+            self::MENU_SLUG,
+            'Laca SEO',
+            'Bảng điều khiển',
             'manage_options',
             self::MENU_SLUG,
             [$this, 'renderPage']

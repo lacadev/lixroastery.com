@@ -75,9 +75,10 @@ class Slack
 
     private function isEddProduct(): bool
     {
-        return Settings::get('titles.pt_download_slack_enhanced_sharing', 'on') === 'on'
+        return class_exists('Easy_Digital_Downloads')
             && is_singular('download')
-            && class_exists('Easy_Digital_Downloads');
+            // getRaw: field pt_download_* chỉ được đăng ký khi EDD có post type 'download'.
+            && Settings::getRaw('titles.pt_download_slack_enhanced_sharing', 'on') === 'on';
     }
 
     private function isPage(): bool
@@ -96,7 +97,7 @@ class Slack
     {
         if (is_category() || is_tag() || is_tax()) {
             $object = get_queried_object();
-            return $object && Settings::getRaw('titles.tax_' . $object->taxonomy . '_slack_enhanced_sharing', 'off') === 'on';
+            return $object && Settings::get('titles.tax_' . $object->taxonomy . '_slack_enhanced_sharing', 'off') === 'on';
         }
         return false;
     }

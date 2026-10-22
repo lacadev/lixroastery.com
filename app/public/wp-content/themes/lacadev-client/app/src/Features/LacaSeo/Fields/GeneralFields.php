@@ -20,6 +20,7 @@ class GeneralFields
             'links' => self::getLinksFields(),
             'images' => self::getImagesFields(),
             'breadcrumbs' => self::getBreadcrumbsFields(),
+            'podcast' => self::getPodcastFields(),
             'webmaster' => self::getWebmasterFields(),
             'analytics' => self::getAnalyticsFields(),
             'robots' => self::getRobotsTxtFields(),
@@ -187,7 +188,7 @@ class GeneralFields
                 ->group('general'),
 
             Field::make('img_caption_format', 'variable_text', 'Định dạng Caption tự động')
-                ->default('%title%')
+                ->default('%title% %count(title)%')
                 ->tab('images')
                 ->group('general')
                 ->showIf('add_img_caption', 'on'),
@@ -198,15 +199,15 @@ class GeneralFields
                 ->group('general'),
 
             Field::make('img_description_format', 'variable_text', 'Định dạng Description tự động')
-                ->default('%title%')
+                ->default('%title% %count(title)%')
                 ->tab('images')
                 ->group('general')
                 ->showIf('add_img_description', 'on'),
 
             Field::make('img_alt_change_case', 'select', 'Đổi kiểu chữ cho thuộc tính ALT')
-                ->default('')
+                ->default('off')
                 ->choices([
-                    ''             => 'Không đổi',
+                    'off'          => 'Không đổi',
                     'titlecase'    => 'Title Case',
                     'sentencecase' => 'Sentence case',
                     'lowercase'    => 'lowercase',
@@ -216,9 +217,9 @@ class GeneralFields
                 ->group('general'),
 
             Field::make('img_title_change_case', 'select', 'Đổi kiểu chữ cho thuộc tính TITLE')
-                ->default('')
+                ->default('off')
                 ->choices([
-                    ''             => 'Không đổi',
+                    'off'          => 'Không đổi',
                     'titlecase'    => 'Title Case',
                     'sentencecase' => 'Sentence case',
                     'lowercase'    => 'lowercase',
@@ -228,9 +229,9 @@ class GeneralFields
                 ->group('general'),
 
             Field::make('img_caption_change_case', 'select', 'Đổi kiểu chữ cho Caption')
-                ->default('')
+                ->default('off')
                 ->choices([
-                    ''             => 'Không đổi',
+                    'off'          => 'Không đổi',
                     'titlecase'    => 'Title Case',
                     'sentencecase' => 'Sentence case',
                     'lowercase'    => 'lowercase',
@@ -240,9 +241,9 @@ class GeneralFields
                 ->group('general'),
 
             Field::make('img_description_change_case', 'select', 'Đổi kiểu chữ cho Description')
-                ->default('')
+                ->default('off')
                 ->choices([
-                    ''             => 'Không đổi',
+                    'off'          => 'Không đổi',
                     'titlecase'    => 'Title Case',
                     'sentencecase' => 'Sentence case',
                     'lowercase'    => 'lowercase',
@@ -255,6 +256,16 @@ class GeneralFields
                 ->default('off')
                 ->tab('images')
                 ->group('general'),
+
+            Field::make('image_replacements', 'group', 'Thay thế văn bản trong thuộc tính hình ảnh (Image Replacements)')
+                ->default([])
+                ->tab('images')
+                ->group('general')
+                ->note(
+                    'Tự động tìm kiếm và thay thế các từ hoặc ký tự trong thẻ ALT, TITLE, CAPTION của hình ảnh.',
+                    'Thêm từng dòng quy tắc: Từ cần tìm, Từ thay thế và phạm vi áp dụng (Alt, Title, Caption).',
+                    'Nội dung thuộc tính của ảnh sẽ được xử lý thay thế tự động trước khi xuất ra HTML.'
+                ),
         ];
     }
 
@@ -647,13 +658,25 @@ class GeneralFields
                 ->tab('woocommerce')
                 ->group('general')
                 ->choices([
-                    '' => __('— Chọn phân loại thương hiệu —', 'lacadev'),
+                    ''              => __('— Chọn phân loại thương hiệu —', 'lacadev'),
                     'product_brand' => __('Product Brand (product_brand)', 'lacadev'),
+                    'custom'        => __('Tuỳ chỉnh (Custom)', 'lacadev'),
                 ])
                 ->note(
                     'Chỉ định taxonomy nào trên website đang lưu tên thương hiệu/nhà sản xuất của sản phẩm.',
                     'Chọn taxonomy phù hợp (ví dụ product_brand) để hệ thống tự lấy điền vào Schema JSON-LD.',
                     'Thuộc tính brand trong Schema Product sẽ được tự động điền giá trị chuẩn.'
+                ),
+
+            Field::make('custom_product_brand', 'text', 'Tên thương hiệu tùy chỉnh (Custom Brand)')
+                ->default('')
+                ->tab('woocommerce')
+                ->group('general')
+                ->showIf('product_brand', 'custom')
+                ->note(
+                    'Nhập tên thương hiệu chung áp dụng cho tất cả sản phẩm khi không sử dụng taxonomy.',
+                    'Dùng khi shop bán duy nhất 1 thương hiệu hoặc muốn gán cứng thương hiệu cố định.',
+                    'Giá trị này sẽ được điền vào trường Brand trong Schema Product.'
                 ),
 
             Field::make('gtin', 'select', 'Mã định danh sản phẩm toàn cầu (GTIN)')
@@ -976,6 +999,123 @@ class GeneralFields
                     'Danh sách các đường dẫn hoặc từ khoá không muốn ghi nhận vào nhật ký 404 (nhập định dạng JSON mảng hoặc dòng).',
                     'Thường dùng để loại trừ các tệp quét rác tự động như wp-login.php, xmlrpc.php.',
                     'Các URL khớp quy tắc loại trừ sẽ bị bỏ qua và không lưu vào cơ sở dữ liệu.'
+                ),
+        ];
+    }
+
+    /**
+     * @return Field[]
+     */
+    private static function getPodcastFields(): array
+    {
+        return [
+            Field::make('podcast_title', 'variable_text', 'Tiêu đề Podcast (Podcast Title)')
+                ->default('%sitename%')
+                ->tab('podcast')
+                ->group('general')
+                ->note(
+                    'Tên chính thức của chương trình Podcast hiển thị trên các ứng dụng phát podcast.',
+                    'Hỗ trợ biến động như %sitename%. Mặc định lấy tên website.',
+                    'Xuất hiện trong thẻ <title> của RSS Podcast Feed.'
+                ),
+
+            Field::make('podcast_description', 'textarea', 'Mô tả Podcast (Podcast Description)')
+                ->default('%sitedesc%')
+                ->tab('podcast')
+                ->group('general')
+                ->note(
+                    'Đoạn văn bản tóm tắt nội dung và chủ đề chính mà chương trình Podcast đề cập.',
+                    'Viết từ 1-3 câu giới thiệu cuốn hút người nghe.',
+                    'Khai báo thẻ <description> trong RSS feed của podcast.'
+                ),
+
+            Field::make('podcast_owner', 'text', 'Tên chủ sở hữu / Tác giả Podcast (Owner Name)')
+                ->default('')
+                ->tab('podcast')
+                ->group('general')
+                ->note(
+                    'Tên cá nhân hoặc tổ chức sở hữu kênh Podcast này.',
+                    'Nhập tên đầy đủ theo giấy tờ hoặc tên thương hiệu đã đăng ký.',
+                    'Xuất hiện trong thẻ <itunes:owner><itunes:name> của feed.'
+                ),
+
+            Field::make('podcast_owner_email', 'text', 'Email liên hệ chủ sở hữu (Owner Email)')
+                ->default('')
+                ->tab('podcast')
+                ->group('general')
+                ->note(
+                    'Địa chỉ email liên hệ hỗ trợ hoặc nhận phản hồi về chương trình Podcast.',
+                    'Apple Podcasts và Spotify sử dụng email này để xác minh quyền sở hữu kênh.',
+                    'Xuất hiện trong thẻ <itunes:owner><itunes:email>.'
+                ),
+
+            Field::make('podcast_category', 'select', 'Chuyên mục Podcast (Podcast Category)')
+                ->default('')
+                ->tab('podcast')
+                ->group('general')
+                ->choices([
+                    ''                            => __('— Chọn chuyên mục Podcast —', 'lacadev'),
+                    'Arts'                        => 'Arts',
+                    'Business'                    => 'Business',
+                    'Comedy'                      => 'Comedy',
+                    'Education'                   => 'Education',
+                    'Games & Hobbies'             => 'Games & Hobbies',
+                    'Government & Organizations'  => 'Government & Organizations',
+                    'Health'                      => 'Health',
+                    'Kids & Family'               => 'Kids & Family',
+                    'Music'                       => 'Music',
+                    'News & Politics'             => 'News & Politics',
+                    'Religion & Spirituality'     => 'Religion & Spirituality',
+                    'Science & Medicine'          => 'Science & Medicine',
+                    'Society & Culture'           => 'Society & Culture',
+                    'Sports & Recreation'         => 'Sports & Recreation',
+                    'TV & Film'                   => 'TV & Film',
+                    'Technology'                  => 'Technology',
+                ])
+                ->note(
+                    'Phân loại danh mục chính của chương trình trên danh mục Apple Podcasts/Google Podcasts.',
+                    'Chọn danh mục phản ánh chính xác nhất chủ đề podcast của bạn.',
+                    'Khai báo trong thẻ <itunes:category> của feed.'
+                ),
+
+            Field::make('podcast_image', 'image', 'Ảnh đại diện Podcast (Cover Artwork)')
+                ->default('')
+                ->tab('podcast')
+                ->group('general')
+                ->note(
+                    'Ảnh bìa vuông đại diện cho toàn bộ kênh podcast.',
+                    'Yêu cầu chuẩn Apple: kích thước vuông từ 1400x1400 đến 3000x3000 pixels, định dạng JPG/PNG.',
+                    'Thẻ <itunes:image> sẽ chứa liên kết ảnh này.'
+                ),
+
+            Field::make('podcast_tracking_prefix', 'text', 'Tiền tố theo dõi số liệu (Tracking Prefix)')
+                ->default('')
+                ->tab('podcast')
+                ->group('general')
+                ->note(
+                    'URL tiền tố của dịch vụ phân tích lượt nghe podcast (ví dụ: Chartable, Podtrac).',
+                    'Dán URL tiền tố phân tích do dịch vụ cung cấp nếu bạn có đăng ký đo lường.',
+                    'Hệ thống tự động thêm tiền tố này vào đầu liên kết tệp âm thanh.'
+                ),
+
+            Field::make('podcast_explicit', 'toggle', 'Nội dung người lớn / Nhạy cảm (Explicit Content)')
+                ->default('off')
+                ->tab('podcast')
+                ->group('general')
+                ->note(
+                    'Khai báo kênh podcast có chứa ngôn từ hoặc chủ đề dành cho người lớn (18+) hay không.',
+                    'Bật nếu podcast có nội dung nhạy cảm; tắt nếu phù hợp với mọi độ tuổi.',
+                    'Khai báo thẻ <itunes:explicit>clean</itunes:explicit> hoặc yes.'
+                ),
+
+            Field::make('podcast_copyright_text', 'text', 'Thông tin bản quyền (Copyright Notice)')
+                ->default('')
+                ->tab('podcast')
+                ->group('general')
+                ->note(
+                    'Chuỗi thông báo bảo lưu quyền tác giả chương trình (Ví dụ: "© 2026 Lix Roastery. All rights reserved.").',
+                    'Nhập thông tin sở hữu trí tuệ của nội dung âm thanh.',
+                    'Thẻ <copyright> trong feed sẽ hiển thị nội dung này.'
                 ),
         ];
     }

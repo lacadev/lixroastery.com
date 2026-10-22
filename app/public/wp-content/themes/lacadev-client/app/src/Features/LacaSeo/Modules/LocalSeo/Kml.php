@@ -132,22 +132,30 @@ class Kml
         }
 
         if (empty($locations)) {
-            // Global setting location
+            $rawAddr = Settings::get('titles.local_address', []);
+            if (!is_array($rawAddr)) {
+                $rawAddr = [];
+            }
+            $rawGeo = (string) Settings::get('titles.geo', '');
+            $geoParts = $rawGeo !== '' ? array_map('trim', explode(',', $rawGeo)) : [];
+            $lat = !empty($geoParts[0]) ? $geoParts[0] : (Settings::getRaw('titles.geo_latitude') ?: '');
+            $lng = !empty($geoParts[1]) ? $geoParts[1] : (Settings::getRaw('titles.geo_longitude') ?: '');
+
             $locations[] = [
                 'name'        => Settings::get('titles.knowledgegraph_name', get_bloginfo('name')),
                 'description' => get_bloginfo('name') . ' - ' . get_bloginfo('description'),
                 'phone'       => Settings::get('titles.phone', ''),
                 'url'         => Settings::get('titles.url', home_url()),
                 'address'     => [
-                    Settings::get('titles.local_address_street', ''),
-                    Settings::get('titles.local_address_locality', ''),
-                    Settings::get('titles.local_address_region', ''),
-                    Settings::get('titles.local_address_postalcode', ''),
-                    Settings::get('titles.local_address_country', ''),
+                    $rawAddr['streetAddress'] ?? (Settings::getRaw('titles.local_address_street') ?: ''),
+                    $rawAddr['addressLocality'] ?? (Settings::getRaw('titles.local_address_locality') ?: ''),
+                    $rawAddr['addressRegion'] ?? (Settings::getRaw('titles.local_address_region') ?: ''),
+                    $rawAddr['postalCode'] ?? (Settings::getRaw('titles.local_address_postalcode') ?: ''),
+                    $rawAddr['addressCountry'] ?? (Settings::getRaw('titles.local_address_country') ?: ''),
                 ],
                 'coords'      => [
-                    'latitude'  => Settings::get('titles.geo_latitude', ''),
-                    'longitude' => Settings::get('titles.geo_longitude', ''),
+                    'latitude'  => $lat,
+                    'longitude' => $lng,
                 ],
             ];
         }
