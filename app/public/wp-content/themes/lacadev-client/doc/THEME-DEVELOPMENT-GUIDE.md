@@ -331,5 +331,46 @@ class Service {
 }
 ```
 
+### 7.4. Admin UI (Chakra Tokens & Components)
+
+Toàn bộ giao diện WordPress Admin (WP Chrome, WP Core, Carbon Fields, Gutenberg Inspector, Laca Admin Dock, Laca SEO và các trang tự viết) đã được chuẩn hoá theo ngôn ngữ thiết kế **Chakra UI v3**.
+
+#### 1. Hệ thống Tokens (`resources/styles/admin/_tokens.scss`)
+- **Màu nền:** `--laca-bg` (#ffffff), `--laca-bg-subtle` (#fafafa), `--laca-bg-muted` (#f4f4f5), `--laca-bg-emphasized` (#e4e4e7).
+- **Màu chữ:** `--laca-fg` (#18181b), `--laca-fg-hover` (#27272a), `--laca-fg-muted` (#52525b), `--laca-fg-subtle` (#71717a).
+- **Màu thương hiệu / Tương tác:** `--laca-accent` (#2563eb), `--laca-accent-hover` (#1d4ed8), `--laca-accent-subtle` (#eff6ff), `--laca-accent-fg` (#1e40af), `--laca-focus-ring` (#3b82f6).
+- **Màu trạng thái (WCAG AA):**
+  - Success: `--laca-success` (#15803d), `--laca-success-bg` (#f0fdf4), `--laca-success-border` (#bbf7d0).
+  - Warning: `--laca-warning` (#c2410c), `--laca-warning-bg` (#fff7ed), `--laca-warning-border` (#fed7aa).
+  - Danger: `--laca-danger` (#b91c1c), `--laca-danger-bg` (#fef2f2), `--laca-danger-border` (#fecaca).
+  - Info: `--laca-info` (#0284c7), `--laca-info-bg` (#f0f9ff), `--laca-info-border` (#bae6fd).
+- **Spacing:** `--laca-space-1` (4px) đến `--laca-space-8` (32px).
+- **Border Radius:** `--laca-radius-xs` (2px), `--laca-radius-sm` (4px), `--laca-radius-md` (6px), `--laca-radius-lg` (8px), `--laca-radius-xl` (12px), `--laca-radius-full` (9999px).
+- **Shadows:** `--laca-shadow-xs`, `--laca-shadow-sm`, `--laca-shadow-md`, `--laca-shadow-lg`.
+
+#### 2. Thư viện Components BEM (`resources/styles/admin/components/`)
+15 thành phần giao diện chuẩn:
+1. **Button:** `.laca-btn`, `.laca-btn--solid`, `.laca-btn--outline`, `.laca-btn--ghost`, `.laca-btn--subtle`, `.laca-btn--danger`.
+2. **Card:** `.laca-card`, `.laca-card__header`, `.laca-card__body`, `.laca-card__footer`.
+3. **Badge:** `.laca-badge`, `.laca-badge--neutral`, `.laca-badge--accent`, `.laca-badge--success`, `.laca-badge--warning`, `.laca-badge--danger`.
+4. **Alert:** `.laca-alert`, `.laca-alert--info`, `.laca-alert--success`, `.laca-alert--warning`, `.laca-alert--danger`.
+5. **Stat:** `.laca-stat`, `.laca-stat__label`, `.laca-stat__value`, `.laca-stat__help`.
+6. **Tabs:** `.laca-tabs`, `.laca-tabs__list`, `.laca-tabs__trigger`, `.laca-tabs__panel`.
+7. **Form Controls:** `.laca-input`, `.laca-textarea`, `.laca-select`.
+8. **Switch:** `.laca-switch`, `.laca-switch__input`, `.laca-switch__track`, `.laca-switch__thumb`.
+9. **Segmented Control:** `.laca-segmented`, `.laca-segmented__item`.
+10. **Modal / Dialog:** `.laca-modal`, `.laca-modal__overlay`, `.laca-modal__content`.
+11. **Drawer:** `.laca-drawer`, `.laca-drawer__content`.
+12. **Table Wrapper:** `.laca-table-wrap`, `.laca-table`.
+13. **Empty State:** `.laca-empty-state`, `.laca-empty-state__icon`, `.laca-empty-state__title`.
+14. **Action Bar:** `.laca-action-bar` (sticky actions).
+15. **Breadcrumb:** `.laca-breadcrumb`, `.laca-breadcrumb__item`, `.laca-breadcrumb__separator`.
+
+#### 3. Quy tắc bắt buộc khi code Admin
+- **100% Tokenized:** Mọi trang admin tự viết chỉ dùng class component `laca-*` và CSS token; tuyệt đối không dùng raw hex ngoài file `_tokens.scss`.
+- **Zero Inline Styles:** Không viết inline `style="..."` hoặc thẻ `<style>` trong PHP admin view. Ngoại lệ duy nhất là giá trị runtime động bắt buộc (như `width:{$pct}%` thanh tiến trình) và phải có chú thích `/* động */`.
+- **UI Kit Demo:** Xem toàn bộ demo và mã nguồn mẫu tại `wp-admin › Laca Admin › UI Kit` (`admin.php?page=laca-ui-kit`).
+
 ---
 **Happy Coding! 🚀**
+

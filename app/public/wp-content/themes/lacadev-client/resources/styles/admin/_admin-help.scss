@@ -34,11 +34,11 @@
 }
 
 .laca-help-card {
-    background: #fff;
+    background: var(--laca-bg);
     padding: 1.5625rem;
     border-radius: var(--laca-radius);
     box-shadow: var(--laca-shadow-sm);
-    border-top: 4px solid var(--laca-primary);
+    border-top: 4px solid var(--laca-accent);
     transition: transform 0.2s;
 
     &:hover {
@@ -48,29 +48,29 @@
     h3 {
         margin-top: 0;
         font-size: 1.125rem;
-        color: var(--laca-text-main);
+        color: var(--laca-fg);
     }
 }
 
 .laca-help-card-content {
     line-height: 1.7;
-    color: #3c434a;
+    color: var(--laca-fg);
 }
 
 .laca-help-footer {
     margin-top: 2.5rem;
-    background: #1d2327;
+    background: var(--laca-fg);
     padding: 1.875rem;
     border-radius: var(--laca-radius);
-    color: #fff;
+    color: var(--laca-bg);
 
     h3 {
         margin-top: 0;
-        color: #72aee6;
+        color: var(--laca-accent);
     }
 
     a {
-        color: #72aee6;
+        color: var(--laca-accent);
         text-decoration: none;
 
         &:hover {

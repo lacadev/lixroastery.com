@@ -290,7 +290,7 @@
     margin-left: auto;
     padding: 4px 12px;
     background: var(--laca-accent);
-    color: #fff;
+    color: var(--laca-bg);
     border: none;
     border-radius: var(--laca-radius-l2);
     cursor: pointer;
@@ -347,7 +347,7 @@
 }
 
 .laca-sync-banner-stat {
-    color: #fff;
+    color: var(--laca-bg);
     text-align: center;
 }
 
@@ -1526,7 +1526,7 @@
         padding: 0;
         border-radius: 50%;
         box-sizing: border-box;
-        color: #fff;
+        color: var(--laca-bg);
 
         &.is-todo {
             border: 1.5px dashed var(--laca-fg-subtle);
@@ -1706,7 +1706,7 @@
 // ─── Maintenance Mode Admin Bar & Merchant Simplification ───────────
 #wp-admin-bar-laca_maintenance_toggle .ab-item {
     background: var(--laca-danger) !important;
-    color: #fff !important;
+    color: var(--laca-bg) !important;
     font-weight: 600 !important;
 
     &:hover {

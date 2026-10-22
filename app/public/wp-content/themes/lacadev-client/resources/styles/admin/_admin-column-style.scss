@@ -19,11 +19,11 @@ form#posts-filter {
 }
 
 .column-is_feature a.dashicons-yes {
-  color: #3a878f;
+  color: var(--laca-success);
 }
 
 .column-is_feature a.dashicons-no {
-  color: #dc665c;
+  color: var(--laca-danger);
 }
 
 .wp-list-table td {

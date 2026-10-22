@@ -80,6 +80,7 @@
 * Không dùng jQuery. Sử dụng 100% Vanilla JS ES6+ modules.
 * SCSS đặt tên theo chuẩn BEM, không nesting quá 3 cấp, kết hợp utility classes của Tailwind CSS.
 * Đảm bảo Accessibility (A11y): Form có `<label>`, icon button có `aria-label`, 1 thẻ `<h1>` duy nhất trên trang.
+* **Admin UI (Chakra Tokens & Components)**: Giao diện admin mới chỉ sử dụng class component `laca-*` và CSS tokens trong `resources/styles/admin/_tokens.scss`; tuyệt đối không dùng raw hex ngoài `_tokens.scss` và không viết inline `style="..."` hay thẻ `<style>` (ngoại trừ giá trị runtime động bắt buộc được ghi chú `/* động */`).
 
 ---
 

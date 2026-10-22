@@ -23,7 +23,7 @@ h1.wp-block-post-title {
 // ─── LacaDev Dashboard Widgets ───────────────────────────────
 
 .laca-stat-card {
-  background: #fff;
+  background: var(--laca-bg);
   border-radius: 12px;
   padding: 20px 24px;
   border: 1px solid rgba(0,0,0,0.06);
@@ -52,7 +52,7 @@ h1.wp-block-post-title {
   .laca-stat-number {
     font-size: 28px;
     font-weight: 700;
-    color: #1a1a2e;
+    color: var(--laca-fg);
     line-height: 1;
   }
 
@@ -77,7 +77,7 @@ h1.wp-block-post-title {
   height: 52px;
   border-radius: 50%;
   background: var(--laca-accent);
-  color: #fff;
+  color: var(--laca-bg);
   border: none;
   cursor: pointer;
   box-shadow: 0 4px 20px rgba(46, 162, 204, 0.45);
@@ -95,7 +95,7 @@ h1.wp-block-post-title {
 
   &.laca-ai-open {
     transform: rotate(45deg) scale(0.95);
-    background: linear-gradient(135deg, #1a1a2e, #2a2a4e);
+    background: var(--laca-fg);
   }
 }
 
@@ -106,7 +106,7 @@ h1.wp-block-post-title {
   z-index: 99998;
   width: 360px;
   max-height: 520px;
-  background: #fff;
+  background: var(--laca-bg);
   border-radius: 16px;
   box-shadow: 0 16px 60px rgba(0,0,0,0.18);
   display: flex;
@@ -132,8 +132,8 @@ h1.wp-block-post-title {
 }
 
 .laca-ai-chat-header {
-  background: linear-gradient(135deg, #1a1a2e, #2a2a4e);
-  color: #fff;
+  background: var(--laca-fg);
+  color: var(--laca-bg);
   padding: 14px 18px;
   display: flex;
   align-items: center;
@@ -170,12 +170,12 @@ h1.wp-block-post-title {
     width: 8px;
     height: 8px;
     border-radius: 50%;
-    background: #3ecf8e;
+    background: var(--laca-success);
     flex-shrink: 0;
 
     &.laca-ai-thinking {
       animation: laca-pulse 1.2s ease-in-out infinite;
-      background: #f5a623;
+      background: var(--laca-warning);
     }
   }
 }
@@ -209,14 +209,14 @@ h1.wp-block-post-title {
   &--user {
     align-self: flex-end;
     background: var(--laca-accent);
-    color: #fff;
+    color: var(--laca-bg);
     border-radius: 12px 12px 3px 12px;
   }
 
   &--ai {
     align-self: flex-start;
-    background: #f3f4f7;
-    color: #1a1a2e;
+    background: var(--laca-bg-muted);
+    color: var(--laca-fg);
     border-radius: 12px 12px 12px 3px;
 
     code {
@@ -229,7 +229,7 @@ h1.wp-block-post-title {
 
   &--thinking {
     align-self: flex-start;
-    background: #f3f4f7;
+    background: var(--laca-bg-muted);
     color: rgba(0,0,0,0.4);
     border-radius: 12px 12px 12px 3px;
     display: flex;
@@ -287,7 +287,7 @@ h1.wp-block-post-title {
     min-height: 40px;
     max-height: 100px;
     transition: border-color 0.15s ease;
-    color: #1a1a2e;
+    color: var(--laca-fg);
 
     &:focus { border-color: var(--laca-accent); }
     &::placeholder { color: rgba(0,0,0,0.3); }
@@ -298,7 +298,7 @@ h1.wp-block-post-title {
     height: 38px;
     border-radius: 10px;
     background: var(--laca-accent);
-    color: #fff;
+    color: var(--laca-bg);
     border: none;
     cursor: pointer;
     display: flex;
