@@ -13,7 +13,7 @@
   $gutters: (null: rem(100), $lg: rem(50), $md: rem(20), $sm: rem(15));
 
   @each $bp, $g in $gutters {
-    @if $bp == null {
+    @if not $bp {
       margin-left: max(#{$g}, calc((100% - var(--laca-container-max, 100%)) / 2 + #{$g})) !important;
       margin-right: max(#{$g}, calc((100% - var(--laca-container-max, 100%)) / 2 + #{$g})) !important;
     } @else {
