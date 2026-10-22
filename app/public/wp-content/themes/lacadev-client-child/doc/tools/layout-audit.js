@@ -20,7 +20,8 @@ const URLS = [
     '/',
     '/manifesto/',
     '/vi/manifesto/the-origin/', // 1 page publish có block
-    '/journal/extremely-light-cua-lix-roastery/',
+    '/journal/lix-roastery-la-ai/', // Hero TẮT tràn viền (fullBleed false)
+    '/journal/extremely-light-cua-lix-roastery/', // Hero BẬT tràn viền
     '/journal/lix-roastery-at-cafe-show-hanoi-2026/',
     '/journal/',
     '/shop/',
@@ -143,13 +144,30 @@ const BREAKPOINTS = [1440, 1024, 768, 390];
                             const rect = child.getBoundingClientRect();
                             if (rect.width === 0 && rect.height === 0) continue;
 
-                            const isAlignFull = child.classList.contains('alignfull') ||
-                                (child.tagName === 'SECTION' && child.classList.contains('block-top-hero'));
+                            const isBleedBlock = child.classList.contains('block-top-hero--bleed') ||
+                                (child.classList.contains('alignfull') && !child.classList.contains('block-top-hero'));
+                            const isNonBleedHero = child.classList.contains('block-top-hero') &&
+                                !child.classList.contains('block-top-hero--bleed');
 
-                            if (isAlignFull) {
-                                // alignfull phải tràn viền: left ~ 0 và width ~ vpWidth
+                            if (isBleedBlock) {
+                                // Block tràn viền: left ~ 0 và width ~ vpWidth
                                 if (Math.abs(rect.left) > 2 || Math.abs(rect.width - vpWidth) > 3) {
-                                    errors.push(`alignfull không tràn viền: left=${rect.left}, width=${rect.width} (vp=${vpWidth})`);
+                                    errors.push(`alignfull/bleed không tràn viền: left=${rect.left}, width=${rect.width} (vp=${vpWidth})`);
+                                    break;
+                                }
+                            } else if (isNonBleedHero) {
+                                // Block top-hero khi TẮT tràn viền:
+                                // Mép trái của khối = expectedGutterLeft (±1px), width = vpWidth - 2 * expectedGutterLeft (±2px)
+                                const actualLeft = Math.round(rect.left);
+                                const actualWidth = Math.round(rect.width);
+                                const expectedWidth = Math.round(vpWidth - 2 * expectedGutterLeft);
+
+                                if (expectedGutterLeft > 0 && Math.abs(actualLeft - expectedGutterLeft) > 2) {
+                                    errors.push(`Top Hero tắt bleed lệch lề trái: actualLeft=${actualLeft} expected=${expectedGutterLeft}`);
+                                    break;
+                                }
+                                if (expectedGutterLeft > 0 && Math.abs(actualWidth - expectedWidth) > 3) {
+                                    errors.push(`Top Hero tắt bleed sai chiều rộng: actualWidth=${actualWidth} expected=${expectedWidth}`);
                                     break;
                                 }
                             } else {
@@ -187,6 +205,21 @@ const BREAKPOINTS = [1440, 1024, 768, 390];
                 if (audit.success) {
                     console.log(`PASS ${urlPath} ${width}px (gutter=${audit.expectedGutterLeft}px)`);
                     passCount++;
+
+                    // Chụp ảnh nghiệm thu nếu là URL bài 101 hoặc bài hero BẬT tràn viền ở 1440px / 390px
+                    if (
+                        (urlPath.includes('lix-roastery-la-ai') || urlPath.includes('extremely-light-cua-lix-roastery')) &&
+                        (width === 1440 || width === 390)
+                    ) {
+                        const outDir = '/private/tmp/laca-layout2';
+                        if (!fs.existsSync(outDir)) {
+                            fs.mkdirSync(outDir, { recursive: true });
+                        }
+                        const slug = urlPath.includes('lix-roastery-la-ai') ? 'hero-nonbleed-101' : 'hero-bleed-extremely-light';
+                        const imgPath = path.join(outDir, `${slug}-${width}px.png`);
+                        await page.screenshot({ path: imgPath, fullPage: false });
+                        console.log(`   [Screenshot saved: ${imgPath}]`);
+                    }
                 } else {
                     const failMsg = audit.errors.join(' | ');
                     console.log(`FAIL ${urlPath} ${width}px - ${failMsg}`);

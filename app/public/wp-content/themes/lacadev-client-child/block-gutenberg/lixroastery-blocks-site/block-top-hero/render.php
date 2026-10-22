@@ -88,6 +88,24 @@ foreach ($tiers as $tier => $suffix) {
 
 $wrapper_attrs = get_block_wrapper_attributes(['class' => implode(' ', $classes)]);
 
+if (!$full_bleed) {
+    // Loại bỏ class alignfull / alignwide khỏi wrapper khi fullBleed tắt
+    $wrapper_attrs = preg_replace('/\b(alignfull|alignwide)\b/', '', $wrapper_attrs);
+    // Dọn dẹp khoảng trắng thừa trong class attribute nếu có
+    $wrapper_attrs = preg_replace('/class="\s+/', 'class="', $wrapper_attrs);
+    $wrapper_attrs = preg_replace('/\s+"/', '"', $wrapper_attrs);
+    $wrapper_attrs = preg_replace('/\s{2,}/', ' ', $wrapper_attrs);
+} else {
+    // Đảm bảo có class alignfull trên root khi fullBleed bật
+    if (!preg_match('/\balignfull\b/', $wrapper_attrs)) {
+        if (preg_match('/class="([^"]*)"/', $wrapper_attrs)) {
+            $wrapper_attrs = preg_replace('/class="([^"]*)"/', 'class="$1 alignfull"', $wrapper_attrs);
+        } else {
+            $wrapper_attrs .= ' class="alignfull"';
+        }
+    }
+}
+
 // Chế độ "custom": section có chiều cao cố định qua inline style, ảnh phủ
 // kín bằng object-fit:cover. Chế độ "full": không set chiều cao — ảnh nằm
 // trong luồng (height:auto), section tự co theo đúng kích thước ảnh gốc.
@@ -130,12 +148,18 @@ $hero_priority = $is_first_hero ? 'high' : 'auto';
         <div class="block-top-hero__shade" aria-hidden="true"></div>
     <?php endif; ?>
 
-    <div class="block-top-hero__content" style="<?php echo esc_attr($content_vars); ?>">
-        <?php if ($headline) : ?>
-            <h1 class="block-top-hero__headline"><?php echo $headline; ?></h1>
-        <?php endif; ?>
-        <?php if ($description) : ?>
-            <div class="block-top-hero__desc"><?php echo $description; ?></div>
-        <?php endif; ?>
+    <?php if ($full_bleed) : ?>
+    <div class="container-fluid block-top-hero__content-wrap">
+    <?php endif; ?>
+        <div class="block-top-hero__content" style="<?php echo esc_attr($content_vars); ?>">
+            <?php if ($headline) : ?>
+                <h1 class="block-top-hero__headline"><?php echo $headline; ?></h1>
+            <?php endif; ?>
+            <?php if ($description) : ?>
+                <div class="block-top-hero__desc"><?php echo $description; ?></div>
+            <?php endif; ?>
+        </div>
+    <?php if ($full_bleed) : ?>
     </div>
+    <?php endif; ?>
 </section>

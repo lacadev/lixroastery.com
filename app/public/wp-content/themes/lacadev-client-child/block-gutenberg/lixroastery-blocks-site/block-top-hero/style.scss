@@ -1,6 +1,7 @@
 @use "@parent/styles/theme/abstracts/variables" as *;
 @use "@parent/styles/theme/abstracts/mixin" as *;
 @use "../../../resources/styles/theme/abstracts/variables" as *;
+@use "../../../resources/styles/theme/abstracts/mixin" as childMixin;
 
 
 body:not(.home) main#main_content .entry-content > .block-top-hero:first-child,
@@ -239,6 +240,21 @@ body:not(.wp-admin):not(.editor-styles-wrapper) .block-top-hero--bleed {
     margin-right: calc(50% - 50vw);
 }
 
+// Khi TẮT tràn viền: khối nằm trong lề chuẩn của site (đồng bộ gutter header)
+body:not(.wp-admin):not(.editor-styles-wrapper) .block-top-hero:not(.block-top-hero--bleed) {
+    @include childMixin.container-gutter(margin);
+}
+
+.block-top-hero__content-wrap {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+
+    .block-top-hero__content {
+        pointer-events: auto;
+    }
+}
+
 // 100vw tính cả thanh cuộn dọc (Windows) → lệch vài px gây cuộn ngang. clip
 // thay vì hidden để không phá position: sticky của header.
 body:has(.block-top-hero--bleed) {
@@ -253,6 +269,13 @@ body:has(.block-top-hero--bleed) {
         width: auto;
         left: auto;
         right: auto;
+        transition: margin 0.2s ease, border-radius 0.2s ease;
+
+        &:not(.block-top-hero--bleed) {
+            margin-left: 5%;
+            margin-right: 5%;
+            border-radius: rem(8);
+        }
     }
 }
 

@@ -86,8 +86,9 @@
 ## 📐 6. QUY CÁCH LAYOUT CONTAINER / CONTAINER-FLUID (R1–R6)
 * **R1 — Template không bọc `the_content()`**: Template (`page.php`, `single.php`, custom page template...) không bọc `the_content()` trong `.container` hay `.container-fluid`. Vùng nội dung dùng wrapper `<div class="entry-content">` (không padding ngang).
 * **R2 — Block custom tự lo lề ngang**:
-  * Block thường: Root `<section class="container-fluid [block-class]">` (lề chuẩn đồng bộ header/footer).
-  * Block tràn viền (hero, banner nền...): Root `<section class="[block-class] alignfull">` (KHÔNG có class `container-fluid`), đặt nội dung chữ bên trong `<div class="container-fluid">`.
+  * Tràn viền theo setting của block, không theo class `alignfull` đã lưu trong nội dung.
+  * Block thường hoặc block có setting tràn viền bị TẮT: Nằm trong lề chuẩn đồng bộ header/footer (Root `<section class="container-fluid [block-class]">` hoặc áp dụng `@mixin container-gutter($property: margin)` lên thẻ root không có `alignfull`).
+  * Block tràn viền (hero, banner nền... khi setting tràn viền BẬT): Root `<section class="[block-class] alignfull">` (KHÔNG có class `container-fluid`), đặt nội dung chữ bên trong `<div class="container-fluid">`.
 * **R3 — Core blocks trực tiếp nhận lề qua mixin**: Các thẻ core (p, h2, ul, ol, blockquote...) nằm trực tiếp trong `.entry-content` tự nhận lề qua `@mixin container-gutter`; `.alignwide` = max-width `$xl` + căn giữa; `.alignfull` = full viewport width.
 * **R4 — Phần ngoài nội dung dùng đúng 1 lớp container**: Header, footer, breadcrumb, page-hero, archive header... dùng đúng 1 lớp `.container-fluid` (hoặc `.container` khi cần max-width `$xl`), không lồng container trong container.
 * **R5 — Bản vá lồng hợp lệ**: Duy trì `.container-fluid .container-fluid { padding: 0 !important; }` để hỗ trợ các block dạng container (Tabs, Container) chứa block con mà không bị thụt lề lặp. Mép trái chữ luôn thẳng hàng với logo header ở mọi breakpoint.

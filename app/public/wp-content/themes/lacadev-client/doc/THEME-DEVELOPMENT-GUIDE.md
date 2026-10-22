@@ -135,8 +135,9 @@ Quy chuẩn cấu trúc container đảm bảo mép trái nội dung luôn thẳ
 
 - **R1 — Template không bọc `the_content()`**: Template (`page.php`, `single.php`, custom page template...) không bọc `the_content()` trong `.container` hay `.container-fluid`. Vùng nội dung dùng wrapper `<div class="entry-content">` (không padding ngang).
 - **R2 — Block custom tự lo lề ngang**:
-  - Block thông thường: Thẻ root `<section class="container-fluid [block-class]">`.
-  - Block tràn viền (full-bleed): Thẻ root `<section class="[block-class] alignfull">` (KHÔNG có `container-fluid`), nội dung văn bản bên trong bọc qua `<div class="container-fluid">`.
+  - Tràn viền theo setting của block, không theo class `alignfull` đã lưu trong nội dung.
+  - Block thông thường hoặc block có setting tràn viền bị TẮT: Thẻ root nằm trong lề chuẩn đồng bộ header/footer (thẻ root `<section class="container-fluid [block-class]">` hoặc áp dụng `@mixin container-gutter($property: margin)` lên thẻ root không có `alignfull`).
+  - Block tràn viền (full-bleed khi setting BẬT): Thẻ root `<section class="[block-class] alignfull">` (KHÔNG có `container-fluid`), nội dung văn bản bên trong bọc qua `<div class="container-fluid">`.
 - **R3 — Core blocks trực tiếp trong `.entry-content`**: Tự động nhận lề qua `@mixin container-gutter`; `.alignwide` = max-width `$xl` căn giữa; `.alignfull` = tràn viền viewport 100vw.
 - **R4 — Phần ngoài nội dung**: Header, footer, breadcrumb, page-hero, archive header... dùng đúng 1 lớp container, không lồng container trong container.
 - **R5 — Bản vá container lồng hợp lệ**: Giữ `.container-fluid .container-fluid { padding: 0 !important; }` để triệt tiêu padding cộng dồn khi các block dạng container lồng nhau (như Tabs, Container).
