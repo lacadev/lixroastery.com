@@ -70,7 +70,10 @@ export function ResponsiveSelectControl( {
 	return (
 		<div style={ { marginBottom: '16px' } }>
 			<p style={ { marginBottom: '6px', fontWeight: 600 } }>{ label }</p>
-			<ButtonGroup style={ { marginBottom: '8px' } }>
+			<ButtonGroup
+				className="laca-segmented"
+				style={ { marginBottom: '8px' } }
+			>
 				{ RESPONSIVE_DEVICE_TABS.map( ( tab ) => (
 					<Button
 						key={ tab.key }
@@ -122,7 +125,10 @@ export function ResponsiveRangeControl( {
 	return (
 		<div style={ { marginBottom: '16px' } }>
 			<p style={ { marginBottom: '6px', fontWeight: 600 } }>{ label }</p>
-			<ButtonGroup style={ { marginBottom: '8px' } }>
+			<ButtonGroup
+				className="laca-segmented"
+				style={ { marginBottom: '8px' } }
+			>
 				{ RESPONSIVE_DEVICE_TABS.map( ( tab ) => (
 					<Button
 						key={ tab.key }
@@ -235,7 +241,10 @@ function ResponsiveSpacingControls( { spacing, onChangeSpacing } ) {
 			<p style={ { marginBottom: '8px', fontWeight: 600 } }>
 				{ __( 'Responsive', 'laca' ) }
 			</p>
-			<ButtonGroup style={ { marginBottom: '12px' } }>
+			<ButtonGroup
+				className="laca-segmented"
+				style={ { marginBottom: '12px' } }
+			>
 				{ SPACING_DEVICES.map( ( device ) => (
 					<Button
 						key={ device }

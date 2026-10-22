@@ -1,0 +1,244 @@
+// =============================================================================
+// Gutenberg Inspector Skin (Chakra UI v3 tokens)
+// Scope: .interface-complementary-area, .block-editor-block-inspector, .edit-post-sidebar, .editor-sidebar
+// =============================================================================
+
+.interface-complementary-area,
+.block-editor-block-inspector,
+.edit-post-sidebar,
+.editor-sidebar {
+  background-color: var(--laca-bg);
+  color: var(--laca-fg);
+  font-family: var(--laca-font);
+
+  // Accordion Panels
+  .components-panel__body {
+    border-top: 1px solid var(--laca-border) !important;
+    border-bottom: none !important;
+    background: transparent;
+
+    &.is-opened {
+      background-color: var(--laca-bg);
+    }
+  }
+
+  .components-panel__body-title button,
+  .components-panel__body-toggle.components-button {
+    height: 48px !important;
+    padding: 0 var(--laca-spacing-4) !important;
+    font-family: var(--laca-font) !important;
+    font-size: var(--laca-font-size-sm) !important;
+    font-weight: 600 !important;
+    color: var(--laca-fg) !important;
+    outline: none !important;
+
+    &:hover {
+      background-color: var(--laca-bg-subtle) !important;
+      color: var(--laca-fg) !important;
+    }
+
+    &:focus {
+      box-shadow: inset 0 0 0 1px var(--laca-focus-ring) !important;
+    }
+  }
+
+  // Labels: sentence-case, 13px, weight 500
+  .components-base-control__label,
+  .components-input-control__label,
+  .components-toggle-group-control__label,
+  .components-toggle-control__label {
+    text-transform: none !important;
+    font-family: var(--laca-font) !important;
+    font-size: 13px !important;
+    font-weight: 500 !important;
+    line-height: var(--laca-line-height-sm) !important;
+    color: var(--laca-fg) !important;
+    letter-spacing: normal !important;
+    margin-bottom: var(--laca-spacing-1-5) !important;
+  }
+
+  // Help text: 12/16 fg-muted
+  .components-base-control__help,
+  .components-input-control__help,
+  .components-toggle-control__help {
+    font-family: var(--laca-font) !important;
+    font-size: var(--laca-font-size-xs) !important;
+    line-height: var(--laca-line-height-xs) !important;
+    color: var(--laca-fg-muted) !important;
+    margin-top: var(--laca-spacing-1) !important;
+  }
+
+  // Inputs: 32px height, radius l2, border, focus ring
+  .components-text-control__input,
+  .components-select-control__input,
+  .components-input-control__container input,
+  .components-input-control__input {
+    height: 32px !important;
+    min-height: 32px !important;
+    border: 1px solid var(--laca-border) !important;
+    border-radius: var(--laca-radii-l2) !important;
+    background-color: var(--laca-bg) !important;
+    color: var(--laca-fg) !important;
+    font-family: var(--laca-font) !important;
+    font-size: var(--laca-font-size-sm) !important;
+    padding: 0 var(--laca-spacing-2-5) !important;
+    box-shadow: none !important;
+    transition: border-color var(--laca-durations-fast), box-shadow var(--laca-durations-fast);
+
+    &:focus {
+      border-color: var(--laca-focus-ring) !important;
+      box-shadow: 0 0 0 1px var(--laca-focus-ring) !important;
+      outline: none !important;
+    }
+  }
+
+  textarea.components-textarea-control__input {
+    border: 1px solid var(--laca-border) !important;
+    border-radius: var(--laca-radii-l2) !important;
+    background-color: var(--laca-bg) !important;
+    color: var(--laca-fg) !important;
+    font-family: var(--laca-font) !important;
+    font-size: var(--laca-font-size-sm) !important;
+    padding: var(--laca-spacing-2) var(--laca-spacing-2-5) !important;
+    box-shadow: none !important;
+
+    &:focus {
+      border-color: var(--laca-focus-ring) !important;
+      box-shadow: 0 0 0 1px var(--laca-focus-ring) !important;
+      outline: none !important;
+    }
+  }
+
+  // ToggleGroupControl as Segmented control
+  .components-toggle-group-control {
+    background-color: var(--laca-bg-muted) !important;
+    border: 1px solid var(--laca-border) !important;
+    border-radius: var(--laca-radii-l2) !important;
+    padding: 2px !important;
+
+    .components-toggle-group-control-option-base {
+      border-radius: var(--laca-radii-l1) !important;
+      font-size: var(--laca-font-size-xs) !important;
+      font-weight: 500 !important;
+      color: var(--laca-fg-muted) !important;
+      height: 28px !important;
+      background: transparent !important;
+      border: none !important;
+
+      &[aria-checked="true"],
+      &.is-selected {
+        background-color: var(--laca-bg) !important;
+        color: var(--laca-fg) !important;
+        font-weight: 600 !important;
+        box-shadow: var(--laca-shadow-xs) !important;
+      }
+    }
+  }
+
+  // Form toggle / switch
+  .components-form-toggle {
+    .components-form-toggle__track {
+      background-color: var(--laca-border-emphasized) !important;
+      border: 1px solid var(--laca-border) !important;
+      border-radius: var(--laca-radii-full) !important;
+      height: 20px !important;
+      width: 36px !important;
+    }
+
+    .components-form-toggle__thumb {
+      background-color: var(--laca-bg) !important;
+      border-radius: var(--laca-radii-full) !important;
+      box-shadow: var(--laca-shadow-xs) !important;
+      width: 16px !important;
+      height: 16px !important;
+      top: 2px !important;
+      left: 2px !important;
+    }
+
+    &.is-checked {
+      .components-form-toggle__track {
+        background-color: var(--laca-accent) !important;
+        border-color: var(--laca-accent) !important;
+      }
+
+      .components-form-toggle__thumb {
+        transform: translateX(16px) !important;
+      }
+    }
+  }
+
+  // Buttons in inspector
+  .components-button {
+    font-family: var(--laca-font);
+    border-radius: var(--laca-radii-l2);
+
+    &.is-primary {
+      background-color: var(--laca-accent) !important;
+      color: var(--laca-bg) !important;
+      border-color: var(--laca-accent) !important;
+
+      &:hover:not(:disabled) {
+        background-color: var(--laca-accent-hover) !important;
+      }
+    }
+
+    &.is-secondary {
+      background-color: transparent !important;
+      color: var(--laca-fg) !important;
+      border: 1px solid var(--laca-border) !important;
+
+      &:hover:not(:disabled) {
+        background-color: var(--laca-bg-muted) !important;
+      }
+    }
+
+    &.is-tertiary {
+      background-color: transparent !important;
+      color: var(--laca-fg-muted) !important;
+      border: none !important;
+
+      &:hover:not(:disabled) {
+        background-color: var(--laca-bg-muted) !important;
+        color: var(--laca-fg) !important;
+      }
+    }
+  }
+
+  // Segmented control on ButtonGroup
+  .laca-segmented.components-button-group {
+    display: inline-flex;
+    background-color: var(--laca-bg-muted);
+    padding: 2px;
+    border-radius: var(--laca-radii-l2);
+    border: 1px solid var(--laca-border);
+    width: 100%;
+    box-sizing: border-box;
+
+    .components-button {
+      flex: 1;
+      justify-content: center;
+      height: 28px !important;
+      min-height: 28px !important;
+      border: none !important;
+      border-radius: var(--laca-radii-l1) !important;
+      font-size: var(--laca-font-size-xs) !important;
+      font-weight: 500 !important;
+      color: var(--laca-fg-muted) !important;
+      background: transparent !important;
+      box-shadow: none !important;
+      transition: background-color var(--laca-durations-fast), color var(--laca-durations-fast);
+
+      &.is-primary {
+        background-color: var(--laca-bg) !important;
+        color: var(--laca-fg) !important;
+        box-shadow: var(--laca-shadow-xs) !important;
+        font-weight: 600 !important;
+      }
+
+      &:hover:not(.is-primary) {
+        color: var(--laca-fg) !important;
+        background: transparent !important;
+      }
+    }
+  }
+}
