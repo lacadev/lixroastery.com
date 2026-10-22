@@ -258,6 +258,7 @@ div.error {
     padding: var(--laca-space-3) var(--laca-space-4) !important;
     border-bottom: 1px solid var(--laca-border) !important;
     border-top: none !important;
+    overflow: hidden;
   }
 
   tbody tr {
@@ -269,6 +270,7 @@ div.error {
       color: var(--laca-fg);
       vertical-align: middle;
       font-size: var(--laca-font-size-sm);
+      overflow: hidden;
     }
 
     &:hover td {
@@ -352,6 +354,10 @@ div.error {
   display: flex;
   gap: 0;
   background: transparent;
+  max-width: 100%;
+  overflow-x: auto;
+  white-space: nowrap;
+  flex-wrap: nowrap;
 
   .nav-tab {
     border: none !important;

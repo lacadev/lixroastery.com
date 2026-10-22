@@ -1010,7 +1010,7 @@ final class ReleaseChecklist
                     <span class="laca-rc__count"><?php echo esc_html(sprintf('%d / %d mục', $doneCount, $r['total'])); ?></span>
                 </div>
                 <div class="laca-rc__bar" role="progressbar" aria-label="Tiến độ checklist" aria-valuemin="0" aria-valuemax="100" aria-valuenow="<?php echo esc_attr((string) $percent); ?>">
-                    <span style="width: <?php echo esc_attr((string) $percent); ?>%"></span>
+                    <span style="width: <?php echo esc_attr((string) $percent); ?>% /* động */"></span>
                 </div>
                 <p class="laca-rc__summary">
                     <?php if ($allDone) : ?>
@@ -1049,7 +1049,6 @@ final class ReleaseChecklist
             <?php endforeach; ?>
         </section>
         <?php
-        $this->printStyles();
     }
 
     private function renderItem(array $item, bool $open): void
@@ -1155,67 +1154,6 @@ final class ReleaseChecklist
 
     private function printStyles(): void
     {
-        ?>
-        <style>
-            .laca-rc { --rc-primary: var(--primary-color-ad, #566a7f); --rc-danger: #d63638; --rc-success: #007017; --rc-border: var(--laca-border, #e8ecf0); --rc-muted: var(--laca-text-muted, #646970); --rc-text: var(--laca-text-main, #1d2327);
-                margin: 16px 20px 8px 2px; background: #fff; border: 1px solid var(--rc-border); border-radius: 8px; color: var(--rc-text); }
-            .laca-rc__head { padding: 16px 20px 14px; border-bottom: 1px solid var(--rc-border); }
-            .laca-rc__head-row { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
-            .laca-rc__title { margin: 0; font-size: 15px; font-weight: 600; line-height: 1.4; }
-            .laca-rc__count { font-size: 13px; color: var(--rc-muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
-            .laca-rc__bar { height: 6px; margin-top: 10px; border-radius: 999px; background: #f0f0f1; overflow: hidden; }
-            .laca-rc__bar span { display: block; height: 100%; border-radius: inherit; background: var(--rc-primary); }
-            .laca-rc.is-complete .laca-rc__bar span { background: var(--rc-success); }
-            .laca-rc__summary { margin: 8px 0 0; font-size: 13px; color: var(--rc-muted); }
-            .laca-rc__danger { color: var(--rc-danger); font-weight: 600; }
-            .laca-rc__group + .laca-rc__group { border-top: 1px solid var(--rc-border); }
-            .laca-rc summary { list-style: none; cursor: pointer; }
-            .laca-rc summary::-webkit-details-marker { display: none; }
-            .laca-rc summary:focus-visible { outline: 2px solid var(--rc-primary); outline-offset: -2px; border-radius: 4px; }
-            .laca-rc__group-head { display: flex; align-items: center; gap: 8px; padding: 12px 20px; }
-            .laca-rc__group-title { font-size: 12px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; color: var(--rc-muted); }
-            .laca-rc__group-count { font-size: 12px; color: var(--rc-muted); font-variant-numeric: tabular-nums; }
-            .laca-rc__group-count.is-complete { color: var(--rc-success); font-weight: 600; }
-            .laca-rc__chevron { width: 16px; height: 16px; margin-left: auto; flex-shrink: 0; color: var(--rc-muted); transition: transform .15s; }
-            details[open] > summary .laca-rc__chevron { transform: rotate(180deg); }
-            .laca-rc__list { margin: 0 0 8px; padding: 0; list-style: none; }
-            .laca-rc__item { display: flex; gap: 12px; align-items: flex-start; margin: 0; padding: 0 20px; }
-            .laca-rc__item + .laca-rc__item { border-top: 1px solid #f0f0f1; }
-            .laca-rc__mark { flex-shrink: 0; padding: 12px 0; }
-            .laca-rc__form { margin: 0; display: inline; }
-            .laca-rc__circle { display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; padding: 0; border-radius: 50%; box-sizing: border-box; color: #fff; }
-            .laca-rc__tick { display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; margin: -4px; padding: 0; border: 0; border-radius: 50%; background: none; cursor: pointer; }
-            .laca-rc__tick:hover .laca-rc__circle.is-todo { background: #f0f0f1; }
-            .laca-rc__tick:focus-visible { outline: 2px solid var(--rc-primary); outline-offset: 0; }
-            .laca-rc__circle.is-todo { border: 1.5px dashed #8c8f94; }
-            .laca-rc__circle.is-done { background: var(--rc-success); border: 0; }
-            .laca-rc__circle.is-fail { border: 1.5px solid var(--rc-danger); color: var(--rc-danger); }
-            .laca-rc__circle.is-skipped { background: #dcdcde; border: 0; color: #50575e; }
-            .laca-rc__icon { width: 12px; height: 12px; }
-            .laca-rc__detail { flex: 1; min-width: 0; }
-            .laca-rc__item-head { display: flex; align-items: center; gap: 8px; padding: 12px 0; min-height: 20px; }
-            .laca-rc__item-text { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; min-width: 0; }
-            .laca-rc__item-title { font-size: 14px; font-weight: 500; line-height: 20px; }
-            .laca-rc__item.is-done .laca-rc__item-title, .laca-rc__item.is-skipped .laca-rc__item-title { color: var(--rc-muted); }
-            .laca-rc__badge { flex-shrink: 0; padding: 1px 8px; border-radius: 999px; background: #f0f0f1; color: #50575e; font-size: 12px; line-height: 18px; }
-            .laca-rc__badge.is-danger { background: #fcf0f1; color: #b32d2e; }
-            .laca-rc__body { padding: 0 0 16px; }
-            .laca-rc__guide { margin: 0; font-size: 13px; line-height: 1.6; color: var(--rc-muted); max-width: 72ch; text-wrap: pretty; }
-            .laca-rc__steps { margin: 8px 0 0; padding-left: 20px; font-size: 13px; line-height: 1.6; color: var(--rc-muted); max-width: 72ch; }
-            .laca-rc__steps li { margin: 0 0 6px; }
-            .laca-rc__steps code { font-size: 12px; padding: 1px 5px; border-radius: 4px; background: #f0f0f1; color: #1d2327; word-break: break-word; }
-            .laca-rc__state { margin: 8px 0 0; font-size: 12px; }
-            .laca-rc__state.is-fail { color: var(--rc-danger); }
-            .laca-rc__state.is-done { color: var(--rc-success); }
-            .laca-rc__actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; margin-top: 12px; }
-            .laca-rc__skip { display: inline-flex; align-items: center; min-height: 28px; font-size: 13px; color: var(--rc-muted) !important; }
-            .laca-rc__meta { margin: 10px 0 0; font-size: 12px; color: var(--rc-muted); }
-            @media (max-width: 782px) {
-                .laca-rc { margin: 12px 10px 8px 0; }
-                .laca-rc__head, .laca-rc__group-head { padding-left: 16px; padding-right: 16px; }
-                .laca-rc__item { padding: 0 16px; }
-            }
-        </style>
-        <?php
+        // Styles moved to resources/styles/admin/skins/_self-authored.scss
     }
 }

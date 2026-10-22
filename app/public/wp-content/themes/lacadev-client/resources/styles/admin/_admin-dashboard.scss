@@ -408,11 +408,11 @@
     padding: 0.125rem 0.375rem;
     border-radius: 0.25rem;
     font-weight: 700;
-    color: #fff;
+    color: inherit;
 
-    &.badge-views { background: var(--laca-primary); }
-    &.badge-seo   { background: #d63638; }
-    &.badge-date  { background: #f0f0f1; color: var(--laca-text-muted); }
+    &.badge-views { background: var(--laca-accent); color: var(--laca-bg); }
+    &.badge-seo   { background: var(--laca-danger); color: var(--laca-bg); }
+    &.badge-date  { background: var(--laca-bg-muted); color: var(--laca-fg-muted); }
 }
 
 .laca-issue-tag {

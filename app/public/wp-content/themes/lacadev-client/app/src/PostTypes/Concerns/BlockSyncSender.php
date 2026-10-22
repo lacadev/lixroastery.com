@@ -75,26 +75,22 @@ trait BlockSyncSender
         $nonce            = wp_create_nonce('laca_block_sync');
         $blockDir         = $this->resolveBlockDir();
         ?>
-        <div id="laca-block-sync-wrap" style="margin:-6px -12px -12px">
+        <div id="laca-block-sync-wrap" class="laca-sync-wrap">
 
             <!-- Header toolbar -->
-            <div style="
-                display:flex; align-items:center; justify-content:space-between;
-                padding:12px 16px; background:#f8f9fa; border-bottom:1px solid #e2e4e7;
-            ">
-                <div style="display:flex;gap:8px;align-items:center">
-                    <label style="display:flex;gap:6px;align-items:center;font-size:13px;cursor:pointer">
+            <div class="laca-sync-toolbar">
+                <div class="lcf-sub-header">
+                    <label class="lcf-sub-header lcf-cursor-pointer">
                         <input type="checkbox" id="laca-select-all-blocks"> Chọn tất cả
                     </label>
                     <button
                         type="button"
                         id="laca-push-blocks-btn"
-                        class="button button-primary"
-                        style="display:flex;gap:6px;align-items:center"
+                        class="button button-primary lcf-sub-header"
                         data-post-id="<?php echo esc_attr($postId); ?>"
                         data-nonce="<?php echo esc_attr($nonce); ?>"
                     >
-                        <span class="dashicons dashicons-upload" style="margin-top:3px"></span>
+                        <span class="dashicons dashicons-upload lcf-mt-6"></span>
                         Push Selected
                     </button>
                     <button
@@ -118,18 +114,18 @@ trait BlockSyncSender
                         ↻ Refresh
                     </button>
                 </div>
-                <span id="laca-sync-status-text" style="font-size:12px;color:#888"></span>
+                <span id="laca-sync-status-text" class="laca-note-date"></span>
             </div>
 
             <!-- Block table -->
-            <table class="widefat fixed striped" style="border:none;border-radius:0">
+            <table class="widefat fixed striped laca-sync-table">
                 <thead>
-                    <tr style="background:#f0f0f1">
-                        <th style="width:36px; padding:10px 12px">☐</th>
-                        <th style="padding:10px 12px">Block Name</th>
-                        <th style="padding:10px 12px; width:120px">Phiên bản</th>
-                        <th style="padding:10px 12px; width:140px">Client hiện có</th>
-                        <th style="padding:10px 12px; width:120px">Trạng thái</th>
+                    <tr class="laca-sync-thead-row">
+                        <th class="laca-col-id">☐</th>
+                        <th>Block Name</th>
+                        <th class="laca-col-source">Phiên bản</th>
+                        <th class="laca-col-ip">Client hiện có</th>
+                        <th class="laca-col-source">Trạng thái</th>
                     </tr>
                 </thead>
                 <tbody id="laca-blocks-table-body">
@@ -143,34 +139,34 @@ trait BlockSyncSender
                     <tr data-block="<?php echo esc_attr($name); ?>"
                         data-local-ver="<?php echo esc_attr($localVersion); ?>"
                         data-client-ver="<?php echo esc_attr($clientVersion ?? ''); ?>">
-                        <td style="padding:10px 12px">
+                        <td>
                             <input type="checkbox"
                                 class="laca-block-checkbox"
                                 value="<?php echo esc_attr($name); ?>">
                         </td>
-                        <td style="padding:10px 12px">
+                        <td>
                             <strong><?php echo esc_html($block['title']); ?></strong>
                             <br>
-                            <small style="color:#888;font-family:monospace"><?php echo esc_html($name); ?></small>
+                            <small class="laca-status-muted font-mono"><?php echo esc_html($name); ?></small>
                         </td>
-                        <td style="padding:10px 12px">
+                        <td>
                             <code><?php echo esc_html($localVersion); ?></code>
                         </td>
-                        <td class="laca-client-ver" style="padding:10px 12px">
+                        <td class="laca-client-ver">
                             <?php if ($clientVersion): ?>
                                 <code><?php echo esc_html($clientVersion); ?></code>
                             <?php else: ?>
-                                <span style="color:#999">—</span>
+                                <span class="laca-status-muted">—</span>
                             <?php endif; ?>
                         </td>
-                        <td class="laca-status-badge" style="padding:10px 12px">
-                            <?php echo $badge; ?>
+                        <td class="laca-status-badge">
+                            <?php echo $badge; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
                         </td>
                     </tr>
                     <?php endforeach; ?>
                     <?php if (empty($availableBlocks)): ?>
                     <tr>
-                        <td colspan="5" style="padding:16px;text-align:center;color:#888">
+                        <td colspan="5" class="laca-log-empty">
                             Không tìm thấy blocks trong <code><?php echo esc_html($blockDir); ?></code>
                         </td>
                     </tr>
@@ -489,26 +485,14 @@ trait BlockSyncSender
     private function getVersionBadge(string $localVersion, ?string $clientVersion): string
     {
         if ($clientVersion === null) {
-            return '<span style="
-                background:#6c757d22; color:#6c757d;
-                padding:2px 8px; border-radius:12px;
-                font-size:11px; font-weight:600;
-            ">🆕 Chưa có</span>';
+            return '<span class="laca-badge laca-badge--subtle">🆕 Chưa có</span>';
         }
 
         if (version_compare($localVersion, $clientVersion, '>')) {
-            return '<span style="
-                background:#fd7e1422; color:#fd7e14;
-                padding:2px 8px; border-radius:12px;
-                font-size:11px; font-weight:600;
-            ">⚠️ Cũ hơn</span>';
+            return '<span class="laca-badge laca-badge--warning">⚠️ Cũ hơn</span>';
         }
 
-        return '<span style="
-            background:#19875422; color:#198754;
-            padding:2px 8px; border-radius:12px;
-            font-size:11px; font-weight:600;
-        ">✅ Đồng bộ</span>';
+        return '<span class="laca-badge laca-badge--success">✅ Đồng bộ</span>';
     }
 
     // =========================================================================
@@ -561,7 +545,7 @@ document.addEventListener('DOMContentLoaded', function () {
         Swal.fire({
             title: '📦 Đang đẩy blocks...',
             html:  `<p id="swal-progress-text">Chuẩn bị...</p>
-                    <ul id="swal-results" style="text-align:left;list-style:none;padding:0;max-height:200px;overflow-y:auto"></ul>`,
+                    <ul id="swal-results" class="laca-sync-list"></ul>`,
             allowOutsideClick: false,
             showConfirmButton: false,
             didOpen: () => Swal.showLoading(),
@@ -590,7 +574,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
             for (const [blockName, result] of Object.entries(results)) {
                 const li = document.createElement('li');
-                li.style.cssText = 'padding:4px 0; border-bottom:1px solid #f0f0f0';
+                li.className = 'laca-sync-item';
                 if (result.success) {
                     successCount++;
                     li.innerHTML = `✅ <strong>${blockName}</strong> → ${result.version}`;
@@ -600,7 +584,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         row.dataset.clientVer = result.version;
                         row.querySelector('.laca-client-ver').innerHTML = `<code>${result.version}</code>`;
                         row.querySelector('.laca-status-badge').innerHTML =
-                            `<span style="background:#19875422;color:#198754;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600">✅ Đồng bộ</span>`;
+                            '<span class="laca-badge laca-badge--success">✅ Đồng bộ</span>';
                     }
                 } else {
                     failCount++;
@@ -675,14 +659,14 @@ document.addEventListener('DOMContentLoaded', function () {
                 const clientVerEl = row.querySelector('.laca-client-ver');
                 const badgeEl     = row.querySelector('.laca-status-badge');
 
-                clientVerEl.innerHTML = version ? `<code>${version}</code>` : '<span style="color:#999">—</span>';
+                clientVerEl.innerHTML = version ? `<code>${version}</code>` : '<span class="laca-status-muted">—</span>';
 
                 if (!version) {
-                    badgeEl.innerHTML = `<span style="background:#6c757d22;color:#6c757d;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600">🆕 Chưa có</span>`;
+                    badgeEl.innerHTML = '<span class="laca-badge laca-badge--subtle">🆕 Chưa có</span>';
                 } else if (localVer !== version) {
-                    badgeEl.innerHTML = `<span style="background:#fd7e1422;color:#fd7e14;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600">⚠️ Cũ hơn</span>`;
+                    badgeEl.innerHTML = '<span class="laca-badge laca-badge--warning">⚠️ Cũ hơn</span>';
                 } else {
-                    badgeEl.innerHTML = `<span style="background:#19875422;color:#198754;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600">✅ Đồng bộ</span>`;
+                    badgeEl.innerHTML = '<span class="laca-badge laca-badge--success">✅ Đồng bộ</span>';
                 }
             });
 

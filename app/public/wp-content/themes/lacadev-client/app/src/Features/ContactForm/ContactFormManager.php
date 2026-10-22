@@ -357,10 +357,10 @@ class ContactFormManager
 
             <p>
                 <button type="button" class="button" onclick="var p=document.getElementById('popup-defaults-panel');p.hidden=!p.hidden;">
-                    ⚙️ Cài đặt Popup &amp; Thông báo chung <small style="font-weight:400">(mặc định cho mọi form — mỗi form có thể tự tuỳ chỉnh riêng ở tab "Giao diện")</small>
+                    ⚙️ Cài đặt Popup &amp; Thông báo chung <small class="lcf-small-normal">(mặc định cho mọi form — mỗi form có thể tự tuỳ chỉnh riêng ở tab "Giao diện")</small>
                 </button>
             </p>
-            <div id="popup-defaults-panel" class="laca-cf-wrap" hidden style="background:#fff;border:1px solid #dcdcde;border-radius:6px;padding:16px;margin-bottom:16px">
+            <div id="popup-defaults-panel" class="laca-cf-wrap lcf-popup-defaults-panel" hidden>
                 <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" id="popup-defaults-form">
                     <?php wp_nonce_field(self::NONCE_ACTION, self::NONCE_FIELD); ?>
                     <input type="hidden" name="action" value="laca_cf_save_popup_defaults">
@@ -399,13 +399,13 @@ class ContactFormManager
                 <table class="wp-list-table widefat fixed striped laca-cf-table">
                     <thead>
                         <tr>
-                            <th style="width:40px">ID</th>
+                            <th class="laca-col-id">ID</th>
                             <th>Tên Form</th>
-                            <th style="width:100px">Số Fields</th>
-                            <th style="width:120px">Submissions</th>
-                            <th style="width:120px">Chưa đọc</th>
-                            <th style="width:140px">Shortcode</th>
-                            <th style="width:200px">Thao tác</th>
+                            <th class="laca-col-count">Số Fields</th>
+                            <th class="laca-col-source">Submissions</th>
+                            <th class="laca-col-source">Chưa đọc</th>
+                            <th class="laca-col-ip">Shortcode</th>
+                            <th class="laca-col-reason">Thao tác</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -438,13 +438,12 @@ class ContactFormManager
                                     <?php if ($unreadCount > 0): ?>
                                         <span class="laca-cf-badge laca-cf-badge--unread"><?php echo esc_html($unreadCount); ?> mới</span>
                                     <?php else: ?>
-                                        <span style="color:#999">—</span>
+                                        <span class="laca-status-muted">—</span>
                                     <?php endif; ?>
                                 </td>
                                 <td>
-                                    <code class="laca-cf-shortcode" title="Click để copy"
-                                          onclick="navigator.clipboard.writeText('<?php echo esc_js($shortcode); ?>').then(()=>alert('Đã copy shortcode!'))"
-                                          style="cursor:pointer">
+                                    <code class="laca-cf-shortcode lcf-cursor-pointer" title="Click để copy"
+                                          onclick="navigator.clipboard.writeText('<?php echo esc_js($shortcode); ?>').then(()=>alert('Đã copy shortcode!'))">
                                         <?php echo esc_html($shortcode); ?>
                                     </code>
                                 </td>
@@ -452,15 +451,14 @@ class ContactFormManager
                                     <a href="<?php echo esc_url($editUrl); ?>" class="button button-small">Sửa</a>
                                     <a href="<?php echo esc_url($subsUrl); ?>" class="button button-small">Xem Submissions</a>
                                     <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>"
-                                          style="display:inline">
+                                          class="lcf-inline-form">
                                         <?php wp_nonce_field(self::NONCE_ACTION, self::NONCE_FIELD); ?>
                                         <input type="hidden" name="action" value="laca_cf_duplicate">
                                         <input type="hidden" name="form_id" value="<?php echo esc_attr($formId); ?>">
                                         <button type="submit" class="button button-small">Nhân bản</button>
                                     </form>
                                     <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>"
-                                          style="display:inline"
-                                          class="laca-cf-delete-form">
+                                          class="laca-cf-delete-form lcf-inline-form">
                                         <?php wp_nonce_field(self::NONCE_ACTION, self::NONCE_FIELD); ?>
                                         <input type="hidden" name="action" value="laca_cf_delete">
                                         <input type="hidden" name="form_id" value="<?php echo esc_attr($formId); ?>">
@@ -502,7 +500,7 @@ class ContactFormManager
                         <a href="<?php echo esc_url($pageUrl); ?>">← Quay lại danh sách</a>
                         <?php if (!$isNew): ?>
                             &nbsp;|&nbsp;
-                            Shortcode: <code onclick="navigator.clipboard.writeText('[laca_contact_form id=&quot;<?php echo esc_js($formId); ?>&quot;]').then(()=>alert('Đã copy!'))" style="cursor:pointer" title="Click để copy">[laca_contact_form id="<?php echo esc_html($formId); ?>"]</code>
+                            Shortcode: <code onclick="navigator.clipboard.writeText('[laca_contact_form id=&quot;<?php echo esc_js($formId); ?>&quot;]').then(()=>alert('Đã copy!'))" class="lcf-cursor-pointer" title="Click để copy">[laca_contact_form id="<?php echo esc_html($formId); ?>"]</code>
                         <?php endif; ?>
                     </p>
                 </div>
@@ -556,11 +554,11 @@ class ContactFormManager
                         <!-- Tab: Trường nhập liệu -->
                         <div id="lcf-panel-fields" class="lcf-tab-panel">
                             <div class="lcf-panel-inner">
-                                <p class="description" style="margin-bottom:12px;color:#888">
+                                <p class="description lcf-mb-12 laca-status-muted">
                                     Thêm hàng layout, rồi thêm field vào từng cột. Kéo để di chuyển.
                                 </p>
                                 <div id="rows-builder" class="laca-cf-rows-builder"></div>
-                                <p id="rows-empty-msg" class="laca-cf-fields-empty" style="<?php echo empty($rows) ? '' : 'display:none'; ?>">
+                                <p id="rows-empty-msg" class="laca-cf-fields-empty" style="<?php echo empty($rows) ? '' : 'display:none;'; /* động */ ?>">
                                     Chưa có hàng nào. Thêm hàng bên dưới.
                                 </p>
                                 <div class="laca-cf-add-row-palette">
@@ -585,7 +583,7 @@ class ContactFormManager
                                     </button>
                                 </div>
 
-                                <div class="laca-cf-field-group" style="margin-top:20px">
+                                <div class="laca-cf-field-group lcf-mt-20">
                                     <label class="lcf-form-label">Chữ nút Submit</label>
                                     <input type="text" class="widefat" id="s-btn-text"
                                            oninput="lcfStyleUpdate('btn_text',this.value)"
@@ -683,22 +681,22 @@ class ContactFormManager
                                             <option value="full">Toàn chiều rộng (100%)</option>
                                         </select>
                                     </div>
-                                    <div class="laca-cf-field-group" style="grid-column:1/-1">
+                                    <div class="laca-cf-field-group lcf-col-full">
                                         <label class="lcf-form-label">Custom CSS</label>
                                         <textarea class="widefat laca-cf-email-body" id="s-custom-css" rows="5"
                                                   oninput="lcfStyleUpdate('custom_css',this.value)"
                                                   placeholder="/* Nhập CSS tuỳ chỉnh...\n Dùng __FORM__ để ám chỉ class chứa form (ví dụ: __FORM__ .laca-cf-input { ... }) */"></textarea>
                                     </div>
 
-                                    <div class="laca-cf-field-group" style="grid-column:1/-1">
-                                        <h3 class="lcf-email-section-title" style="margin:18px 0 4px">💬 Popup thông báo (Thành công / Thất bại)</h3>
-                                        <label class="lcf-checkbox-label" style="margin:0 0 10px">
+                                    <div class="laca-cf-field-group lcf-col-full">
+                                        <h3 class="lcf-email-section-title lcf-section-title-space">💬 Popup thông báo (Thành công / Thất bại)</h3>
+                                        <label class="lcf-checkbox-label lcf-checkbox-spaced">
                                             <input type="checkbox" id="popup-override-toggle"
                                                    onchange="lcfPopupOverrideToggle(this.checked)">
-                                            <span>Tuỳ chỉnh riêng cho form này <small style="font-weight:400">(bỏ tích = dùng Cài đặt Popup chung ở trang danh sách form)</small></span>
+                                            <span>Tuỳ chỉnh riêng cho form này <small class="lcf-small-normal">(bỏ tích = dùng Cài đặt Popup chung ở trang danh sách form)</small></span>
                                         </label>
                                     </div>
-                                    <div id="popup-fields-block" style="display:contents">
+                                    <div id="popup-fields-block" class="lcf-contents">
                                         <?php echo ContactFormPopupSettings::renderFieldsHtml(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
                                     </div>
                                 </div>
@@ -711,7 +709,7 @@ class ContactFormManager
                                 <div class="lcf-email-vars-box" id="lcf-email-vars-container">
                                     <div class="lcf-email-vars-head">
                                         <div class="lcf-email-vars-title">
-                                            <span class="dashicons dashicons-tag" style="font-size:16px;line-height:1.2;width:16px;height:16px"></span>
+                                            <span class="dashicons dashicons-tag lcf-dashicon-tag"></span>
                                             <span>Biến có sẵn trong form:</span>
                                         </div>
                                         <span class="lcf-email-vars-tip">💡 Click vào biến để copy hoặc chèn nhanh vào ô đang nhập</span>
@@ -750,7 +748,7 @@ class ContactFormManager
                                         <p class="lcf-email-mode-hint" id="hint-email-admin">💡 <em>Chế độ Mẫu chuẩn: Nội dung sẽ tự động được bọc trong khung email đẹp mắt kèm màu sắc thương hiệu và bảng tóm tắt form.</em></p>
                                     </div>
                                 </div>
-                                <div class="lcf-email-section" style="margin-top:24px">
+                                <div class="lcf-email-section lcf-mt-24">
                                     <div class="lcf-email-section-header">
                                         <h3 class="lcf-email-section-title">Email Khách hàng</h3>
                                         <div class="lcf-email-mode-toggle" data-target="customer">
@@ -862,7 +860,7 @@ class ContactFormManager
                     <h1>📥 Submissions — <?php echo esc_html($form['name']); ?></h1>
                     <p class="laca-cf-subtitle"><a href="<?php echo esc_url($pageUrl); ?>">← Quay lại danh sách</a></p>
                 </div>
-                <div style="display:flex;gap:8px;align-items:center">
+                <div class="lcf-sub-header">
                     <span class="laca-cf-badge laca-cf-badge--total"><?php echo esc_html($total); ?> submission</span>
                     <?php if ($total > 0):
                         $exportUrl = wp_nonce_url(
@@ -890,14 +888,14 @@ class ContactFormManager
                 <table class="wp-list-table widefat fixed striped laca-cf-table">
                     <thead>
                         <tr>
-                            <th style="width:40px">ID</th>
-                            <th style="width:60px">Đọc</th>
+                            <th class="laca-col-id">ID</th>
+                            <th class="laca-col-status">Đọc</th>
                             <?php foreach ($fields as $field): ?>
                                 <th><?php echo esc_html($field['label']); ?></th>
                             <?php endforeach; ?>
-                            <th style="width:120px">IP</th>
-                            <th style="width:150px">Thời gian</th>
-                            <th style="width:80px">Thao tác</th>
+                            <th class="laca-col-ip">IP</th>
+                            <th class="laca-col-time">Thời gian</th>
+                            <th class="laca-col-action">Thao tác</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -913,7 +911,7 @@ class ContactFormManager
                                 <td><?php echo esc_html($subId); ?></td>
                                 <td>
                                     <?php if ($isRead): ?>
-                                        <span title="Đã đọc" style="color:#5cb85c">✓</span>
+                                        <span title="Đã đọc" class="laca-status-ok">✓</span>
                                     <?php else: ?>
                                         <a href="<?php echo esc_url($markUrl); ?>" title="Đánh dấu đã đọc" class="laca-cf-mark-read">👁</a>
                                     <?php endif; ?>

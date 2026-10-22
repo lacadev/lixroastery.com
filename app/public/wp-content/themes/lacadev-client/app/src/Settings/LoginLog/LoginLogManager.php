@@ -93,14 +93,14 @@ class LoginLogManager
         ?>
         <div class="wrap">
             <h1>🔐 Login Log <span class="title-count"><?php echo esc_html($total); ?></span></h1>
-            <div style="background:#f0f9ff;border:1px solid #bae6fd;border-radius:6px;padding:14px 16px;margin:8px 0">
-                <p style="margin:0 0 8px;font-weight:600;color:#0369a1">🔧 Nhật ký đăng nhập thất bại</p>
-                <p style="margin:0;font-size:13px;color:#374151">Trang đăng nhập chỉ hiện 1 câu thông báo chung cho người dùng (để tránh dò tên đăng nhập hợp lệ), nhưng lý do thật vẫn được ghi lại ở đây — dùng để kiểm tra khi có người báo không đăng nhập được.</p>
+            <div class="laca-alert laca-alert--info laca-mb-3">
+                <div class="laca-alert__title">🔧 Nhật ký đăng nhập thất bại</div>
+                <div class="laca-alert__desc">Trang đăng nhập chỉ hiện 1 câu thông báo chung cho người dùng (để tránh dò tên đăng nhập hợp lệ), nhưng lý do thật vẫn được ghi lại ở đây — dùng để kiểm tra khi có người báo không đăng nhập được.</div>
             </div>
-            <p style="color:#666">Log mọi lần đăng nhập thất bại trong 90 ngày gần nhất. Tự động xoá sau 90 ngày.</p>
+            <p class="laca-fg-muted">Log mọi lần đăng nhập thất bại trong 90 ngày gần nhất. Tự động xoá sau 90 ngày.</p>
 
             <!-- Filter -->
-            <ul class="subsubsub" style="margin-bottom:10px">
+            <ul class="subsubsub laca-mb-3">
                 <li><a href="<?php echo esc_url($pageUrl); ?>" <?php echo !$errorCode ? 'class="current"' : ''; ?>>Tất cả <span class="count">(<?php echo LoginLogTable::countLogs(); ?>)</span></a> <?php echo $errorCodes ? '|' : ''; ?></li>
                 <?php foreach ($errorCodes as $i => $code) : ?>
                     <li>
@@ -113,32 +113,32 @@ class LoginLogManager
             </ul>
 
             <?php if (empty($logs)) : ?>
-                <div style="padding:30px;text-align:center;background:#f9f9f9;border:1px dashed #ddd;border-radius:4px">
+                <div class="laca-log-empty">
                     <p>Chưa có lần đăng nhập thất bại nào được ghi lại.</p>
                 </div>
             <?php else : ?>
                 <table class="wp-list-table widefat fixed striped">
                     <thead>
                         <tr>
-                            <th style="width:40px">ID</th>
+                            <th class="laca-col-id">ID</th>
                             <th>Tên đăng nhập / Email đã nhập</th>
-                            <th style="width:140px">IP</th>
-                            <th style="width:220px">Lý do</th>
-                            <th style="width:160px">Thời gian</th>
+                            <th class="laca-col-ip">IP</th>
+                            <th class="laca-col-reason">Lý do</th>
+                            <th class="laca-col-time">Thời gian</th>
                         </tr>
                     </thead>
                     <tbody>
                         <?php foreach ($logs as $log) : ?>
                         <tr>
-                            <td style="color:#999"><?php echo esc_html($log['id']); ?></td>
+                            <td class="laca-col-id"><?php echo esc_html($log['id']); ?></td>
                             <td><?php echo esc_html($log['username']); ?></td>
-                            <td style="font-size:12px;color:#666"><?php echo esc_html($log['ip']); ?></td>
+                            <td class="laca-col-ip"><?php echo esc_html($log['ip']); ?></td>
                             <td>
-                                <span style="color:#991b1b;font-size:12px;font-weight:600">
+                                <span class="laca-status-danger">
                                     <?php echo esc_html($this->errorLabel($log['error_code'])); ?>
                                 </span>
                             </td>
-                            <td style="font-size:12px;color:#666">
+                            <td class="laca-col-time">
                                 <?php echo esc_html(date_i18n('d/m/Y H:i', strtotime($log['attempted_at']))); ?>
                             </td>
                         </tr>
@@ -148,7 +148,7 @@ class LoginLogManager
 
                 <?php if ($pages > 1) : ?>
                 <div class="tablenav bottom">
-                    <div class="tablenav-pages" style="margin-top:10px">
+                    <div class="tablenav-pages laca-mt-2">
                         <?php for ($i = 1; $i <= $pages; $i++) : ?>
                             <a href="<?php echo esc_url(add_query_arg(array_filter(['error_code' => $errorCode, 'paged' => $i]), $pageUrl)); ?>"
                                class="button button-small <?php echo $i === $page ? 'button-primary' : ''; ?>">

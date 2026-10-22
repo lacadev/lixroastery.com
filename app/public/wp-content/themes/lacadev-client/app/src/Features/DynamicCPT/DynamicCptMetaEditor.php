@@ -307,7 +307,7 @@ PHP;
         if ($syntaxError !== '') {
             wp_die(
                 '<p>' . esc_html__('Code có lỗi cú pháp PHP, CHƯA được lưu để tránh làm sập site:', 'laca') . '</p>'
-                . '<pre style="white-space:pre-wrap;background:#f6f7f7;padding:12px;border:1px solid #ccd0d4">' . esc_html($syntaxError) . '</pre>'
+                . '<pre class="laca-code-box">' . esc_html($syntaxError) . '</pre>'
                 . '<p><a href="javascript:history.back()">' . esc_html__('Quay lại', 'laca') . '</a></p>'
             );
         }
@@ -436,8 +436,6 @@ PHP;
 
         ?>
         <div class="wrap laca-cpt-wrap">
-
-            <?php $this->renderStyles(); ?>
 
             <div class="laca-cpt-header">
                 <div>
@@ -592,7 +590,7 @@ PHP;
                 );
 
                 // ── Options panel (hidden by default) ─────────────────────────
-                var $opts = $('<div class="lbf-opts-panel" style="display:none">').appendTo($block);
+                var $opts = $('<div class="lbf-opts-panel" style="display:none /* động */">').appendTo($block);
 
                 // Row 1: universal options
                 var $row1 = $('<div class="lbf-opts-row">').appendTo($opts);
@@ -616,14 +614,14 @@ PHP;
 
                 // textarea: rows
                 $row2.append(
-                    $('<label class="lbf-opt-group lbf-group-rows" style="display:none">').html(
+                    $('<label class="lbf-opt-group lbf-group-rows" style="display:none /* động */">').html(
                         '<span>Rows</span><input type="number" name="' + n(i,'rows') + '" value="5" min="1" max="50" class="lbf-rows">'
                     )
                 );
 
                 // select: options textarea
                 $row2.append(
-                    $('<label class="lbf-opt-group lbf-group-options" style="display:none">').html(
+                    $('<label class="lbf-opt-group lbf-group-options" style="display:none /* động */">').html(
                         '<span>Options <em>(value|Label, mỗi dòng 1 option)</em></span>' +
                         '<textarea name="' + n(i,'options') + '" rows="4" placeholder="published|Đã xuất bản\ndraft|Nháp" class="lbf-options"></textarea>'
                     )
@@ -631,14 +629,14 @@ PHP;
 
                 // checkbox: option_value
                 $row2.append(
-                    $('<label class="lbf-opt-group lbf-group-option_value" style="display:none">').html(
+                    $('<label class="lbf-opt-group lbf-group-option_value" style="display:none /* động */">').html(
                         '<span>Option value <em>(giá trị khi checked)</em></span>' + inp(i, 'option_value', 'vd: 1')
                     )
                 );
 
                 // image/file: value_type
                 $row2.append(
-                    $('<label class="lbf-opt-group lbf-group-value_type" style="display:none">').html(
+                    $('<label class="lbf-opt-group lbf-group-value_type" style="display:none /* động */">').html(
                         '<span>Lưu dưới dạng</span>' +
                         '<select name="' + n(i,'value_type') + '" class="lbf-value_type">' +
                             '<option value="id">ID (khuyến nghị)</option>' +
@@ -649,28 +647,28 @@ PHP;
 
                 // file: file_type
                 $row2.append(
-                    $('<label class="lbf-opt-group lbf-group-file_type" style="display:none">').html(
+                    $('<label class="lbf-opt-group lbf-group-file_type" style="display:none /* động */">').html(
                         '<span>File type <em>(image/audio/video/pdf...)</em></span>' + inp(i, 'file_type', 'vd: image')
                     )
                 );
 
                 // color: alpha_enabled
                 $row2.append(
-                    $('<label class="lbf-opt-group lbf-opt-inline lbf-group-alpha_enabled" style="display:none">').html(
+                    $('<label class="lbf-opt-group lbf-opt-inline lbf-group-alpha_enabled" style="display:none /* động */">').html(
                         '<input type="checkbox" name="' + n(i,'alpha_enabled') + '" value="1"><span>Alpha (opacity)</span>'
                     )
                 );
 
                 // color: palette
                 $row2.append(
-                    $('<label class="lbf-opt-group lbf-group-palette" style="display:none">').html(
+                    $('<label class="lbf-opt-group lbf-group-palette" style="display:none /* động */">').html(
                         '<span>Palette <em>(hex, cách nhau bằng dấu phẩy)</em></span>' + inp(i, 'palette', '#ffffff,#000000,#ff0000')
                     )
                 );
 
                 // date: storage_format
                 $row2.append(
-                    $('<label class="lbf-opt-group lbf-group-storage_format" style="display:none">').html(
+                    $('<label class="lbf-opt-group lbf-group-storage_format" style="display:none /* động */">').html(
                         '<span>Storage format <em>(mặc định: Y-m-d)</em></span>' + inp(i, 'storage_format', 'Y-m-d')
                     )
                 );
@@ -726,81 +724,6 @@ PHP;
 
     private function renderStyles(): void
     {
-        ?>
-        <style>
-        /* ── Shared ────────────────────────────────────────────────────────── */
-        .laca-notice { padding: 10px 14px; border-radius: 4px; margin-bottom: 16px; font-size: 13px; }
-        .laca-notice--success { background: #edfaef; border-left: 3px solid #00a32a; color: #1d7a34; }
-        .laca-field-note { font-size: 11px; color: #646970; }
-        .laca-card-slug { font-size: 11px; font-family: Consolas, monospace; background: #f0f0f1; border: 1px solid #e2e4e7; border-radius: 3px; padding: 1px 5px; color: #50575e; font-weight: 400; }
-        .laca-cpt-header { margin-bottom: 20px; }
-        .laca-cpt-header h1 { margin: 4px 0; font-size: 20px; font-weight: 600; color: #1d2327; }
-        .laca-cpt-subtitle { margin: 0; color: #646970; font-size: 12px; }
-        .laca-back-link { display: inline-block; margin-bottom: 6px; font-size: 13px; color: #646970; text-decoration: none; }
-        .laca-back-link:hover { color: #2271b1; }
-
-        /* ── Layout ────────────────────────────────────────────────────────── */
-        .laca-meta-layout { display: flex; gap: 24px; align-items: flex-start; flex-wrap: wrap; }
-        .laca-meta-builder  { flex: 0 0 480px; min-width: 0; }
-        .laca-meta-code-col { flex: 1 1 500px; min-width: 0; }
-
-        /* ── Panel ─────────────────────────────────────────────────────────── */
-        .laca-panel { background: #fff; border: 1px solid #e2e4e7; border-radius: 6px; overflow: hidden; }
-        .laca-panel-head { display: flex; align-items: center; gap: 8px; padding: 12px 16px; border-bottom: 1px solid #e2e4e7; font-size: 13px; font-weight: 600; color: #1d2327; }
-        .laca-panel-head .dashicons { color: #2271b1; font-size: 18px; width: 18px; height: 18px; }
-        .laca-panel-head small { font-weight: 400; color: #8c8f94; font-size: 12px; margin-left: 4px; }
-        .laca-panel-body { padding: 16px; }
-
-        /* ── Container title field ─────────────────────────────────────────── */
-        .laca-field { margin-bottom: 14px; }
-        .laca-field label { display: block; font-size: 12px; font-weight: 600; color: #3c434a; margin-bottom: 5px; }
-        .laca-field input[type=text] { width: 100%; box-sizing: border-box; height: 32px; padding: 0 8px; border: 1px solid #c3c4c7; border-radius: 4px; font-size: 13px; }
-
-        /* ── Field block ───────────────────────────────────────────────────── */
-        .lbf-block { border: 1px solid #e2e4e7; border-radius: 5px; margin-bottom: 8px; overflow: hidden; }
-
-        /* ── Main row ──────────────────────────────────────────────────────── */
-        .lbf-main-row { display: flex; align-items: center; gap: 5px; padding: 6px 8px; background: #f9fafb; }
-        .lbf-main-row input[type=text],
-        .lbf-main-row select { height: 28px; padding: 0 6px; border: 1px solid #c3c4c7; border-radius: 3px; font-size: 12px; box-sizing: border-box; }
-        .lbf-name  { flex: 1.2; min-width: 0; }
-        .lbf-label { flex: 1.4; min-width: 0; }
-        .lbf-type  { flex: 1; min-width: 0; }
-        .lbf-width { width: 52px !important; flex: none; }
-
-        .lbf-toggle-opts,
-        .lbf-remove { background: none; border: 1px solid #e2e4e7; border-radius: 3px; cursor: pointer; padding: 3px 6px; font-size: 12px; line-height: 1; color: #646970; transition: all .1s; }
-        .lbf-toggle-opts:hover { background: #f0f6fc; border-color: #2271b1; color: #2271b1; }
-        .lbf-toggle-opts--active { background: #f0f6fc; border-color: #2271b1; color: #2271b1; }
-        .lbf-remove:hover { background: #fdf3f3; border-color: #f5b8b8; color: #d63638; }
-
-        /* ── Options panel ─────────────────────────────────────────────────── */
-        .lbf-opts-panel { padding: 10px 12px; border-top: 1px dashed #e2e4e7; background: #fff; }
-        .lbf-opts-row { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 8px; }
-        .lbf-opts-row:last-child { margin-bottom: 0; }
-
-        .lbf-opt-group { display: flex; flex-direction: column; gap: 4px; flex: 1 1 160px; min-width: 0; }
-        .lbf-opt-group span { font-size: 11px; font-weight: 600; color: #646970; white-space: nowrap; }
-        .lbf-opt-group em { font-weight: 400; color: #8c8f94; }
-        .lbf-opt-group input[type=text],
-        .lbf-opt-group input[type=number],
-        .lbf-opt-group select { height: 28px; padding: 0 6px; border: 1px solid #c3c4c7; border-radius: 3px; font-size: 12px; width: 100%; box-sizing: border-box; }
-        .lbf-opt-group textarea { padding: 5px 6px; border: 1px solid #c3c4c7; border-radius: 3px; font-size: 12px; width: 100%; box-sizing: border-box; font-family: Consolas, monospace; resize: vertical; }
-        .lbf-opt-inline { flex-direction: row; align-items: center; flex: 0 0 auto; gap: 6px; }
-        .lbf-rows { width: 60px !important; }
-
-        /* ── Builder footer ────────────────────────────────────────────────── */
-        .laca-builder-footer { display: flex; align-items: center; gap: 10px; margin-top: 4px; }
-        .laca-btn-add { display: flex; align-items: center; gap: 4px; font-size: 12px; padding: 4px 10px; border: 1px solid #c3c4c7; border-radius: 4px; background: #fff; color: #2271b1; cursor: pointer; line-height: 1.4; }
-        .laca-btn-add:hover { background: #f0f6fc; border-color: #2271b1; }
-        .laca-btn-add .dashicons { font-size: 14px; width: 14px; height: 14px; }
-        .laca-warn-note { margin: 8px 0 0; font-size: 11px; color: #996800; }
-
-        /* ── Code editor ───────────────────────────────────────────────────── */
-        #laca-meta-code { display: none; }
-        .CodeMirror { height: 520px; font-size: 13px; font-family: 'Courier New', Consolas, monospace; }
-        .laca-code-footer { display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-top: 1px solid #e2e4e7; background: #f9fafb; }
-        </style>
-        <?php
+        // Styles moved to resources/styles/admin/skins/_self-authored.scss
     }
 }

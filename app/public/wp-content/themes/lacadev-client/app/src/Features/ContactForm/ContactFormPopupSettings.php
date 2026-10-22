@@ -307,7 +307,7 @@ class ContactFormPopupSettings
             </div>
         </div>
         <div class="laca-cf-field-group">
-            <label class="lcf-form-label">Màu nút trong Popup <small style="font-weight:400">(để trống = dùng Màu chính)</small></label>
+            <label class="lcf-form-label">Màu nút trong Popup <small class="lcf-small-normal">(để trống = dùng Màu chính)</small></label>
             <div class="lcf-color-row">
                 <input type="color" id="popup-button-color" oninput="lcfStyleUpdate('popup_button_color',this.value)">
                 <input type="text" class="lcf-color-text" id="popup-button-color-text" maxlength="7"
@@ -324,16 +324,16 @@ class ContactFormPopupSettings
                 <span class="lcf-range-unit">px</span>
             </div>
         </div>
-        <div class="laca-cf-field-group" style="grid-column:1/-1">
+        <div class="laca-cf-field-group lcf-col-full">
             <label class="lcf-form-label">Custom CSS riêng cho Popup</label>
             <textarea class="widefat laca-cf-email-body" id="popup-custom-css" rows="4"
-                      oninput="lcfStyleUpdate('popup_custom_css',this.value)"
-                      placeholder="/* Dùng __POPUP__ để ám chỉ class popup (ví dụ: __POPUP__ .swal2-title { font-size:22px } */"></textarea>
+                       oninput="lcfStyleUpdate('popup_custom_css',this.value)"
+                       placeholder="/* Dùng __POPUP__ để ám chỉ class popup (ví dụ: __POPUP__ .swal2-title { font-size:22px } */"></textarea>
         </div>
 
         <?php foreach (['success' => 'Thành công', 'error' => 'Thất bại'] as $state => $stateLabel): ?>
-            <div class="laca-cf-field-group" style="grid-column:1/-1">
-                <h4 class="lcf-email-section-title" style="margin:14px 0 4px">Nội dung popup "<?php echo esc_html($stateLabel); ?>"</h4>
+            <div class="laca-cf-field-group lcf-col-full">
+                <h4 class="lcf-email-section-title lcf-section-title-sm">Nội dung popup "<?php echo esc_html($stateLabel); ?>"</h4>
             </div>
             <div class="laca-cf-field-group">
                 <label class="lcf-form-label">Tiêu đề</label>
@@ -361,8 +361,8 @@ class ContactFormPopupSettings
             </div>
         <?php endforeach; ?>
 
-        <div class="laca-cf-field-group" style="grid-column:1/-1">
-            <h4 class="lcf-email-section-title" style="margin:14px 0 4px">Nút đóng &amp; tự ẩn</h4>
+        <div class="laca-cf-field-group lcf-col-full">
+            <h4 class="lcf-email-section-title lcf-section-title-sm">Nút đóng &amp; tự ẩn</h4>
         </div>
         <div class="laca-cf-field-group">
             <label class="lcf-form-label">Nút đóng</label>
@@ -371,8 +371,8 @@ class ContactFormPopupSettings
                 <option value="icon">Chọn icon</option>
             </select>
             <div id="popup-close-text-wrap">
-                <input type="text" class="widefat" id="popup-close-text"
-                       oninput="lcfPopupFieldUpdate('popup_close_text',this.value)" style="margin-top:6px">
+                <input type="text" class="widefat lcf-mt-6" id="popup-close-text"
+                       oninput="lcfPopupFieldUpdate('popup_close_text',this.value)">
                 <div id="popup_close_text-i18n-container"></div>
             </div>
             <div class="lcf-icon-pick-wrap" id="popup-close-icon-wrap" hidden>
@@ -385,15 +385,15 @@ class ContactFormPopupSettings
                 <option value="button">Hiện nút đóng, không tự ẩn</option>
                 <option value="timer">Tự ẩn sau (giây)</option>
             </select>
-            <div id="popup-dismiss-seconds-wrap" hidden style="margin-top:6px">
+            <div id="popup-dismiss-seconds-wrap" class="lcf-mt-6" hidden>
                 <input type="number" class="widefat" id="popup-dismiss-seconds" min="1" max="30"
                        oninput="lcfPopupFieldUpdate('popup_dismiss_seconds',this.value)">
             </div>
         </div>
 
-        <div class="laca-cf-field-group" style="grid-column:1/-1">
+        <div class="laca-cf-field-group lcf-col-full">
             <button type="button" class="button" onclick="lcfPopupPreview('success')">👁 Xem trước — Thành công</button>
-            <button type="button" class="button" onclick="lcfPopupPreview('error')" style="margin-left:8px">👁 Xem trước — Thất bại</button>
+            <button type="button" class="button lcf-ml-8" onclick="lcfPopupPreview('error')">👁 Xem trước — Thất bại</button>
         </div>
         <?php
         return (string) ob_get_clean();
@@ -422,12 +422,12 @@ class ContactFormPopupSettings
 
         ob_start();
         ?>
-        <div class="laca-cf-field-group" style="grid-column:1/-1">
-            <h3 class="lcf-email-section-title" style="margin:18px 0 4px">⚠️ Thông báo lỗi hệ thống</h3>
-            <p class="lcf-form-help" style="margin:0 0 10px">Áp dụng cho MỌI form — không override theo từng form riêng.</p>
+        <div class="laca-cf-field-group lcf-col-full">
+            <h3 class="lcf-email-section-title lcf-section-title-space">⚠️ Thông báo lỗi hệ thống</h3>
+            <p class="lcf-form-help lcf-help-spaced">Áp dụng cho MỌI form — không override theo từng form riêng.</p>
         </div>
         <?php foreach ($messages as $key => $desc): ?>
-            <div class="laca-cf-field-group" style="grid-column:1/-1">
+            <div class="laca-cf-field-group lcf-col-full">
                 <label class="lcf-form-label"><?php echo esc_html($desc); ?></label>
                 <input type="text" class="widefat" id="<?php echo esc_attr($key); ?>"
                        oninput="lcfPopupFieldUpdate('<?php echo esc_attr($key); ?>',this.value)">

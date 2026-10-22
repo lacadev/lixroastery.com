@@ -465,29 +465,6 @@ final class AdminPage
                 <?php endif; ?>
             </p>
         </div>
-        <style>
-            .laca-dh-channels td { vertical-align: top; padding: 14px 10px; }
-            .laca-dh-channels td:first-child { width: 28%; }
-            .laca-dh-channels td:nth-child(2) { width: 18%; }
-            .laca-dh-channels td:last-child { width: 1%; white-space: nowrap; }
-            .laca-dh-channels .description { margin: 4px 0 0; }
-            .laca-dh-badge { display: inline-block; padding: 2px 10px; border-radius: 999px; font-size: 12px; font-weight: 600; line-height: 20px; }
-            .laca-dh-badge--ok { background: #edfaef; color: #00701a; }
-            .laca-dh-badge--error { background: #fcf0f1; color: #b32d2e; }
-            .laca-dh-badge--empty { background: #f0f0f1; color: #50575e; }
-            .laca-dh-last { margin: 6px 0 0; font-size: 12px; }
-            .laca-dh-last--error { color: #b32d2e; }
-            .laca-dh-last--ok { color: #00701a; }
-            .laca-dh-remove { display: inline-block; margin-top: 6px; color: #b32d2e; }
-            .laca-dh-newkey { margin: 0 0 12px; padding: 12px; border: 1px solid #00a32a; background: #edfaef; border-radius: 4px; }
-            .laca-dh-newkey p { margin-top: 0; }
-            .laca-dh-list { list-style: disc; margin-left: 20px; }
-            .laca-dh-check { display: inline-block; margin: 0 16px 6px 0; }
-            @media (max-width: 782px) {
-                .laca-dh-channels thead { display: none; }
-                .laca-dh-channels td { display: block; width: auto !important; }
-            }
-        </style>
         <?php
     }
 }

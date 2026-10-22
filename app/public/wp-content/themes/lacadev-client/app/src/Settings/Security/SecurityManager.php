@@ -98,9 +98,9 @@ class SecurityManager
         ?>
         <div class="wrap">
             <h1>🔒 Bảo mật</h1>
-            <div style="background:#f0f9ff;border:1px solid #bae6fd;border-radius:6px;padding:14px 16px;margin:8px 0">
-                <p style="margin:0 0 8px;font-weight:600;color:#0369a1">🔧 Bảo mật website</p>
-                <p style="margin:0;font-size:13px;color:#374151">Trang này tập hợp các công cụ giúp bảo vệ site: kiểm tra điểm bảo mật tổng quan, giám sát file bị thay đổi, quét mã độc, phát hiện tài khoản admin ẩn, đổi URL đăng nhập để tránh dò mật khẩu, và bật xác thực 2 bước (2FA) cho tài khoản quản trị.</p>
+            <div class="laca-alert laca-alert--info">
+                <p class="laca-alert__title">🔧 Bảo mật website</p>
+                <p class="laca-alert__desc">Trang này tập hợp các công cụ giúp bảo vệ site: kiểm tra điểm bảo mật tổng quan, giám sát file bị thay đổi, quét mã độc, phát hiện tài khoản admin ẩn, đổi URL đăng nhập để tránh dò mật khẩu, và bật xác thực 2 bước (2FA) cho tài khoản quản trị.</p>
             </div>
             <nav class="nav-tab-wrapper">
                 <?php foreach ($tabs as $key => $label): ?>
@@ -110,7 +110,7 @@ class SecurityManager
                     </a>
                 <?php endforeach; ?>
             </nav>
-            <div class="tab-content" style="background:#fff;padding:24px;border:1px solid #c3c4c7;border-top:0;margin-top:0;">
+            <div class="tab-content laca-security-tab-content">
                 <?php
                 switch ($activeTab) {
                     case 'audit':   $this->renderAuditTab();   break;
@@ -136,8 +136,8 @@ class SecurityManager
         <h2>Kiểm tra bảo mật tổng quan</h2>
         <p>Đánh giá điểm bảo mật site theo nhiều hạng mục: WordPress Core, đăng nhập, server, HTTP headers...</p>
         <button id="btn-run-audit" class="button button-primary">▶ Chạy kiểm tra</button>
-        <div id="audit-progress" style="display:none;margin-top:12px;color:#666;font-style:italic;">Đang phân tích...</div>
-        <div id="audit-result" style="margin-top:20px;"></div>
+        <div id="audit-progress" class="laca-security-progress" style="display:none; /* động */">Đang phân tích...</div>
+        <div id="audit-result" class="laca-security-result"></div>
         <?php
     }
 
@@ -151,7 +151,7 @@ class SecurityManager
         <?php if ($status['has_baseline']): ?>
             <p>Baseline cuối: <strong><?php echo esc_html($status['baseline_time']); ?></strong>
                (<?php echo number_format($status['file_count']); ?> file)</p>
-            <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px;">
+            <div class="laca-security-flex">
                 <button id="btn-fim-scan" class="button button-primary">🔍 So sánh với baseline</button>
                 <button id="btn-fim-update" class="button button-secondary">🔄 Cập nhật baseline</button>
             </div>
@@ -159,8 +159,8 @@ class SecurityManager
             <p>Chưa có baseline. Nhấn <strong>Tạo baseline</strong> để ghi lại trạng thái file hiện tại.</p>
             <button id="btn-fim-scan" class="button button-primary">📸 Tạo baseline</button>
         <?php endif; ?>
-        <div id="fim-progress" style="display:none;margin-top:12px;color:#666;font-style:italic;">Đang quét...</div>
-        <div id="fim-result" style="margin-top:20px;"></div>
+        <div id="fim-progress" class="laca-security-progress" style="display:none; /* động */">Đang quét...</div>
+        <div id="fim-result" class="laca-security-result"></div>
         <?php
     }
 
@@ -171,11 +171,11 @@ class SecurityManager
         ?>
         <h2>Quét mã độc hại</h2>
         <p>Phân tích PHP, JS, HTML, SVG tìm backdoor, shell, obfuscated code...</p>
-        <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:16px;">
+        <div class="laca-security-flex">
             <div>
                 <strong>Loại file:</strong>
                 <?php foreach (['php' => 'PHP', 'js' => 'JavaScript', 'html' => 'HTML'] as $ext => $lbl): ?>
-                    <label style="margin-right:10px;">
+                    <label style="margin-right:10px; /* động */">
                         <input type="checkbox" name="scan_ext[]" value="<?php echo $ext; ?>" <?php echo $ext === 'php' ? 'checked' : ''; ?>>
                         <?php echo $lbl; ?>
                     </label>
@@ -183,11 +183,13 @@ class SecurityManager
             </div>
             <button id="btn-malware-scan" class="button button-primary">🦠 Bắt đầu quét</button>
         </div>
-        <div id="malware-progress" style="display:none;margin-top:12px;">
-            <div id="malware-progress-bar" style="height:6px;background:#2271b1;width:0%;border-radius:3px;transition:width 0.3s;"></div>
-            <div id="malware-progress-text" style="margin-top:6px;color:#666;font-size:13px;"></div>
+        <div id="malware-progress" class="laca-security-progress" style="display:none; /* động */">
+            <div class="laca-progress" style="margin-top:12px;">
+                <div id="malware-progress-bar" class="laca-progress__bar" style="width:0%; /* động */"></div>
+            </div>
+            <div id="malware-progress-text" class="laca-progress-text"></div>
         </div>
-        <div id="malware-result" style="margin-top:20px;"></div>
+        <div id="malware-result" class="laca-security-result"></div>
         <?php
     }
 
@@ -199,8 +201,8 @@ class SecurityManager
         <h2>Quét User Ẩn</h2>
         <p>Phát hiện tài khoản admin/user trong database nhưng bị ẩn khỏi màn hình Người dùng wp-admin.</p>
         <button id="btn-user-scan" class="button button-primary">🔍 Quét ngay</button>
-        <div id="user-scan-progress" style="display:none;margin-top:12px;color:#666;font-style:italic;">Đang quét...</div>
-        <div id="user-scan-result" style="margin-top:20px;"></div>
+        <div id="user-scan-progress" class="laca-security-progress" style="display:none; /* động */">Đang quét...</div>
+        <div id="user-scan-result" class="laca-security-result"></div>
         <?php
     }
 
@@ -224,15 +226,15 @@ class SecurityManager
                 <td>
                     <span><?php echo esc_html($homeUrl); ?></span>
                     <input type="text" id="laca-login-slug" value="<?php echo esc_attr($slug); ?>"
-                           style="width:200px;" placeholder="my-login">
+                           class="laca-login-slug-input" placeholder="my-login">
                     <p class="description">⚠️ Lưu slug này cẩn thận — nếu quên sẽ không vào được admin!</p>
                 </td>
             </tr>
         </table>
         <button id="btn-save-login" class="button button-primary">💾 Lưu cài đặt</button>
-        <span id="login-save-msg" style="margin-left:10px;"></span>
-        <div style="margin-top:20px;padding:14px;background:#fff3cd;border:1px solid #ffc107;border-radius:6px;">
-            <strong>⚠️ Lưu ý quan trọng:</strong>
+        <span id="login-save-msg" class="laca-ml-2"></span>
+        <div class="laca-alert laca-alert--warning" style="margin-top:20px;">
+            <p class="laca-alert__title">⚠️ Lưu ý quan trọng:</p>
             <ul style="margin:8px 0 0 20px;">
                 <li>Sau khi lưu, cài đặt chỉ có hiệu lực khi <strong>làm mới lại trang</strong> (do hook <code>plugins_loaded</code>).</li>
                 <li>Ghi nhớ slug mới trước khi lưu. Nếu quên, vào DB xóa option <code>laca_login_slug</code>.</li>
@@ -263,23 +265,23 @@ class SecurityManager
             </tr>
         </table>
         <button id="btn-save-2fa" class="button button-primary">💾 Lưu cài đặt</button>
-        <span id="2fa-save-msg" style="margin-left:10px;"></span>
+        <span id="2fa-save-msg" class="laca-ml-2"></span>
 
         <hr style="margin:24px 0;">
         <h3>Trạng thái 2FA người dùng</h3>
         <?php
         $users = get_users(['role__in' => ['administrator', 'editor'], 'number' => 50]);
         if ($users): ?>
-        <table class="wp-list-table widefat fixed striped" style="max-width:600px;">
+        <table class="wp-list-table widefat fixed striped laca-security-table-sm">
             <thead><tr><th>User</th><th>Vai trò</th><th>2FA</th></tr></thead>
             <tbody>
             <?php foreach ($users as $u):
                 $enabled  = get_user_meta($u->ID, 'laca_2fa_enabled',  true);
                 $verified = get_user_meta($u->ID, 'laca_2fa_verified', true);
-                $status   = ($enabled && $verified) ? '<span style="color:green;">✓ Đã bật</span>' : '<span style="color:#999;">— Chưa bật</span>';
+                $status   = ($enabled && $verified) ? '<span class="laca-status-ok">✓ Đã bật</span>' : '<span class="laca-status-muted">— Chưa bật</span>';
             ?>
                 <tr>
-                    <td><?php echo esc_html($u->user_login); ?> <small style="color:#666;"><?php echo esc_html($u->user_email); ?></small></td>
+                    <td><?php echo esc_html($u->user_login); ?> <small class="laca-user-email"><?php echo esc_html($u->user_email); ?></small></td>
                     <td><?php echo esc_html(implode(', ', $u->roles)); ?></td>
                     <td><?php echo $status; ?></td>
                 </tr>
@@ -301,7 +303,7 @@ class SecurityManager
         <p>Super User được ẩn khỏi danh sách Người dùng đối với người khác, và không bị áp các giới hạn quản trị (chế độ bảo trì, ẩn menu, khoá cập nhật...) mà site áp dụng cho user thường.
            Tài khoản mặc định <code><?php echo esc_html(SuperUserGuard::PROTECTED_LOGIN); ?></code> luôn là Super User —
            không Super User nào khác có thể xoá hoặc đổi quyền (role) của tài khoản này.</p>
-        <table class="wp-list-table widefat fixed striped" style="max-width:900px;">
+        <table class="wp-list-table widefat fixed striped laca-security-table-md">
             <thead><tr><th>User</th><th>Email</th><th>Vai trò</th>
                 <th title="Kiểm tra trực tiếp user_can($user, 'manage_options') — khác với cột Vai trò (chỉ đọc TÊN role, không chắc role đó còn thực sự giữ quyền manage_options hay đã bị tước bởi nguyên nhân khác).">manage_options?</th>
                 <th>Super User?</th><th>Hành động</th></tr></thead>
@@ -321,26 +323,26 @@ class SecurityManager
                     <td><strong><?php echo esc_html($u->user_login); ?></strong></td>
                     <td><?php echo esc_html($u->user_email); ?></td>
                     <td>
-                        <span style="color:#666;"><?php echo esc_html(implode(', ', $u->roles)); ?></span>
-                        <br><code style="font-size:10px;color:#999;" title="Giá trị thô usermeta wp_capabilities — đối chiếu khi cột manage_options? không khớp với Vai trò hiển thị."><?php echo esc_html(wp_json_encode($rawCaps)); ?></code>
+                        <span class="laca-user-roles"><?php echo esc_html(implode(', ', $u->roles)); ?></span>
+                        <br><code class="laca-security-code" title="Giá trị thô usermeta wp_capabilities — đối chiếu khi cột manage_options? không khớp với Vai trò hiển thị."><?php echo esc_html(wp_json_encode($rawCaps)); ?></code>
                     </td>
                     <td>
                         <?php if ($hasManageOptions): ?>
-                            <span style="color:#16a34a;">✓ Có</span>
+                            <span class="laca-status-ok">✓ Có</span>
                         <?php else: ?>
-                            <span style="color:#dc2626;font-weight:600;">✕ Không</span>
+                            <span class="laca-status-danger">✕ Không</span>
                         <?php endif; ?>
                     </td>
                     <td>
                         <?php if ($isSuper): ?>
-                            <span style="color:#7c3aed;font-weight:600;">👑 Super User</span>
+                            <span class="laca-status-super">👑 Super User</span>
                         <?php else: ?>
-                            <span style="color:#999;">—</span>
+                            <span class="laca-status-muted">—</span>
                         <?php endif; ?>
                     </td>
                     <td>
                         <?php if ($isProtected): ?>
-                            <span style="color:#999;">🔒 Mặc định — không thể đổi</span>
+                            <span class="laca-status-muted">🔒 Mặc định — không thể đổi</span>
                         <?php elseif ($isSuper): ?>
                             <button class="button btn-toggle-super" data-user-id="<?php echo esc_attr($u->ID); ?>" data-do-action="demote">↩️ Bỏ Super User</button>
                         <?php else: ?>
@@ -415,7 +417,7 @@ class SecurityManager
         echo '<p>Phát hiện <strong>' . (int) $r['total'] . ' thay đổi</strong> so với baseline <em>' . esc_html($r['base_time']) . '</em>:</p>';
         foreach (['modified' => '🟡 Đã sửa', 'added' => '🟢 Mới thêm', 'deleted' => '🔴 Đã xóa'] as $key => $label) {
             if (empty($r[$key])) continue;
-            echo '<h4 style="margin:12px 0 6px;">' . esc_html($label) . ' (' . count($r[$key]) . ')</h4>';
+            echo '<h4 class="laca-section-label" style="margin-top:12px; margin-bottom:6px; /* động */">' . esc_html($label) . ' (' . count($r[$key]) . ')</h4>';
             echo '<table class="wp-list-table widefat striped"><thead><tr><th>File</th><th>Thời gian</th></tr></thead><tbody>';
             foreach ($r[$key] as $f) {
                 echo '<tr><td><code>' . esc_html($f['path']) . '</code></td><td>' . esc_html($f['time']) . '</td></tr>';
@@ -561,11 +563,6 @@ class SecurityManager
     private function renderInlineScripts(): void
     {
         ?>
-        <style>
-        .laca-scan-clean { padding:14px 18px;background:#f0fdf4;border:1px solid #86efac;border-radius:8px;color:#166534;font-size:14px; }
-        .laca-scan-summary { padding:10px 16px;background:#fef3c7;border:1px solid #fcd34d;border-radius:6px;margin-bottom:12px; }
-        #audit-result .audit-score-circle { display:inline-block;width:80px;height:80px;border-radius:50%;text-align:center;line-height:80px;font-size:22px;font-weight:700;border:4px solid;margin-right:16px; }
-        </style>
         <script>
         (function($){
             var ajaxUrl = lacaSecurity.ajaxUrl;
@@ -577,24 +574,24 @@ class SecurityManager
                 $('#audit-result').empty();
                 $.post(ajaxUrl, { action:'laca_security_audit', nonce }, function(res){
                     $('#audit-progress').hide();
-                    if (!res.success) { $('#audit-result').html('<p style="color:red;">'+res.data+'</p>'); return; }
+                    if (!res.success) { $('#audit-result').html('<p class="laca-status-danger">'+res.data+'</p>'); return; }
                     var d = res.data;
-                    var color = d.score >= 80 ? '#16a34a' : d.score >= 50 ? '#d97706' : '#dc2626';
+                    var color = d.score >= 80 ? 'var(--laca-success)' : d.score >= 50 ? 'var(--laca-warning)' : 'var(--laca-danger)';
                     var verdict = d.score >= 80 ? 'Tốt' : d.score >= 50 ? 'Trung bình' : 'Yếu';
-                    var html = '<div style="display:flex;align-items:center;margin-bottom:20px;">';
+                    var html = '<div class="laca-security-flex" style="margin-bottom:20px;">';
                     html += '<div class="audit-score-circle" style="color:'+color+';border-color:'+color+';">'+d.score+'</div>';
                     html += '<div><strong style="font-size:18px;">'+verdict+'</strong><br>';
-                    html += '<span style="font-size:13px;color:#666;">Pass: '+d.pass+' | Fail: '+d.fail+' | Warning: '+d.warn+'</span></div></div>';
+                    html += '<span style="font-size:13px;color:var(--laca-fg-muted);">Pass: '+d.pass+' | Fail: '+d.fail+' | Warning: '+d.warn+'</span></div></div>';
 
                     $.each(d.groups, function(cat, checks){
-                        html += '<h3 style="margin:16px 0 8px;border-bottom:1px solid #e5e7eb;padding-bottom:6px;">'+cat+'</h3>';
+                        html += '<h3 style="margin:16px 0 8px;border-bottom:1px solid var(--laca-border);padding-bottom:6px;">'+cat+'</h3>';
                         html += '<table class="wp-list-table widefat striped" style="margin-bottom:8px;"><tbody>';
                         $.each(checks, function(_, c){
                             var icon = c.status==='pass'?'✓':c.status==='fail'?'✗':c.status==='warn'?'⚠':'ℹ';
-                            var col  = c.status==='pass'?'#166534':c.status==='fail'?'#dc2626':c.status==='warn'?'#b45309':'#1e40af';
+                            var col  = c.status==='pass'?'var(--laca-success)':c.status==='fail'?'var(--laca-danger)':c.status==='warn'?'var(--laca-warning)':'var(--laca-accent-fg)';
                             html += '<tr><td style="width:24px;font-size:16px;color:'+col+';">'+icon+'</td>';
-                            html += '<td><strong>'+c.title+'</strong><br><span style="font-size:12px;color:#555;">'+c.desc+'</span></td>';
-                            html += '<td style="width:60px;text-align:right;font-size:12px;color:#999;">+'+c.points+'pt</td></tr>';
+                            html += '<td><strong>'+c.title+'</strong><br><span style="font-size:12px;color:var(--laca-fg-muted);">'+c.desc+'</span></td>';
+                            html += '<td style="width:60px;text-align:right;font-size:12px;color:var(--laca-fg-subtle);">+'+c.points+'pt</td></tr>';
                         });
                         html += '</tbody></table>';
                     });

@@ -206,9 +206,8 @@ class TwoFactorAuth
         <input type="hidden" name="laca_2fa_token" value="<?php echo $token; ?>">
         <p style="margin-bottom:20px;">
             <label for="laca_otp">Mã xác thực (6 chữ số hoặc mã dự phòng)</label>
-            <input id="laca_otp" type="text" name="laca_otp" class="input" inputmode="numeric"
-                   autocomplete="one-time-code" maxlength="8" placeholder="000000" autofocus
-                   style="letter-spacing:4px;font-size:20px;text-align:center;">
+            <input id="laca_otp" type="text" name="laca_otp" class="input laca-2fa-login-input" inputmode="numeric"
+                   autocomplete="one-time-code" maxlength="8" placeholder="000000" autofocus>
         </p>
         <script>
         document.addEventListener('DOMContentLoaded', function () {
@@ -217,10 +216,10 @@ class TwoFactorAuth
                 if (!el) return;
                 el.removeAttribute('required');
                 var wrap = el.closest('.user-pass-wrap') || el.closest('p');
-                if (wrap) wrap.style.display = 'none';
+                if (wrap) wrap.style.display = 'none'; // động
             });
             var forget = document.querySelector('.forgetmenot');
-            if (forget) forget.style.display = 'none';
+            if (forget) forget.style.display = 'none'; // động
             var otp = document.getElementById('laca_otp');
             if (otp) otp.focus();
         });
@@ -246,59 +245,59 @@ class TwoFactorAuth
         $label    = rawurlencode($issuer . ':' . $user->user_email);
         $otpauth  = 'otpauth://totp/' . $label . '?secret=' . ($secret ?: '') . '&issuer=' . rawurlencode($issuer);
         ?>
-        <div id="laca-2fa-profile" style="margin:30px 0 20px;padding:24px;background:#fff;border:1px solid #e1e5ea;border-radius:12px;max-width:700px;">
+        <div id="laca-2fa-profile" class="laca-2fa-profile">
             <h2 style="margin:0 0 6px;font-size:17px;">🔐 Xác thực 2 bước (2FA)</h2>
-            <p style="margin:0 0 20px;color:#646970;font-size:13px;">Bảo vệ tài khoản bằng mã OTP từ Google/Microsoft Authenticator.</p>
+            <p class="description" style="margin:0 0 20px;">Bảo vệ tài khoản bằng mã OTP từ Google/Microsoft Authenticator.</p>
 
             <?php if ($verified && $enabled): ?>
-                <div style="display:flex;align-items:center;gap:10px;padding:12px 16px;background:#f0fdf4;border:1px solid #86efac;border-radius:8px;margin-bottom:16px;">
-                    <span style="color:#16a34a;font-size:20px;">✓</span>
+                <div class="laca-alert laca-alert--success" style="margin-bottom:16px;">
+                    <span style="font-size:20px; line-height:1;">✓</span>
                     <div>
-                        <strong style="color:#166534;">2FA đang hoạt động</strong>
-                        <div style="font-size:12px;color:#166534;">Còn <strong><?php echo $backupCnt; ?></strong> mã dự phòng.</div>
+                        <strong class="laca-alert__title">2FA đang hoạt động</strong>
+                        <div style="font-size:12px;">Còn <strong><?php echo $backupCnt; ?></strong> mã dự phòng.</div>
                     </div>
                 </div>
-                <div style="display:flex;gap:10px;flex-wrap:wrap;">
+                <div class="laca-security-flex">
                     <button type="button" id="laca-2fa-regen-backup" class="button button-secondary">Tạo lại mã dự phòng</button>
-                    <button type="button" id="laca-2fa-disable-btn" class="button" style="color:#dc2626;border-color:#dc2626;">Tắt 2FA</button>
+                    <button type="button" id="laca-2fa-disable-btn" class="button button-link-delete">Tắt 2FA</button>
                 </div>
-                <div id="laca-2fa-backup-display" style="display:none;margin-top:16px;padding:14px;background:#fefce8;border:1px solid #fde047;border-radius:8px;">
-                    <strong style="font-size:13px;color:#854d0e;">Mã dự phòng (mỗi mã dùng 1 lần — lưu ngay!):</strong>
+                <div id="laca-2fa-backup-display" class="laca-2fa-backup-box" style="display:none; /* động */">
+                    <strong>Mã dự phòng (mỗi mã dùng 1 lần — lưu ngay!):</strong>
                     <div id="laca-2fa-codes-list" style="margin-top:10px;display:flex;flex-wrap:wrap;gap:8px;"></div>
                 </div>
             <?php else: ?>
                 <button type="button" id="laca-2fa-setup-btn" class="button button-primary">
                     <?php echo $enabled ? '▶ Hoàn tất cài đặt' : '+ Bật 2FA'; ?>
                 </button>
-                <div id="laca-2fa-setup-panel" style="display:none;margin-top:20px;">
+                <div id="laca-2fa-setup-panel" style="display:none; /* động */ margin-top:20px;">
                     <ol style="font-size:13px;line-height:2;margin:0 0 16px 20px;">
                         <li>Cài <strong>Google Authenticator</strong> hoặc <strong>Microsoft Authenticator</strong></li>
                         <li>Quét mã QR bên dưới hoặc nhập thủ công secret key</li>
                         <li>Nhập mã 6 chữ số từ ứng dụng để xác nhận</li>
                     </ol>
-                    <div style="display:flex;align-items:flex-start;gap:24px;flex-wrap:wrap;">
-                        <div id="laca-qrcode" style="width:160px;height:160px;padding:8px;background:#fff;border:1px solid #038;border-radius:8px;"></div>
+                    <div class="laca-security-flex" style="align-items:flex-start; gap:24px;">
+                        <div id="laca-qrcode" class="laca-2fa-qrcode"></div>
                         <div style="flex:1;min-width:220px;">
                             <label style="font-size:12px;font-weight:600;display:block;margin-bottom:4px;">SECRET KEY</label>
-                            <code id="laca-secret-display" style="display:block;font-size:14px;background:#f3f4f6;padding:8px 12px;border-radius:6px;letter-spacing:2px;margin-bottom:14px;word-break:break-all;"></code>
+                            <code id="laca-secret-display" class="laca-2fa-secret"></code>
                             <input type="hidden" id="laca-2fa-secret-val">
                             <label style="font-size:12px;font-weight:600;display:block;margin-bottom:4px;">MÃ XÁC NHẬN (6 chữ số)</label>
                             <div style="display:flex;gap:8px;">
-                                <input type="text" id="laca-2fa-verify-code" class="regular-text" inputmode="numeric"
-                                       maxlength="6" placeholder="000000" style="letter-spacing:4px;font-size:18px;width:130px;text-align:center;">
+                                <input type="text" id="laca-2fa-verify-code" class="regular-text laca-2fa-code-input" inputmode="numeric"
+                                       maxlength="6" placeholder="000000">
                                 <button type="button" id="laca-2fa-confirm-btn" class="button button-primary">Xác nhận</button>
                             </div>
                             <div id="laca-2fa-verify-msg" style="margin-top:8px;font-size:13px;"></div>
                         </div>
                     </div>
-                    <div id="laca-2fa-backup-first" style="display:none;margin-top:20px;padding:14px;background:#fefce8;border:1px solid #fde047;border-radius:8px;">
-                        <strong style="font-size:13px;color:#854d0e;">2FA đã bật! Lưu các mã dự phòng (dùng khi mất điện thoại):</strong>
+                    <div id="laca-2fa-backup-first" class="laca-2fa-backup-box" style="display:none; /* động */">
+                        <strong>2FA đã bật! Lưu các mã dự phòng (dùng khi mất điện thoại):</strong>
                         <div id="laca-2fa-backup-codes" style="margin-top:10px;display:flex;flex-wrap:wrap;gap:8px;"></div>
-                        <p style="font-size:12px;color:#92400e;margin:10px 0 0;">Sau khi tắt trang, bạn sẽ không thể xem lại các mã này.</p>
+                        <p style="font-size:12px;margin:10px 0 0;">Sau khi tắt trang, bạn sẽ không thể xem lại các mã này.</p>
                     </div>
                 </div>
             <?php endif; ?>
-            <p style="margin:16px 0 0;font-size:12px;color:#9ca3af;">
+            <p style="margin:16px 0 0;font-size:12px;color:var(--laca-fg-subtle);">
                 <?php wp_nonce_field('laca_2fa_nonce', 'laca_2fa_nonce'); ?>
             </p>
         </div>

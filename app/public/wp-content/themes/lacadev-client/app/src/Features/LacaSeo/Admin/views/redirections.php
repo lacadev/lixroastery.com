@@ -127,18 +127,18 @@ $isAddNew = isset($_GET['action']) && $_GET['action'] === 'new';
 ?>
 <div class="laca-seo-subview-wrap">
     <?php if ($rmActive): ?>
-        <div class="notice notice-warning inline" style="margin-bottom: 20px;">
+        <div class="notice notice-warning inline laca-mb-4">
             <p><strong>Lưu ý:</strong> Rank Math SEO hiện đang kích hoạt trên trang web. Hệ thống chuyển hướng của Rank Math đang nắm quyền ưu tiên xử lý. Bạn vẫn có thể quản lý và thiết lập dữ liệu tại đây.</p>
         </div>
     <?php endif; ?>
 
     <?php echo $notice; // phpcs:ignore ?>
 
-    <div class="laca-seo-subview-header" style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px;">
-        <h2 style="margin:0; font-size: 20px;">Quản lý Chuyển hướng (Redirections)</h2>
+    <div class="laca-seo-subview-header">
+        <h2>Quản lý Chuyển hướng (Redirections)</h2>
         <div>
             <a href="<?php echo esc_url(add_query_arg(['page' => 'laca-seo', 'view' => 'redirections', 'action' => 'new'], admin_url('admin.php'))); ?>" class="button button-primary">
-                <span class="dashicons dashicons-plus-alt2" style="vertical-align: middle;"></span> Thêm chuyển hướng mới
+                <span class="dashicons dashicons-plus-alt2 laca-align-middle"></span> Thêm chuyển hướng mới
             </a>
             <a href="<?php echo esc_url(wp_nonce_url(add_query_arg(['page' => 'laca-seo', 'view' => 'redirections', 'export' => 'apache'], admin_url('admin.php')), 'laca_seo_export_redirections')); ?>" class="button">
                 Xuất .htaccess
@@ -158,7 +158,7 @@ $isAddNew = isset($_GET['action']) && $_GET['action'] === 'new';
         $formStart   = $editItem ? Schedule::getStartDate($editItem['id']) : '';
         $formEnd     = $editItem ? Schedule::getEndDate($editItem['id']) : '';
         ?>
-        <div class="laca-seo-card" style="margin-bottom: 24px;">
+        <div class="laca-seo-card laca-mb-4">
             <div class="laca-seo-card__header">
                 <h3 class="laca-seo-card__title"><?php echo $editItem ? 'Chỉnh sửa quy tắc chuyển hướng #' . esc_html((string) $editItem['id']) : 'Thêm mới quy tắc chuyển hướng'; ?></h3>
             </div>
@@ -168,55 +168,55 @@ $isAddNew = isset($_GET['action']) && $_GET['action'] === 'new';
                     <input type="hidden" name="laca_seo_redir_save" value="1">
                     <input type="hidden" name="redirection_id" value="<?php echo esc_attr((string) ($editItem['id'] ?? 0)); ?>">
 
-                    <div style="margin-bottom: 16px;">
-                        <label style="display:block; font-weight:600; margin-bottom: 6px;">URL nguồn (Source URLs):</label>
+                    <div class="laca-mb-3">
+                        <label class="laca-form-label">URL nguồn (Source URLs):</label>
                         <?php foreach ($formSources as $sIdx => $sRow): ?>
-                            <div style="display:flex; gap: 10px; margin-bottom: 8px; align-items:center;">
-                                <input type="text" name="sources[<?php echo $sIdx; ?>][pattern]" value="<?php echo esc_attr($sRow['pattern'] ?? ''); ?>" class="large-text" placeholder="vi-du/duong-dan-cu/" style="flex:1;">
+                            <div class="laca-flex laca-items-center laca-gap-2 laca-mb-2">
+                                <input type="text" name="sources[<?php echo $sIdx; ?>][pattern]" value="<?php echo esc_attr($sRow['pattern'] ?? ''); ?>" class="large-text laca-flex-1" placeholder="vi-du/duong-dan-cu/">
                                 <select name="sources[<?php echo $sIdx; ?>][comparison]">
                                     <?php foreach (Helper::choicesComparisonTypes() as $cKey => $cLabel): ?>
                                         <option value="<?php echo esc_attr($cKey); ?>" <?php selected($sRow['comparison'] ?? 'exact', $cKey); ?>><?php echo esc_html($cLabel); ?></option>
                                     <?php endforeach; ?>
                                 </select>
-                                <label style="display:inline-flex; align-items:center; gap: 4px; font-size: 13px;">
+                                <label class="laca-cb-inline">
                                     <input type="checkbox" name="sources[<?php echo $sIdx; ?>][ignore]" value="1" <?php checked(!empty($sRow['ignore'])); ?>> Bỏ qua hoa/thường
                                 </label>
                             </div>
                         <?php endforeach; ?>
                     </div>
 
-                    <div style="margin-bottom: 16px;">
-                        <label for="redir_url_to" style="display:block; font-weight:600; margin-bottom: 6px;">URL đích đến (Destination URL):</label>
+                    <div class="laca-mb-3">
+                        <label for="redir_url_to" class="laca-form-label">URL đích đến (Destination URL):</label>
                         <input type="text" id="redir_url_to" name="url_to" value="<?php echo esc_attr($formUrlTo); ?>" class="large-text" placeholder="https://example.com/duong-dan-moi/ (hoặc bỏ trống nếu chọn 410/451)">
                     </div>
 
-                    <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 16px;">
+                    <div class="laca-form-grid-auto">
                         <div>
-                            <label for="redir_header_code" style="display:block; font-weight:600; margin-bottom: 6px;">Loại chuyển hướng:</label>
-                            <select id="redir_header_code" name="header_code" style="width:100%;">
+                            <label for="redir_header_code" class="laca-form-label">Loại chuyển hướng:</label>
+                            <select id="redir_header_code" name="header_code" class="laca-w-full">
                                 <?php foreach (Helper::choicesRedirectionTypes() as $code => $label): ?>
                                     <option value="<?php echo esc_attr($code); ?>" <?php selected((string) $formCode, (string) $code); ?>><?php echo esc_html($label); ?></option>
                                 <?php endforeach; ?>
                             </select>
                         </div>
                         <div>
-                            <label for="redir_status" style="display:block; font-weight:600; margin-bottom: 6px;">Trạng thái:</label>
-                            <select id="redir_status" name="status" style="width:100%;">
+                            <label for="redir_status" class="laca-form-label">Trạng thái:</label>
+                            <select id="redir_status" name="status" class="laca-w-full">
                                 <option value="active" <?php selected($formStatus, 'active'); ?>>Đang kích hoạt (Active)</option>
                                 <option value="inactive" <?php selected($formStatus, 'inactive'); ?>>Tạm ngừng (Inactive)</option>
                             </select>
                         </div>
                         <div>
-                            <label for="redir_start_date" style="display:block; font-weight:600; margin-bottom: 6px;">Kích hoạt từ ngày (Pro):</label>
-                            <input type="date" id="redir_start_date" name="start_date" value="<?php echo esc_attr($formStart); ?>" style="width:100%;">
+                            <label for="redir_start_date" class="laca-form-label">Kích hoạt từ ngày (Pro):</label>
+                            <input type="date" id="redir_start_date" name="start_date" value="<?php echo esc_attr($formStart); ?>" class="laca-w-full">
                         </div>
                         <div>
-                            <label for="redir_end_date" style="display:block; font-weight:600; margin-bottom: 6px;">Hết hạn vào ngày (Pro):</label>
-                            <input type="date" id="redir_end_date" name="end_date" value="<?php echo esc_attr($formEnd); ?>" style="width:100%;">
+                            <label for="redir_end_date" class="laca-form-label">Hết hạn vào ngày (Pro):</label>
+                            <input type="date" id="redir_end_date" name="end_date" value="<?php echo esc_attr($formEnd); ?>" class="laca-w-full">
                         </div>
                     </div>
 
-                    <div style="display:flex; gap: 10px;">
+                    <div class="laca-flex laca-gap-2">
                         <button type="submit" class="button button-primary">Lưu quy tắc chuyển hướng</button>
                         <a href="<?php echo esc_url(remove_query_arg(['action', 'id'])); ?>" class="button button-secondary">Huỷ bỏ</a>
                     </div>
@@ -226,7 +226,7 @@ $isAddNew = isset($_GET['action']) && $_GET['action'] === 'new';
     <?php endif; ?>
 
     <!-- Status Filter Views -->
-    <ul class="subsubsub" style="margin-bottom: 12px;">
+    <ul class="subsubsub laca-mb-3">
         <li><a href="<?php echo esc_url(add_query_arg(['status' => 'any', 'paged' => 1])); ?>" class="<?php echo $currentStatus === 'any' ? 'current' : ''; ?>">Tất cả <span class="count">(<?php echo esc_html((string) $counts['all']); ?>)</span></a> |</li>
         <li><a href="<?php echo esc_url(add_query_arg(['status' => 'active', 'paged' => 1])); ?>" class="<?php echo $currentStatus === 'active' ? 'current' : ''; ?>">Đang bật <span class="count">(<?php echo esc_html((string) $counts['active']); ?>)</span></a> |</li>
         <li><a href="<?php echo esc_url(add_query_arg(['status' => 'inactive', 'paged' => 1])); ?>" class="<?php echo $currentStatus === 'inactive' ? 'current' : ''; ?>">Tắt <span class="count">(<?php echo esc_html((string) $counts['inactive']); ?>)</span></a> |</li>
@@ -237,19 +237,19 @@ $isAddNew = isset($_GET['action']) && $_GET['action'] === 'new';
     <table class="wp-list-table widefat fixed striped table-view-list">
         <thead>
             <tr>
-                <th style="width: 40px;">ID</th>
+                <th class="laca-col-id">ID</th>
                 <th>URL Nguồn (Sources)</th>
                 <th>URL Đích (Destination)</th>
-                <th style="width: 90px;">Mã HTTP</th>
-                <th style="width: 80px;">Lượt truy cập</th>
-                <th style="width: 130px;">Truy cập cuối</th>
-                <th style="width: 140px;">Thao tác</th>
+                <th class="laca-col-http">Mã HTTP</th>
+                <th class="laca-col-count">Lượt truy cập</th>
+                <th class="laca-col-time">Truy cập cuối</th>
+                <th class="laca-col-action">Thao tác</th>
             </tr>
         </thead>
         <tbody>
             <?php if (empty($items)): ?>
                 <tr>
-                    <td colspan="7" style="text-align:center; padding: 24px; color: #646970;">
+                    <td colspan="7" class="laca-table-empty">
                         <?php echo $currentStatus === 'trashed' ? 'Thùng rác trống.' : 'Chưa có quy tắc chuyển hướng nào.'; ?>
                     </td>
                 </tr>
@@ -262,9 +262,9 @@ $isAddNew = isset($_GET['action']) && $_GET['action'] === 'new';
                         <td><strong>#<?php echo esc_html((string) $item['id']); ?></strong></td>
                         <td>
                             <?php foreach ($itemSources as $src): ?>
-                                <div style="margin-bottom: 2px;">
+                                <div class="laca-mb-1">
                                     <code><?php echo esc_html($src['pattern'] ?? ''); ?></code>
-                                    <span style="font-size:11px; color:#646970;">(<?php echo esc_html($src['comparison'] ?? 'exact'); ?>)</span>
+                                    <span class="laca-text-subtle">(<?php echo esc_html($src['comparison'] ?? 'exact'); ?>)</span>
                                 </div>
                             <?php endforeach; ?>
                         </td>
@@ -272,16 +272,16 @@ $isAddNew = isset($_GET['action']) && $_GET['action'] === 'new';
                             <?php if (!empty($item['url_to'])): ?>
                                 <a href="<?php echo esc_url($item['url_to']); ?>" target="_blank" rel="noopener"><?php echo esc_html($item['url_to']); ?></a>
                             <?php else: ?>
-                                <em style="color:#8c8f94;">(Không có đích đến)</em>
+                                <em class="laca-text-muted">(Không có đích đến)</em>
                             <?php endif; ?>
                         </td>
-                        <td><span class="badge" style="background:#e0e0e0; padding:2px 6px; border-radius:3px; font-weight:600;"><?php echo esc_html((string) $item['header_code']); ?></span></td>
+                        <td><span class="laca-badge laca-badge--subtle"><?php echo esc_html((string) $item['header_code']); ?></span></td>
                         <td><?php echo esc_html(number_format_i18n((int) $item['hits'])); ?></td>
                         <td><small><?php echo ($item['last_accessed'] && $item['last_accessed'] !== '0000-00-00 00:00:00') ? esc_html($item['last_accessed']) : 'Chưa có'; ?></small></td>
                         <td>
                             <?php if ($item['status'] === 'trashed'): ?>
                                 <a href="<?php echo esc_url(wp_nonce_url(add_query_arg(['action' => 'restore', 'id' => $item['id']]), 'laca_seo_redir_action')); ?>">Khôi phục</a> |
-                                <a href="<?php echo esc_url(wp_nonce_url(add_query_arg(['action' => 'delete', 'id' => $item['id']]), 'laca_seo_redir_action')); ?>" style="color:#b32d2e;">Xoá vĩnh viễn</a>
+                                <a href="<?php echo esc_url(wp_nonce_url(add_query_arg(['action' => 'delete', 'id' => $item['id']]), 'laca_seo_redir_action')); ?>" class="laca-action-delete">Xoá vĩnh viễn</a>
                             <?php else: ?>
                                 <a href="<?php echo esc_url(add_query_arg(['action' => 'edit', 'id' => $item['id']])); ?>">Sửa</a> |
                                 <?php if ($item['status'] === 'active'): ?>
@@ -289,7 +289,7 @@ $isAddNew = isset($_GET['action']) && $_GET['action'] === 'new';
                                 <?php else: ?>
                                     <a href="<?php echo esc_url(wp_nonce_url(add_query_arg(['action' => 'activate', 'id' => $item['id']]), 'laca_seo_redir_action')); ?>">Bật</a> |
                                 <?php endif; ?>
-                                <a href="<?php echo esc_url(wp_nonce_url(add_query_arg(['action' => 'trash', 'id' => $item['id']]), 'laca_seo_redir_action')); ?>" style="color:#b32d2e;">Xoá</a>
+                                <a href="<?php echo esc_url(wp_nonce_url(add_query_arg(['action' => 'trash', 'id' => $item['id']]), 'laca_seo_redir_action')); ?>" class="laca-action-delete">Xoá</a>
                             <?php endif; ?>
                         </td>
                     </tr>
@@ -300,11 +300,11 @@ $isAddNew = isset($_GET['action']) && $_GET['action'] === 'new';
 
     <!-- Pagination -->
     <?php if ($totalPages > 1): ?>
-        <div class="tablenav bottom" style="margin-top: 12px;">
+        <div class="tablenav bottom laca-mt-3">
             <div class="tablenav-pages">
                 <span class="displaying-num"><?php printf(esc_html__('%d mục', 'lacadev'), $total); ?></span>
                 <?php for ($p = 1; $p <= $totalPages; $p++): ?>
-                    <a href="<?php echo esc_url(add_query_arg(['paged' => $p])); ?>" class="button <?php echo $paged === $p ? 'button-primary' : ''; ?>" style="min-width: 28px;"><?php echo $p; ?></a>
+                    <a href="<?php echo esc_url(add_query_arg(['paged' => $p])); ?>" class="button laca-btn-page <?php echo $paged === $p ? 'button-primary' : ''; ?>"><?php echo $p; ?></a>
                 <?php endfor; ?>
             </div>
         </div>

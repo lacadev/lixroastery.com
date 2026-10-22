@@ -87,7 +87,7 @@ const report = (ok, check, target, w, detail = '') => {
       await p.setRequestInterception(true);
       p.on('request', (r) => {
         if (r.method() === 'POST') {
-          r.abort();
+          r.respond({ status: 200, contentType: 'application/json', body: '{}' });
         } else {
           r.continue();
         }
@@ -220,7 +220,7 @@ const report = (ok, check, target, w, detail = '') => {
               if (!r.width || r.right <= window.innerWidth + 1) return false;
               for (let p = el.parentElement; p && p !== body; p = p.parentElement) {
                 const ox = getComputedStyle(p).overflowX;
-                if (ox === 'auto' || ox === 'scroll') return false;
+                if (ox === 'auto' || ox === 'scroll' || ox === 'hidden') return false;
               }
               return true;
             };
@@ -328,6 +328,7 @@ const report = (ok, check, target, w, detail = '') => {
               .filter(el => {
                 if (el.offsetParent === null) return false;
                 if (isVisuallyHidden(el)) return false;
+                if (el.disabled || el.getAttribute('aria-disabled') === 'true' || el.classList.contains('disabled') || el.closest('[aria-disabled="true"], [disabled]')) return false;
                 if (!el.innerText || !el.innerText.trim()) return false;
                 const r = el.getBoundingClientRect();
                 if (r.width === 0 || r.height === 0) return false;

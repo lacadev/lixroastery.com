@@ -30,9 +30,8 @@ class MaintenanceModeManager
         // Admin bar toggle button
         add_action('admin_bar_menu', [$this, 'addAdminBarNode'], 90);
 
-        // Inline styles for admin bar node
-        add_action('admin_head',   [$this, 'renderAdminBarStyle']);
-        add_action('wp_head',      [$this, 'renderAdminBarStyle']);
+        // Frontend inline styles for admin bar node (admin uses admin.css)
+        add_action('wp_head', [$this, 'renderAdminBarStyle']);
 
         // AJAX toggle
         add_action('wp_ajax_laca_toggle_maintenance', [$this, 'handleAjaxToggle']);
@@ -73,7 +72,7 @@ class MaintenanceModeManager
         if (file_exists($maintenanceFile)) {
             include $maintenanceFile;
         } else {
-            echo '<!DOCTYPE html><html><body style="font-family:sans-serif;text-align:center;padding:60px"><h1>🛠 Đang bảo trì</h1><p>Website đang được nâng cấp. Vui lòng quay lại sau.</p></body></html>';
+            echo '<!DOCTYPE html><html><body style="font-family:sans-serif;text-align:center;padding:60px /* động */"><h1>🛠 Đang bảo trì</h1><p>Website đang được nâng cấp. Vui lòng quay lại sau.</p></body></html>';
         }
         exit;
     }
@@ -134,16 +133,16 @@ class MaintenanceModeManager
 
     public function renderAdminBarStyle(): void
     {
-        if (!is_admin_bar_showing() || !current_user_can('manage_options')) {
+        if (is_admin() || !is_admin_bar_showing() || !current_user_can('manage_options')) {
             return;
         }
         echo '
         <style>
         #wp-admin-bar-laca_maintenance > .ab-item { display:flex !important; align-items:center; gap:6px; }
         .laca-maint-dot { display:inline-block; width:9px; height:9px; border-radius:50%; flex-shrink:0; }
-        .laca-maint-dot--on  { background:#f44336; box-shadow:0 0 0 2px rgba(244,67,54,.35); }
-        .laca-maint-dot--off { background:#4caf50; box-shadow:0 0 0 2px rgba(76,175,80,.35); }
-        #wp-admin-bar-laca_maintenance.laca-maint-active > .ab-item { color:#ffb3b3 !important; }
+        .laca-maint-dot--on  { background:#e53e3e; box-shadow:0 0 0 2px rgba(229,62,62,.35); }
+        .laca-maint-dot--off { background:#38a169; box-shadow:0 0 0 2px rgba(56,161,105,.35); }
+        #wp-admin-bar-laca_maintenance.laca-maint-active > .ab-item { color:#feb2b2 !important; }
         </style>
         ';
     }
@@ -178,9 +177,9 @@ class MaintenanceModeManager
             return;
         }
         echo '
-        <div class="notice notice-warning" style="display:flex;align-items:center;gap:10px;padding:10px 15px">
-            <span style="font-size:18px">🛠</span>
-            <p style="margin:0"><strong>Maintenance Mode đang BẬT.</strong> Khách truy cập sẽ thấy trang bảo trì.
+        <div class="notice notice-warning laca-notice-maintenance">
+            <span>🛠</span>
+            <p><strong>Maintenance Mode đang BẬT.</strong> Khách truy cập sẽ thấy trang bảo trì.
             Click nút "<strong>Maintenance: BẬT</strong>" trên thanh admin bar để tắt.</p>
         </div>
         ';

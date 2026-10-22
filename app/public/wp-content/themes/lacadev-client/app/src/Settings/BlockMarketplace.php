@@ -33,14 +33,14 @@ class BlockMarketplace
     public static function renderPage(): string
     {
         if (!LacaDevTrackerClient::isConfigured()) {
-            return '<div style="background:#fff7ed;border:1px solid #fed7aa;border-radius:6px;padding:14px 16px;color:#c2410c">'
+            return '<div class="laca-alert laca-alert--warning">'
                 . '⚠️ Cần cấu hình Tracker (Endpoint URL + Secret Key) tại <strong>Laca Admin → 📡 Tracker</strong> trước khi dùng Block Marketplace.'
                 . '</div>';
         }
 
         $data = self::getCatalogData();
         if ($data === null) {
-            return '<div style="background:#fef2f2;border:1px solid #fecaca;border-radius:6px;padding:14px 16px;color:#991b1b">'
+            return '<div class="laca-alert laca-alert--error">'
                 . '❌ Không lấy được danh mục block từ hub. Thử tải lại trang sau ít phút.'
                 . '</div>';
         }
@@ -112,19 +112,19 @@ class BlockMarketplace
         $nonce     = wp_create_nonce('laca_marketplace');
         ?>
         <div id="laca-marketplace-wrap">
-            <div style="background:#f0f9ff;border:1px solid #bae6fd;border-radius:6px;padding:14px 16px;margin:8px 0 16px">
-                <p style="margin:0 0 8px;font-weight:600;color:#0369a1">🛒 Block Marketplace</p>
-                <p style="margin:0;font-size:13px;color:#374151">Đây là danh sách các khối (block) giao diện có sẵn từ clients.lacadev.com mà bạn có thể thêm vào site của mình. Bấm <strong>"🧩 Yêu cầu đồng bộ"</strong> ở block muốn dùng — quản trị viên sẽ xem xét và duyệt, sau đó block sẽ tự động xuất hiện trong trình soạn thảo bài viết/trang của bạn. Nếu block đã có trên site và có bản mới hơn, nút <strong>"🔄 Cập nhật"</strong> sẽ hiện ra để bạn cập nhật ngay (không cần chờ duyệt lại).</p>
+            <div class="laca-alert laca-alert--info laca-mb-3">
+                <p class="laca-alert__title">🛒 Block Marketplace</p>
+                <p class="laca-alert__description">Đây là danh sách các khối (block) giao diện có sẵn từ clients.lacadev.com mà bạn có thể thêm vào site của mình. Bấm <strong>"🧩 Yêu cầu đồng bộ"</strong> ở block muốn dùng — quản trị viên sẽ xem xét và duyệt, sau đó block sẽ tự động xuất hiện trong trình soạn thảo bài viết/trang của bạn. Nếu block đã có trên site và có bản mới hơn, nút <strong>"🔄 Cập nhật"</strong> sẽ hiện ra để bạn cập nhật ngay (không cần chờ duyệt lại).</p>
             </div>
 
-            <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
+            <div class="laca-mp-filter-bar">
                 <button type="button" class="button button-primary laca-mp-filter" data-filter="all">Tất cả (<?php echo count($blocks); ?>)</button>
                 <button type="button" class="button laca-mp-filter" data-filter="installed">Đã cài</button>
                 <button type="button" class="button laca-mp-filter" data-filter="not-installed">Chưa cài</button>
                 <button type="button" class="button laca-mp-filter" data-filter="update">Có bản cập nhật</button>
             </div>
 
-            <div id="laca-mp-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px">
+            <div id="laca-mp-grid" class="laca-mp-grid">
                 <?php foreach ($blocks as $block): ?>
                     <?php
                     // Định danh gửi lên server (path đầy đủ nếu block nằm trong 1
@@ -144,18 +144,18 @@ class BlockMarketplace
                         $filterState = 'installed';
                     }
                     ?>
-                    <div class="laca-mp-card" data-filter-state="<?php echo esc_attr($filterState); ?>" style="border:1px solid #e2e4e7;border-radius:8px;overflow:hidden;background:#fff">
+                    <div class="laca-mp-card" data-filter-state="<?php echo esc_attr($filterState); ?>">
                         <?php if (!empty($block['preview'])): ?>
-                            <img src="data:image/png;base64,<?php echo esc_attr($block['preview']); ?>" style="width:100%;aspect-ratio:16/9;object-fit:cover;display:block" alt="">
+                            <img src="data:image/png;base64,<?php echo esc_attr($block['preview']); ?>" class="laca-mp-preview" alt="">
                         <?php else: ?>
-                            <div style="width:100%;aspect-ratio:16/9;background:#f0f0f1;display:flex;align-items:center;justify-content:center;color:#c3c4c7;font-size:12px">Không có preview</div>
+                            <div class="laca-mp-preview--empty">Không có preview</div>
                         <?php endif; ?>
-                        <div style="padding:12px 14px">
-                            <strong style="display:block;margin-bottom:4px"><?php echo esc_html((string) $block['title']); ?></strong>
+                        <div class="laca-mp-body">
+                            <strong class="laca-mp-title"><?php echo esc_html((string) $block['title']); ?></strong>
                             <?php if (!empty($block['description'])): ?>
-                                <p style="margin:0 0 8px;font-size:12px;color:#6b7280"><?php echo esc_html((string) $block['description']); ?></p>
+                                <p class="laca-mp-desc"><?php echo esc_html((string) $block['description']); ?></p>
                             <?php endif; ?>
-                            <p style="margin:0 0 10px;font-size:11px;color:#9ca3af">
+                            <p class="laca-mp-meta">
                                 Bản mới nhất: <code><?php echo esc_html((string) $block['version']); ?></code>
                                 <?php if ($isInstalled): ?>
                                     &middot; Đang dùng: <code><?php echo esc_html((string) $localVersion); ?></code>
@@ -163,25 +163,25 @@ class BlockMarketplace
                             </p>
 
                             <?php if ($hasUpdate): ?>
-                                <button type="button" class="button button-primary laca-mp-action-btn" data-block="<?php echo esc_attr($name); ?>" data-nonce="<?php echo esc_attr($nonce); ?>" style="width:100%">🔄 Cập nhật lên <?php echo esc_html((string) $block['version']); ?></button>
+                                <button type="button" class="button button-primary laca-mp-action-btn laca-mp-btn-full" data-block="<?php echo esc_attr($name); ?>" data-nonce="<?php echo esc_attr($nonce); ?>">🔄 Cập nhật lên <?php echo esc_html((string) $block['version']); ?></button>
                             <?php elseif ($isInstalled): ?>
-                                <span style="display:block;text-align:center;padding:6px;background:#f0fdf4;color:#166534;border-radius:4px;font-size:12px;font-weight:600">✅ Đã cài — mới nhất</span>
+                                <span class="laca-mp-status-banner laca-mp-status-banner--success">✅ Đã cài — mới nhất</span>
                             <?php elseif ($requestStatus === 'pending' || $requestStatus === 'auto_approved'): ?>
-                                <span style="display:block;text-align:center;padding:6px;background:#fffbeb;color:#92400e;border-radius:4px;font-size:12px;font-weight:600">⏳ Đang chờ duyệt</span>
+                                <span class="laca-mp-status-banner laca-mp-status-banner--pending">⏳ Đang chờ duyệt</span>
                             <?php elseif ($requestStatus === 'rejected'): ?>
-                                <div style="text-align:center;padding:6px;background:#fef2f2;color:#991b1b;border-radius:4px;font-size:12px;margin-bottom:6px">
+                                <div class="laca-mp-status-banner laca-mp-status-banner--rejected">
                                     ✕ Đã bị từ chối<?php echo !empty($requestInfo['reason']) ? ': ' . esc_html((string) $requestInfo['reason']) : ''; ?>
                                 </div>
-                                <button type="button" class="button laca-mp-action-btn" data-block="<?php echo esc_attr($name); ?>" data-nonce="<?php echo esc_attr($nonce); ?>" style="width:100%">Yêu cầu lại</button>
+                                <button type="button" class="button laca-mp-action-btn laca-mp-btn-full" data-block="<?php echo esc_attr($name); ?>" data-nonce="<?php echo esc_attr($nonce); ?>">Yêu cầu lại</button>
                             <?php else: ?>
-                                <button type="button" class="button laca-mp-action-btn" data-block="<?php echo esc_attr($name); ?>" data-nonce="<?php echo esc_attr($nonce); ?>" style="width:100%">🧩 Yêu cầu đồng bộ</button>
+                                <button type="button" class="button laca-mp-action-btn laca-mp-btn-full" data-block="<?php echo esc_attr($name); ?>" data-nonce="<?php echo esc_attr($nonce); ?>">🧩 Yêu cầu đồng bộ</button>
                             <?php endif; ?>
                         </div>
                     </div>
                 <?php endforeach; ?>
 
                 <?php if (empty($blocks)): ?>
-                    <p style="color:#888">Chưa có block nào trong danh mục.</p>
+                    <p class="laca-status-muted">Chưa có block nào trong danh mục.</p>
                 <?php endif; ?>
             </div>
         </div>

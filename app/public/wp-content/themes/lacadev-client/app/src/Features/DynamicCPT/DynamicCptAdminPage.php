@@ -83,13 +83,12 @@ class DynamicCptAdminPage
         $page_url  = admin_url('admin.php?page=' . self::MENU_SLUG);
         $generator = new DynamicCptTemplateGenerator();
 
-        $this->renderStyles();
         ?>
         <div class="wrap laca-cpt-wrap">
 
-            <div style="background:#f0f9ff;border:1px solid #bae6fd;border-radius:6px;padding:14px 16px;margin:8px 0 16px">
-                <p style="margin:0 0 8px;font-weight:600;color:#0369a1">🔧 Custom Post Types</p>
-                <p style="margin:0;font-size:13px;color:#374151">Trang này cho phép tạo và quản lý các loại nội dung riêng (ví dụ: Dự án, Sản phẩm, Dịch vụ...) mà không cần biết lập trình. Sau khi tạo, hệ thống sẽ tự sinh giao diện trang danh sách và trang chi tiết cho loại nội dung đó.</p>
+            <div class="laca-alert laca-alert--info laca-mb-3">
+                <p class="laca-alert__title">🔧 Custom Post Types</p>
+                <p class="laca-alert__description">Trang này cho phép tạo và quản lý các loại nội dung riêng (ví dụ: Dự án, Sản phẩm, Dịch vụ...) mà không cần biết lập trình. Sau khi tạo, hệ thống sẽ tự sinh giao diện trang danh sách và trang chi tiết cho loại nội dung đó.</p>
             </div>
 
             <div class="laca-cpt-header">
@@ -150,7 +149,7 @@ class DynamicCptAdminPage
                                 </div>
                                 <div class="laca-card-actions">
                                     <?php if (!$tpl['archive'] || !$tpl['single']) : ?>
-                                        <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" style="display:contents">
+                                        <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" class="laca-contents">
                                             <input type="hidden" name="action"    value="laca_cpt_regen">
                                             <input type="hidden" name="cpt_slug"  value="<?php echo esc_attr($cpt_slug); ?>">
                                             <?php wp_nonce_field(self::NONCE_ACTION, self::NONCE_FIELD); ?>
@@ -178,7 +177,7 @@ class DynamicCptAdminPage
                                         <span class="dashicons dashicons-edit"></span>
                                     </a>
                                     <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>"
-                                          style="display:contents"
+                                          class="laca-contents"
                                           onsubmit="return confirm('<?php echo esc_js(__('Xoá post type và file template?', 'laca')); ?>')">
                                         <input type="hidden" name="action"    value="laca_cpt_delete">
                                         <input type="hidden" name="cpt_index" value="<?php echo absint($idx); ?>">
@@ -423,120 +422,7 @@ class DynamicCptAdminPage
 
     private function renderStyles(): void
     {
-        ?>
-        <style>
-        /* ── Layout ──────────────────────────────────────────────────── */
-        .laca-cpt-wrap { max-width: 1160px; padding-top: 12px; }
-
-        .laca-cpt-header { margin-bottom: 20px; }
-        .laca-cpt-header h1 { margin: 0 0 4px; font-size: 20px; font-weight: 600; color: #1d2327; }
-        .laca-cpt-subtitle { margin: 0; color: #646970; font-size: 13px; }
-
-        .laca-cpt-layout { display: flex; gap: 24px; align-items: flex-start; flex-wrap: wrap; }
-        .laca-cpt-list-col { flex: 1 1 420px; }
-        .laca-cpt-form-col { flex: 0 0 400px; background: #fff; border: 1px solid #e2e4e7; border-radius: 6px; overflow: hidden; }
-
-        /* ── Notice ──────────────────────────────────────────────────── */
-        .laca-notice { padding: 10px 14px; border-radius: 4px; margin-bottom: 16px; font-size: 13px; }
-        .laca-notice--success { background: #edfaef; border-left: 3px solid #00a32a; color: #1d7a34; }
-        .laca-notice--error   { background: #fdf3f3; border-left: 3px solid #d63638; color: #8a2020; }
-
-        /* ── Empty state ─────────────────────────────────────────────── */
-        .laca-empty-state { text-align: center; padding: 48px 24px; background: #fff; border: 1px dashed #c3c4c7; border-radius: 6px; color: #646970; }
-        .laca-empty-icon { font-size: 36px; display: block; width: 36px; height: 36px; margin: 0 auto 12px; color: #c3c4c7; }
-        .laca-empty-state p { margin: 0 0 4px; font-size: 14px; color: #3c434a; }
-        .laca-empty-hint { font-size: 12px; }
-
-        /* ── CPT Cards ───────────────────────────────────────────────── */
-        .laca-cpt-cards { display: flex; flex-direction: column; gap: 8px; }
-        .laca-cpt-card { display: flex; align-items: center; gap: 12px; background: #fff; border: 1px solid #e2e4e7; border-radius: 6px; padding: 12px 14px; transition: border-color .15s, box-shadow .15s; }
-        .laca-cpt-card:hover { border-color: #c3c4c7; box-shadow: 0 1px 4px rgba(0,0,0,.06); }
-        .laca-cpt-card--active { border-color: #2271b1; box-shadow: 0 0 0 1px #2271b1; }
-
-        .laca-card-icon { width: 36px; height: 36px; background: #f0f6fc; border-radius: 6px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-        .laca-card-icon .dashicons { color: #2271b1; width: 20px; height: 20px; font-size: 20px; }
-
-        .laca-card-body { flex: 1; min-width: 0; }
-        .laca-card-title { font-size: 13px; font-weight: 600; color: #1d2327; display: flex; align-items: center; gap: 8px; margin-bottom: 5px; }
-        .laca-card-slug { font-size: 11px; font-family: Consolas, monospace; background: #f0f0f1; border: 1px solid #e2e4e7; border-radius: 3px; padding: 1px 5px; color: #50575e; font-weight: 400; }
-        .laca-card-meta { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
-
-        .laca-badge { font-size: 11px; background: #f0f6fc; border: 1px solid #c5d9ed; color: #2271b1; border-radius: 3px; padding: 1px 6px; }
-        .laca-tpl-status { font-size: 11px; border-radius: 3px; padding: 1px 6px; border: 1px solid; }
-        .laca-tpl-ok   { background: #edfaef; border-color: #a7ddb0; color: #1d7a34; }
-        .laca-tpl-miss { background: #fdf3f3; border-color: #f5b8b8; color: #8a2020; }
-
-        .laca-card-actions { display: flex; gap: 4px; flex-shrink: 0; }
-
-        /* ── Icon buttons ────────────────────────────────────────────── */
-        .laca-btn-icon { display: flex; align-items: center; justify-content: center; width: 30px; height: 30px; border-radius: 4px; border: 1px solid #e2e4e7; background: #fff; cursor: pointer; color: #646970; transition: all .15s; }
-        .laca-btn-icon:hover { background: #f0f0f1; border-color: #c3c4c7; color: #3c434a; }
-        .laca-btn-icon--danger:hover { background: #fdf3f3; border-color: #f5b8b8; color: #d63638; }
-        .laca-btn-icon--regen { color: #996800; border-color: #f0d061; background: #fffaeb; }
-        .laca-btn-icon--regen:hover { background: #fef3cd; border-color: #dab600; }
-        .laca-btn-icon--meta-ok { color: #1d7a34; border-color: #a7ddb0; background: #edfaef; }
-        .laca-btn-icon--meta-ok:hover { background: #d6f5dc; border-color: #00a32a; }
-        .laca-btn-icon .dashicons { font-size: 16px; width: 16px; height: 16px; }
-
-        /* ── Form ────────────────────────────────────────────────────── */
-        .laca-form-header { display: flex; align-items: center; gap: 8px; padding: 14px 18px; border-bottom: 1px solid #e2e4e7; font-size: 13px; font-weight: 600; color: #1d2327; }
-        .laca-form-header .dashicons { color: #2271b1; width: 18px; height: 18px; font-size: 18px; }
-        .laca-cancel-link { margin-left: auto; font-size: 12px; font-weight: 400; color: #646970; text-decoration: none; }
-        .laca-cancel-link:hover { color: #d63638; }
-
-        .laca-form-section { padding: 16px 18px; border-bottom: 1px solid #f0f0f1; }
-        .laca-form-section:last-of-type { border-bottom: none; }
-
-        .laca-section-label { margin: 0 0 12px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .5px; color: #8c8f94; }
-        .laca-section-label--sm { margin: 0; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .5px; color: #8c8f94; }
-
-        .laca-field { margin-bottom: 12px; }
-        .laca-field:last-child { margin-bottom: 0; }
-        .laca-field label { display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; color: #3c434a; margin-bottom: 5px; }
-        .laca-field input[type=text] { width: 100%; box-sizing: border-box; height: 34px; padding: 0 10px; border: 1px solid #c3c4c7; border-radius: 4px; font-size: 13px; color: #1d2327; background: #fff; transition: border-color .1s, box-shadow .1s; }
-        .laca-field input[type=text]:focus { border-color: #2271b1; box-shadow: 0 0 0 1px #2271b1; outline: none; }
-        .laca-field input[type=text]::placeholder { color: #b5bcc2; }
-        .laca-readonly { background: #f9f9f9 !important; color: #8c8f94 !important; cursor: not-allowed; }
-
-        .laca-field-row { display: flex; gap: 10px; }
-        .laca-field-row--2col .laca-field { flex: 1; min-width: 0; }
-        .laca-field-hint { font-size: 11px; font-weight: 400; color: #8c8f94; margin-left: 2px; }
-        .laca-field-note { font-size: 11px; color: #646970; margin-top: 3px; display: block; }
-        .laca-req { color: #d63638; font-size: 12px; }
-
-        /* ── Icon preview ────────────────────────────────────────────── */
-        .laca-field--icon-row .laca-icon-input-wrap { display: flex; align-items: center; gap: 8px; }
-        .laca-icon-preview { width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; background: #f0f6fc; border: 1px solid #c5d9ed; border-radius: 4px; color: #2271b1; font-size: 18px; flex-shrink: 0; }
-        .laca-field--icon-row input[type=text] { flex: 1; }
-        .laca-dashicons-link { font-size: 11px; font-weight: 400; margin-left: auto; }
-
-        /* ── Checkboxes ──────────────────────────────────────────────── */
-        .laca-cb-group { display: flex; flex-wrap: wrap; gap: 6px; }
-        .laca-cb-group--builtin { flex-direction: column; gap: 8px; margin-bottom: 4px; }
-        .laca-cb-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: #3c434a; cursor: pointer; padding: 5px 10px; background: #f6f7f7; border: 1px solid #e2e4e7; border-radius: 4px; transition: all .1s; user-select: none; }
-        .laca-cb-item:hover { background: #f0f6fc; border-color: #c5d9ed; }
-        .laca-cb-item input[type=checkbox]:checked ~ span { color: #2271b1; }
-        .laca-cb-item--sm { padding: 3px 8px; font-size: 11px; }
-        .laca-cb-desc { font-size: 11px; color: #8c8f94; font-style: normal; margin-left: 2px; }
-
-        /* ── Custom taxonomy ─────────────────────────────────────────── */
-        .laca-custom-tax-header { display: flex; align-items: center; justify-content: space-between; margin: 14px 0 8px; }
-        .laca-btn-add { display: flex; align-items: center; gap: 4px; font-size: 12px; padding: 4px 10px; border: 1px solid #c3c4c7; border-radius: 4px; background: #fff; color: #2271b1; cursor: pointer; line-height: 1.4; transition: all .1s; }
-        .laca-btn-add:hover { background: #f0f6fc; border-color: #2271b1; }
-        .laca-btn-add .dashicons { font-size: 14px; width: 14px; height: 14px; }
-
-        .laca-tax-row { background: #f9fafb; border: 1px solid #e2e4e7; border-radius: 4px; padding: 10px; margin-bottom: 8px; }
-        .laca-tax-fields { display: flex; flex-direction: column; gap: 6px; margin-bottom: 8px; }
-        .laca-tax-fields input[type=text] { height: 30px; padding: 0 8px; border: 1px solid #c3c4c7; border-radius: 4px; font-size: 12px; color: #1d2327; background: #fff; width: 100%; box-sizing: border-box; }
-        .laca-tax-fields input[type=text]:focus { border-color: #2271b1; box-shadow: 0 0 0 1px #2271b1; outline: none; }
-        .laca-tax-fields input[type=text]::placeholder { color: #b5bcc2; }
-        .laca-tax-controls { display: flex; align-items: center; justify-content: space-between; }
-
-        /* ── Form footer ─────────────────────────────────────────────── */
-        .laca-form-footer { padding: 14px 18px; background: #f9fafb; border-top: 1px solid #e2e4e7; }
-        .laca-form-footer .button-primary { height: 36px; padding: 0 20px; font-size: 13px; }
-        </style>
-        <?php
+        // Styles moved to resources/styles/admin/skins/_self-authored.scss
     }
 
     private function renderScripts(int $initialTaxCount): void

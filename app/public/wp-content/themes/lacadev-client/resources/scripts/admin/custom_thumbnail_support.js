@@ -14,20 +14,12 @@ const mediaGridObserver = new MutationObserver( ( mutations ) => {
 			}
 
 			// execute only if we have a class
-			if ( element.className ) {
-				// find all 'attachments'
-				if ( element.className.indexOf( 'attachment' ) !== -1 ) {
-					// find attachment inner (which contains subtype info)
-					const attachmentPreview = element.querySelector(
-						'.attachment-preview'
-					);
-					if ( attachmentPreview ) {
-						// only run for SVG elements
-						if (
-							attachmentPreview.className.indexOf(
-								'subtype-svg+xml'
-							) !== -1
-						) {
+			if ( element.classList && element.classList.contains( 'attachment' ) ) {
+				// find attachment inner (which contains subtype info)
+				const attachmentPreview = element.querySelector(
+					'.attachment-preview'
+				);
+				if ( attachmentPreview && attachmentPreview.classList && attachmentPreview.classList.contains( 'subtype-svg+xml' ) ) {
 							( function ( el ) {
 								const formData = new FormData();
 								formData.append(
@@ -74,8 +66,6 @@ const mediaGridObserver = new MutationObserver( ( mutations ) => {
 									);
 							} )( element );
 						}
-					}
-				}
 			}
 		}
 	}

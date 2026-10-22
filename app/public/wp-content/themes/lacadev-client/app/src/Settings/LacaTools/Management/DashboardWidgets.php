@@ -93,7 +93,7 @@ class DashboardWidgets
             </div>
         </div>
         <?php if (!post_type_exists('project')) : ?>
-            <p style="text-align:center;color:#999;font-size:12px;margin-top:10px;">Chưa có dữ liệu dự án.</p>
+            <p class="laca-widget-empty">Chưa có dữ liệu dự án.</p>
         <?php endif; ?>
         <?php
     }
@@ -229,7 +229,7 @@ class DashboardWidgets
                 </span>
             </li>
         </ul>
-        <div class="hub-section-title" style="margin-top: 15px; font-size: 11px;">Mẹo: Dọn dẹp media không dùng giúp web nhẹ hơn.</div>
+        <div class="hub-section-title laca-scan-info">Mẹo: Dọn dẹp media không dùng giúp web nhẹ hơn.</div>
         <?php
     }
 
@@ -416,7 +416,7 @@ class DashboardWidgets
                 <option value="laca-new">Mới nhất</option>
                 <option value="laca-updated">Cập nhật</option>
                 <option value="laca-views">Xem nhiều</option>
-                <option value="laca-health" <?php echo ($health_count > 0) ? 'style="color:#d63638;font-weight:700;"' : ''; ?>><?php echo esc_html($health_label); ?></option>
+                <option value="laca-health" class="<?php echo ($health_count > 0) ? 'laca-status-danger' : ''; ?>"><?php echo esc_html($health_label); ?></option>
                 <?php if ($seo_meta_key) : ?><option value="laca-seo">Cần tối ưu SEO</option><?php endif; ?>
             </select>
         </div>
@@ -426,7 +426,7 @@ class DashboardWidgets
             <ul class="laca-post-list laca-paged-list">
                 <?php if ($new_posts->have_posts()) : foreach ($new_posts->posts as $idx => $p) :
                     $pt_obj = get_post_type_object($p->post_type); ?>
-                    <li class="laca-list-item" <?php echo ($idx >= $limit) ? 'style="display:none;"' : ''; ?>>
+                    <li class="laca-list-item" <?php echo ($idx >= $limit) ? 'style="display:none; /* động */"' : ''; ?>>
                         <div class="laca-post-info">
                             <a href="<?php echo esc_url(get_edit_post_link($p->ID)); ?>" class="laca-post-link"><?php echo esc_html($this->decodeTitleForDisplay($p->post_title)); ?></a>
                             <span class="laca-post-meta"><span class="laca-badge badge-date">Mới</span> <?php echo esc_html($pt_obj ? $pt_obj->labels->singular_name : $p->post_type); ?> · <?php echo esc_html(get_the_date('d/m/Y', $p->ID)); ?></span>
@@ -449,7 +449,7 @@ class DashboardWidgets
             <ul class="laca-post-list laca-paged-list">
                 <?php if ($updated_posts) : foreach ($updated_posts as $idx => $upost) :
                     $pt_obj = get_post_type_object($upost->post_type); ?>
-                    <li class="laca-list-item" <?php echo ($idx >= $limit) ? 'style="display:none;"' : ''; ?>>
+                    <li class="laca-list-item" <?php echo ($idx >= $limit) ? 'style="display:none; /* động */"' : ''; ?>>
                         <div class="laca-post-info">
                             <a href="<?php echo esc_url(get_edit_post_link($upost->ID)); ?>" class="laca-post-link"><?php echo esc_html($this->decodeTitleForDisplay($upost->post_title)); ?></a>
                             <span class="laca-post-meta"><span class="laca-badge badge-date">Cập nhật</span> <?php echo esc_html($pt_obj ? $pt_obj->labels->singular_name : $upost->post_type); ?> · <?php echo esc_html(mysql2date('d/m/Y', $upost->post_modified)); ?></span>
@@ -469,18 +469,18 @@ class DashboardWidgets
 
         <!-- Tab: Nội dung lỗi -->
         <div id="laca-health" class="laca-tab-content" data-per-page="<?php echo $limit; ?>">
-            <?php if ($last_scan) : ?><div class="laca-scan-info" style="font-size:10px;color:#888;margin-bottom:8px;padding-left:4px;">🕒 Quét toàn diện gần nhất: <?php echo date_i18n('H:i d/m/Y', strtotime($last_scan)); ?></div><?php endif; ?>
+            <?php if ($last_scan) : ?><div class="laca-scan-info">🕒 Quét toàn diện gần nhất: <?php echo date_i18n('H:i d/m/Y', strtotime($last_scan)); ?></div><?php endif; ?>
             <ul class="laca-post-list laca-paged-list">
                 <?php if (!empty($health_raw)) : foreach ($health_raw as $idx => $issue) :
                     $pt_obj = get_post_type_object($issue['post_type']); ?>
-                    <li class="laca-list-item" <?php echo ($idx >= $limit) ? 'style="display:none;"' : ''; ?>>
+                    <li class="laca-list-item" <?php echo ($idx >= $limit) ? 'style="display:none; /* động */"' : ''; ?>>
                         <div class="laca-post-info">
                             <a href="<?php echo esc_url(get_edit_post_link($issue['ID'])); ?>" class="laca-post-link"><?php echo esc_html($this->decodeTitleForDisplay($issue['post_title'])); ?></a>
                             <span class="laca-post-meta">
                                 <?php foreach ((array) ($issue['errors'] ?? []) as $err_label) : ?>
                                     <span class="laca-issue-tag"><?php echo esc_html($err_label); ?></span>
                                 <?php endforeach; ?>
-                                <span style="font-size:11px;"><?php echo esc_html($pt_obj ? $pt_obj->labels->singular_name : $issue['post_type']); ?></span>
+                                <span class="laca-note-date"><?php echo esc_html($pt_obj ? $pt_obj->labels->singular_name : $issue['post_type']); ?></span>
                             </span>
                         </div>
                     </li>
@@ -502,7 +502,7 @@ class DashboardWidgets
                 <?php if ($view_posts->have_posts()) : foreach ($view_posts->posts as $idx => $vp) :
                     $views  = get_post_meta($vp->ID, self::VIEW_COUNT_META, true) ?: 0;
                     $pt_obj = get_post_type_object($vp->post_type); ?>
-                    <li class="laca-list-item" <?php echo ($idx >= $limit) ? 'style="display:none;"' : ''; ?>>
+                    <li class="laca-list-item" <?php echo ($idx >= $limit) ? 'style="display:none; /* động */"' : ''; ?>>
                         <div class="laca-post-info">
                             <a href="<?php echo esc_url(get_edit_post_link($vp->ID)); ?>" class="laca-post-link"><?php echo esc_html($this->decodeTitleForDisplay($vp->post_title)); ?></a>
                             <span class="laca-post-meta"><span class="laca-badge badge-views"><?php echo (int) $views; ?> xem</span> <?php echo esc_html($pt_obj ? $pt_obj->labels->singular_name : $vp->post_type); ?></span>
@@ -527,7 +527,7 @@ class DashboardWidgets
                 <?php if ($low_seo_posts && $low_seo_posts->have_posts()) : foreach ($low_seo_posts->posts as $idx => $sp) :
                     $score  = get_post_meta($sp->ID, $seo_meta_key, true);
                     $pt_obj = get_post_type_object($sp->post_type); ?>
-                    <li class="laca-list-item" <?php echo ($idx >= $limit) ? 'style="display:none;"' : ''; ?>>
+                    <li class="laca-list-item" <?php echo ($idx >= $limit) ? 'style="display:none; /* động */"' : ''; ?>>
                         <div class="laca-post-info">
                             <a href="<?php echo esc_url(get_edit_post_link($sp->ID)); ?>" class="laca-post-link"><?php echo esc_html($this->decodeTitleForDisplay($sp->post_title)); ?></a>
                             <span class="laca-post-meta"><span class="laca-badge badge-seo"><?php echo (int) $score; ?>đ</span> <?php echo esc_html($pt_obj ? $pt_obj->labels->singular_name : $sp->post_type); ?> · Cần tối ưu SEO</span>

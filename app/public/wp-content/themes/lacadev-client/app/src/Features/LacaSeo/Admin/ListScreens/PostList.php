@@ -102,37 +102,6 @@ class PostList
                 };
             });
             </script>
-            <style>
-            .column-laca_seo { width: 140px; }
-            .column-laca_seo_title { width: 180px; }
-            .column-laca_seo_desc { width: 220px; }
-            .laca-list-score {
-                display: inline-flex;
-                align-items: center;
-                gap: 4px;
-                font-weight: 700;
-                font-size: 12px;
-                padding: 2px 6px;
-                border-radius: 4px;
-            }
-            .laca-list-score--good { background: #dcfce7; color: #15803d; }
-            .laca-list-score--ok { background: #fef3c7; color: #b45309; }
-            .laca-list-score--bad { background: #fee2e2; color: #b91c1c; }
-            .laca-list-badge {
-                display: inline-block;
-                font-size: 10px;
-                padding: 1px 4px;
-                border-radius: 3px;
-                background: #f1f5f9;
-                color: #475569;
-                font-weight: 600;
-                margin-top: 3px;
-                margin-right: 2px;
-            }
-            .laca-list-badge--pillar { background: #e0e7ff; color: #3730a3; }
-            .laca-list-badge--noindex { background: #fee2e2; color: #991b1b; }
-            .laca-list-kw { font-size: 12px; color: #475569; margin-top: 4px; word-break: break-word; }
-            </style>
             <?php
         });
     }
