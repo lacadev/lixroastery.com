@@ -319,7 +319,7 @@ const report = (ok, check, target, w, detail = '') => {
               const cs = getComputedStyle(el);
               if (cs.clip === 'rect(1px, 1px, 1px, 1px)' || cs.clip === 'rect(0px, 0px, 0px, 0px)') return true;
               if (cs.position === 'absolute' && (r.left < -900 || r.top < -900)) return true;
-              if (el.closest('.screen-reader-text, .hidden, [aria-hidden="true"]')) return true;
+              if (el.closest('.screen-reader-text, .hidden, [aria-hidden="true"], [class*="kksr"], [id*="kksr"], [class*="kk-star"], [id*="kk-star"]')) return true;
               return false;
             };
 

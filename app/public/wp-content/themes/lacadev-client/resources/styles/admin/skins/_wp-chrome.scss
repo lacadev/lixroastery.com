@@ -1,0 +1,241 @@
+// -------------------------------------------------------------
+// Skin: WordPress Chrome (Admin Menu, Admin Bar, Base Layout)
+// Chakra UI v3
+// -------------------------------------------------------------
+
+// Nền trang & typography cơ bản
+#wpwrap,
+#wpcontent,
+#wpbody,
+#wpbody-content {
+  background-color: var(--laca-bg-subtle);
+  color: var(--laca-fg);
+  font-family: var(--laca-font);
+}
+
+body.wp-admin {
+  background-color: var(--laca-bg-subtle);
+  font-family: var(--laca-font) !important; // Cần thiết để đè font WP core và Quicksand
+  font-size: var(--laca-font-size-sm);
+  color: var(--laca-fg);
+}
+
+// Sidebar (Sáng — Chakra light palette)
+#adminmenuback,
+#adminmenuwrap,
+#adminmenu {
+  background-color: var(--laca-bg) !important; // Đè background mặc định WP
+  border-right: 1px solid var(--laca-border) !important; // Đè border WP
+}
+
+#adminmenu {
+  margin: 0;
+  padding: 8px 0;
+
+  li.menu-top {
+    margin: 2px 8px;
+    border-radius: var(--laca-radius-l2);
+    transition: var(--laca-transition);
+
+    > a {
+      color: var(--laca-fg-muted) !important;
+      font-family: var(--laca-font);
+      font-size: var(--laca-font-size-sm);
+      font-weight: 500;
+      padding: 6px 12px;
+      border-radius: var(--laca-radius-l2);
+      transition: var(--laca-transition);
+    }
+
+    .wp-menu-image::before {
+      color: var(--laca-fg-subtle) !important;
+      transition: var(--laca-transition);
+    }
+
+    &:hover,
+    &.opensub > a.menu-top {
+      background-color: var(--laca-bg-muted) !important;
+
+      > a {
+        color: var(--laca-fg) !important;
+      }
+
+      .wp-menu-image::before {
+        color: var(--laca-fg) !important;
+      }
+    }
+
+    // Mục đang chọn
+    &.current,
+    &.wp-has-current-submenu {
+      background-color: var(--laca-accent-subtle) !important;
+
+      > a {
+        color: var(--laca-accent-fg) !important;
+        font-weight: 600;
+      }
+
+      .wp-menu-image::before {
+        color: var(--laca-accent) !important;
+      }
+    }
+  }
+
+  // Submenu
+  .wp-submenu {
+    background-color: var(--laca-bg) !important;
+    border: 1px solid var(--laca-border) !important;
+    border-radius: var(--laca-radius-l2);
+    box-shadow: var(--laca-shadow-md);
+    padding: 4px 0;
+
+    li {
+      margin: 1px 4px;
+
+      a {
+        color: var(--laca-fg-muted) !important;
+        font-family: var(--laca-font);
+        font-size: 13px;
+        padding: 6px 12px;
+        border-radius: calc(var(--laca-radius-l2) - 1px);
+        transition: var(--laca-transition);
+
+        &:hover {
+          background-color: var(--laca-bg-muted) !important;
+          color: var(--laca-fg) !important;
+        }
+      }
+
+      &.current a {
+        background-color: var(--laca-accent-subtle) !important;
+        color: var(--laca-accent-fg) !important;
+        font-weight: 500;
+      }
+    }
+  }
+
+  // Separator
+  li.wp-menu-separator {
+    height: 1px;
+    background-color: var(--laca-border) !important;
+    margin: 8px 12px !important;
+    border: none !important;
+  }
+
+  // Update badges
+  .awaiting-mod,
+  .update-plugins {
+    background-color: var(--laca-danger-bg) !important;
+    color: var(--laca-danger) !important;
+    border: 1px solid var(--laca-danger-border);
+    border-radius: var(--laca-radius-full);
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 1;
+    padding: 3px 6px;
+    box-shadow: none !important;
+  }
+}
+
+// Folded state (sidebar thu gọn)
+body.folded #adminmenu {
+  li.menu-top.opensub > a.menu-top,
+  li.menu-top:hover {
+    background-color: var(--laca-bg-muted) !important;
+  }
+
+  .wp-submenu.sub-open,
+  .opensub .wp-submenu {
+    background-color: var(--laca-bg) !important;
+    border: 1px solid var(--laca-border) !important;
+    box-shadow: var(--laca-shadow-md);
+    left: 46px;
+  }
+}
+
+// Mobile responsive sidebar (< 782px)
+@media (max-width: 781.98px) {
+  #adminmenuwrap {
+    background-color: var(--laca-bg) !important;
+    border-right: 1px solid var(--laca-border) !important;
+  }
+
+  #adminmenu {
+    background-color: var(--laca-bg) !important;
+  }
+}
+
+// Admin Bar (Đậm màu tối chuẩn Chakra: --laca-fg)
+#wpadminbar {
+  background-color: var(--laca-fg) !important;
+  border-bottom: 1px solid var(--laca-border);
+
+  .ab-item,
+  .ab-empty-item,
+  #wp-toolbar span.ab-label,
+  .ab-icon::before,
+  a.ab-item,
+  div.ab-item {
+    color: var(--laca-bg-emphasized) !important;
+    font-family: var(--laca-font);
+  }
+
+  .quicklinks > ul > li:hover > .ab-item,
+  .ab-top-menu > li:hover > .ab-item,
+  .ab-top-menu > li > .ab-item:focus {
+    background-color: var(--laca-fg-hover) !important;
+    color: var(--laca-bg) !important;
+  }
+
+  .ab-top-menu > .menupop > .ab-sub-wrapper {
+    background-color: var(--laca-fg) !important;
+    border: 1px solid var(--laca-border);
+    box-shadow: var(--laca-shadow-md);
+  }
+
+  .ab-submenu .ab-item:hover {
+    background-color: var(--laca-fg-hover) !important;
+    color: var(--laca-bg) !important;
+  }
+}
+
+// Page Titles & Actions
+.wrap {
+  h1:first-child,
+  .wp-heading-inline {
+    font-family: var(--laca-font);
+    font-size: var(--laca-font-size-xl);
+    font-weight: 600;
+    line-height: var(--laca-line-height-xl);
+    color: var(--laca-fg);
+  }
+
+  .page-title-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: var(--laca-height-sm);
+    padding: 0 var(--laca-space-3);
+    font-family: var(--laca-font);
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--laca-fg);
+    background-color: var(--laca-bg);
+    border: 1px solid var(--laca-border);
+    border-radius: var(--laca-radius-l2);
+    text-decoration: none;
+    transition: var(--laca-transition);
+    top: 0;
+
+    &:hover {
+      background-color: var(--laca-bg-muted);
+      border-color: var(--laca-border-emphasized);
+      color: var(--laca-fg);
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--laca-focus-ring);
+      outline-offset: 2px;
+    }
+  }
+}

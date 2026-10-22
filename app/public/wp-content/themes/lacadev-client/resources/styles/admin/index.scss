@@ -20,6 +20,9 @@
 @use "../theme/base/fonts";
 @use "../theme/abstracts/variables.scss" as *;
 
+@use "skins/wp-chrome";
+@use "skins/wp-core";
+
 @use "admin-column-style";
 @use "admin-dashboard";
 @use "admin-custom";
