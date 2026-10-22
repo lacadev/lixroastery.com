@@ -87,7 +87,25 @@ class Router
             add_rewrite_rule($base . '([^/]+?)-sitemap([0-9]+)?\\.xml$', 'index.php?laca_sitemap=$matches[1]&laca_sitemap_n=$matches[2]', 'top');
             add_rewrite_rule($base . '([a-z]+)?-?sitemap\\.xsl$', 'index.php?laca_xsl=$matches[1]', 'top');
             add_rewrite_rule($base . 'main-sitemap\\.xsl$', 'index.php?laca_xsl=main', 'top');
+            add_action('wp_loaded', [$this, 'maybeFlushRewriteRules']);
         }
+    }
+
+    /**
+     * Tắt Rank Math không tự flush rewrite ⇒ rule của Laca chưa được lưu và sitemap_index.xml trả 404
+     * (đã xảy ra trên production). Tự flush 1 lần khi thiếu rule, khoá bằng transient để không flush mỗi request.
+     */
+    public function maybeFlushRewriteRules(): void
+    {
+        $rules = get_option('rewrite_rules');
+        if (!is_array($rules) || isset($rules[self::getSitemapBase() . 'sitemap_index\\.xml$'])) {
+            return;
+        }
+        if (get_transient('laca_seo_sitemap_rewrite_flushed')) {
+            return;
+        }
+        set_transient('laca_seo_sitemap_rewrite_flushed', 1, HOUR_IN_SECONDS);
+        flush_rewrite_rules(false);
     }
 
     /**

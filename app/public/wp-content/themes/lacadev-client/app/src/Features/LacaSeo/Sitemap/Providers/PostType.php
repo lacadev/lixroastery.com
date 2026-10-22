@@ -31,17 +31,10 @@ class PostType implements Provider
             return false;
         }
 
-        // When Rank Math is active, respect Rank Math's stored sitemap settings for post types
-        if (Helper::isRankMathActive() && function_exists('rank_math')) {
-            $rm_enabled = \RankMath\Helper::get_settings("sitemap.pt_{$type}_sitemap");
-            if (!$rm_enabled) {
-                return false;
-            }
-        } else {
-            $enabled = Settings::get("sitemap.pt_{$type}_sitemap", ($type === 'attachment' ? 'off' : 'on'));
-            if ($enabled !== 'on') {
-                return false;
-            }
+        // Chỉ đọc cấu hình Laca để sitemap trước và sau cutover giống nhau.
+        $enabled = Settings::get("sitemap.pt_{$type}_sitemap", ($type === 'attachment' ? 'off' : 'on'));
+        if ($enabled !== 'on') {
+            return false;
         }
 
         if ($type === 'attachment' && Settings::get('general.attachment_redirect_urls', 'on') === 'on') {

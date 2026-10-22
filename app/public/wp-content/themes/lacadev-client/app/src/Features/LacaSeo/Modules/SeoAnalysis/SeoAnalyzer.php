@@ -134,7 +134,7 @@ class SeoAnalyzer
 
     public function testSitemaps(): array
     {
-        $active = Modules::isActive('sitemap') || (function_exists('rank_math') && \RankMath\Helper::is_module_active('sitemap'));
+        $active = Modules::isActive('sitemap');
         return [
             'status'  => $active ? 'ok' : 'fail',
             'message' => $active
@@ -145,7 +145,7 @@ class SeoAnalyzer
 
     public function testAutoUpdate(): array
     {
-        $enabled = (bool) get_option('rank_math_auto_update', false) || (bool) get_option('laca_seo_auto_update', true);
+        $enabled = (bool) get_option('laca_seo_auto_update', true);
         return [
             'status'  => $enabled ? 'ok' : 'warning',
             'message' => $enabled

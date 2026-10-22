@@ -57,8 +57,15 @@ $notFoundStats = \App\Features\LacaSeo\Modules\NotFoundMonitor\DB::getStats();
             </div>
             <div class="laca-seo-stat-card__info">
                 <span class="laca-seo-stat-card__label">Sơ đồ Sitemap XML</span>
-                <strong class="laca-seo-stat-card__value"><?php echo $rm_active ? 'Rank Math' : 'Sắp có (Phase 3)'; ?></strong>
-                <small><?php echo $rm_active ? '<a href="' . esc_url(home_url('/sitemap_index.xml')) . '" target="_blank">Đang dùng sitemap Rank Math &rarr;</a>' : 'Laca Sitemap XML chuyên sâu (Phase 3)'; ?></small>
+                <?php $laca_sitemap_on = Modules::isActive('sitemap'); ?>
+                <strong class="laca-seo-stat-card__value"><?php echo esc_html($rm_active ? 'Rank Math' : ($laca_sitemap_on ? 'Đang hoạt động' : 'Đang tắt')); ?></strong>
+                <small>
+                    <?php if ($rm_active || $laca_sitemap_on): ?>
+                        <a href="<?php echo esc_url(home_url('/sitemap_index.xml')); ?>" target="_blank" rel="noopener"><?php echo esc_html($rm_active ? 'Đang dùng sitemap Rank Math' : 'Xem sitemap_index.xml'); ?> &rarr;</a>
+                    <?php else: ?>
+                        Bật module Sơ đồ trang XML bên dưới
+                    <?php endif; ?>
+                </small>
             </div>
         </div>
 
@@ -108,15 +115,11 @@ $notFoundStats = \App\Features\LacaSeo\Modules\NotFoundMonitor\DB::getStats();
                 <?php
                 $is_active = Modules::isActive($mod_id);
                 $is_core = !empty($mod['core']);
-                $phase = $mod['phase'] ?? 1;
-                $is_future = ($phase > 1);
                 ?>
-                <div class="laca-seo-module-card<?php echo $is_active ? ' is-active' : ''; ?><?php echo $is_future ? ' is-future' : ''; ?>">
+                <div class="laca-seo-module-card<?php echo $is_active ? ' is-active' : ''; ?>">
                     <div class="laca-seo-module-card__header">
                         <h3 class="laca-seo-module-card__title"><?php echo esc_html($mod['title']); ?></h3>
-                        <?php if ($is_future): ?>
-                            <span class="laca-seo-badge laca-seo-badge--subtle">Sắp có (Phase <?php echo esc_html((string) $phase); ?>)</span>
-                        <?php elseif ($is_core): ?>
+                        <?php if ($is_core): ?>
                             <span class="laca-seo-badge laca-seo-badge--core">Cốt lõi</span>
                         <?php else: ?>
                             <label class="laca-seo-switch">

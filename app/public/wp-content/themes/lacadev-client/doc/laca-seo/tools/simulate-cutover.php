@@ -595,7 +595,8 @@ foreach ($sampleUrls as $label => $path) {
             if (!$lNode || normalizeNodeCutover($rmNode) !== normalizeNodeCutover($lNode)) {
                 $type = $rmNode['@type'] ?? 'Unknown';
                 if (is_array($type)) $type = implode('/', $type);
-                $diffs[] = "JSON-LD node {$idx} ({$type}) diff";
+                $diffs[] = "JSON-LD node {$idx} ({$type}) diff"
+                    . (getenv('LACA_DEBUG') ? "\n      RM  : " . json_encode($rmNode, JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE) . "\n      Laca: " . json_encode($lNode, JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE) : '');
             }
         }
     }

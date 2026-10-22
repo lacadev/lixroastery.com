@@ -29,17 +29,11 @@ class Taxonomy implements Provider
             return false;
         }
 
-        if (Helper::isRankMathActive() && function_exists('rank_math')) {
-            $rm_enabled = \RankMath\Helper::get_settings("sitemap.tax_{$type}_sitemap");
-            if (!$rm_enabled) {
-                return false;
-            }
-        } else {
-            $default = ($type === 'category') ? 'on' : 'off';
-            $enabled = Settings::get("sitemap.tax_{$type}_sitemap", $default);
-            if ($enabled !== 'on') {
-                return false;
-            }
+        // Chỉ đọc cấu hình Laca để sitemap trước và sau cutover giống nhau.
+        $default = ($type === 'category') ? 'on' : 'off';
+        $enabled = Settings::get("sitemap.tax_{$type}_sitemap", $default);
+        if ($enabled !== 'on') {
+            return false;
         }
 
         return !apply_filters('laca_seo/sitemap/exclude_taxonomy', false, $type);

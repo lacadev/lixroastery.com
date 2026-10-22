@@ -73,11 +73,7 @@ class Sitemap
         // 1. Post types
         $post_types = Helper::getAccessiblePostTypes();
         foreach ($post_types as $pt_slug => $pt_obj) {
-            if (Helper::isRankMathActive() && function_exists('rank_math')) {
-                $enabled = \RankMath\Helper::get_settings("sitemap.pt_{$pt_slug}_html_sitemap") ? 'on' : 'off';
-            } else {
-                $enabled = Settings::get("sitemap.pt_{$pt_slug}_html_sitemap", ($pt_slug === 'attachment' ? 'off' : 'on'));
-            }
+            $enabled = Settings::get("sitemap.pt_{$pt_slug}_html_sitemap", ($pt_slug === 'attachment' ? 'off' : 'on'));
             if ($enabled !== 'on') {
                 continue;
             }
@@ -98,12 +94,8 @@ class Sitemap
         // 2. Taxonomies
         $taxonomies = Helper::getAccessibleTaxonomies();
         foreach ($taxonomies as $tax_slug => $tax_obj) {
-            if (Helper::isRankMathActive() && function_exists('rank_math')) {
-                $enabled = \RankMath\Helper::get_settings("sitemap.tax_{$tax_slug}_html_sitemap") ? 'on' : 'off';
-            } else {
-                $default = ($tax_slug === 'category') ? 'on' : 'off';
-                $enabled = Settings::get("sitemap.tax_{$tax_slug}_html_sitemap", $default);
-            }
+            $default = ($tax_slug === 'category') ? 'on' : 'off';
+            $enabled = Settings::get("sitemap.tax_{$tax_slug}_html_sitemap", $default);
             if ($enabled !== 'on') {
                 continue;
             }

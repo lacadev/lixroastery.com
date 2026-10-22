@@ -25,45 +25,25 @@ class Breadcrumbs
 
     public function __construct()
     {
-        if (Helper::isRankMathActive() && function_exists('rank_math')) {
-            $this->settings = [
-                'home'            => (bool) \RankMath\Helper::get_settings('general.breadcrumbs_home'),
-                'separator'       => (string) \RankMath\Helper::get_settings('general.breadcrumbs_separator', '-'),
-                'remove_title'    => (bool) \RankMath\Helper::get_settings('general.breadcrumbs_remove_post_title'),
-                'hide_tax_name'   => (bool) \RankMath\Helper::get_settings('general.breadcrumbs_hide_taxonomy_name'),
-                'show_ancestors'  => (bool) \RankMath\Helper::get_settings('general.breadcrumbs_ancestor_categories'),
-                'show_blog'       => (bool) \RankMath\Helper::get_settings('general.breadcrumbs_blog_page'),
-                'show_pagination' => true,
-            ];
+        // Luôn đọc cấu hình Laca (không mượn cấu hình Rank Math) để output trước và sau cutover giống nhau.
+        $this->settings = [
+            'home'            => Settings::get('general.breadcrumbs_home', 'on') === 'on',
+            'separator'       => Settings::get('general.breadcrumbs_separator', '-'),
+            'remove_title'    => Settings::get('general.breadcrumbs_remove_post_title', 'off') === 'on',
+            'hide_tax_name'   => Settings::get('general.breadcrumbs_hide_taxonomy_name', 'off') === 'on',
+            'show_ancestors'  => Settings::get('general.breadcrumbs_ancestor_categories', 'off') === 'on',
+            'show_blog'       => Settings::get('general.breadcrumbs_blog_page', 'off') === 'on',
+            'show_pagination' => true,
+        ];
 
-            $this->strings = [
-                'prefix'         => (string) \RankMath\Helper::get_settings('general.breadcrumbs_prefix', ''),
-                'home'           => (string) \RankMath\Helper::get_settings('general.breadcrumbs_home_label', 'Home'),
-                'home_link'      => (string) \RankMath\Helper::get_settings('general.breadcrumbs_home_link', home_url()),
-                'error404'       => (string) \RankMath\Helper::get_settings('general.breadcrumbs_404_label', '404 Error: page not found'),
-                'search_format'  => (string) \RankMath\Helper::get_settings('general.breadcrumbs_search_format', ''),
-                'archive_format' => (string) \RankMath\Helper::get_settings('general.breadcrumbs_archive_format', ''),
-            ];
-        } else {
-            $this->settings = [
-                'home'            => Settings::get('general.breadcrumbs_home', 'on') === 'on',
-                'separator'       => Settings::get('general.breadcrumbs_separator', '-'),
-                'remove_title'    => Settings::get('general.breadcrumbs_remove_post_title', 'off') === 'on',
-                'hide_tax_name'   => Settings::get('general.breadcrumbs_hide_taxonomy_name', 'off') === 'on',
-                'show_ancestors'  => Settings::get('general.breadcrumbs_ancestor_categories', 'off') === 'on',
-                'show_blog'       => Settings::get('general.breadcrumbs_blog_page', 'off') === 'on',
-                'show_pagination' => true,
-            ];
-
-            $this->strings = [
-                'prefix'         => (string) Settings::get('general.breadcrumbs_prefix', ''),
-                'home'           => (string) Settings::get('general.breadcrumbs_home_label', 'Home'),
-                'home_link'      => (string) Settings::get('general.breadcrumbs_home_link', home_url()),
-                'error404'       => (string) Settings::get('general.breadcrumbs_404_label', '404 Error: page not found'),
-                'search_format'  => (string) Settings::get('general.breadcrumbs_search_format', 'Results for %s'),
-                'archive_format' => (string) Settings::get('general.breadcrumbs_archive_format', 'Archives for %s'),
-            ];
-        }
+        $this->strings = [
+            'prefix'         => (string) Settings::get('general.breadcrumbs_prefix', ''),
+            'home'           => (string) Settings::get('general.breadcrumbs_home_label', 'Home'),
+            'home_link'      => (string) Settings::get('general.breadcrumbs_home_link', home_url()),
+            'error404'       => (string) Settings::get('general.breadcrumbs_404_label', '404 Error: page not found'),
+            'search_format'  => (string) Settings::get('general.breadcrumbs_search_format', 'Results for %s'),
+            'archive_format' => (string) Settings::get('general.breadcrumbs_archive_format', 'Archives for %s'),
+        ];
     }
 
     public function register(): void

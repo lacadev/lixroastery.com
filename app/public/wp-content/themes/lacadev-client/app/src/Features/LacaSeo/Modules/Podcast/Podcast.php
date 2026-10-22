@@ -18,7 +18,7 @@ class Podcast
     {
         add_action('init', [$this, 'registerFeed']);
 
-        if (!Modules::isActive('podcast') && !(function_exists('rank_math') && \RankMath\Helper::is_module_active('podcast'))) {
+        if (!Modules::isActive('podcast')) {
             return;
         }
 
