@@ -16,7 +16,7 @@ Container::make('term_meta', __('Layout Settings', 'laca'))
     ->where('term_taxonomy', 'IN', array('category', 'blog_cat'))
     ->add_fields(array(
         Field::make('html', 'layout_settings_info', '')
-            ->set_html('<div style="background:#f0f9ff;border:1px solid #bae6fd;border-radius:6px;padding:14px 16px;margin:8px 0"><p style="margin:0 0 8px;font-weight:600;color:#0369a1">🔧 Cài đặt bố cục</p><p style="margin:0;font-size:13px;color:#374151">Chọn cách hiển thị danh sách bài viết ở trang chuyên mục (archive) của danh mục này — dạng Card (bản tin) hoặc Staggered (so le).</p></div>'),
+            ->set_html('<div style="background:#f4f4f5;border:1px solid #e4e4e7;border-radius:6px;padding:14px 16px;margin:8px 0"><p style="margin:0 0 8px;font-weight:600;color:#18181b">🔧 Cài đặt bố cục</p><p style="margin:0;font-size:13px;color:#71717a">Chọn cách hiển thị danh sách bài viết ở trang chuyên mục (archive) của danh mục này — dạng Card (bản tin) hoặc Staggered (so le).</p></div>'),
 
         Field::make('select', 'crb_archive_layout', __('Archive Layout', 'laca'))
             ->set_options(array(

@@ -242,3 +242,26 @@
     }
   }
 }
+
+// Gutenberg document bar commands & buttons
+.editor-document-bar__command,
+.editor-document-tools__command {
+  color: var(--laca-fg) !important;
+}
+
+// Gutenberg notice buttons & actions
+.components-notice .components-button,
+.components-notice__action,
+.components-notice__dismiss,
+.components-button.is-secondary {
+  color: var(--laca-fg) !important;
+  border-color: var(--laca-border-emphasized) !important;
+
+  &:hover,
+  &:focus {
+    color: var(--laca-fg-hover) !important;
+    border-color: var(--laca-fg) !important;
+    text-decoration: none !important;
+  }
+}
+

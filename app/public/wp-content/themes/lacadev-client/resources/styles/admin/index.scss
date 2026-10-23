@@ -75,6 +75,7 @@ body.wp-admin {
   a:not(.remove-thumbnail) {
     display: block !important;
     background-color: var(--laca-bg);
+    text-decoration: none !important;
   }
 
   a.remove-thumbnail {
@@ -107,14 +108,26 @@ body.wp-admin {
     width: 100%;
     aspect-ratio: 16 / 10;
     object-fit: cover;
+    border-radius: var(--laca-radius-l2);
   }
 
   .no-image-text {
     display: flex;
     align-items: center;
+    justify-content: center;
     text-align: center;
-    border: 1px dashed;
+    border: 1px solid var(--laca-border-emphasized);
+    border-radius: var(--laca-radius-l2);
     aspect-ratio: 16 / 10;
+    color: var(--laca-fg-muted);
+    font-size: 11px;
+    background-color: var(--laca-bg-muted);
+    transition: var(--laca-transition);
+
+    &:hover {
+      border-color: var(--laca-fg);
+      color: var(--laca-fg);
+    }
   }
 }
 

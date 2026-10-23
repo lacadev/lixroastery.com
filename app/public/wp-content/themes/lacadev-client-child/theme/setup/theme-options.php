@@ -59,7 +59,7 @@ $optionsPage = Container::make('theme_options', __('Laca Theme', 'laca'))
 	->set_page_menu_position(3.1)
 	->add_tab(__('Branding | Thương hiệu', 'laca'), [
 		Field::make('html', 'branding_intro', __('', 'laca'))
-			->set_html('<div style="background:#f0f9ff;border:1px solid #bae6fd;border-radius:6px;padding:14px 16px;margin:8px 0"><p style="margin:0 0 8px;font-weight:600;color:#0369a1">🔧 Thương hiệu</p><p style="margin:0;font-size:13px;color:#374151">Thiết lập màu sắc và logo dùng chung cho toàn bộ website. Các màu và logo ở đây sẽ hiển thị đồng bộ trên mọi trang, mọi giao diện của site.</p></div>'),
+			->set_html('<div style="background:#f4f4f5;border:1px solid #e4e4e7;border-radius:6px;padding:14px 16px;margin:8px 0"><p style="margin:0 0 8px;font-weight:600;color:#18181b">🔧 Thương hiệu</p><p style="margin:0;font-size:13px;color:#374151">Thiết lập màu sắc và logo dùng chung cho toàn bộ website. Các màu và logo ở đây sẽ hiển thị đồng bộ trên mọi trang, mọi giao diện của site.</p></div>'),
 
 		Field::make('image', 'logo', __('Logo chính (mặc định / tối)', 'laca'))
 			->set_width(33.33)
@@ -73,7 +73,7 @@ $optionsPage = Container::make('theme_options', __('Laca Theme', 'laca'))
 
 	->add_tab(__('Contact | Liên hệ', 'laca'), [
 		Field::make('html', 'contact_intro', __('', 'laca'))
-			->set_html('<div style="background:#f0f9ff;border:1px solid #bae6fd;border-radius:6px;padding:14px 16px;margin:8px 0"><p style="margin:0 0 8px;font-weight:600;color:#0369a1">🔧 Liên hệ</p><p style="margin:0;font-size:13px;color:#374151">Nhập thông tin liên hệ của công ty (địa chỉ, số điện thoại, hotline, giờ làm việc, mạng xã hội). Các thông tin này sẽ tự động hiển thị ở footer và các khối liên hệ trên site.</p></div>'),
+			->set_html('<div style="background:#f4f4f5;border:1px solid #e4e4e7;border-radius:6px;padding:14px 16px;margin:8px 0"><p style="margin:0 0 8px;font-weight:600;color:#18181b">🔧 Liên hệ</p><p style="margin:0;font-size:13px;color:#374151">Nhập thông tin liên hệ của công ty (địa chỉ, số điện thoại, hotline, giờ làm việc, mạng xã hội). Các thông tin này sẽ tự động hiển thị ở footer và các khối liên hệ trên site.</p></div>'),
 
 		Field::make('html', 'info', __('', 'laca'))
 			->set_html('----<i> Information | Thông tin </i>----'),
@@ -125,7 +125,7 @@ $optionsPage = Container::make('theme_options', __('Laca Theme', 'laca'))
 
 	->add_tab(__('🦶 Footer', 'laca'), [
 		Field::make('html', 'footer_intro', __('', 'laca'))
-			->set_html('<div style="background:#f0f9ff;border:1px solid #bae6fd;border-radius:6px;padding:14px 16px;margin:8px 0"><p style="margin:0 0 8px;font-weight:600;color:#0369a1">🔧 Footer</p><p style="margin:0;font-size:13px;color:#374151">Thông tin công ty và các cột liên kết hiển thị ở footer cuối trang. Địa chỉ, email, mạng xã hội đã nhập ở tab <strong>Contact | Liên hệ</strong> — footer tự lấy lại, không cần nhập lại ở đây.</p></div>'),
+			->set_html('<div style="background:#f4f4f5;border:1px solid #e4e4e7;border-radius:6px;padding:14px 16px;margin:8px 0"><p style="margin:0 0 8px;font-weight:600;color:#18181b">🔧 Footer</p><p style="margin:0;font-size:13px;color:#374151">Thông tin công ty và các cột liên kết hiển thị ở footer cuối trang. Địa chỉ, email, mạng xã hội đã nhập ở tab <strong>Contact | Liên hệ</strong> — footer tự lấy lại, không cần nhập lại ở đây.</p></div>'),
 
 		Field::make('text', 'footer_company_name' . currentLanguage(), __('Tên công ty', 'laca'))
 			->set_width(50)
@@ -298,7 +298,7 @@ $optionsPage = Container::make('theme_options', __('Laca Theme', 'laca'))
 
 	->add_tab(__('📰 Journal', 'laca'), [
 		Field::make('html', 'journal_single_intro', __('', 'laca'))
-			->set_html('<div style="background:#f0f9ff;border:1px solid #bae6fd;border-radius:6px;padding:14px 16px;margin:8px 0"><p style="margin:0 0 8px;font-weight:600;color:#0369a1">🔧 Chi tiết bài Journal</p><p style="margin:0;font-size:13px;color:#374151">Mục lục (tự lấy từ các tiêu đề H2 trong bài), bình chọn sao, tác giả, chia sẻ, Google News, bài viết liên quan và tag ở cuối mỗi bài Journal. Ô chữ để trống sẽ dùng câu mặc định theo ngôn ngữ. Tác giả / Google News để trống thì ẩn phần đó.</p></div>'),
+			->set_html('<div style="background:#f4f4f5;border:1px solid #e4e4e7;border-radius:6px;padding:14px 16px;margin:8px 0"><p style="margin:0 0 8px;font-weight:600;color:#18181b">🔧 Chi tiết bài Journal</p><p style="margin:0;font-size:13px;color:#374151">Mục lục (tự lấy từ các tiêu đề H2 trong bài), bình chọn sao, tác giả, chia sẻ, Google News, bài viết liên quan và tag ở cuối mỗi bài Journal. Ô chữ để trống sẽ dùng câu mặc định theo ngôn ngữ. Tác giả / Google News để trống thì ẩn phần đó.</p></div>'),
 
 		Field::make('separator', 'journal_sep_texts', __('Câu chữ', 'laca')),
 		Field::make('text', 'journal_toc_title' . currentLanguage(), __('Tiêu đề mục lục', 'laca'))
@@ -332,7 +332,7 @@ $optionsPage = Container::make('theme_options', __('Laca Theme', 'laca'))
 
 	->add_tab(__('📧 Newsletter', 'laca'), [
 		Field::make('html', 'newsletter_intro', __('', 'laca'))
-			->set_html('<div style="background:#f0f9ff;border:1px solid #bae6fd;border-radius:6px;padding:14px 16px;margin:8px 0"><p style="margin:0 0 8px;font-weight:600;color:#0369a1">🔧 Newsletter ở footer</p><p style="margin:0;font-size:13px;color:#374151">Khách nhập email ở footer và bấm Subscribe là <strong>đăng ký luôn</strong>, không cần xác nhận. Website gửi 1 <strong>email cảm ơn</strong> (qua SMTP ở Laca Admin → SMTP), cuối email có link <strong>huỷ đăng ký</strong>. Xem danh sách theo trạng thái và xuất CSV tại menu <strong>Newsletter</strong> bên trái.</p></div>'),
+			->set_html('<div style="background:#f4f4f5;border:1px solid #e4e4e7;border-radius:6px;padding:14px 16px;margin:8px 0"><p style="margin:0 0 8px;font-weight:600;color:#18181b">🔧 Newsletter ở footer</p><p style="margin:0;font-size:13px;color:#374151">Khách nhập email ở footer và bấm Subscribe là <strong>đăng ký luôn</strong>, không cần xác nhận. Website gửi 1 <strong>email cảm ơn</strong> (qua SMTP ở Laca Admin → SMTP), cuối email có link <strong>huỷ đăng ký</strong>. Xem danh sách theo trạng thái và xuất CSV tại menu <strong>Newsletter</strong> bên trái.</p></div>'),
 
 		Field::make('checkbox', 'newsletter_enable' . currentLanguage(), __('Hiển thị form Newsletter ở footer', 'laca'))
 			->set_option_value('yes')
@@ -469,7 +469,7 @@ $optionsPage = Container::make('theme_options', __('Laca Theme', 'laca'))
 
 	->add_tab(__('☕ Trang sản phẩm | Product Page', 'laca'), [
 		Field::make('html', 'product_page_intro', __('', 'laca'))
-			->set_html('<div style="background:#f0f9ff;border:1px solid #bae6fd;border-radius:6px;padding:14px 16px;margin:8px 0"><p style="margin:0 0 8px;font-weight:600;color:#0369a1">🔧 Trang chi tiết sản phẩm</p><p style="margin:0;font-size:13px;color:#374151">Các nội dung dưới đây dùng chung cho <strong>mọi sản phẩm</strong> (mục "How to use" và "Reviews" ở trang chi tiết sản phẩm) — chỉ cần nhập 1 lần ở đây, không cần lặp lại cho từng sản phẩm.</p></div>'),
+			->set_html('<div style="background:#f4f4f5;border:1px solid #e4e4e7;border-radius:6px;padding:14px 16px;margin:8px 0"><p style="margin:0 0 8px;font-weight:600;color:#18181b">🔧 Trang chi tiết sản phẩm</p><p style="margin:0;font-size:13px;color:#374151">Các nội dung dưới đây dùng chung cho <strong>mọi sản phẩm</strong> (mục "How to use" và "Reviews" ở trang chi tiết sản phẩm) — chỉ cần nhập 1 lần ở đây, không cần lặp lại cho từng sản phẩm.</p></div>'),
 
 		Field::make('html', 'how_to_use_label', __('', 'laca'))
 			->set_html('----<i> How to use | Cách sử dụng & bảo quản </i>----'),
@@ -573,7 +573,7 @@ $optionsPage = Container::make('theme_options', __('Laca Theme', 'laca'))
 
 	->add_tab(__('Scripts', 'laca'), [
 		Field::make('html', 'scripts_intro', __('', 'laca'))
-			->set_html('<div style="background:#f0f9ff;border:1px solid #bae6fd;border-radius:6px;padding:14px 16px;margin:8px 0"><p style="margin:0 0 8px;font-weight:600;color:#0369a1">🔧 Scripts</p><p style="margin:0;font-size:13px;color:#374151">Chèn mã theo dõi vào đầu (header) hoặc cuối (footer) trang, ví dụ Google Analytics, Facebook Pixel. Lưu ý: nhập sai định dạng mã có thể làm lỗi hiển thị toàn bộ website, chỉ dán mã bạn tin tưởng.</p></div>'),
+			->set_html('<div style="background:#f4f4f5;border:1px solid #e4e4e7;border-radius:6px;padding:14px 16px;margin:8px 0"><p style="margin:0 0 8px;font-weight:600;color:#18181b">🔧 Scripts</p><p style="margin:0;font-size:13px;color:#374151">Chèn mã theo dõi vào đầu (header) hoặc cuối (footer) trang, ví dụ Google Analytics, Facebook Pixel. Lưu ý: nhập sai định dạng mã có thể làm lỗi hiển thị toàn bộ website, chỉ dán mã bạn tin tưởng.</p></div>'),
 
 		Field::make('header_scripts', 'crb_header_script', __('Header Script', 'laca')),
 		Field::make('footer_scripts', 'crb_footer_script', __('Footer Script', 'laca')),

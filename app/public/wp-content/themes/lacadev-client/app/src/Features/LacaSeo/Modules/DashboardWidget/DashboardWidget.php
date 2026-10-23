@@ -68,7 +68,7 @@ class DashboardWidget
             <p><strong><?php esc_html_e('Chỉ số SEO cốt lõi của website:', 'lacadev'); ?></strong></p>
             <ul style="margin: 12px 0; line-height: 1.8;">
                 <li>
-                    <span class="dashicons dashicons-randomize" style="color: #2271b1;"></span>
+                    <span class="dashicons dashicons-randomize" style="color: var(--laca-accent, #18181b);"></span>
                     <?php esc_html_e('Chuyển hướng hoạt động (301/302):', 'lacadev'); ?>
                     <strong><?php echo esc_html($redirectionsCount); ?></strong>
                 </li>

@@ -1,5 +1,5 @@
 // =============================================================================
-// Carbon Fields Skin (Chakra UI v3 tokens)
+// Carbon Fields Skin (Chakra UI v3 tokens — Monochromatic)
 // =============================================================================
 
 .cf-container {
@@ -7,7 +7,7 @@
   border: none;
   box-shadow: none;
 
-  // 1. Line variant Tabs
+  // 1. Line variant Tabs (gap 4px, padding 8px 12px, 1 hàng cuộn ngang)
   &__tabs,
   .cf-tabs,
   .carbon-tabs {
@@ -15,33 +15,37 @@
     border: none !important;
     border-bottom: 1px solid var(--laca-border) !important;
     padding: 0 !important;
-    margin: 0 0 var(--laca-spacing-6) 0 !important;
+    margin: 0 0 20px 0 !important;
+    max-width: 100%;
+    overflow-x: auto;
   }
 
   &__tabs-list,
   .cf-tabs__list {
     display: flex;
-    flex-wrap: wrap;
-    gap: var(--laca-spacing-6);
+    flex-wrap: nowrap;
+    gap: 4px;
     margin: 0;
     padding: 0;
     list-style: none;
     border: none;
+    overflow-x: auto;
   }
 
   &__tabs-item,
   .cf-tabs__item {
     background: transparent !important;
     border: none !important;
-    border-radius: 0 !important;
+    border-radius: var(--laca-radius-l2) !important;
     padding: 0 !important;
     margin: 0 !important;
+    flex-shrink: 0;
 
     button,
     a {
       display: inline-flex;
       align-items: center;
-      padding: var(--laca-spacing-2-5) 0 !important;
+      padding: 8px 12px !important;
       font-family: var(--laca-font);
       font-size: var(--laca-font-size-sm);
       font-weight: 500;
@@ -53,7 +57,7 @@
       margin-bottom: -1px;
       cursor: pointer;
       text-decoration: none;
-      transition: color var(--laca-durations-fast), border-color var(--laca-durations-fast);
+      transition: var(--laca-transition);
       outline: none;
 
       &:hover {
@@ -78,9 +82,19 @@
   &__fields {
     display: flex;
     flex-wrap: wrap;
-    gap: var(--laca-spacing-6);
+    gap: var(--laca-space-6);
     border: none !important;
     background: transparent;
+  }
+
+  a:not(.button):not(.laca-btn) {
+    color: var(--laca-fg);
+    text-decoration: none;
+
+    &:hover {
+      color: var(--laca-fg-hover);
+      text-decoration: underline;
+    }
   }
 }
 
@@ -91,7 +105,7 @@
   box-shadow: none !important;
   box-sizing: border-box;
   padding: 0 !important;
-  margin-bottom: var(--laca-spacing-5);
+  margin-bottom: var(--laca-space-5);
 
   &::before,
   &::after {
@@ -112,7 +126,7 @@
     font-weight: 500;
     line-height: var(--laca-line-height-sm);
     color: var(--laca-fg);
-    margin-bottom: var(--laca-spacing-1-5);
+    margin-bottom: var(--laca-space-1);
     text-transform: none;
   }
 
@@ -122,7 +136,7 @@
     font-size: var(--laca-font-size-xs);
     line-height: var(--laca-line-height-xs);
     color: var(--laca-fg-muted);
-    margin-top: var(--laca-spacing-1-5);
+    margin-top: var(--laca-space-1);
   }
 
   // Controls styling
@@ -134,15 +148,15 @@
   select {
     height: 36px;
     border: 1px solid var(--laca-border);
-    border-radius: var(--laca-radii-l2);
-    padding: 0 var(--laca-spacing-3);
+    border-radius: var(--laca-radius-l2);
+    padding: 0 var(--laca-space-3);
     background-color: var(--laca-bg);
     color: var(--laca-fg);
     font-family: var(--laca-font);
     font-size: var(--laca-font-size-sm);
     line-height: var(--laca-line-height-sm);
     box-sizing: border-box;
-    transition: border-color var(--laca-durations-fast), box-shadow var(--laca-durations-fast);
+    transition: var(--laca-transition);
 
     &:focus {
       border-color: var(--laca-focus-ring);
@@ -153,15 +167,15 @@
 
   textarea {
     border: 1px solid var(--laca-border);
-    border-radius: var(--laca-radii-l2);
-    padding: var(--laca-spacing-2) var(--laca-spacing-3);
+    border-radius: var(--laca-radius-l2);
+    padding: var(--laca-space-2) var(--laca-space-3);
     background-color: var(--laca-bg);
     color: var(--laca-fg);
     font-family: var(--laca-font);
     font-size: var(--laca-font-size-sm);
     line-height: var(--laca-line-height-sm);
     box-sizing: border-box;
-    transition: border-color var(--laca-durations-fast), box-shadow var(--laca-durations-fast);
+    transition: var(--laca-transition);
 
     &:focus {
       border-color: var(--laca-focus-ring);
@@ -176,14 +190,14 @@
   .wp-picker-container {
     display: inline-flex;
     align-items: center;
-    gap: var(--laca-spacing-2);
+    gap: var(--laca-space-2);
   }
 
   .wp-color-result.button {
     width: 28px !important;
     height: 28px !important;
     min-height: 28px !important;
-    border-radius: var(--laca-radii-l2) !important;
+    border-radius: var(--laca-radius-l2) !important;
     border: 1px solid var(--laca-border) !important;
     box-shadow: none !important;
     padding: 0 !important;
@@ -197,15 +211,15 @@
   .wp-picker-input-wrap {
     display: inline-flex;
     align-items: center;
-    gap: var(--laca-spacing-2);
+    gap: var(--laca-space-2);
 
     input.wp-color-picker[type="text"] {
       height: 32px !important;
       border: 1px solid var(--laca-border) !important;
-      border-radius: var(--laca-radii-l2) !important;
+      border-radius: var(--laca-radius-l2) !important;
       font-family: monospace;
       font-size: var(--laca-font-size-xs) !important;
-      padding: 0 var(--laca-spacing-2) !important;
+      padding: 0 var(--laca-space-2) !important;
       width: 90px !important;
       box-sizing: border-box;
 
@@ -218,16 +232,16 @@
 
     .wp-picker-clear.button {
       height: 32px !important;
-      padding: 0 var(--laca-spacing-2-5) !important;
+      padding: 0 var(--laca-space-2) !important;
       font-family: var(--laca-font);
       font-size: var(--laca-font-size-xs) !important;
-      border-radius: var(--laca-radii-l2) !important;
+      border-radius: var(--laca-radius-l2) !important;
       background-color: transparent !important;
       border: 1px solid var(--laca-border) !important;
       color: var(--laca-fg-muted) !important;
       box-shadow: none !important;
       cursor: pointer;
-      transition: background-color var(--laca-durations-fast), color var(--laca-durations-fast);
+      transition: var(--laca-transition);
 
       &:hover {
         background-color: var(--laca-bg-muted) !important;
@@ -241,10 +255,10 @@
 .cf-complex {
   &__group {
     border: 1px solid var(--laca-border) !important;
-    border-radius: var(--laca-radii-l2) !important;
+    border-radius: var(--laca-radius-l2) !important;
     background-color: var(--laca-bg) !important;
-    box-shadow: var(--laca-shadow-xs) !important;
-    margin-bottom: var(--laca-spacing-3) !important;
+    box-shadow: none !important;
+    margin-bottom: var(--laca-space-3) !important;
     overflow: hidden;
   }
 
@@ -253,7 +267,7 @@
     height: 44px;
     display: flex;
     align-items: center;
-    padding: 0 var(--laca-spacing-4);
+    padding: 0 var(--laca-space-4);
     background-color: var(--laca-bg-subtle);
     border-bottom: 1px solid var(--laca-border);
     font-family: var(--laca-font);
@@ -263,7 +277,7 @@
   }
 
   &__group-body {
-    padding: var(--laca-spacing-4);
+    padding: var(--laca-space-4);
     background-color: var(--laca-bg);
   }
 
@@ -273,16 +287,16 @@
     align-items: center;
     justify-content: center;
     height: 32px;
-    padding: 0 var(--laca-spacing-3);
+    padding: 0 var(--laca-space-3);
     font-family: var(--laca-font);
     font-size: var(--laca-font-size-sm);
     font-weight: 500;
-    border-radius: var(--laca-radii-l2);
+    border-radius: var(--laca-radius-l2);
     border: 1px solid var(--laca-border);
     background-color: var(--laca-bg);
     color: var(--laca-fg);
     cursor: pointer;
-    transition: background-color var(--laca-durations-fast);
+    transition: var(--laca-transition);
 
     &:hover {
       background-color: var(--laca-bg-muted);
@@ -290,50 +304,52 @@
   }
 }
 
-// 5. Actions Card & Sticky on >= 1280px
+// 5. Actions Card & alignment
 #submitdiv.postbox,
 .cf-container__actions,
 .cf-actions {
   border: 1px solid var(--laca-border) !important;
-  border-radius: var(--laca-radii-l2) !important;
+  border-radius: var(--laca-radius-l3) !important;
   background-color: var(--laca-bg) !important;
-  box-shadow: var(--laca-shadow-xs) !important;
+  box-shadow: none !important;
+  margin-top: 0 !important;
 
   h3,
   .postbox-header {
     font-family: var(--laca-font) !important;
-    font-size: var(--laca-font-size-sm) !important;
+    font-size: 14px !important;
     font-weight: 600 !important;
     color: var(--laca-fg) !important;
+    background-color: var(--laca-bg) !important;
     border-bottom: 1px solid var(--laca-border) !important;
-    padding: var(--laca-spacing-3) var(--laca-spacing-4) !important;
+    padding: 12px 16px !important;
+    margin: 0 !important;
   }
 
   #major-publishing-actions {
     background: transparent !important;
     border: none !important;
-    padding: var(--laca-spacing-4) !important;
+    padding: 12px 16px !important;
   }
 
-  #publish.button-primary {
+  #publish.button-primary,
+  input[type="submit"].button-primary {
     width: 100%;
     height: 36px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    border-radius: var(--laca-radii-l2) !important;
+    border-radius: var(--laca-radius-l2) !important;
     font-weight: 600;
     background-color: var(--laca-accent) !important;
     border-color: var(--laca-accent) !important;
     color: var(--laca-bg) !important;
-  }
-}
+    transition: var(--laca-transition);
 
-@media (min-width: 1280px) {
-  #submitdiv {
-    position: sticky !important;
-    top: 48px !important;
-    z-index: 20;
+    &:hover {
+      background-color: var(--laca-accent-hover) !important;
+      border-color: var(--laca-accent-hover) !important;
+    }
   }
 }
 
@@ -343,9 +359,9 @@
 .notice.cf-notice {
   background-color: var(--laca-success-bg) !important;
   border: 1px solid var(--laca-success-border) !important;
-  border-radius: var(--laca-radii-l2) !important;
+  border-radius: var(--laca-radius-l2) !important;
   color: var(--laca-success) !important;
-  padding: var(--laca-spacing-3) var(--laca-spacing-4) !important;
+  padding: var(--laca-space-3) var(--laca-space-4) !important;
   font-family: var(--laca-font);
   font-weight: 500;
   box-shadow: none !important;

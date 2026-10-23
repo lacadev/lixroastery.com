@@ -143,7 +143,7 @@ $pendingImport = get_transient(ImportExportHandler::PENDING_IMPORT_TRANSIENT . $
         <p>Tính năng chuyển đổi 1:1 toàn bộ dữ liệu cấu hình, điểm SEO, tiêu đề, mô tả bài viết và term meta từ plugin Rank Math sang Laca SEO.</p>
 
         <?php if ($has_rm): ?>
-            <div class="laca-seo-notice-inline" style="background:#eef3fe;border-left:4px solid #8aadf7;padding:12px;margin:12px 0;">
+            <div class="laca-seo-notice-inline" style="background:var(--laca-accent-subtle, #f4f4f5);border-left:4px solid var(--laca-accent, #18181b);padding:12px;margin:12px 0;">
                 <p><strong>Phát hiện dữ liệu Rank Math trong CSDL:</strong> Dữ liệu cài đặt hoặc bài viết của Rank Math sẵn sàng chuyển đổi. Quá trình chuyển đổi diễn ra theo từng đợt (batch AJAX) an toàn và không gây treo server, đồng thời giữ nguyên dữ liệu Rank Math gốc.</p>
             </div>
 
@@ -154,7 +154,7 @@ $pendingImport = get_transient(ImportExportHandler::PENDING_IMPORT_TRANSIENT . $
 
                 <div id="laca-seo-rm-progress" style="display:none; margin-top:16px;">
                     <div style="background:#ddd; height:20px; border-radius:4px; overflow:hidden; position:relative;">
-                        <div id="laca-seo-rm-bar" style="background:#2271b1; height:100%; width:0%; transition:width 0.3s ease;"></div>
+                        <div id="laca-seo-rm-bar" style="background:var(--laca-accent, #18181b); height:100%; width:0%; transition:width 0.3s ease;"></div>
                     </div>
                     <p id="laca-seo-rm-status" style="margin-top:8px; font-weight:600;"></p>
                     <ul id="laca-seo-rm-log" style="list-style:disc; margin-left:20px; font-size:13px; color:#555; max-height:160px; overflow-y:auto;"></ul>

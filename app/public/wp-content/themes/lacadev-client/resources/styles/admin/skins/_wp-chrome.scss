@@ -20,155 +20,133 @@ body.wp-admin {
   color: var(--laca-fg);
 }
 
-// Sidebar (Sáng — Chakra light palette)
+// ─── Sidebar (Trả về đúng cấu trúc & kích thước trước G2, màu tối đơn sắc) ───
 #adminmenuback,
 #adminmenuwrap,
 #adminmenu {
-  background-color: var(--laca-bg) !important; // Đè background mặc định WP
-  border-right: 1px solid var(--laca-border) !important; // Đè border WP
+  background: var(--laca-chrome-bg) !important;
+  border-right: 1px solid rgba(255, 255, 255, 0.06) !important;
 }
 
 #adminmenu {
   margin: 0;
-  padding: 8px 0;
 
-  li.menu-top {
-    margin: 2px 8px;
-    border-radius: var(--laca-radius-l2);
-    transition: var(--laca-transition);
+  // Items
+  li.menu-top:hover,
+  li.opensub > a.menu-top,
+  li > a.menu-top:focus {
+    background: rgba(255, 255, 255, 0.07) !important;
+    color: var(--laca-chrome-fg-active) !important;
+  }
 
-    > a {
-      color: var(--laca-fg-muted) !important;
-      font-family: var(--laca-font);
-      font-size: var(--laca-font-size-sm);
-      font-weight: 500;
-      padding: 6px 12px;
-      border-radius: var(--laca-radius-l2);
-      transition: var(--laca-transition);
-    }
+  a,
+  div.wp-menu-image::before {
+    color: rgba(255, 255, 255, 0.65) !important;
+    transition: color 0.15s ease !important;
+  }
 
-    .wp-menu-image::before {
-      color: var(--laca-fg-subtle) !important;
-      transition: var(--laca-transition);
-    }
+  a:hover,
+  .wp-submenu a:hover,
+  li.opensub a {
+    color: var(--laca-chrome-fg-active) !important;
+  }
 
-    &:hover,
-    &.opensub > a.menu-top {
-      background-color: var(--laca-bg-muted) !important;
+  // Active parent
+  li.current a.menu-top,
+  li.wp-has-current-submenu a.wp-has-current-submenu {
+    background: var(--laca-chrome-active-bg) !important;
+    color: var(--laca-chrome-fg-active) !important;
+    border-left: 3px solid var(--laca-chrome-fg-active);
+    font-weight: 600;
+  }
 
-      > a {
-        color: var(--laca-fg) !important;
-      }
+  .current div.wp-menu-image::before,
+  .wp-has-current-submenu div.wp-menu-image::before,
+  li.current a.menu-top div.wp-menu-image::before,
+  li.wp-has-current-submenu div.wp-menu-image::before {
+    color: var(--laca-chrome-fg-active) !important;
+  }
 
-      .wp-menu-image::before {
-        color: var(--laca-fg) !important;
-      }
-    }
-
-    // Mục đang chọn
-    &.current,
-    &.wp-has-current-submenu {
-      background-color: var(--laca-accent-subtle) !important;
-
-      > a {
-        color: var(--laca-accent-fg) !important;
-        font-weight: 600;
-      }
-
-      .wp-menu-image::before {
-        color: var(--laca-accent) !important;
-      }
-    }
+  // Badge
+  .awaiting-mod,
+  .update-plugins {
+    background: var(--laca-chrome-active-bg);
+    color: var(--laca-chrome-fg-active);
+    font-weight: 700;
   }
 
   // Submenu
   .wp-submenu {
-    background-color: var(--laca-bg) !important;
-    border: 1px solid var(--laca-border) !important;
-    border-radius: var(--laca-radius-l2);
-    box-shadow: var(--laca-shadow-md);
-    padding: 4px 0;
+    background: var(--laca-chrome-sub-bg) !important;
+    border-left: none;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
 
-    li {
-      margin: 1px 4px;
+    a {
+      color: rgba(255, 255, 255, 0.6) !important;
+    }
 
-      a {
-        color: var(--laca-fg-muted) !important;
-        font-family: var(--laca-font);
-        font-size: 13px;
-        padding: 6px 12px;
-        border-radius: calc(var(--laca-radius-l2) - 1px);
-        transition: var(--laca-transition);
+    a:hover {
+      color: var(--laca-chrome-fg-active) !important;
+    }
 
-        &:hover {
-          background-color: var(--laca-bg-muted) !important;
-          color: var(--laca-fg) !important;
-        }
-      }
-
-      &.current a {
-        background-color: var(--laca-accent-subtle) !important;
-        color: var(--laca-accent-fg) !important;
-        font-weight: 500;
-      }
+    li.current a,
+    li.current a:hover {
+      color: var(--laca-chrome-fg-active) !important;
+      font-weight: 600;
     }
   }
 
   // Separator
   li.wp-menu-separator {
-    height: 1px;
-    background-color: var(--laca-border) !important;
-    margin: 8px 12px !important;
-    border: none !important;
+    border-top: 1px solid rgba(255, 255, 255, 0.18) !important;
+    margin: 6px auto !important;
+    height: 0;
   }
 
-  // Update badges
+  // Badges & counters (WooCommerce, WP core)
   .awaiting-mod,
-  .update-plugins {
-    background-color: var(--laca-danger-bg) !important;
-    color: var(--laca-danger) !important;
-    border: 1px solid var(--laca-danger-border);
-    border-radius: var(--laca-radius-full);
-    font-size: 11px;
-    font-weight: 600;
-    line-height: 1;
-    padding: 3px 6px;
-    box-shadow: none !important;
+  .update-plugins,
+  .menu-counter,
+  .remaining-tasks-badge,
+  .woocommerce-task-list-remaining-tasks-badge {
+    background-color: var(--laca-accent-hover) !important;
+    color: var(--laca-chrome-fg-active) !important;
+    border-radius: var(--laca-radius-full) !important;
+  }
+
+  // Collapse button
+  #collapse-menu {
+    color: rgba(255, 255, 255, 0.4) !important;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+
+    .collapse-button {
+      color: rgba(255, 255, 255, 0.4) !important;
+
+      &:hover {
+        color: var(--laca-chrome-fg-active) !important;
+      }
+    }
   }
 }
 
-// Folded state (sidebar thu gọn)
-body.folded #adminmenu {
-  li.menu-top.opensub > a.menu-top,
-  li.menu-top:hover {
-    background-color: var(--laca-bg-muted) !important;
-  }
-
-  .wp-submenu.sub-open,
-  .opensub .wp-submenu {
-    background-color: var(--laca-bg) !important;
-    border: 1px solid var(--laca-border) !important;
-    box-shadow: var(--laca-shadow-md);
-    left: 46px;
+// Remove arrow on current submenu items
+ul#adminmenu {
+  a.wp-has-current-submenu::after,
+  > li.current > a.current::after {
+    border-right-color: rgba(255, 255, 255, 0.06) !important;
   }
 }
 
-// Mobile responsive sidebar (< 782px)
-@media (max-width: 781.98px) {
-  #adminmenuwrap {
-    background-color: var(--laca-bg) !important;
-    border-right: 1px solid var(--laca-border) !important;
-  }
-
-  #adminmenu {
-    background-color: var(--laca-bg) !important;
-  }
-}
-
-// Admin Bar (Đậm màu tối chuẩn Chakra: --laca-fg)
+// ─── Admin Bar (Khôi phục nguyên văn trước G2) ───
 #wpadminbar {
-  background-color: var(--laca-fg) !important;
-  border-bottom: 1px solid var(--laca-border);
+  background: var(--laca-chrome-bg) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+
+  // Polylang language filter badge
+  #wp-admin-bar-languages.pll-filtered-languages,
+  .pll-filtered-languages {
+    background-color: var(--laca-accent-hover) !important;
+  }
 
   .ab-item,
   .ab-empty-item,
@@ -176,26 +154,67 @@ body.folded #adminmenu {
   .ab-icon::before,
   a.ab-item,
   div.ab-item {
-    color: var(--laca-bg-emphasized) !important;
-    font-family: var(--laca-font);
+    color: rgba(255, 255, 255, 0.82) !important;
   }
 
   .quicklinks > ul > li:hover > .ab-item,
   .ab-top-menu > li:hover > .ab-item,
   .ab-top-menu > li > .ab-item:focus {
-    background-color: var(--laca-fg-hover) !important;
-    color: var(--laca-bg) !important;
+    background: rgba(255, 255, 255, 0.08) !important;
+    color: var(--laca-chrome-fg-active) !important;
   }
 
   .ab-top-menu > .menupop > .ab-sub-wrapper {
-    background-color: var(--laca-fg) !important;
-    border: 1px solid var(--laca-border);
-    box-shadow: var(--laca-shadow-md);
+    background: var(--laca-chrome-bg) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
   }
 
   .ab-submenu .ab-item:hover {
-    background-color: var(--laca-fg-hover) !important;
-    color: var(--laca-bg) !important;
+    background: rgba(255, 255, 255, 0.08) !important;
+    color: var(--laca-chrome-fg-active) !important;
+  }
+
+  #wp-admin-bar-logo_author a {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .logo-admin-bar {
+    max-height: 0.75rem;
+  }
+
+  #wp-admin-bar-user-info {
+    .username {
+      display: none;
+    }
+
+    .display-name {
+      line-height: 1.2em !important;
+      color: var(--laca-chrome-fg-active) !important;
+    }
+
+    .avatar {
+      top: -5px;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+    }
+  }
+
+  @media (max-width: 1200px) {
+    height: 36px;
+  }
+
+  @media (max-width: 781.98px) {
+    padding: 0;
+    max-width: 100vw;
+    overflow-x: clip;
+
+    #wp-admin-bar-my-account .display-name {
+      display: none !important;
+    }
   }
 }
 

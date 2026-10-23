@@ -238,7 +238,7 @@ function app_action_admin_enqueue_assets()
         }
 
         wp_localize_script('theme-admin-js-bundle', 'lacaProjectCharts', [
-            'primary'  => '#2563eb', // Token --laca-accent
+            'primary'  => '#18181b', // Token --laca-accent đơn sắc
             'byStatus' => $by_status,
             'byMonth'  => $by_month,
         ]);

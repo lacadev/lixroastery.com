@@ -35,7 +35,7 @@ class QuickNotesWidget
         $notes   = get_option(self::OPT_KEY, []);
         $nonce   = wp_create_nonce(self::NONCE);
         $ajaxUrl = admin_url('admin-ajax.php');
-        $colors  = ['#fff9c4', '#c8e6c9', '#bbdefb', '#f8bbd0', '#ffe0b2', '#e1bee7'];
+        $colors  = ['#ffffff', '#fafafa', '#f4f4f5', '#e4e4e7', '#d4d4d8', '#a1a1aa'];
         ?>
         <div id="laca-notes-wrap">
             <?php if (empty($notes)): ?>

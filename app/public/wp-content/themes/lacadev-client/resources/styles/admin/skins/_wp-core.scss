@@ -264,6 +264,19 @@ div.error {
   tbody tr {
     transition: var(--laca-transition);
 
+    th.check-column,
+    td.check-column {
+      vertical-align: middle !important;
+      text-align: center;
+      padding: var(--laca-space-2) var(--laca-space-2) !important;
+      border-bottom: 1px solid var(--laca-border) !important;
+
+      input[type="checkbox"] {
+        margin: 0 auto;
+        vertical-align: middle;
+      }
+    }
+
     td {
       padding: var(--laca-space-2) var(--laca-space-4) !important;
       border-bottom: 1px solid var(--laca-border) !important;
@@ -273,7 +286,29 @@ div.error {
       overflow: hidden;
     }
 
-    &:hover td {
+    a.row-title {
+      color: var(--laca-fg) !important;
+      font-weight: 600;
+      text-decoration: none;
+
+      &:hover {
+        color: var(--laca-fg-hover) !important;
+        text-decoration: underline;
+      }
+    }
+
+    td a:not(.button):not(.laca-btn):not(.remove-thumbnail) {
+      color: var(--laca-fg);
+      text-decoration: none;
+
+      &:hover {
+        color: var(--laca-fg-hover);
+        text-decoration: underline;
+      }
+    }
+
+    &:hover td,
+    &:hover th {
       background-color: var(--laca-bg-subtle) !important;
     }
 
@@ -282,7 +317,8 @@ div.error {
       background-color: transparent !important;
     }
 
-    &:last-child td {
+    &:last-child td,
+    &:last-child th {
       border-bottom: none !important;
     }
   }
@@ -293,7 +329,7 @@ div.error {
     color: var(--laca-fg-muted);
 
     a {
-      color: var(--laca-accent);
+      color: var(--laca-fg);
       text-decoration: none;
 
       &:hover {
@@ -446,3 +482,92 @@ div.error {
     }
   }
 }
+
+// Form controls: Checkbox & Radio
+body.wp-admin {
+  input[type="checkbox"],
+  input[type="radio"] {
+    border: 1px solid var(--laca-border-emphasized) !important;
+    background-color: var(--laca-bg) !important;
+    color: var(--laca-fg) !important;
+
+    &:checked {
+      background-color: var(--laca-accent) !important;
+      border-color: var(--laca-accent) !important;
+      color: var(--laca-chrome-fg-active) !important;
+
+      &::before {
+        filter: brightness(10) !important;
+      }
+    }
+
+    &:focus {
+      border-color: var(--laca-accent) !important;
+      outline: 2px solid var(--laca-focus-ring) !important;
+      outline-offset: 2px !important;
+      box-shadow: none !important;
+    }
+  }
+
+  .cf-checkbox__input:checked,
+  .laca-checkbox:checked,
+  .laca-seo-module-toggle:checked {
+    background-color: var(--laca-accent) !important;
+    border-color: var(--laca-accent) !important;
+    color: var(--laca-chrome-fg-active) !important;
+  }
+}
+
+// General Admin Links — Monochromatic, no blue
+body.wp-admin {
+  a:not(.button):not(.laca-btn):not(.nav-tab):not(.ab-item):not(.page-title-action):not(.components-button),
+  a:not(.button):not(.laca-btn):not(.nav-tab):not(.ab-item):not(.page-title-action):not(.components-button):visited {
+    color: var(--laca-fg) !important;
+
+    &:hover {
+      color: var(--laca-fg-hover) !important;
+      text-decoration: underline !important;
+    }
+  }
+
+  .row-actions a,
+  .row-actions button,
+  .button-link,
+  button.button-link,
+  .editinline {
+    color: var(--laca-fg) !important;
+
+    &:hover,
+    &:focus {
+      color: var(--laca-fg-hover) !important;
+      text-decoration: underline !important;
+    }
+  }
+}
+
+// Gutenberg primary buttons
+.components-button.is-primary {
+  background-color: var(--laca-accent) !important;
+  border-color: var(--laca-accent) !important;
+  color: var(--laca-chrome-fg-active) !important;
+
+  &:hover,
+  &:focus {
+    background-color: var(--laca-accent-hover) !important;
+    border-color: var(--laca-accent-hover) !important;
+    color: var(--laca-chrome-fg-active) !important;
+  }
+}
+
+// Screen reader shortcut & accessibility links
+.screen-reader-shortcut,
+.screen-reader-text {
+  color: var(--laca-fg) !important;
+
+  &:focus {
+    color: var(--laca-fg) !important;
+    background-color: var(--laca-bg) !important;
+    box-shadow: 0 0 2px 2px var(--laca-border-emphasized) !important;
+  }
+}
+

@@ -22,6 +22,7 @@ const WIDTHS = [1440, 1024, 390];
 
 const URLS = [
   { id: 'dashboard', path: 'index.php' },
+  { id: 'journal', path: 'edit.php?post_type=journal' },
   { id: 'pages', path: 'edit.php?post_type=page' },
   { id: 'gutenberg', path: 'post.php?post=101&action=edit', isEditor: true },
   { id: 'users', path: 'users.php' },
@@ -57,6 +58,11 @@ if (OUT && !fs.existsSync(OUT)) {
 const code = `define('WP_USE_THEMES',false);require 'app/public/wp-load.php';$u=get_user_by('login',${JSON.stringify(LOGIN)});if(!$u){exit(1);}$e=time()+3600;echo json_encode([LOGGED_IN_COOKIE=>wp_generate_auth_cookie($u->ID,$e,'logged_in'),AUTH_COOKIE=>wp_generate_auth_cookie($u->ID,$e,'auth')]);exit(0);`;
 const cookiesRaw = execFileSync(PHP, ['-d', 'memory_limit=512M', '-d', 'mysqli.default_socket=' + SOCK, '-r', code], { cwd: ROOT }).toString();
 const cookies = JSON.parse(cookiesRaw);
+
+let baselineMenu = {};
+try {
+  baselineMenu = JSON.parse(fs.readFileSync(path.join(__dirname, '../menu-before.json'), 'utf8'));
+} catch (_) {}
 
 let pass = 0, fail = 0;
 const report = (ok, check, target, w, detail = '') => {
@@ -122,19 +128,39 @@ const report = (ok, check, target, w, detail = '') => {
           if (primaryBtn) {
             const bg = getComputedStyle(primaryBtn).backgroundColor;
             const color = getComputedStyle(primaryBtn).color;
-            btnOk = (bg === 'rgb(37, 99, 235)') && (color === 'rgb(255, 255, 255)' || color === 'rgb(250, 250, 250)');
+            btnOk = (bg === 'rgb(24, 24, 27)') && (color === 'rgb(255, 255, 255)' || color === 'rgb(250, 250, 250)');
+          }
+
+          const isBlue = (rgbStr) => {
+            if (!rgbStr || rgbStr === 'transparent') return false;
+            const m = rgbStr.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);
+            if (!m) return false;
+            const r = +m[1], b = +m[3];
+            return (b - r > 60 && b > 150);
+          };
+          let noBlueOk = true;
+          let noBlueDetail = '';
+          const loginEls = Array.from(document.querySelectorAll('#loginform *, #login *')).filter(el => el.offsetParent !== null);
+          for (const el of loginEls) {
+            const cs = getComputedStyle(el);
+            if (isBlue(cs.color) || isBlue(cs.backgroundColor) || isBlue(cs.borderTopColor) || isBlue(cs.borderRightColor) || isBlue(cs.borderBottomColor) || isBlue(cs.borderLeftColor)) {
+              noBlueOk = false;
+              noBlueDetail = `el=${el.tagName} c=${cs.color} bg=${cs.backgroundColor}`;
+              break;
+            }
           }
 
           const over = document.documentElement.scrollWidth - innerWidth;
 
-          return { fontOk, font: computedFont, accent, btnOk, over };
+          return { fontOk, font: computedFont, accent, btnOk, over, noBlueOk, noBlueDetail };
         });
 
         report(errors.length === 0, 'no-js-error', 'wp-login.php', w, errors[0] || '');
         report(loginRes.over <= 0, 'no-overflow', 'wp-login.php', w, loginRes.over > 0 ? `over=${loginRes.over}` : '');
-        report(loginRes.accent === '#2563eb', 'tokens', 'wp-login.php', w, `accent=${loginRes.accent}`);
+        report(loginRes.accent === '#18181b', 'tokens', 'wp-login.php', w, `accent=${loginRes.accent}`);
         report(loginRes.fontOk, 'font', 'wp-login.php', w, loginRes.font.slice(0, 30));
         report(loginRes.btnOk, 'button-primary', 'wp-login.php', w);
+        report(loginRes.noBlueOk, 'no-blue', 'wp-login.php', w, loginRes.noBlueDetail);
 
         if (OUT && (w === 1440 || w === 390)) {
           await page.screenshot({ path: path.join(OUT, `login-${w}.png`), fullPage: false });
@@ -251,10 +277,56 @@ const report = (ok, check, target, w, detail = '') => {
               const cs = getComputedStyle(btn);
               const bg = cs.backgroundColor;
               const color = cs.color;
-              if (bg !== 'rgb(37, 99, 235)' || (color !== 'rgb(255, 255, 255)' && color !== 'rgb(250, 250, 250)')) {
+              if (bg !== 'rgb(24, 24, 27)' || (color !== 'rgb(255, 255, 255)' && color !== 'rgb(250, 250, 250)')) {
                 btnOk = false;
                 btnDetail = `bg=${bg} color=${color}`;
                 break;
+              }
+            }
+
+            const isVisuallyHidden = (el) => {
+              const r = el.getBoundingClientRect();
+              if (r.width <= 1 || r.height <= 1) return true;
+              const cs = getComputedStyle(el);
+              if (cs.clip === 'rect(1px, 1px, 1px, 1px)' || cs.clip === 'rect(0px, 0px, 0px, 0px)') return true;
+              if (cs.position === 'absolute' && (r.left < -900 || r.top < -900)) return true;
+              if (el.closest('.screen-reader-text, .screen-reader-shortcut, .hidden, [aria-hidden="true"], [class*="kksr"], [id*="kksr"], [class*="kk-star"], [id*="kk-star"]')) return true;
+              return false;
+            };
+
+            // no-blue check: không phần tử hiển thị nào (ngoài canvas editor/iframe) có color, background-color, border-color với kênh B − R > 60 và B > 150
+            const isBlue = (rgbStr) => {
+              if (!rgbStr || rgbStr === 'transparent') return false;
+              const m = rgbStr.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);
+              if (!m) return false;
+              const r = +m[1], b = +m[3];
+              return (b - r > 60 && b > 150);
+            };
+            let noBlueOk = true;
+            let noBlueDetail = '';
+            const testEls = [...document.querySelectorAll('#wpwrap *')]
+              .filter(el => el.offsetParent !== null && !isVisuallyHidden(el) && !el.closest('.block-editor-writing-flow, iframe, canvas, svg'));
+            for (const el of testEls) {
+              const cs = getComputedStyle(el);
+              if (isBlue(cs.color) || isBlue(cs.backgroundColor) || isBlue(cs.borderTopColor) || isBlue(cs.borderRightColor) || isBlue(cs.borderBottomColor) || isBlue(cs.borderLeftColor)) {
+                noBlueOk = false;
+                noBlueDetail = `el=${el.tagName} cls=${el.className} c=${cs.color} bg=${cs.backgroundColor}`;
+                break;
+              }
+            }
+
+            // menu-one-line: mọi #adminmenu .wp-menu-name cao <= 36px (1 dòng) ở 1440 và 1024
+            let menuOneLineOk = true;
+            let menuOneLineDetail = '';
+            if (window.innerWidth >= 1024) {
+              const menuNames = [...document.querySelectorAll('#adminmenu > li .wp-menu-name')];
+              for (const mn of menuNames) {
+                const h = mn.getBoundingClientRect().height;
+                if (h > 36) {
+                  menuOneLineOk = false;
+                  menuOneLineDetail = `text="${mn.innerText.trim()}" h=${h}`;
+                  break;
+                }
               }
             }
 
@@ -313,15 +385,6 @@ const report = (ok, check, target, w, detail = '') => {
               return m ? { r: +m[1], g: +m[2], b: +m[3], a: m[4] !== undefined ? +m[4] : 1 } : null;
             };
 
-            const isVisuallyHidden = (el) => {
-              const r = el.getBoundingClientRect();
-              if (r.width <= 1 || r.height <= 1) return true;
-              const cs = getComputedStyle(el);
-              if (cs.clip === 'rect(1px, 1px, 1px, 1px)' || cs.clip === 'rect(0px, 0px, 0px, 0px)') return true;
-              if (cs.position === 'absolute' && (r.left < -900 || r.top < -900)) return true;
-              if (el.closest('.screen-reader-text, .hidden, [aria-hidden="true"], [class*="kksr"], [id*="kksr"], [class*="kk-star"], [id*="kk-star"]')) return true;
-              return false;
-            };
 
             const contentWrap = document.querySelector('#wpbody-content') || body;
             const textNodes = [...contentWrap.querySelectorAll('p, h1, h2, h3, h4, span, label, th, td, a, button')]
@@ -384,6 +447,10 @@ const report = (ok, check, target, w, detail = '') => {
               bodyFont,
               btnOk,
               btnDetail,
+              noBlueOk,
+              noBlueDetail,
+              menuOneLineOk,
+              menuOneLineDetail,
               inputOk,
               inputDetail,
               labelCaseOk,
@@ -398,8 +465,12 @@ const report = (ok, check, target, w, detail = '') => {
 
           report(res.noOverflow, 'no-overflow', item.id, w, res.wideElements.join(', '));
           report(errors.length === 0, 'no-js-error', item.id, w, errors[0] ? errors[0].slice(0, 100) : '');
-          report(res.accent === '#2563eb', 'tokens', item.id, w, `accent=${res.accent}`);
+          report(res.accent === '#18181b', 'tokens', item.id, w, `accent=${res.accent}`);
           report(res.btnOk, 'button-primary', item.id, w, res.btnDetail);
+          report(res.noBlueOk, 'no-blue', item.id, w, res.noBlueDetail);
+          if (w >= 1024) {
+            report(res.menuOneLineOk, 'menu-one-line', item.id, w, res.menuOneLineDetail);
+          }
           report(res.inputOk, 'input-style', item.id, w, res.inputDetail);
           if (item.isEditor) {
             report(res.labelCaseOk, 'label-case', item.id, w, res.labelCaseDetail);
@@ -409,7 +480,7 @@ const report = (ok, check, target, w, detail = '') => {
           report(res.noAdminColor, 'no-admin-color', item.id, w, `inline=${res.hasInlineAdminColor} field=${res.hasPrimaryColorField}`);
 
           if (OUT && (w === 1440 || w === 390)) {
-            if (['laca-admin', 'laca-theme', 'seo-general', 'users'].includes(item.id)) {
+            if (['laca-admin', 'laca-theme', 'seo-general', 'users', 'journal', 'dashboard'].includes(item.id)) {
               await page.screenshot({ path: path.join(OUT, `${item.id}-${w}.png`), fullPage: false });
             }
             if (item.isEditor) {

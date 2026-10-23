@@ -28,7 +28,7 @@ register_nav_menus(
 Container::make('nav_menu_item', __('Cài dặt mở rộng'))
   ->add_fields([
       Field::make('html', 'menu_item_extra_info', '')
-          ->set_html('<div style="background:#f0f9ff;border:1px solid #bae6fd;border-radius:6px;padding:14px 16px;margin:8px 0"><p style="margin:0 0 8px;font-weight:600;color:#0369a1">🔧 Cài đặt mở rộng cho mục menu</p><p style="margin:0;font-size:13px;color:#374151">Các tuỳ chọn hiển thị thêm cho riêng mục menu này (ví dụ ảnh minh hoạ đi kèm), tuỳ theme mà giao diện sẽ sử dụng.</p></div>'),
+          ->set_html('<div style="background:#f4f4f5;border:1px solid #e4e4e7;border-radius:6px;padding:14px 16px;margin:8px 0"><p style="margin:0 0 8px;font-weight:600;color:#18181b">🔧 Cài đặt mở rộng cho mục menu</p><p style="margin:0;font-size:13px;color:#71717a">Các tuỳ chọn hiển thị thêm cho riêng mục menu này (ví dụ ảnh minh hoạ đi kèm), tuỳ theme mà giao diện sẽ sử dụng.</p></div>'),
 
       Field::make('image', 'menu_img', __('Menu image', 'laca')),
   ]);

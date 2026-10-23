@@ -13,7 +13,7 @@ add_action('carbon_fields_register_fields', function () {
         ->where('post_type', '=', 'gallery')
         ->add_fields([
             \Carbon_Fields\Field\Field::make('html', 'gallery_meta_intro', __('', 'laca'))
-                ->set_html('<div style="background:#f0f9ff;border:1px solid #bae6fd;border-radius:6px;padding:14px 16px;margin:8px 0"><p style="margin:0 0 8px;font-weight:600;color:#0369a1">🔧 Thông tin gallery</p><p style="margin:0;font-size:13px;color:#374151">Nhập các thông tin chi tiết và thư viện ảnh cho mục gallery/portfolio này (chủ đầu tư, diện tích, số tầng, hình ảnh...). Nội dung sẽ hiển thị ở trang chi tiết của mục này.</p></div>'),
+                ->set_html('<div style="background:#f4f4f5;border:1px solid #e4e4e7;border-radius:6px;padding:14px 16px;margin:8px 0"><p style="margin:0 0 8px;font-weight:600;color:#18181b">🔧 Thông tin gallery</p><p style="margin:0;font-size:13px;color:#71717a">Nhập các thông tin chi tiết và thư viện ảnh cho mục gallery/portfolio này (chủ đầu tư, diện tích, số tầng, hình ảnh...). Nội dung sẽ hiển thị ở trang chi tiết của mục này.</p></div>'),
 
             \Carbon_Fields\Field\Field::make('text', 'investor', __('Chủ đầu tư', 'laca'))
                     ->set_width(25)

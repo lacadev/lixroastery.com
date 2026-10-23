@@ -1,0 +1,834 @@
+{
+  "1024": [
+    {
+      "id": "menu-dashboard",
+      "li": {
+        "top": 32,
+        "height": 34,
+        "width": 159
+      },
+      "name": {
+        "top": 32,
+        "height": 34,
+        "width": 159
+      },
+      "text": "Dashboard"
+    },
+    {
+      "id": "toplevel_page_lacadev-help",
+      "li": {
+        "top": 66,
+        "height": 34,
+        "width": 159
+      },
+      "name": {
+        "top": 66,
+        "height": 34,
+        "width": 159
+      },
+      "text": "HD Sử dụng"
+    },
+    {
+      "id": "toplevel_page_laca-admin",
+      "li": {
+        "top": 100,
+        "height": 34,
+        "width": 159
+      },
+      "name": {
+        "top": 100,
+        "height": 34,
+        "width": 159
+      },
+      "text": "Laca Admin"
+    },
+    {
+      "id": "toplevel_page_laca-seo",
+      "li": {
+        "top": 135,
+        "height": 34,
+        "width": 159
+      },
+      "name": {
+        "top": 135,
+        "height": 34,
+        "width": 159
+      },
+      "text": "Laca SEO"
+    },
+    {
+      "id": "toplevel_page_app-theme-options",
+      "li": {
+        "top": 169,
+        "height": 34,
+        "width": 159
+      },
+      "name": {
+        "top": 169,
+        "height": 34,
+        "width": 159
+      },
+      "text": "Laca Theme"
+    },
+    {
+      "id": "menu-posts-journal",
+      "li": {
+        "top": 203,
+        "height": 187,
+        "width": 159
+      },
+      "name": {
+        "top": 203,
+        "height": 34,
+        "width": 156
+      },
+      "text": "Journal"
+    },
+    {
+      "id": "menu-posts-partnership",
+      "li": {
+        "top": 390,
+        "height": 34,
+        "width": 159
+      },
+      "name": {
+        "top": 390,
+        "height": 34,
+        "width": 159
+      },
+      "text": "Partnership"
+    },
+    {
+      "id": "menu-posts-glossary",
+      "li": {
+        "top": 424,
+        "height": 34,
+        "width": 159
+      },
+      "name": {
+        "top": 424,
+        "height": 34,
+        "width": 159
+      },
+      "text": "Glossary"
+    },
+    {
+      "id": "wp-not-current-submenu wp-menu-separator",
+      "li": {
+        "top": 464,
+        "height": 1,
+        "width": 159
+      },
+      "name": null,
+      "text": ""
+    },
+    {
+      "id": "menu-media",
+      "li": {
+        "top": 471,
+        "height": 34,
+        "width": 159
+      },
+      "name": {
+        "top": 471,
+        "height": 34,
+        "width": 159
+      },
+      "text": "Media"
+    },
+    {
+      "id": "menu-pages",
+      "li": {
+        "top": 506,
+        "height": 34,
+        "width": 159
+      },
+      "name": {
+        "top": 506,
+        "height": 34,
+        "width": 159
+      },
+      "text": "Pages"
+    },
+    {
+      "id": "toplevel_page_rank-math",
+      "li": {
+        "top": 540,
+        "height": 34,
+        "width": 159
+      },
+      "name": {
+        "top": 540,
+        "height": 34,
+        "width": 159
+      },
+      "text": "Rank Math SEO"
+    },
+    {
+      "id": "wp-not-current-submenu wp-menu-separator woocommerce",
+      "li": {
+        "top": 580,
+        "height": 1,
+        "width": 159
+      },
+      "name": null,
+      "text": ""
+    },
+    {
+      "id": "toplevel_page_woocommerce",
+      "li": {
+        "top": 587,
+        "height": 34,
+        "width": 159
+      },
+      "name": {
+        "top": 587,
+        "height": 34,
+        "width": 159
+      },
+      "text": "WooCommerce"
+    },
+    {
+      "id": "menu-posts-product",
+      "li": {
+        "top": 621,
+        "height": 34,
+        "width": 159
+      },
+      "name": {
+        "top": 621,
+        "height": 34,
+        "width": 159
+      },
+      "text": "Products"
+    },
+    {
+      "id": "toplevel_page_admin-page-wc-settings-tab-checkout-from-PAYMENTS_MENU_ITEM",
+      "li": {
+        "top": 655,
+        "height": 34,
+        "width": 159
+      },
+      "name": {
+        "top": 655,
+        "height": 34,
+        "width": 159
+      },
+      "text": "Payments"
+    },
+    {
+      "id": "toplevel_page_wc-admin-path--analytics-overview",
+      "li": {
+        "top": 690,
+        "height": 34,
+        "width": 159
+      },
+      "name": {
+        "top": 690,
+        "height": 34,
+        "width": 159
+      },
+      "text": "Analytics"
+    },
+    {
+      "id": "toplevel_page_woocommerce-marketing",
+      "li": {
+        "top": 724,
+        "height": 34,
+        "width": 159
+      },
+      "name": {
+        "top": 724,
+        "height": 34,
+        "width": 159
+      },
+      "text": "Marketing"
+    },
+    {
+      "id": "toplevel_page_lix-newsletter",
+      "li": {
+        "top": 758,
+        "height": 34,
+        "width": 159
+      },
+      "name": {
+        "top": 758,
+        "height": 34,
+        "width": 159
+      },
+      "text": "Newsletter"
+    },
+    {
+      "id": "wp-not-current-submenu wp-menu-separator",
+      "li": {
+        "top": 798,
+        "height": 1,
+        "width": 159
+      },
+      "name": null,
+      "text": ""
+    },
+    {
+      "id": "menu-appearance",
+      "li": {
+        "top": 805,
+        "height": 34,
+        "width": 159
+      },
+      "name": {
+        "top": 805,
+        "height": 34,
+        "width": 159
+      },
+      "text": "Appearance"
+    },
+    {
+      "id": "menu-plugins",
+      "li": {
+        "top": 839,
+        "height": 34,
+        "width": 159
+      },
+      "name": {
+        "top": 839,
+        "height": 34,
+        "width": 159
+      },
+      "text": "Plugins 3"
+    },
+    {
+      "id": "menu-users",
+      "li": {
+        "top": 874,
+        "height": 34,
+        "width": 159
+      },
+      "name": {
+        "top": 874,
+        "height": 34,
+        "width": 159
+      },
+      "text": "Users"
+    },
+    {
+      "id": "menu-tools",
+      "li": {
+        "top": 908,
+        "height": 34,
+        "width": 159
+      },
+      "name": {
+        "top": 908,
+        "height": 34,
+        "width": 159
+      },
+      "text": "Tools"
+    },
+    {
+      "id": "menu-settings",
+      "li": {
+        "top": 942,
+        "height": 34,
+        "width": 159
+      },
+      "name": {
+        "top": 942,
+        "height": 34,
+        "width": 159
+      },
+      "text": "Settings"
+    },
+    {
+      "id": "wp-not-current-submenu wp-menu-separator",
+      "li": {
+        "top": 982,
+        "height": 1,
+        "width": 159
+      },
+      "name": null,
+      "text": ""
+    },
+    {
+      "id": "toplevel_page_kk-star-ratings",
+      "li": {
+        "top": 989,
+        "height": 34,
+        "width": 159
+      },
+      "name": {
+        "top": 989,
+        "height": 34,
+        "width": 159
+      },
+      "text": "kk Star Ratings"
+    },
+    {
+      "id": "toplevel_page_mlang",
+      "li": {
+        "top": 1023,
+        "height": 34,
+        "width": 159
+      },
+      "name": {
+        "top": 1023,
+        "height": 34,
+        "width": 159
+      },
+      "text": "Languages"
+    },
+    {
+      "id": "toplevel_page_litespeed",
+      "li": {
+        "top": 1057,
+        "height": 34,
+        "width": 159
+      },
+      "name": {
+        "top": 1057,
+        "height": 34,
+        "width": 159
+      },
+      "text": "LiteSpeed Cache"
+    },
+    {
+      "id": "toplevel_page_loco",
+      "li": {
+        "top": 1092,
+        "height": 34,
+        "width": 159
+      },
+      "name": {
+        "top": 1092,
+        "height": 34,
+        "width": 159
+      },
+      "text": "Loco Translate"
+    },
+    {
+      "id": "collapse-menu",
+      "li": {
+        "top": 1126,
+        "height": 35,
+        "width": 159
+      },
+      "name": null,
+      "text": ""
+    }
+  ],
+  "1440": [
+    {
+      "id": "menu-dashboard",
+      "li": {
+        "top": 32,
+        "height": 34,
+        "width": 159
+      },
+      "name": {
+        "top": 32,
+        "height": 34,
+        "width": 159
+      },
+      "text": "Dashboard"
+    },
+    {
+      "id": "toplevel_page_lacadev-help",
+      "li": {
+        "top": 66,
+        "height": 34,
+        "width": 159
+      },
+      "name": {
+        "top": 66,
+        "height": 34,
+        "width": 159
+      },
+      "text": "HD Sử dụng"
+    },
+    {
+      "id": "toplevel_page_laca-admin",
+      "li": {
+        "top": 100,
+        "height": 34,
+        "width": 159
+      },
+      "name": {
+        "top": 100,
+        "height": 34,
+        "width": 159
+      },
+      "text": "Laca Admin"
+    },
+    {
+      "id": "toplevel_page_laca-seo",
+      "li": {
+        "top": 135,
+        "height": 34,
+        "width": 159
+      },
+      "name": {
+        "top": 135,
+        "height": 34,
+        "width": 159
+      },
+      "text": "Laca SEO"
+    },
+    {
+      "id": "toplevel_page_app-theme-options",
+      "li": {
+        "top": 169,
+        "height": 34,
+        "width": 159
+      },
+      "name": {
+        "top": 169,
+        "height": 34,
+        "width": 159
+      },
+      "text": "Laca Theme"
+    },
+    {
+      "id": "menu-posts-journal",
+      "li": {
+        "top": 203,
+        "height": 187,
+        "width": 159
+      },
+      "name": {
+        "top": 203,
+        "height": 34,
+        "width": 156
+      },
+      "text": "Journal"
+    },
+    {
+      "id": "menu-posts-partnership",
+      "li": {
+        "top": 390,
+        "height": 34,
+        "width": 159
+      },
+      "name": {
+        "top": 390,
+        "height": 34,
+        "width": 159
+      },
+      "text": "Partnership"
+    },
+    {
+      "id": "menu-posts-glossary",
+      "li": {
+        "top": 424,
+        "height": 34,
+        "width": 159
+      },
+      "name": {
+        "top": 424,
+        "height": 34,
+        "width": 159
+      },
+      "text": "Glossary"
+    },
+    {
+      "id": "wp-not-current-submenu wp-menu-separator",
+      "li": {
+        "top": 464,
+        "height": 1,
+        "width": 159
+      },
+      "name": null,
+      "text": ""
+    },
+    {
+      "id": "menu-media",
+      "li": {
+        "top": 471,
+        "height": 34,
+        "width": 159
+      },
+      "name": {
+        "top": 471,
+        "height": 34,
+        "width": 159
+      },
+      "text": "Media"
+    },
+    {
+      "id": "menu-pages",
+      "li": {
+        "top": 506,
+        "height": 34,
+        "width": 159
+      },
+      "name": {
+        "top": 506,
+        "height": 34,
+        "width": 159
+      },
+      "text": "Pages"
+    },
+    {
+      "id": "toplevel_page_rank-math",
+      "li": {
+        "top": 540,
+        "height": 34,
+        "width": 159
+      },
+      "name": {
+        "top": 540,
+        "height": 34,
+        "width": 159
+      },
+      "text": "Rank Math SEO"
+    },
+    {
+      "id": "wp-not-current-submenu wp-menu-separator woocommerce",
+      "li": {
+        "top": 580,
+        "height": 1,
+        "width": 159
+      },
+      "name": null,
+      "text": ""
+    },
+    {
+      "id": "toplevel_page_woocommerce",
+      "li": {
+        "top": 587,
+        "height": 34,
+        "width": 159
+      },
+      "name": {
+        "top": 587,
+        "height": 34,
+        "width": 159
+      },
+      "text": "WooCommerce"
+    },
+    {
+      "id": "menu-posts-product",
+      "li": {
+        "top": 621,
+        "height": 34,
+        "width": 159
+      },
+      "name": {
+        "top": 621,
+        "height": 34,
+        "width": 159
+      },
+      "text": "Products"
+    },
+    {
+      "id": "toplevel_page_admin-page-wc-settings-tab-checkout-from-PAYMENTS_MENU_ITEM",
+      "li": {
+        "top": 655,
+        "height": 34,
+        "width": 159
+      },
+      "name": {
+        "top": 655,
+        "height": 34,
+        "width": 159
+      },
+      "text": "Payments"
+    },
+    {
+      "id": "toplevel_page_wc-admin-path--analytics-overview",
+      "li": {
+        "top": 690,
+        "height": 34,
+        "width": 159
+      },
+      "name": {
+        "top": 690,
+        "height": 34,
+        "width": 159
+      },
+      "text": "Analytics"
+    },
+    {
+      "id": "toplevel_page_woocommerce-marketing",
+      "li": {
+        "top": 724,
+        "height": 34,
+        "width": 159
+      },
+      "name": {
+        "top": 724,
+        "height": 34,
+        "width": 159
+      },
+      "text": "Marketing"
+    },
+    {
+      "id": "toplevel_page_lix-newsletter",
+      "li": {
+        "top": 758,
+        "height": 34,
+        "width": 159
+      },
+      "name": {
+        "top": 758,
+        "height": 34,
+        "width": 159
+      },
+      "text": "Newsletter"
+    },
+    {
+      "id": "wp-not-current-submenu wp-menu-separator",
+      "li": {
+        "top": 798,
+        "height": 1,
+        "width": 159
+      },
+      "name": null,
+      "text": ""
+    },
+    {
+      "id": "menu-appearance",
+      "li": {
+        "top": 805,
+        "height": 34,
+        "width": 159
+      },
+      "name": {
+        "top": 805,
+        "height": 34,
+        "width": 159
+      },
+      "text": "Appearance"
+    },
+    {
+      "id": "menu-plugins",
+      "li": {
+        "top": 839,
+        "height": 34,
+        "width": 159
+      },
+      "name": {
+        "top": 839,
+        "height": 34,
+        "width": 159
+      },
+      "text": "Plugins 3"
+    },
+    {
+      "id": "menu-users",
+      "li": {
+        "top": 874,
+        "height": 34,
+        "width": 159
+      },
+      "name": {
+        "top": 874,
+        "height": 34,
+        "width": 159
+      },
+      "text": "Users"
+    },
+    {
+      "id": "menu-tools",
+      "li": {
+        "top": 908,
+        "height": 34,
+        "width": 159
+      },
+      "name": {
+        "top": 908,
+        "height": 34,
+        "width": 159
+      },
+      "text": "Tools"
+    },
+    {
+      "id": "menu-settings",
+      "li": {
+        "top": 942,
+        "height": 34,
+        "width": 159
+      },
+      "name": {
+        "top": 942,
+        "height": 34,
+        "width": 159
+      },
+      "text": "Settings"
+    },
+    {
+      "id": "wp-not-current-submenu wp-menu-separator",
+      "li": {
+        "top": 982,
+        "height": 1,
+        "width": 159
+      },
+      "name": null,
+      "text": ""
+    },
+    {
+      "id": "toplevel_page_kk-star-ratings",
+      "li": {
+        "top": 989,
+        "height": 34,
+        "width": 159
+      },
+      "name": {
+        "top": 989,
+        "height": 34,
+        "width": 159
+      },
+      "text": "kk Star Ratings"
+    },
+    {
+      "id": "toplevel_page_mlang",
+      "li": {
+        "top": 1023,
+        "height": 34,
+        "width": 159
+      },
+      "name": {
+        "top": 1023,
+        "height": 34,
+        "width": 159
+      },
+      "text": "Languages"
+    },
+    {
+      "id": "toplevel_page_litespeed",
+      "li": {
+        "top": 1057,
+        "height": 34,
+        "width": 159
+      },
+      "name": {
+        "top": 1057,
+        "height": 34,
+        "width": 159
+      },
+      "text": "LiteSpeed Cache"
+    },
+    {
+      "id": "toplevel_page_loco",
+      "li": {
+        "top": 1092,
+        "height": 34,
+        "width": 159
+      },
+      "name": {
+        "top": 1092,
+        "height": 34,
+        "width": 159
+      },
+      "text": "Loco Translate"
+    },
+    {
+      "id": "collapse-menu",
+      "li": {
+        "top": 1126,
+        "height": 35,
+        "width": 159
+      },
+      "name": null,
+      "text": ""
+    }
+  ]
+}

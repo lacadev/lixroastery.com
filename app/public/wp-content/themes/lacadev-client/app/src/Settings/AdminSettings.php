@@ -1113,10 +1113,10 @@ class AdminSettings
 					Field::make('html', 'block_sync_endpoint_info', '')
 						->set_html(static function () {
 							$endpoint = rest_url('lacadev/v1/sync-block');
-							return '<div style="background:#f0f9ff;border:1px solid #bae6fd;border-radius:6px;padding:12px 16px;margin:8px 0">'
-								. '<p style="margin:0 0 6px;font-weight:600;color:#0369a1">🌐 Endpoint URL của site này:</p>'
-								. '<code style="font-size:13px;word-break:break-all;background:#e0f2fe;padding:6px 10px;border-radius:4px;display:block">' . esc_html($endpoint) . '</code>'
-								. '<p style="margin:8px 0 0;font-size:12px;color:#4b5563">Dán URL này vào trường <strong>Sync Endpoint URL</strong> trong project tương ứng trên lacadev.com.</p>'
+							return '<div style="background:#f4f4f5;border:1px solid #e4e4e7;border-radius:6px;padding:12px 16px;margin:8px 0">'
+								. '<p style="margin:0 0 6px;font-weight:600;color:#18181b">🌐 Endpoint URL của site này:</p>'
+								. '<code style="font-size:13px;word-break:break-all;background:#e4e4e7;color:#18181b;padding:6px 10px;border-radius:4px;display:block">' . esc_html($endpoint) . '</code>'
+								. '<p style="margin:8px 0 0;font-size:12px;color:#71717a">Dán URL này vào trường <strong>Sync Endpoint URL</strong> trong project tương ứng trên lacadev.com.</p>'
 								. '</div>';
 						}),
 
@@ -1125,19 +1125,19 @@ class AdminSettings
 					Field::make('html', 'block_catalog_key_display', __('Catalog Key', 'laca'))
 						->set_html(static function () {
 							$key = \App\Settings\BlockCatalogProvider::ensureApiKey();
-							return '<div style="background:#fefce8;border:1px solid #fde68a;border-radius:6px;padding:12px 16px;margin:8px 0">'
-								. '<p style="margin:0 0 6px;font-weight:600;color:#854d0e">🔑 Catalog Key của site này:</p>'
-								. '<code style="font-size:13px;word-break:break-all;background:#fef9c3;padding:6px 10px;border-radius:4px;display:block">' . esc_html($key) . '</code>'
-								. '<p style="margin:8px 0 0;font-size:12px;color:#4b5563">Chỉ cấu hình trên <strong>lacadev.com</strong> (hub) để hub đọc danh mục block từ <strong>chính site clients.lacadev.com này</strong> — không liên quan tới project của khách hàng.</p>'
+							return '<div style="background:#f4f4f5;border:1px solid #e4e4e7;border-radius:6px;padding:12px 16px;margin:8px 0">'
+								. '<p style="margin:0 0 6px;font-weight:600;color:#18181b">🔑 Catalog Key của site này:</p>'
+								. '<code style="font-size:13px;word-break:break-all;background:#e4e4e7;color:#18181b;padding:6px 10px;border-radius:4px;display:block">' . esc_html($key) . '</code>'
+								. '<p style="margin:8px 0 0;font-size:12px;color:#71717a">Chỉ cấu hình trên <strong>lacadev.com</strong> (hub) để hub đọc danh mục block từ <strong>chính site clients.lacadev.com này</strong> — không liên quan tới project của khách hàng.</p>'
 								. '</div>';
 						}),
 
 					Field::make('html', 'block_catalog_endpoint_info', '')
 						->set_html(static function () {
 							$endpoint = rest_url('lacadev/v1/blocks-catalog');
-							return '<div style="background:#f0f9ff;border:1px solid #bae6fd;border-radius:6px;padding:12px 16px;margin:8px 0">'
-								. '<p style="margin:0 0 6px;font-weight:600;color:#0369a1">🌐 Catalog Endpoint URL:</p>'
-								. '<code style="font-size:13px;word-break:break-all;background:#e0f2fe;padding:6px 10px;border-radius:4px;display:block">' . esc_html($endpoint) . '</code>'
+							return '<div style="background:#f4f4f5;border:1px solid #e4e4e7;border-radius:6px;padding:12px 16px;margin:8px 0">'
+								. '<p style="margin:0 0 6px;font-weight:600;color:#18181b">🌐 Catalog Endpoint URL:</p>'
+								. '<code style="font-size:13px;word-break:break-all;background:#e4e4e7;color:#18181b;padding:6px 10px;border-radius:4px;display:block">' . esc_html($endpoint) . '</code>'
 								. '</div>';
 						}),
 				]);
@@ -1149,9 +1149,9 @@ class AdminSettings
 				->add_fields([
 					Field::make('html', 'tracker_info', '')
 						->set_html(
-							'<div style="background:#f0f9ff;border:1px solid #bae6fd;border-radius:6px;padding:14px 16px;margin:8px 0">'
-							. '<p style="margin:0 0 8px;font-weight:600;color:#0369a1">📡 LacaDev Tracker</p>'
-							. '<p style="margin:0;font-size:13px;color:#374151">Gửi log tự động (cập nhật plugin/theme/core, xóa plugin, phát hiện file PHP lạ) về hệ thống quản lý dự án lacadev.com. '
+							'<div style="background:#f4f4f5;border:1px solid #e4e4e7;border-radius:6px;padding:14px 16px;margin:8px 0">'
+							. '<p style="margin:0 0 8px;font-weight:600;color:#18181b">📡 LacaDev Tracker</p>'
+							. '<p style="margin:0;font-size:13px;color:#71717a">Gửi log tự động (cập nhật plugin/theme/core, xóa plugin, phát hiện file PHP lạ) về hệ thống quản lý dự án lacadev.com. '
 							. 'Lấy <strong>Endpoint URL</strong> và <strong>Secret Key</strong> từ trang chi tiết project tương ứng trên lacadev.com.</p>'
 							. '</div>'
 						),
@@ -1284,7 +1284,7 @@ class AdminSettings
 				->set_page_file(__('laca-login-socials', 'laca'))
 				->add_tab(__('Google', 'laca'), [
 					Field::make('html', 'login_socials_google_info', '')
-						->set_html('<div style="background:#f0f9ff;border:1px solid #bae6fd;border-radius:6px;padding:14px 16px;margin:8px 0"><p style="margin:0 0 8px;font-weight:600;color:#0369a1">🔧 Đăng nhập bằng Google</p><p style="margin:0;font-size:13px;color:#374151">Cho phép người dùng đăng nhập vào site bằng tài khoản Google thay vì username/mật khẩu. Bạn cần tạo <strong>Client ID</strong> và <strong>Client Secret</strong> trên Google Cloud Console, dán vào bên dưới, rồi cấu hình <strong>Redirect URI</strong> (đã điền sẵn) trong đó.</p></div>'),
+						->set_html('<div style="background:#f4f4f5;border:1px solid #e4e4e7;border-radius:6px;padding:14px 16px;margin:8px 0"><p style="margin:0 0 8px;font-weight:600;color:#18181b">🔧 Đăng nhập bằng Google</p><p style="margin:0;font-size:13px;color:#71717a">Cho phép người dùng đăng nhập vào site bằng tài khoản Google thay vì username/mật khẩu. Bạn cần tạo <strong>Client ID</strong> và <strong>Client Secret</strong> trên Google Cloud Console, dán vào bên dưới, rồi cấu hình <strong>Redirect URI</strong> (đã điền sẵn) trong đó.</p></div>'),
 
 					Field::make('checkbox', 'enable_login_google', __('Bật Login Google', 'laca')),
 					Field::make('text', 'google_client_id', __('Client ID', 'laca'))
@@ -1306,13 +1306,13 @@ class AdminSettings
 								</h3>
 
 								<div style="display:grid;gap:14px">
-									<div style="background:#f8fafc;border-left:4px solid #3b82f6;padding:12px 16px;border-radius:4px">
-										<p style="margin:0 0 6px;font-weight:600;color:#1e40af">Bước 1: Tạo Project trên Google Cloud</p>
-										<p style="margin:0">Truy cập <a href="https://console.cloud.google.com/" target="_blank" style="color:#2563eb;text-decoration:underline">Google Cloud Console</a> ➔ Bấm chọn danh sách Project ở thanh trên cùng ➔ Chọn <strong>New Project</strong> ➔ Đặt tên website (VD: <code>' . esc_html(get_bloginfo('name')) . '</code>) ➔ Bấm <strong>Create</strong>.</p>
+									<div style="background:#f8fafc;border-left:4px solid #71717a;padding:12px 16px;border-radius:4px">
+										<p style="margin:0 0 6px;font-weight:600;color:#27272a">Bước 1: Tạo Project trên Google Cloud</p>
+										<p style="margin:0">Truy cập <a href="https://console.cloud.google.com/" target="_blank" style="color:#27272a;text-decoration:underline">Google Cloud Console</a> ➔ Bấm chọn danh sách Project ở thanh trên cùng ➔ Chọn <strong>New Project</strong> ➔ Đặt tên website (VD: <code>' . esc_html(get_bloginfo('name')) . '</code>) ➔ Bấm <strong>Create</strong>.</p>
 									</div>
 
-									<div style="background:#f8fafc;border-left:4px solid #3b82f6;padding:12px 16px;border-radius:4px">
-										<p style="margin:0 0 6px;font-weight:600;color:#1e40af">Bước 2: Cấu hình Màn hình đồng thuận (OAuth consent screen / Audience)</p>
+									<div style="background:#f8fafc;border-left:4px solid #71717a;padding:12px 16px;border-radius:4px">
+										<p style="margin:0 0 6px;font-weight:600;color:#27272a">Bước 2: Cấu hình Màn hình đồng thuận (OAuth consent screen / Audience)</p>
 										<ul style="margin:0;padding-left:18px">
 											<li>Ở menu bên trái, vào <strong>Audience</strong> (hoặc <strong>OAuth consent screen</strong>).</li>
 											<li>Chọn loại người dùng là <strong>External</strong> ➔ Bấm <strong>Create</strong> ➔ Điền tên App, Email hỗ trợ và Email nhà phát triển.</li>
@@ -1320,8 +1320,8 @@ class AdminSettings
 										</ul>
 									</div>
 
-									<div style="background:#f8fafc;border-left:4px solid #3b82f6;padding:12px 16px;border-radius:4px">
-										<p style="margin:0 0 6px;font-weight:600;color:#1e40af">Bước 3: Tạo OAuth Client ID & Nhập URL chính xác</p>
+									<div style="background:#f8fafc;border-left:4px solid #71717a;padding:12px 16px;border-radius:4px">
+										<p style="margin:0 0 6px;font-weight:600;color:#27272a">Bước 3: Tạo OAuth Client ID & Nhập URL chính xác</p>
 										<p style="margin:0 0 8px">Vào menu bên trái <strong>Clients</strong> (hoặc <strong>Credentials</strong>) ➔ Bấm <strong>+ Create Credentials</strong> ➔ Chọn <strong>OAuth client ID</strong> ➔ Application type chọn <strong>Web application</strong>.</p>
 										<div style="background:#f1f5f9;border:1px solid #cbd5e1;padding:10px 14px;border-radius:6px;margin:8px 0">
 											<p style="margin:0 0 6px"><strong>1. Authorized JavaScript origins:</strong></p>

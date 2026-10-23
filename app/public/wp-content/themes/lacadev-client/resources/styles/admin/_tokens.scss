@@ -10,28 +10,35 @@
   --laca-fg-subtle: #71717a;
   --laca-border: #e4e4e7;
   --laca-border-emphasized: #d4d4d8;
-  --laca-accent: #2563eb;
-  --laca-accent-hover: #1d4ed8;
-  --laca-accent-subtle: #eff6ff;
-  --laca-accent-muted: #dbeafe;
-  --laca-accent-fg: #1e40af;
-  --laca-focus-ring: #3b82f6;
+  --laca-accent: #18181b;
+  --laca-accent-hover: #3f3f46;
+  --laca-accent-subtle: #f4f4f5;
+  --laca-accent-muted: #e4e4e7;
+  --laca-accent-fg: #18181b;
+  --laca-focus-ring: #71717a;
 
-  --laca-success: #15803d;
-  --laca-success-bg: #f0fdf4;
-  --laca-success-border: #bbf7d0;
+  --laca-success: #3f3f46;
+  --laca-success-bg: #f4f4f5;
+  --laca-success-border: #e4e4e7;
 
-  --laca-warning: #c2410c;
-  --laca-warning-bg: #fff7ed;
-  --laca-warning-border: #fed7aa;
+  --laca-warning: #27272a;
+  --laca-warning-bg: #f4f4f5;
+  --laca-warning-border: #e4e4e7;
 
-  --laca-danger: #b91c1c;
-  --laca-danger-bg: #fef2f2;
-  --laca-danger-border: #fecaca;
+  --laca-danger: #18181b;
+  --laca-danger-bg: #f4f4f5;
+  --laca-danger-border: #e4e4e7;
 
-  --laca-info: var(--laca-accent-fg);
-  --laca-info-bg: var(--laca-accent-subtle);
-  --laca-info-border: #bfdbfe;
+  --laca-info: #3f3f46;
+  --laca-info-bg: #f4f4f5;
+  --laca-info-border: #e4e4e7;
+
+  // 2.2 Chrome & Navigation (Monochromatic Dark)
+  --laca-chrome-bg: #18181b;
+  --laca-chrome-sub-bg: #27272a;
+  --laca-chrome-active-bg: #3f3f46;
+  --laca-chrome-fg: #e4e4e7;
+  --laca-chrome-fg-active: #ffffff;
 
   // 2.2 Typography
   --laca-font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
