@@ -3,6 +3,16 @@
 // Scope: .interface-complementary-area, .block-editor-block-inspector, .edit-post-sidebar, .editor-sidebar
 // =============================================================================
 
+:root,
+body {
+  --wp-admin-theme-color: var(--laca-accent) !important;
+  --wp-admin-theme-color-darker-10: var(--laca-chrome-sub-bg) !important;
+  --wp-admin-theme-color-darker-20: var(--laca-chrome-active-bg) !important;
+  --wp-components-color-accent: var(--laca-accent) !important;
+  --wp-components-color-accent-darker-10: var(--laca-chrome-sub-bg) !important;
+  --wp-components-color-accent-darker-20: var(--laca-chrome-active-bg) !important;
+}
+
 .interface-complementary-area,
 .block-editor-block-inspector,
 .edit-post-sidebar,
@@ -10,6 +20,18 @@
   background-color: var(--laca-bg);
   color: var(--laca-fg);
   font-family: var(--laca-font);
+
+  .components-range-control {
+    color: var(--laca-fg) !important;
+
+    &__track {
+      background-color: var(--laca-accent) !important;
+    }
+
+    &__thumb-wrapper span {
+      background-color: var(--laca-accent) !important;
+    }
+  }
 
   // Accordion Panels
   .components-panel__body {
@@ -253,7 +275,9 @@
 .components-notice .components-button,
 .components-notice__action,
 .components-notice__dismiss,
-.components-button.is-secondary {
+.components-button.is-secondary,
+.components-button.is-next-40px,
+button.components-button.is-next-40px {
   color: var(--laca-fg) !important;
   border-color: var(--laca-border-emphasized) !important;
 
@@ -262,6 +286,19 @@
     color: var(--laca-fg-hover) !important;
     border-color: var(--laca-fg) !important;
     text-decoration: none !important;
+  }
+}
+
+// Gutenberg link buttons (e.g. "Edit excerpt")
+.components-button.is-link,
+button.components-button.is-link,
+a.components-button.is-link {
+  color: var(--laca-fg) !important;
+  text-decoration: underline !important;
+
+  &:hover,
+  &:focus {
+    color: var(--laca-fg-hover) !important;
   }
 }
 

@@ -498,6 +498,141 @@ const report = (ok, check, target, w, detail = '') => {
         }
       }
     }
+
+    // =========================================================================
+    // R2: Kiểm tra hệ thống Preview Switcher (6 khu vực × 3 phương án A, B, C)
+    // =========================================================================
+    const previewAreas = [
+      { id: 'menu', sample: 'edit.php?post_type=journal', clip: { x: 0, y: 32, width: 220, height: 700 } },
+      { id: 'field', sample: 'admin.php?page=app-theme-options.php', clip: { x: 200, y: 150, width: 800, height: 500 } },
+      { id: 'tabs', sample: 'admin.php?page=app-theme-options.php', clip: { x: 200, y: 80, width: 800, height: 400 } },
+      { id: 'bg', sample: 'index.php', clip: { x: 180, y: 50, width: 900, height: 600 } },
+      { id: 'dock', sample: 'admin.php?page=laca-admin', clip: { x: 160, y: 32, width: 600, height: 700 } },
+      { id: 'inspector', sample: 'post.php?post=101&action=edit', isEditor: true, clip: { x: 1000, y: 50, width: 440, height: 750 } },
+    ];
+
+    const previewImagesDir = path.resolve(__dirname, '../../../resources/images/ui-preview');
+    if (!fs.existsSync(previewImagesDir)) {
+      fs.mkdirSync(previewImagesDir, { recursive: true });
+    }
+
+    await page.setViewport({ width: 1440, height: 900 });
+
+    for (const pa of previewAreas) {
+      for (const opt of ['a', 'b', 'c']) {
+        const errors = [];
+        const onErr = (e) => errors.push(e.message);
+        page.on('pageerror', onErr);
+
+        try {
+          if (pa.isEditor) {
+            try { await page.close(); } catch (_) {}
+            page = await setupPage();
+            await page.setViewport({ width: 1440, height: 900 });
+          }
+
+          const cookieVal = JSON.stringify({ [pa.id]: opt });
+          await page.setCookie(...Object.entries(cookies).map(([name, value]) => ({ name, value, domain: 'lixroastery.local', path: '/' })));
+          await page.setCookie({
+            name: 'laca_ui_preview',
+            value: cookieVal,
+            domain: 'lixroastery.local',
+            path: '/wp-admin'
+          });
+
+          await page.goto(WP_ADMIN + pa.sample, { waitUntil: 'domcontentloaded', timeout: 45000 });
+          if (pa.isEditor) {
+            await page.waitForSelector('.editor-styles-wrapper, #editor, .edit-post-layout', { timeout: 20000 }).catch(() => {});
+            await new Promise((r) => setTimeout(r, 1000));
+          } else {
+            await new Promise((r) => setTimeout(r, 600));
+          }
+
+          const res = await page.evaluate((areaId, optKey) => {
+            const hasClass = optKey === 'a' || document.body.classList.contains(`laca-pv-${areaId}-${optKey}`);
+            const hasPreviewBar = !!document.getElementById('laca-preview-bar');
+
+            // Check blue trên các phần tử hiển thị (theo quy chuẩn §5)
+            const isBlue = (rgbStr) => {
+              const m = rgbStr.match(/^rgba?\((\d+),\s*(\d+),\s*(\d+)/);
+              if (!m) return false;
+              const r = parseInt(m[1], 10);
+              const b = parseInt(m[3], 10);
+              return (b - r > 60 && b > 150);
+            };
+
+            const isVisuallyHidden = (el) => {
+              const cs = window.getComputedStyle(el);
+              if (cs.display === 'none' || cs.visibility === 'hidden' || cs.opacity === '0') return true;
+              const r = el.getBoundingClientRect();
+              return r.width === 0 && r.height === 0;
+            };
+
+            let blueEl = null;
+            const testEls = [...document.querySelectorAll('#wpwrap *')]
+              .filter(el => el.offsetParent !== null && !isVisuallyHidden(el) && !el.closest('.block-editor-writing-flow, iframe, canvas, svg'));
+            for (const el of testEls) {
+              const cs = window.getComputedStyle(el);
+              for (const prop of ['color', 'backgroundColor', 'borderTopColor', 'borderRightColor', 'borderBottomColor', 'borderLeftColor']) {
+                const val = cs[prop];
+                if (isBlue(val)) {
+                  blueEl = `${el.tagName.toLowerCase()}.${el.className.toString().slice(0, 30)} [${prop}=${val}]`;
+                  break;
+                }
+              }
+              if (blueEl) break;
+            }
+
+            const noOverflow = document.documentElement.scrollWidth <= window.innerWidth + 2;
+            return {
+              hasClass,
+              hasPreviewBar,
+              noBlueOk: !blueEl,
+              blueDetail: blueEl || '',
+              noOverflow
+            };
+          }, pa.id, opt);
+
+          report(res.hasClass, 'preview-body-class', `${pa.id}-${opt}`, 1440);
+          report(res.hasPreviewBar, 'preview-bar-exists', `${pa.id}-${opt}`, 1440);
+          report(res.noOverflow, 'preview-no-overflow', `${pa.id}-${opt}`, 1440);
+          report(errors.length === 0, 'preview-no-js-error', `${pa.id}-${opt}`, 1440, errors[0] ? errors[0].slice(0, 80) : '');
+          report(res.noBlueOk, 'preview-no-blue', `${pa.id}-${opt}`, 1440, res.blueDetail);
+
+          // Chụp ảnh preview
+          const imgDest = path.join(previewImagesDir, `${pa.id}-${opt}.png`);
+          await page.screenshot({ path: imgDest, clip: pa.clip });
+        } catch (err) {
+          report(false, 'preview-timeout', `${pa.id}-${opt}`, 1440, err.message);
+          try { await page.close(); } catch (_) {}
+          page = await setupPage();
+          await page.setViewport({ width: 1440, height: 900 });
+        } finally {
+          page.off('pageerror', onErr);
+        }
+      }
+    }
+
+    // Test Gallery Page
+    try {
+      try { await page.close(); } catch (_) {}
+      page = await setupPage();
+      await page.setViewport({ width: 1440, height: 900 });
+      await page.setCookie(...Object.entries(cookies).map(([name, value]) => ({ name, value, domain: 'lixroastery.local', path: '/' })));
+      await page.goto(WP_ADMIN + 'admin.php?page=laca-ui-preview', { waitUntil: 'domcontentloaded', timeout: 30000 });
+      const galRes = await page.evaluate(() => {
+        const hasHeader = !!document.querySelector('.laca-preview-gallery-wrap h1');
+        const cardsCount = document.querySelectorAll('.laca-preview-gallery-wrap .laca-card').length;
+        const bar = !!document.getElementById('laca-preview-bar');
+        return { hasHeader, cardsCount, bar };
+      });
+      report(galRes.hasHeader && galRes.cardsCount === 6, 'preview-gallery-page', 'laca-ui-preview', 1440, `cards=${galRes.cardsCount}`);
+    } catch (err) {
+      report(false, 'preview-gallery-page', 'laca-ui-preview', 1440, err.message);
+    }
+
+    // Xóa cookie sau khi test xong
+    await page.deleteCookie({ name: 'laca_ui_preview', domain: 'lixroastery.local', path: '/wp-admin' });
   } finally {
     clearTimeout(watchdog);
     if (browser) {

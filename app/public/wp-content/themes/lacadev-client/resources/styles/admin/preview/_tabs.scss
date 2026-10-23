@@ -1,0 +1,131 @@
+// =============================================================================
+// Preview: Tabs (Carbon Fields, WP nav-tabs, Laca SEO tabs)
+// =============================================================================
+
+// Option B: Nút viên (pill) nền #f4f4f5, tab chọn nền #18181b chữ trắng
+body.laca-pv-tabs-b {
+  .cf-container__tabs,
+  .cf-tabs,
+  .carbon-tabs,
+  .nav-tab-wrapper,
+  .laca-tabs {
+    border-bottom: none !important;
+    gap: 8px !important;
+    padding: 4px 0 !important;
+    margin-bottom: 20px !important;
+  }
+
+  .cf-container__tabs-list,
+  .cf-tabs__list {
+    gap: 8px !important;
+  }
+
+  .cf-container__tabs-item,
+  .cf-tabs__item,
+  .nav-tab,
+  .laca-tab-item {
+    button,
+    a,
+    &.nav-tab {
+      background: #f4f4f5 !important;
+      border: 1px solid transparent !important;
+      border-radius: 9999px !important;
+      padding: 6px 16px !important;
+      color: #52525b !important;
+      font-size: 13px !important;
+      font-weight: 500 !important;
+      text-decoration: none !important;
+      transition: all 0.15s ease !important;
+
+      &:hover {
+        background: #e4e4e7 !important;
+        color: #18181b !important;
+        border-color: transparent !important;
+      }
+    }
+
+    &--current,
+    &.is-current,
+    &[aria-selected="true"],
+    &.nav-tab-active {
+      button,
+      a,
+      &.nav-tab-active {
+        background: #18181b !important;
+        color: #ffffff !important;
+        font-weight: 600 !important;
+        border-color: #18181b !important;
+      }
+    }
+  }
+}
+
+// Option C: Tab dọc bên trái (chỉ >= 1024px; < 1024px quay về như Option A)
+body.laca-pv-tabs-c {
+  @media (min-width: 1024px) {
+    .cf-container {
+      display: flex !important;
+      flex-direction: row !important;
+      align-items: flex-start !important;
+      gap: 24px !important;
+    }
+
+    .cf-container__tabs,
+    .cf-tabs,
+    .carbon-tabs {
+      width: 220px !important;
+      min-width: 220px !important;
+      flex-shrink: 0 !important;
+      border-bottom: none !important;
+      border-right: 1px solid var(--laca-border, #e4e4e7) !important;
+      margin-bottom: 0 !important;
+      padding-right: 12px !important;
+    }
+
+    .cf-container__tabs-list,
+    .cf-tabs__list {
+      flex-direction: column !important;
+      width: 100% !important;
+      gap: 4px !important;
+    }
+
+    .cf-container__tabs-item,
+    .cf-tabs__item {
+      width: 100% !important;
+
+      button,
+      a {
+        width: 100% !important;
+        justify-content: flex-start !important;
+        text-align: left !important;
+        border-bottom: none !important;
+        border-left: 3px solid transparent !important;
+        border-radius: 0 var(--laca-radius-l2, 4px) var(--laca-radius-l2, 4px) 0 !important;
+        padding: 10px 14px !important;
+        margin-bottom: 0 !important;
+
+        &:hover {
+          background: #f4f4f5 !important;
+          color: #18181b !important;
+        }
+      }
+
+      &--current,
+      &.is-current,
+      &[aria-selected="true"] {
+        button,
+        a {
+          background: #f4f4f5 !important;
+          color: #18181b !important;
+          border-left-color: #18181b !important;
+          font-weight: 600 !important;
+        }
+      }
+    }
+
+    .cf-container__fields {
+      flex: 1 !important;
+      min-width: 0 !important;
+    }
+  }
+}

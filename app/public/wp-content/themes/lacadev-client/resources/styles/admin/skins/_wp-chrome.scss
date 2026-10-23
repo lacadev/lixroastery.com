@@ -13,6 +13,11 @@
   font-family: var(--laca-font);
 }
 
+#contextual-help-back,
+#contextual-help-wrap {
+  background-color: var(--laca-bg) !important;
+}
+
 body.wp-admin {
   background-color: var(--laca-bg-subtle);
   font-family: var(--laca-font) !important; // Cần thiết để đè font WP core và Quicksand
@@ -93,6 +98,11 @@ body.wp-admin {
     li.current a:hover {
       color: var(--laca-chrome-fg-active) !important;
       font-weight: 600;
+    }
+
+    .wp-submenu-head {
+      background: var(--laca-chrome-sub-bg) !important;
+      color: var(--laca-chrome-fg-active) !important;
     }
   }
 

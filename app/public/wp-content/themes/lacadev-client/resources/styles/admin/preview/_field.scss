@@ -1,0 +1,115 @@
+// =============================================================================
+// Preview: Form Fields (WP forms, Carbon Fields, Laca SEO, Inspector)
+// =============================================================================
+
+// Option B: "Filled" — Nền #f4f4f5, không viền, focus nền trắng + viền #18181b
+body.laca-pv-field-b {
+  input[type="text"],
+  input[type="search"],
+  input[type="tel"],
+  input[type="time"],
+  input[type="url"],
+  input[type="week"],
+  input[type="password"],
+  input[type="color"],
+  input[type="date"],
+  input[type="datetime"],
+  input[type="datetime-local"],
+  input[type="email"],
+  input[type="month"],
+  input[type="number"],
+  select,
+  textarea,
+  .cf-field input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]):not([type="button"]),
+  .cf-field textarea,
+  .cf-field select,
+  .components-text-control__input,
+  .components-select-control__input,
+  .components-input-control__container input,
+  .components-input-control__input,
+  .laca-seo-input,
+  .laca-seo-textarea,
+  .laca-seo-select {
+    background-color: #f4f4f5 !important;
+    border: 1px solid transparent !important;
+    border-radius: var(--laca-radius-l2, 4px) !important;
+    color: #18181b !important;
+    transition: all 0.15s ease !important;
+
+    &:hover {
+      background-color: #e4e4e7 !important;
+    }
+
+    &:focus {
+      background-color: #ffffff !important;
+      border-color: #18181b !important;
+      box-shadow: 0 0 0 1px #18181b !important;
+      outline: none !important;
+    }
+  }
+}
+
+// Option C: "Underline" — Viền dưới 1px, nền trong suốt, nhãn nhỏ phía trên
+body.laca-pv-field-c {
+  input[type="text"],
+  input[type="search"],
+  input[type="tel"],
+  input[type="time"],
+  input[type="url"],
+  input[type="week"],
+  input[type="password"],
+  input[type="color"],
+  input[type="date"],
+  input[type="datetime"],
+  input[type="datetime-local"],
+  input[type="email"],
+  input[type="month"],
+  input[type="number"],
+  select,
+  textarea,
+  .cf-field input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]):not([type="button"]),
+  .cf-field textarea,
+  .cf-field select,
+  .components-text-control__input,
+  .components-select-control__input,
+  .components-input-control__container input,
+  .components-input-control__input,
+  .laca-seo-input,
+  .laca-seo-textarea,
+  .laca-seo-select {
+    background-color: transparent !important;
+    border: none !important;
+    border-bottom: 1px solid #71717a !important;
+    border-radius: 0 !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    color: #18181b !important;
+    box-shadow: none !important;
+    transition: border-bottom-color 0.15s ease !important;
+
+    &:hover {
+      border-bottom-color: #18181b !important;
+    }
+
+    &:focus {
+      background-color: transparent !important;
+      border-bottom: 2px solid #18181b !important;
+      box-shadow: none !important;
+      outline: none !important;
+    }
+  }
+
+  // Nhãn nhỏ phía trên
+  .cf-field__label,
+  .form-table th,
+  .form-field th,
+  .components-base-control__label,
+  .laca-seo-meta-box__field-label {
+    font-size: 11px !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.05em !important;
+    color: #71717a !important;
+    font-weight: 600 !important;
+    margin-bottom: 4px !important;
+  }
+}

@@ -1,0 +1,209 @@
+// =============================================================================
+// Preview: WP Admin Menu
+// =============================================================================
+
+// Option B: Nền trắng, chữ xám đậm, mục chọn nền xám nhạt + vạch trái 3px đen
+body.laca-pv-menu-b {
+  #adminmenuback,
+  #adminmenuwrap,
+  #adminmenu {
+    background: #ffffff !important;
+    border-right: 1px solid var(--laca-border, #e4e4e7) !important;
+  }
+
+  #adminmenu {
+    a,
+    div.wp-menu-image::before {
+      color: #27272a !important;
+    }
+
+    li.menu-top:hover,
+    li.opensub > a.menu-top,
+    li > a.menu-top:focus {
+      background: #f4f4f5 !important;
+      color: #18181b !important;
+
+      div.wp-menu-image::before {
+        color: #18181b !important;
+      }
+    }
+
+    li.current a.menu-top,
+    li.wp-has-current-submenu a.wp-has-current-submenu {
+      background: #f4f4f5 !important;
+      color: #18181b !important;
+      border-left: 3px solid #18181b !important;
+      font-weight: 600 !important;
+
+      div.wp-menu-image::before {
+        color: #18181b !important;
+      }
+    }
+
+    .wp-menu-name {
+      font-size: 14px !important;
+      white-space: nowrap !important;
+      overflow: hidden !important;
+      text-overflow: ellipsis !important;
+    }
+
+    .wp-submenu {
+      background: #ffffff !important;
+      border: 1px solid var(--laca-border, #e4e4e7) !important;
+      border-left: none !important;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08) !important;
+
+      a {
+        color: #52525b !important;
+
+        &:hover {
+          background: #f4f4f5 !important;
+          color: #18181b !important;
+        }
+      }
+
+      li.current a,
+      li.current a:hover {
+        color: #18181b !important;
+        font-weight: 600 !important;
+        background: #f4f4f5 !important;
+      }
+    }
+
+    li.wp-menu-separator {
+      border-top: 1px solid var(--laca-border, #e4e4e7) !important;
+    }
+
+    #collapse-menu {
+      color: #71717a !important;
+      border-top: 1px solid var(--laca-border, #e4e4e7) !important;
+
+      .collapse-button {
+        color: #71717a !important;
+
+        &:hover {
+          color: #18181b !important;
+        }
+      }
+    }
+  }
+
+  ul#adminmenu {
+    a.wp-has-current-submenu::after,
+    > li.current > a.current::after {
+      border-right-color: #f4f4f5 !important;
+    }
+  }
+}
+
+// Option C: Nền xám đậm #27272a, chữ #d4d4d8, mục chọn nền #18181b chữ trắng, mục con nền #18181b, chiều cao 34px
+body.laca-pv-menu-c {
+  #adminmenuback,
+  #adminmenuwrap,
+  #adminmenu {
+    background: #27272a !important;
+    border-right: 1px solid #3f3f46 !important;
+  }
+
+  #adminmenu {
+    a,
+    div.wp-menu-image::before {
+      color: #d4d4d8 !important;
+    }
+
+    li.menu-top > a {
+      height: 34px !important;
+      line-height: 34px !important;
+      padding-top: 0 !important;
+      padding-bottom: 0 !important;
+    }
+
+    .wp-menu-image {
+      height: 34px !important;
+      line-height: 34px !important;
+
+      &::before {
+        padding: 7px 0 !important;
+      }
+    }
+
+    .wp-menu-name {
+      padding: 0 8px 0 0 !important;
+      line-height: 34px !important;
+      font-size: 13px !important;
+      white-space: nowrap !important;
+      overflow: hidden !important;
+      text-overflow: ellipsis !important;
+    }
+
+    li.menu-top:hover,
+    li.opensub > a.menu-top,
+    li > a.menu-top:focus {
+      background: #3f3f46 !important;
+      color: #ffffff !important;
+
+      div.wp-menu-image::before {
+        color: #ffffff !important;
+      }
+    }
+
+    li.current a.menu-top,
+    li.wp-has-current-submenu a.wp-has-current-submenu {
+      background: #18181b !important;
+      color: #ffffff !important;
+      border-left: 3px solid #ffffff !important;
+      font-weight: 600 !important;
+
+      div.wp-menu-image::before {
+        color: #ffffff !important;
+      }
+    }
+
+    .wp-submenu {
+      background: #18181b !important;
+      border-left: none !important;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04) !important;
+
+      a {
+        color: #a1a1aa !important;
+        padding-top: 4px !important;
+        padding-bottom: 4px !important;
+
+        &:hover {
+          color: #ffffff !important;
+        }
+      }
+
+      li.current a,
+      li.current a:hover {
+        color: #ffffff !important;
+        font-weight: 600 !important;
+      }
+    }
+
+    li.wp-menu-separator {
+      border-top: 1px solid #3f3f46 !important;
+      margin: 4px auto !important;
+    }
+
+    #collapse-menu {
+      color: #a1a1aa !important;
+      border-top: 1px solid #3f3f46 !important;
+
+      .collapse-button {
+        color: #a1a1aa !important;
+
+        &:hover {
+          color: #ffffff !important;
+        }
+      }
+    }
+  }
+
+  ul#adminmenu {
+    a.wp-has-current-submenu::after,
+    > li.current > a.current::after {
+      border-right-color: #18181b !important;
+    }
+  }
+}

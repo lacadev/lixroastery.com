@@ -1,0 +1,105 @@
+// =============================================================================
+// Preview: Laca Admin Dock
+// =============================================================================
+
+// Option B: Cột hẹp 200px, tiêu đề nhóm 11px xám, mục 13px, mục chọn chữ đậm + vạch trái
+body.laca-pv-dock-b {
+  @media (min-width: 1024px) {
+    &.laca-admin-dock-active:not(.folded) #wpcontent,
+    &.laca-admin-dock-active.folded #wpcontent {
+      padding-left: 228px !important;
+    }
+
+    .laca-admin-dock {
+      width: 200px !important;
+
+      &__group-title {
+        font-size: 11px !important;
+        font-weight: 600 !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.05em !important;
+        color: #71717a !important;
+      }
+
+      &__item {
+        font-size: 13px !important;
+        height: 30px !important;
+
+        &.is-active {
+          font-weight: 600 !important;
+          color: #18181b !important;
+          background: #f4f4f5 !important;
+          border-left: 3px solid #18181b !important;
+          border-radius: 0 var(--laca-radius-l2, 4px) var(--laca-radius-l2, 4px) 0 !important;
+        }
+      }
+    }
+  }
+}
+
+// Option C: Bỏ cột dock, thay bằng 1 hàng tab nhóm phía trên nội dung
+body.laca-pv-dock-c {
+  @media (min-width: 1024px) {
+    &.laca-admin-dock-active:not(.folded) #wpcontent,
+    &.laca-admin-dock-active.folded #wpcontent {
+      padding-left: 20px !important;
+    }
+
+    .laca-admin-dock {
+      position: static !important;
+      width: 100% !important;
+      border-right: none !important;
+      border-bottom: 1px solid var(--laca-border, #e4e4e7) !important;
+      box-shadow: none !important;
+      padding: 10px 16px !important;
+      margin-bottom: 20px !important;
+      overflow-x: auto !important;
+
+      &__desktop {
+        display: flex !important;
+        flex-direction: row !important;
+        gap: 24px !important;
+        align-items: center !important;
+      }
+
+      &__group {
+        border-top: none !important;
+        padding: 0 !important;
+        display: flex !important;
+        align-items: center !important;
+        gap: 8px !important;
+        flex-shrink: 0 !important;
+      }
+
+      &__group-title {
+        font-size: 11px !important;
+        font-weight: 600 !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.05em !important;
+        color: #71717a !important;
+        margin: 0 !important;
+        padding: 0 4px 0 0 !important;
+      }
+
+      &__items {
+        display: flex !important;
+        flex-direction: row !important;
+        gap: 4px !important;
+      }
+
+      &__item {
+        white-space: nowrap !important;
+        padding: 4px 10px !important;
+        font-size: 12px !important;
+        height: 28px !important;
+        border-radius: var(--laca-radius-l2, 4px) !important;
+
+        &.is-active {
+          background: #18181b !important;
+          color: #ffffff !important;
+          font-weight: 600 !important;
+        }
+      }
+    }
+  }
+}
