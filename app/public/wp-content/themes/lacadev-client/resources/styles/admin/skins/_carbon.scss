@@ -2,6 +2,23 @@
 // Carbon Fields Skin (Chakra UI v3 tokens — Monochromatic)
 // =============================================================================
 
+// Postbox Card Padding & Soft Shadow (Chakra v3 Option B)
+#poststuff .carbon-box,
+.carbon-box,
+.postbox.carbon-box {
+  background-color: var(--laca-bg) !important;
+  border: none !important;
+  border-radius: var(--laca-radius-l3) !important;
+  box-shadow: var(--laca-shadow-sm) !important;
+  box-sizing: border-box;
+
+  .inside {
+    padding: var(--laca-space-6, 24px) !important;
+    margin: 0 !important;
+    box-sizing: border-box;
+  }
+}
+
 .cf-container {
   background: transparent;
   border: none;
@@ -14,8 +31,8 @@
     background: transparent !important;
     border: none !important;
     border-bottom: none !important;
-    padding: 4px 0 !important;
-    margin: 0 0 20px 0 !important;
+    padding: 0 !important;
+    margin: 0 0 var(--laca-space-6, 24px) 0 !important;
     max-width: 100%;
     overflow-x: auto;
   }
@@ -336,14 +353,17 @@
 }
 
 // 5. Actions Card & alignment
+// 5. Actions Card & alignment (Option B: card trắng không viền kèm đổ bóng nhẹ và padding)
 #submitdiv.postbox,
 .cf-container__actions,
 .cf-actions {
-  border: 1px solid var(--laca-border) !important;
+  border: none !important;
   border-radius: var(--laca-radius-l3) !important;
   background-color: var(--laca-bg) !important;
-  box-shadow: none !important;
+  box-shadow: var(--laca-shadow-sm) !important;
+  padding: var(--laca-space-6, 24px) !important;
   margin-top: 0 !important;
+  box-sizing: border-box;
 
   h3,
   .postbox-header {
@@ -351,16 +371,24 @@
     font-size: 14px !important;
     font-weight: 600 !important;
     color: var(--laca-fg) !important;
-    background-color: var(--laca-bg) !important;
-    border-bottom: 1px solid var(--laca-border) !important;
-    padding: 12px 16px !important;
+    background-color: transparent !important;
+    border: none !important;
+    padding: 0 0 var(--laca-space-4, 16px) 0 !important;
     margin: 0 !important;
   }
 
   #major-publishing-actions {
     background: transparent !important;
     border: none !important;
-    padding: 12px 16px !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  #publishing-action {
+    float: none !important;
+    text-align: left !important;
+    padding: 0 !important;
+    margin: 0 !important;
   }
 
   #publish.button-primary,

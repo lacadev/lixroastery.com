@@ -105,6 +105,7 @@
   --laca-durations-fast: 0.15s;
   --laca-durations-normal: 0.2s;
   --laca-shadow-xs: 0 1px 2px 0 rgba(24, 24, 27, 0.05);
+  --laca-shadow-sm: 0 1px 3px 0 rgba(24, 24, 27, 0.06), 0 1px 2px 0 rgba(24, 24, 27, 0.04);
 
   // Transitions
   --laca-transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
@@ -130,5 +131,4 @@
   --laca-bg-soft: var(--laca-bg-subtle);
   --laca-border: var(--laca-border);
   --laca-radius: var(--laca-radius-l3);
-  --laca-shadow-sm: none;
 }
