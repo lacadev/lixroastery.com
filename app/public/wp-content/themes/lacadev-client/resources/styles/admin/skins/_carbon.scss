@@ -7,14 +7,14 @@
   border: none;
   box-shadow: none;
 
-  // 1. Line variant Tabs (gap 4px, padding 8px 12px, 1 hàng cuộn ngang)
+  // 1. Pill variant Tabs (Option B: nút viên, active nền tối chữ trắng)
   &__tabs,
   .cf-tabs,
   .carbon-tabs {
     background: transparent !important;
     border: none !important;
-    border-bottom: 1px solid var(--laca-border) !important;
-    padding: 0 !important;
+    border-bottom: none !important;
+    padding: 4px 0 !important;
     margin: 0 0 20px 0 !important;
     max-width: 100%;
     overflow-x: auto;
@@ -24,7 +24,7 @@
   .cf-tabs__list {
     display: flex;
     flex-wrap: nowrap;
-    gap: 4px;
+    gap: 8px;
     margin: 0;
     padding: 0;
     list-style: none;
@@ -36,7 +36,6 @@
   .cf-tabs__item {
     background: transparent !important;
     border: none !important;
-    border-radius: var(--laca-radius-l2) !important;
     padding: 0 !important;
     margin: 0 !important;
     flex-shrink: 0;
@@ -45,24 +44,25 @@
     a {
       display: inline-flex;
       align-items: center;
-      padding: 8px 12px !important;
+      background: var(--laca-bg-muted) !important;
+      border: 1px solid transparent !important;
+      border-radius: var(--laca-radius-full) !important;
+      padding: 6px 16px !important;
+      color: var(--laca-fg) !important;
       font-family: var(--laca-font);
-      font-size: var(--laca-font-size-sm);
-      font-weight: 500;
+      font-size: 13px !important;
+      font-weight: 500 !important;
       line-height: var(--laca-line-height-sm);
-      color: var(--laca-fg-muted);
-      background: transparent !important;
-      border: none !important;
-      border-bottom: 2px solid transparent !important;
-      margin-bottom: -1px;
       cursor: pointer;
       text-decoration: none;
-      transition: var(--laca-transition);
+      transition: none !important;
       outline: none;
 
       &:hover {
-        color: var(--laca-fg);
-        border-bottom-color: var(--laca-border-emphasized) !important;
+        background: var(--laca-bg-emphasized) !important;
+        color: var(--laca-fg) !important;
+        border-color: transparent !important;
+        transition: background-color 0.15s ease !important;
       }
     }
 
@@ -71,9 +71,11 @@
     &[aria-selected="true"] {
       button,
       a {
-        color: var(--laca-fg) !important;
-        font-weight: 600;
-        border-bottom-color: var(--laca-accent) !important;
+        background: var(--laca-accent) !important;
+        color: var(--laca-bg) !important;
+        font-weight: 600 !important;
+        border-color: var(--laca-accent) !important;
+        transition: none !important;
       }
     }
   }
@@ -139,7 +141,7 @@
     margin-top: var(--laca-space-1);
   }
 
-  // Controls styling
+  // Controls styling (Hình 1: viền rõ ràng cho input và select)
   input[type="text"]:not(.wp-color-picker),
   input[type="password"],
   input[type="email"],
@@ -147,40 +149,69 @@
   input[type="number"],
   select {
     height: 36px;
-    border: 1px solid var(--laca-border);
+    border: 1px solid var(--laca-input-border, var(--laca-border-emphasized)) !important;
     border-radius: var(--laca-radius-l2);
     padding: 0 var(--laca-space-3);
-    background-color: var(--laca-bg);
-    color: var(--laca-fg);
+    background-color: var(--laca-bg) !important;
+    color: var(--laca-fg) !important;
     font-family: var(--laca-font);
     font-size: var(--laca-font-size-sm);
     line-height: var(--laca-line-height-sm);
     box-sizing: border-box;
     transition: var(--laca-transition);
 
+    &:hover {
+      border-color: var(--laca-fg-muted) !important;
+    }
+
     &:focus {
-      border-color: var(--laca-focus-ring);
-      box-shadow: 0 0 0 1px var(--laca-focus-ring);
-      outline: none;
+      border-color: var(--laca-accent) !important;
+      box-shadow: 0 0 0 1px var(--laca-accent) !important;
+      outline: none !important;
     }
   }
 
   textarea {
-    border: 1px solid var(--laca-border);
+    border: 1px solid var(--laca-input-border, var(--laca-border-emphasized)) !important;
     border-radius: var(--laca-radius-l2);
     padding: var(--laca-space-2) var(--laca-space-3);
-    background-color: var(--laca-bg);
-    color: var(--laca-fg);
+    background-color: var(--laca-bg) !important;
+    color: var(--laca-fg) !important;
     font-family: var(--laca-font);
     font-size: var(--laca-font-size-sm);
     line-height: var(--laca-line-height-sm);
     box-sizing: border-box;
     transition: var(--laca-transition);
 
+    &:hover {
+      border-color: var(--laca-fg-muted) !important;
+    }
+
     &:focus {
-      border-color: var(--laca-focus-ring);
-      box-shadow: 0 0 0 1px var(--laca-focus-ring);
-      outline: none;
+      border-color: var(--laca-accent) !important;
+      box-shadow: 0 0 0 1px var(--laca-accent) !important;
+      outline: none !important;
+    }
+  }
+
+  .cf-text__input,
+  .cf-textarea__input,
+  .cf-select__input,
+  .cf-search-input__inner,
+  .cf-datetime__input {
+    border: 1px solid var(--laca-input-border, var(--laca-border-emphasized)) !important;
+    background-color: var(--laca-bg) !important;
+    color: var(--laca-fg) !important;
+    border-radius: var(--laca-radius-l2) !important;
+
+    &:hover {
+      border-color: var(--laca-fg-muted) !important;
+    }
+
+    &:focus {
+      border-color: var(--laca-accent) !important;
+      box-shadow: 0 0 0 1px var(--laca-accent) !important;
+      outline: none !important;
     }
   }
 }

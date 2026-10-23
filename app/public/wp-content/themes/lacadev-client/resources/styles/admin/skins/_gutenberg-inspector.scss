@@ -90,43 +90,86 @@ body {
     margin-top: var(--laca-spacing-1) !important;
   }
 
-  // Inputs: 32px height, radius l2, border, focus ring
+  // Inputs: 36px height, radius l2, border, proper padding (FIX 3)
   .components-text-control__input,
   .components-select-control__input,
   .components-input-control__container input,
-  .components-input-control__input {
-    height: 32px !important;
-    min-height: 32px !important;
-    border: 1px solid var(--laca-border) !important;
-    border-radius: var(--laca-radii-l2) !important;
+  .components-input-control__input,
+  select.components-select-control__input {
+    height: 36px !important;
+    min-height: 36px !important;
+    border: 1px solid var(--laca-input-border, var(--laca-border-emphasized)) !important;
+    border-radius: var(--laca-radius-l2) !important;
     background-color: var(--laca-bg) !important;
     color: var(--laca-fg) !important;
     font-family: var(--laca-font) !important;
     font-size: var(--laca-font-size-sm) !important;
-    padding: 0 var(--laca-spacing-2-5) !important;
+    padding: 0 12px !important;
     box-shadow: none !important;
-    transition: border-color var(--laca-durations-fast), box-shadow var(--laca-durations-fast);
+    box-sizing: border-box !important;
+    transition: var(--laca-transition);
+
+    &:hover {
+      border-color: var(--laca-fg-muted) !important;
+    }
 
     &:focus {
-      border-color: var(--laca-focus-ring) !important;
-      box-shadow: 0 0 0 1px var(--laca-focus-ring) !important;
+      border-color: var(--laca-accent) !important;
+      box-shadow: 0 0 0 1px var(--laca-accent) !important;
+      outline: none !important;
+    }
+  }
+
+  // Select dropdown: extra right padding for arrow icon
+  select.components-select-control__input {
+    padding-left: 12px !important;
+    padding-right: 32px !important;
+  }
+
+  // RangeControl number input
+  .components-range-control input[type="number"],
+  .components-range-control__number {
+    height: 36px !important;
+    min-height: 36px !important;
+    width: 64px !important;
+    padding: 0 8px !important;
+    text-align: center !important;
+    border: 1px solid var(--laca-input-border, var(--laca-border-emphasized)) !important;
+    border-radius: var(--laca-radius-l2) !important;
+    background-color: var(--laca-bg) !important;
+    color: var(--laca-fg) !important;
+    box-sizing: border-box !important;
+
+    &:hover {
+      border-color: var(--laca-fg-muted) !important;
+    }
+
+    &:focus {
+      border-color: var(--laca-accent) !important;
+      box-shadow: 0 0 0 1px var(--laca-accent) !important;
       outline: none !important;
     }
   }
 
   textarea.components-textarea-control__input {
-    border: 1px solid var(--laca-border) !important;
-    border-radius: var(--laca-radii-l2) !important;
+    border: 1px solid var(--laca-input-border, var(--laca-border-emphasized)) !important;
+    border-radius: var(--laca-radius-l2) !important;
     background-color: var(--laca-bg) !important;
     color: var(--laca-fg) !important;
     font-family: var(--laca-font) !important;
     font-size: var(--laca-font-size-sm) !important;
-    padding: var(--laca-spacing-2) var(--laca-spacing-2-5) !important;
+    padding: var(--laca-space-2) var(--laca-space-3) !important;
     box-shadow: none !important;
+    box-sizing: border-box !important;
+    transition: var(--laca-transition);
+
+    &:hover {
+      border-color: var(--laca-fg-muted) !important;
+    }
 
     &:focus {
-      border-color: var(--laca-focus-ring) !important;
-      box-shadow: 0 0 0 1px var(--laca-focus-ring) !important;
+      border-color: var(--laca-accent) !important;
+      box-shadow: 0 0 0 1px var(--laca-accent) !important;
       outline: none !important;
     }
   }

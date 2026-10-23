@@ -31,8 +31,10 @@
       left: 36px;
     }
 
-    body.auto-fold & {
-      left: 36px;
+    @media (max-width: 960px) {
+      body.auto-fold & {
+        left: 36px;
+      }
     }
 
     &__mobile {

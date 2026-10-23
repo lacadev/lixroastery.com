@@ -1,18 +1,18 @@
 // -------------------------------------------------------------
-// Card Component (Chakra v3 — Outline variant)
+// Card Component (Chakra v3 — Option B: Borderless with soft shadow)
 // -------------------------------------------------------------
 
 .laca-card {
   background-color: var(--laca-bg);
-  border: 1px solid var(--laca-border);
+  border: none;
   border-radius: var(--laca-radius-l3);
-  box-shadow: none;
+  box-shadow: 0 1px 3px rgba(24, 24, 27, 0.06), 0 1px 2px rgba(24, 24, 27, 0.04);
   overflow: hidden;
   box-sizing: border-box;
 
   &__header {
     padding: var(--laca-space-4) var(--laca-space-5);
-    border-bottom: 1px solid var(--laca-border);
+    border-bottom: 1px solid var(--laca-border-subtle);
 
     &-title {
       margin: 0;
@@ -38,7 +38,7 @@
 
   &__footer {
     padding: var(--laca-space-4) var(--laca-space-5);
-    border-top: 1px solid var(--laca-border);
+    border-top: 1px solid var(--laca-border-subtle);
     display: flex;
     align-items: center;
     justify-content: flex-end;

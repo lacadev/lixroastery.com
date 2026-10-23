@@ -364,7 +364,13 @@ const BREAKPOINTS = [1440, 1024, 768, 390];
     // CASE 5: Block Editor (Gutenberg Inspector "Khung")
     // ==========================================
     try {
-        await page.goto(`${BASE_URL}/?laca_dev_auth=1`, { waitUntil: 'networkidle2', timeout: 25000 });
+        // Cookie đăng nhập sinh lúc chạy (không lưu file, không cần cửa sau trong theme).
+        const { spawnSync } = require('child_process');
+        const php = process.env.HOME + '/Library/Application Support/Local/lightning-services/php-8.3.17+1/bin/darwin-arm64/bin/php';
+        const sock = process.env.HOME + '/Library/Application Support/Local/run/nan2TUtPY/mysql/mysqld.sock';
+        const code = "define('WP_USE_THEMES',false);require 'app/public/wp-load.php';$u=get_user_by('login','lacadev');$e=time()+3600;echo json_encode([LOGGED_IN_COOKIE=>wp_generate_auth_cookie($u->ID,$e,'logged_in'),AUTH_COOKIE=>wp_generate_auth_cookie($u->ID,$e,'auth')]);";
+        const cookies = JSON.parse(spawnSync(php, ['-d', 'mysqli.default_socket=' + sock, '-r', code], { cwd: path.resolve(__dirname, '../../../../../../..') }).stdout.toString());
+        await page.setCookie(...Object.entries(cookies).map(([name, value]) => ({ name, value, domain: 'lixroastery.local', path: '/' })));
         await page.goto(`${BASE_URL}/wp-admin/post.php?post=217&action=edit`, { waitUntil: 'networkidle2', timeout: 35000 });
 
         const editorResult = await page.evaluate(async () => {
@@ -381,10 +387,8 @@ const BREAKPOINTS = [1440, 1024, 768, 390];
             window.wp.data.dispatch('core/block-editor').selectBlock(block.clientId);
 
             // Open Settings sidebar
-            const settingsBtn = document.querySelector('button[aria-label="Settings"]');
-            if (settingsBtn) {
-                settingsBtn.click();
-            }
+            // Mở thẳng tab Block (bấm nút "Settings" sẽ ĐÓNG sidebar nếu nó đang mở sẵn).
+            window.wp.data.dispatch('core/edit-post')?.openGeneralSidebar?.('edit-post/block');
 
             await new Promise((r) => setTimeout(r, 1000));
 
@@ -396,6 +400,10 @@ const BREAKPOINTS = [1440, 1024, 768, 390];
             }
 
             await new Promise((r) => setTimeout(r, 1000));
+
+            // WP nhớ trạng thái đóng/mở panel theo user → mở hết panel đang đóng trước khi đọc.
+            document.querySelectorAll('.components-panel__body:not(.is-opened) .components-panel__body-toggle').forEach((b) => b.click());
+            await new Promise((r) => setTimeout(r, 500));
 
             const sidebar = document.querySelector('.interface-interface-skeleton__sidebar, .edit-post-sidebar');
             const text = sidebar ? sidebar.innerText : '';

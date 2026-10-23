@@ -371,6 +371,13 @@ Toàn bộ giao diện WordPress Admin (WP Chrome, WP Core, Carbon Fields, Guten
 - **Zero Inline Styles:** Không viết inline `style="..."` hoặc thẻ `<style>` trong PHP admin view. Ngoại lệ duy nhất là giá trị runtime động bắt buộc (như `width:{$pct}%` thanh tiến trình) và phải có chú thích `/* động */`.
 - **UI Kit Demo:** Xem toàn bộ demo và mã nguồn mẫu tại `wp-admin › Laca Admin › UI Kit` (`admin.php?page=laca-ui-kit`).
 
+#### 4. Quy trình thay đổi Admin UI (Bắt buộc qua hệ thống Xem trước)
+Từ nay, mọi đề xuất thay đổi hoặc cải tiến giao diện admin BẮT BUỘC tuân theo quy trình chuẩn:
+1. **Dựng phương án vào hệ thống Preview:** Đăng ký khu vực và các phương án A/B/C vào `App\Settings\LacaAdmin\UiPreview` và file SCSS tương ứng trong `resources/styles/admin/preview/_<khu-vực>.scss`.
+2. **Xem trước trên màn thật (Cookie-driven):** Sử dụng trang Gallery `admin.php?page=laca-ui-preview` hoặc thanh `#laca-preview-bar` để người dùng trải nghiệm trực tiếp trên dữ liệu thật. Không ghi database / wp_options.
+3. **Người dùng lựa chọn:** Dừng lại chờ người dùng đưa ra quyết định chọn phương án ưng ý (ví dụ `menu=A, field=A, tabs=B, bg=B, dock=A, inspector=A`).
+4. **Áp dụng chính thức:** Chuyển CSS của phương án được chọn thành mặc định trong skin chính thức, dọn dẹp các phương án không chọn, chạy bộ test nghiệm thu §5 rồi mới commit và push.
+
 ---
 **Happy Coding! 🚀**
 

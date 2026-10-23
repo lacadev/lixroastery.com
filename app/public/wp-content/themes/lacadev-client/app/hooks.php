@@ -60,27 +60,6 @@ add_filter('render_block_data', function (array $parsed_block): array {
 });
 
 /**
- * Test helper: hỗ trợ xác thực admin tạm thời (cookie/header-only, không ghi DB)
- * phục vụ test Gutenberg editor trong Puppeteer trên môi trường local.
- */
-add_action('init', function (): void {
-    if (function_exists('wp_get_environment_type') && wp_get_environment_type() === 'local' && !empty($_GET['laca_dev_auth'])) {
-        $user = get_user_by('id', 1);
-        if ($user) {
-            wp_set_current_user($user->ID);
-            wp_set_auth_cookie($user->ID, true);
-            $redirect = !empty($_GET['redirect_to']) ? esc_url_raw($_GET['redirect_to']) : admin_url();
-            wp_safe_redirect($redirect);
-            exit;
-        }
-    }
-});
-
-if (function_exists('wp_get_environment_type') && wp_get_environment_type() === 'local') {
-    add_filter('use_block_editor_for_post', '__return_true', 999);
-}
-
-/**
  * Keep Laca Admin submenu grouped and ordered from one place.
  */
 add_action('init', function () {

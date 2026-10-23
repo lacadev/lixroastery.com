@@ -10,6 +10,7 @@
   --laca-fg-subtle: #71717a;
   --laca-border: #e4e4e7;
   --laca-border-emphasized: #d4d4d8;
+  --laca-input-border: #a1a1aa;
   --laca-accent: #18181b;
   --laca-accent-hover: #3f3f46;
   --laca-accent-subtle: #f4f4f5;
@@ -84,8 +85,26 @@
   --laca-height-sm: 36px;
   --laca-height-md: 40px;
 
-  // Shadow
-  --laca-shadow-md: 0 4px 8px rgba(24, 24, 27, 0.1), 0 0 1px rgba(24, 24, 27, 0.3);
+  // Chakra v3 token aliases
+  --laca-spacing-0-5: 2px;
+  --laca-spacing-1: 4px;
+  --laca-spacing-1-5: 6px;
+  --laca-spacing-2: 8px;
+  --laca-spacing-2-5: 10px;
+  --laca-spacing-3: 12px;
+  --laca-spacing-4: 16px;
+  --laca-spacing-5: 20px;
+  --laca-spacing-6: 24px;
+  --laca-spacing-8: 32px;
+
+  --laca-radii-l1: 2px;
+  --laca-radii-l2: 4px;
+  --laca-radii-l3: 6px;
+  --laca-radii-full: 9999px;
+
+  --laca-durations-fast: 0.15s;
+  --laca-durations-normal: 0.2s;
+  --laca-shadow-xs: 0 1px 2px 0 rgba(24, 24, 27, 0.05);
 
   // Transitions
   --laca-transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;

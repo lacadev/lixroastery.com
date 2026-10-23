@@ -18,8 +18,12 @@
   background-color: var(--laca-bg) !important;
 }
 
-body.wp-admin {
-  background-color: var(--laca-bg-subtle);
+body.wp-admin,
+#wpwrap,
+#wpcontent,
+#wpbody,
+#wpbody-content {
+  background-color: var(--laca-bg-muted) !important;
   font-family: var(--laca-font) !important; // Cần thiết để đè font WP core và Quicksand
   font-size: var(--laca-font-size-sm);
   color: var(--laca-fg);
