@@ -374,16 +374,16 @@ div.error {
 
     &:hover td,
     &:hover th {
-      background-color: var(--laca-bg-subtle, #eff6ff) !important;
+      background-color: var(--laca-bg-subtle) !important;
     }
 
     &:nth-child(odd) {
-      background-color: var(--laca-bg, #ffffff) !important;
+      background-color: var(--laca-bg) !important;
     }
 
     &.alternate,
     &:nth-child(even) {
-      background-color: var(--laca-bg-muted, #f8fafc) !important;
+      background-color: var(--laca-bg-muted) !important;
     }
 
     &:last-child td,

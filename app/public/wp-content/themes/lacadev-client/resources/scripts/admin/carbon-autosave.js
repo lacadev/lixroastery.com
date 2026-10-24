@@ -1,7 +1,11 @@
 /**
  * Carbon Fields Auto-Save Module
  * Provides seamless AJAX auto-saving for Laca Theme and Laca Admin without page reloads.
+ *
+ * @package LacaDevClient
  */
+
+import { createAutoSaveEngine } from './laca-autosave.js';
 
 export function initCarbonFieldsAutoSave() {
 	const form = document.getElementById( 'theme-options-form' );
@@ -9,7 +13,6 @@ export function initCarbonFieldsAutoSave() {
 		return;
 	}
 
-	// 1. Tạo Indicator hiển thị trạng thái lưu
 	let indicator = document.getElementById( 'laca-cf-autosave-indicator' );
 	if ( ! indicator ) {
 		indicator = document.createElement( 'div' );
@@ -25,10 +28,6 @@ export function initCarbonFieldsAutoSave() {
 
 	const iconEl = indicator.querySelector( '.laca-autosave-icon' );
 	const textEl = indicator.querySelector( '.laca-autosave-text' );
-
-	let isSaving = false;
-	let hasPendingChanges = false;
-	let debounceTimer = null;
 	let hideTimer = null;
 
 	function setStatus( status, message ) {
@@ -51,7 +50,6 @@ export function initCarbonFieldsAutoSave() {
 			}
 		}
 
-		// Trạng thái bên cạnh nút Save trong metabox Actions
 		const actionSpinner = document.querySelector( '#submitdiv .spinner' );
 		if ( actionSpinner ) {
 			actionSpinner.classList.toggle( 'is-active', status === 'saving' );
@@ -65,116 +63,10 @@ export function initCarbonFieldsAutoSave() {
 		}
 	}
 
-	function executeSave() {
-		if ( isSaving ) {
-			hasPendingChanges = true;
-			return;
-		}
-
-		isSaving = true;
-		setStatus( 'saving', 'Đang lưu...' );
-
-		const formData = new FormData( form );
-		formData.append( 'carbon_fields_auto_save', '1' );
-
-		fetch( window.location.href, {
-			method: 'POST',
-			body: formData,
-			headers: {
-				'X-Requested-With': 'XMLHttpRequest',
-			},
-		} )
-			.then( ( res ) => res.json() )
-			.then( ( res ) => {
-				isSaving = false;
-
-				if ( res.success ) {
-					const time = res.data?.timestamp || new Date().toLocaleTimeString( 'vi-VN' );
-					setStatus( 'saved', `Đã tự động lưu (${ time })` );
-				} else {
-					setStatus( 'error', res.data?.message || 'Lưu thất bại' );
-				}
-
-				if ( hasPendingChanges ) {
-					hasPendingChanges = false;
-					executeSave();
-				}
-			} )
-			.catch( ( err ) => {
-				console.error( '[carbon-autosave] Error:', err );
-				isSaving = false;
-				setStatus( 'error', 'Lỗi kết nối' );
-
-				if ( hasPendingChanges ) {
-					hasPendingChanges = false;
-				}
-			} );
-	}
-
-	function queueSave( immediate = false ) {
-		clearTimeout( debounceTimer );
-		if ( immediate ) {
-			executeSave();
-		} else {
-			debounceTimer = setTimeout( () => {
-				executeSave();
-			}, 600 );
-		}
-	}
-
-	// 2. Lắng nghe các thay đổi trên form
-	form.addEventListener( 'input', ( e ) => {
-		const target = e.target;
-		if ( ! target ) return;
-		// Không trigger khi gõ trong search inputs nếu không phải field của Carbon
-		if ( target.id === 'admin-menu-search-input' ) return;
-		queueSave( false );
+	createAutoSaveEngine( {
+		form,
+		isCarbon: true,
+		containerSelector: '.theme-options-container',
+		onStatusChange: setStatus,
 	} );
-
-	form.addEventListener( 'change', ( e ) => {
-		const target = e.target;
-		if ( ! target ) return;
-		queueSave( true );
-	} );
-
-	// 3. Chặn submit form mặc định (khi nhấn Save Changes hoặc Enter)
-	form.addEventListener( 'submit', ( e ) => {
-		e.preventDefault();
-		queueSave( true );
-	} );
-
-	const publishBtn = document.getElementById( 'publish' );
-	if ( publishBtn && publishBtn.closest( '#theme-options-form' ) ) {
-		publishBtn.addEventListener( 'click', ( e ) => {
-			e.preventDefault();
-			queueSave( true );
-		} );
-	}
-
-	// 4. MutationObserver lắng nghe các thao tác React của Carbon Fields (Complex fields, Media uploaders, v.v.)
-	const containerEl = form.querySelector( '.theme-options-container' );
-	if ( containerEl && window.MutationObserver ) {
-		let mutationDebounce = null;
-		const observer = new MutationObserver( ( mutations ) => {
-			let shouldTrigger = false;
-			for ( const m of mutations ) {
-				// Nếu có thêm hoặc xoá DOM nodes (thêm group, xoá group, load media preview)
-				if ( m.type === 'childList' && ( m.addedNodes.length > 0 || m.removedNodes.length > 0 ) ) {
-					shouldTrigger = true;
-					break;
-				}
-			}
-			if ( shouldTrigger ) {
-				clearTimeout( mutationDebounce );
-				mutationDebounce = setTimeout( () => {
-					queueSave( true );
-				}, 400 );
-			}
-		} );
-
-		observer.observe( containerEl, {
-			childList: true,
-			subtree: true,
-		} );
-	}
 }

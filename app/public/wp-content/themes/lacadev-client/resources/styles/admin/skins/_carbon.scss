@@ -478,17 +478,17 @@
   &.is-saved {
     opacity: 1;
     transform: translateY(0);
-    background: var(--laca-success-bg, #ecfdf5);
-    color: var(--laca-success, #059669);
-    border: 1px solid var(--laca-success-border, #a7f3d0);
+    background: var(--laca-success-bg);
+    color: var(--laca-success);
+    border: 1px solid var(--laca-success-border);
   }
 
   &.is-error {
     opacity: 1;
     transform: translateY(0);
-    background: var(--laca-danger-bg, #fef2f2);
-    color: var(--laca-danger, #dc2626);
-    border: 1px solid var(--laca-danger-border, #fecaca);
+    background: var(--laca-danger-bg);
+    color: var(--laca-danger);
+    border: 1px solid var(--laca-danger-border);
   }
 
   .laca-autosave-icon {

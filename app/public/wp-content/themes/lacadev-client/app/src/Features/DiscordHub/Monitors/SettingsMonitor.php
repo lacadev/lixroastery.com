@@ -150,9 +150,57 @@ final class SettingsMonitor
      * @param mixed $a
      * @param mixed $b
      */
+    public static function isSameValue($a, $b): bool
+    {
+        if (self::isEmptyEquivalent($a) && self::isEmptyEquivalent($b)) {
+            return true;
+        }
+        if (is_numeric($a) && is_numeric($b)) {
+            return (float) $a === (float) $b;
+        }
+        if (is_array($a) && is_array($b)) {
+            if (count($a) !== count($b)) {
+                return false;
+            }
+            ksort($a);
+            ksort($b);
+            if (array_keys($a) !== array_keys($b)) {
+                return false;
+            }
+            foreach ($a as $k => $v) {
+                if (!self::isSameValue($v, $b[$k])) {
+                    return false;
+                }
+            }
+            return true;
+        }
+        return maybe_serialize($a) === maybe_serialize($b) || (is_scalar($a) && is_scalar($b) && (string) $a === (string) $b);
+    }
+
+    /**
+     * @param mixed $val
+     */
+    public static function isEmptyEquivalent($val): bool
+    {
+        if (null === $val || '' === $val || false === $val || [] === $val) {
+            return true;
+        }
+        if (is_string($val)) {
+            $trimmed = strtolower(trim($val));
+            if ($trimmed === 'no' || $trimmed === 'off') {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * @param mixed $a
+     * @param mixed $b
+     */
     private function same($a, $b): bool
     {
-        return maybe_serialize($a) === maybe_serialize($b) || (is_scalar($a) && is_scalar($b) && (string) $a === (string) $b);
+        return self::isSameValue($a, $b);
     }
 
     private function describe(string $option, array $change): string

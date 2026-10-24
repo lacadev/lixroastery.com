@@ -87,6 +87,47 @@ const report = (ok, check, pt, w, detail = '') => {
             });
             res.taxIds = taxTds.filter((td) => /^\d+(\s*,\s*\d+)*$/.test(td.innerText.trim())).length;
 
+            // Mỗi ô chỉ 1 control sửa nhanh, đúng post type của hàng.
+            res.dupCells = [...t.querySelectorAll('tbody td')].filter((td) => td.querySelectorAll(':scope > .laca-inline-cell').length > 1).length;
+
+            // Lăn chuột dọc KHÔNG được cuộn ngang khung bảng.
+            res.wheelHijack = false;
+            if (sc && sc.scrollWidth > sc.clientWidth + 2) {
+              sc.scrollLeft = 0;
+              const ev = new WheelEvent('wheel', { deltaY: 300, deltaX: 0, bubbles: true, cancelable: true });
+              t.querySelector('tbody td:not(.check-column)')?.dispatchEvent(ev);
+              await new Promise((r) => setTimeout(r, 200));
+              res.wheelHijack = sc.scrollLeft !== 0 || ev.defaultPrevented;
+            }
+
+            // Ô taxonomy: trình chọn mở ra không nằm trong khung cuộn (không làm hàng/khung nở ra) và không lộ "&amp;".
+            res.taxEditor = 'no-tax';
+            const taxCell = t.querySelector('.laca-inline-cell[data-type="taxonomy"]');
+            if (taxCell && sc) {
+              const h1 = taxCell.closest('tr').getBoundingClientRect().height;
+              taxCell.click();
+              await new Promise((r) => setTimeout(r, 900));
+              const pop = document.querySelector('.laca-inline-popover');
+              const h2 = taxCell.closest('tr').getBoundingClientRect().height;
+              const txt = pop ? pop.innerText : '';
+              const multiSelectBox = taxCell.closest('td').querySelector('select[multiple]');
+              res.taxEditor = !pop ? 'no-popover' : sc.contains(pop) ? 'popover-inside-scroller'
+                : multiSelectBox ? 'multi-select-box' : /&amp;|&#0?38;/.test(txt) ? 'entity-not-decoded'
+                : Math.abs(h2 - h1) > 1 ? 'row-resized' : 'ok';
+              document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+              (pop?.querySelector('input,button') || document.body).dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+              await new Promise((r) => setTimeout(r, 400));
+              res.taxEditorClosed = !document.querySelector('.laca-inline-popover:not([hidden])') || getComputedStyle(document.querySelector('.laca-inline-popover')).display === 'none';
+            }
+
+            // Màu đơn sắc: nền ô/hàng không được ánh xanh (B − R > 8 với nền sáng).
+            res.bluish = [...t.querySelectorAll('tbody tr, tbody td, thead th')].slice(0, 80).filter((el) => {
+              const m = getComputedStyle(el).backgroundColor.match(/\d+/g);
+              if (!m) return false;
+              const [r, , b, a] = m.map(Number);
+              return (a === undefined || a > 0) && b - r > 8;
+            }).length;
+
             const cell = t.querySelector('.laca-inline-cell');
             res.inline = 'no-cell';
             if (cell) {
@@ -105,6 +146,26 @@ const report = (ok, check, pt, w, detail = '') => {
             }
             return res;
           });
+          // Hover thật (CSS :hover) không được làm đổi kích thước ô / đẩy cột sau. Đo 3 ô đầu không phải taxonomy.
+          m.hoverShift = 0;
+          if (w >= 1024) {
+            const handles = await page.$$('tbody .laca-inline-cell:not([data-type="taxonomy"])');
+            for (const h of handles.slice(0, 3)) {
+              const measure = () => h.evaluate((el) => {
+                const td = el.closest('td');
+                const r = td.getBoundingClientRect();
+                const n = td.nextElementSibling ? td.nextElementSibling.getBoundingClientRect().left : 0;
+                return [r.width, r.height, n];
+              });
+              await page.mouse.move(1, 1);
+              await new Promise((r) => setTimeout(r, 150));
+              const a = await measure();
+              await h.hover();
+              await new Promise((r) => setTimeout(r, 300));
+              const b = await measure();
+              m.hoverShift = Math.max(m.hoverShift, Math.round(Math.abs(b[0] - a[0]) + Math.abs(b[1] - a[1]) + Math.abs(b[2] - a[2])));
+            }
+          }
           report(m.docOver <= 0, 'page-no-hscroll', pt, w, `docOver=${m.docOver}`);
           report(m.hasScroller && m.scrollerFits, 'table-scroller', pt, w);
           report(m.tablenavOutside, 'tablenav-outside-scroller', pt, w);
@@ -113,6 +174,14 @@ const report = (ok, check, pt, w, detail = '') => {
           report(m.rawStock === 0, 'stock-label', pt, w, `raw=${m.rawStock}`);
           report(m.taxIds === 0, 'taxonomy-names', pt, w, `idCells=${m.taxIds}`);
           if (m.inline !== 'no-cell') report(m.inline === 'ok', 'inline-open-esc', pt, w, m.inline);
+          report(m.dupCells === 0, 'no-duplicate-cell', pt, w, `dup=${m.dupCells}`);
+          report(m.hoverShift <= 1, 'hover-no-shift', pt, w, `shift=${m.hoverShift}px`);
+          report(!m.wheelHijack, 'wheel-vertical-only', pt, w);
+          if (m.taxEditor !== 'no-tax') {
+            report(m.taxEditor === 'ok', 'taxonomy-popover', pt, w, m.taxEditor);
+            report(m.taxEditorClosed, 'taxonomy-popover-esc', pt, w);
+          }
+          report(m.bluish === 0, 'monochrome', pt, w, `bluish=${m.bluish}`);
           report(errors.length === 0, 'no-js-error', pt, w, errors[0] ? errors[0].slice(0, 100) : '');
         } catch (e) {
           report(false, 'load', pt, w, e.message.slice(0, 100));

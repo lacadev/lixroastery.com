@@ -4,6 +4,8 @@
  * module toggles, search filtering, media uploaders, and code reset.
  */
 
+import { createAutoSaveEngine } from '../laca-autosave.js';
+
 document.addEventListener('DOMContentLoaded', () => {
     initNotesToggle();
     initShowIfDependencies();
@@ -616,10 +618,6 @@ function initLacaSeoAutoSave() {
 
 		const iconEl = badge.querySelector( '.laca-seo-autosave-icon' );
 		const textEl = badge.querySelector( '.laca-seo-autosave-text' );
-
-		let isSaving = false;
-		let hasPendingChanges = false;
-		let debounceTimer = null;
 		let hideTimer = null;
 
 		function setStatus( status, message ) {
@@ -650,103 +648,18 @@ function initLacaSeoAutoSave() {
 			}
 		}
 
-		function executeSave() {
-			if ( isSaving ) {
-				hasPendingChanges = true;
-				return;
-			}
+		const ajaxUrl = window.ajaxurl || window.lacaSeoData?.ajaxUrl || form.action || '/wp-admin/admin-ajax.php';
 
-			isSaving = true;
-			setStatus( 'saving', 'Đang lưu...' );
-
-			const formData = new FormData( form );
-			formData.append( 'is_ajax', '1' );
-			formData.set( 'action', 'laca_seo_save' );
-
-			const ajaxUrl = window.ajaxurl || window.lacaSeoData?.ajaxUrl || form.action || '/wp-admin/admin-ajax.php';
-
-			fetch( ajaxUrl, {
-				method: 'POST',
-				body: formData,
-				headers: {
-					'X-Requested-With': 'XMLHttpRequest',
-				},
-			} )
-				.then( ( res ) => res.json() )
-				.then( ( res ) => {
-					isSaving = false;
-
-					if ( res.success ) {
-						const time = res.data?.timestamp || new Date().toLocaleTimeString( 'vi-VN' );
-						setStatus( 'saved', `Đã tự động lưu (${ time })` );
-					} else {
-						setStatus( 'error', res.data?.message || 'Lưu thất bại' );
-					}
-
-					if ( hasPendingChanges ) {
-						hasPendingChanges = false;
-						executeSave();
-					}
-				} )
-				.catch( ( err ) => {
-					console.error( '[laca-seo-autosave] Error:', err );
-					isSaving = false;
-					setStatus( 'error', 'Lỗi kết nối' );
-
-					if ( hasPendingChanges ) {
-						hasPendingChanges = false;
-					}
-				} );
-		}
-
-		function queueSave( immediate = false ) {
-			clearTimeout( debounceTimer );
-			if ( immediate ) {
-				executeSave();
-			} else {
-				debounceTimer = setTimeout( () => {
-					executeSave();
-				}, 600 );
-			}
-		}
-
-		// Input events (debounce 600ms)
-		form.addEventListener( 'input', ( e ) => {
-			const target = e.target;
-			if ( ! target ) return;
-			if ( target.id === 'laca-seo-search-input' || target.classList.contains( 'laca-seo-var-search' ) ) {
-				return;
-			}
-			queueSave( false );
+		createAutoSaveEngine( {
+			form,
+			saveUrl: ajaxUrl,
+			buildFormData: ( f, changedFields ) => {
+				const formData = new FormData( f );
+				formData.append( 'is_ajax', '1' );
+				formData.set( 'action', 'laca_seo_save' );
+				return formData;
+			},
+			onStatusChange: setStatus,
 		} );
-
-		// Change events (immediate)
-		form.addEventListener( 'change', ( e ) => {
-			const target = e.target;
-			if ( ! target ) return;
-			if ( target.id === 'laca-seo-search-input' || target.classList.contains( 'laca-seo-var-search' ) ) {
-				return;
-			}
-			queueSave( true );
-		} );
-
-		// Form submit (khi bấm Enter hoặc submit button)
-		form.addEventListener( 'submit', ( e ) => {
-			const submitter = e.submitter;
-			if ( submitter && submitter.value === 'laca_seo_reset_tab' ) {
-				return;
-			}
-			e.preventDefault();
-			queueSave( true );
-		} );
-
-		// Save button click
-		const saveBtn = form.querySelector( '.laca-seo-save-btn' );
-		if ( saveBtn ) {
-			saveBtn.addEventListener( 'click', ( e ) => {
-				e.preventDefault();
-				queueSave( true );
-			} );
-		}
 	} );
 }

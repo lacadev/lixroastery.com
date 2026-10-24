@@ -186,6 +186,10 @@ class ListTableInlineEditor
         $supported = $this->getSupportedPostTypes();
 
         foreach ($supported as $post_type) {
+            if (!apply_filters('laca/list_inline/enabled', true, $post_type)) {
+                continue;
+            }
+
             $fields = $this->getPostTypeFields($post_type);
             if (empty($fields)) {
                 continue;
@@ -300,6 +304,10 @@ class ListTableInlineEditor
             return;
         }
 
+        if (get_post_type($post_id) !== $post_type) {
+            return;
+        }
+
         $field_key = substr($column, 5); // strip 'laca_'
         if (!isset($fields[$field_key])) {
             return;
@@ -399,7 +407,8 @@ class ListTableInlineEditor
                 return '—';
             }
             $names = wp_list_pluck($terms, 'name');
-            return implode(', ', $names) ?: '—';
+            $decoded_names = array_map(fn($n) => html_entity_decode((string) $n, ENT_QUOTES | ENT_HTML5, 'UTF-8'), $names);
+            return implode(', ', $decoded_names) ?: '—';
         }
 
         if ($type === 'select') {
@@ -469,9 +478,13 @@ class ListTableInlineEditor
             }
             foreach ($by_parent[$parent_id] as $term) {
                 $prefix = $depth > 0 ? str_repeat('— ', $depth) : '';
+                $name   = html_entity_decode((string) $term->name, ENT_QUOTES | ENT_HTML5, 'UTF-8');
                 $options[] = [
-                    'value' => (string) $term->term_id,
-                    'label' => $prefix . $term->name,
+                    'value'  => (string) $term->term_id,
+                    'label'  => $name,
+                    'prefix' => $prefix,
+                    'depth'  => $depth,
+                    'parent' => (int) $term->parent,
                 ];
                 $build_tree((int) $term->term_id, $depth + 1);
             }
@@ -485,9 +498,13 @@ class ListTableInlineEditor
         $added_ids = array_column($options, 'value');
         foreach ($terms as $term) {
             if (!in_array((string) $term->term_id, $added_ids, true)) {
+                $name = html_entity_decode((string) $term->name, ENT_QUOTES | ENT_HTML5, 'UTF-8');
                 $options[] = [
-                    'value' => (string) $term->term_id,
-                    'label' => $term->name,
+                    'value'  => (string) $term->term_id,
+                    'label'  => $name,
+                    'prefix' => '',
+                    'depth'  => 0,
+                    'parent' => (int) $term->parent,
                 ];
             }
         }
@@ -512,7 +529,7 @@ class ListTableInlineEditor
         $post_type = $screen->post_type ?: 'post';
         $supported = $this->getSupportedPostTypes();
 
-        if (!in_array($post_type, $supported, true)) {
+        if (!in_array($post_type, $supported, true) || !apply_filters('laca/list_inline/enabled', true, $post_type)) {
             return;
         }
 
@@ -582,8 +599,7 @@ class ListTableInlineEditor
         echo '<script id="laca-inline-table-config">';
         echo 'window.lacaInlineTableConfig = ' . wp_json_encode($this->currentScreenConfig) . ';';
         echo '</script>';
-        $is_local = (defined('WP_DEBUG') && WP_DEBUG) || (isset($_SERVER['HTTP_HOST']) && str_contains($_SERVER['HTTP_HOST'], '.local'));
-        if ($is_local) {
+        if (defined('WP_DEBUG') && WP_DEBUG && function_exists('wp_get_environment_type') && wp_get_environment_type() === 'local') {
             echo '<!-- LACA_NUM_QUERIES: ' . get_num_queries() . ' -->' . "\n";
         }
     }
@@ -697,7 +713,7 @@ class ListTableInlineEditor
     public function outputEarlyHeadScript(): void
     {
         $screen = get_current_screen();
-        if (!$screen || !in_array($screen->post_type, $this->getSupportedPostTypes(), true)) {
+        if (!$screen || !in_array($screen->post_type, $this->getSupportedPostTypes(), true) || !apply_filters('laca/list_inline/enabled', true, $screen->post_type)) {
             return;
         }
 

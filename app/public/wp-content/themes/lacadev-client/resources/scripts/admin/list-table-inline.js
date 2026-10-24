@@ -50,27 +50,6 @@ function setupTableScroll( table ) {
 		table.parentNode.insertBefore( wrapper, table );
 		wrapper.appendChild( table );
 		document.body.classList.add( 'has-laca-table-scroll' );
-
-		// Hỗ trợ cuộn chuột ngang mượt mà khi di chuột trên bảng
-		wrapper.addEventListener(
-			'wheel',
-			( e ) => {
-				if ( Math.abs( e.deltaX ) > 0 || e.shiftKey ) {
-					return;
-				}
-				if ( wrapper.scrollWidth > wrapper.clientWidth ) {
-					if (
-						( e.deltaY > 0 &&
-							wrapper.scrollLeft <
-								wrapper.scrollWidth - wrapper.clientWidth ) ||
-						( e.deltaY < 0 && wrapper.scrollLeft > 0 )
-					) {
-						wrapper.scrollLeft += e.deltaY;
-					}
-				}
-			},
-			{ passive: true }
-		);
 	}
 
 	// Thêm thanh cuộn phụ phía trên bảng
@@ -206,12 +185,12 @@ function setupTableScroll( table ) {
 
 		// Đảm bảo nền đục 100% cho thead/tfoot và từng ô sticky trên mỗi hàng
 		table.querySelectorAll( 'thead th, tfoot th' ).forEach( ( th ) => {
-			th.style.backgroundColor = '#f1f5f9';
+			th.style.backgroundColor = 'var(--laca-bg-muted, #f4f4f5)';
 		} );
 
 		table.querySelectorAll( 'tbody tr' ).forEach( ( tr, idx ) => {
 			const isAlt = tr.classList.contains( 'alternate' ) || idx % 2 === 1;
-			const rowBg = isAlt ? '#f8fafc' : '#ffffff';
+			const rowBg = isAlt ? 'var(--laca-bg-subtle, #fafafa)' : 'var(--laca-bg, #ffffff)';
 			tr.style.backgroundColor = rowBg;
 
 			tr.querySelectorAll(
@@ -266,6 +245,299 @@ function setupInlineEditing( table ) {
 	} );
 }
 
+const taxonomyCache = {};
+
+function removeAccents( str ) {
+	return String( str || '' )
+		.normalize( 'NFD' )
+		.replace( /[\u0300-\u036f]/g, '' )
+		.toLowerCase();
+}
+
+function decodeHtml( html ) {
+	const txt = document.createElement( 'textarea' );
+	txt.innerHTML = String( html || '' );
+	return txt.value;
+}
+
+function closeAnyOpenTaxonomyPopover() {
+	document.querySelectorAll( '.laca-inline-popover' ).forEach( ( p ) => {
+		if ( p._closeHandler ) {
+			p._closeHandler( false );
+		} else if ( p.parentNode ) {
+			p.parentNode.removeChild( p );
+		}
+	} );
+}
+
+function saveTaxonomy( cell, postId, key, newValues, originalDisplay, originalRaw, i18n, ajaxUrl, nonce ) {
+	const valSpan = cell.querySelector( '.laca-inline-val' );
+	const rawSpan = cell.querySelector( '.laca-inline-raw' );
+
+	cell.classList.add( 'is-saving' );
+	if ( valSpan ) {
+		valSpan.textContent = i18n.saving;
+	}
+
+	const formData = new URLSearchParams();
+	formData.append( 'action', 'laca_inline_update_field' );
+	formData.append( 'nonce', nonce );
+	formData.append( 'post_id', postId );
+	formData.append( 'field_key', key );
+	newValues.forEach( ( val ) => formData.append( 'value[]', val ) );
+
+	fetch( ajaxUrl, {
+		method: 'POST',
+		headers: {
+			'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+		},
+		body: formData.toString(),
+	} )
+		.then( ( res ) => res.json() )
+		.then( ( res ) => {
+			cell.classList.remove( 'is-saving' );
+			if ( res && res.success && res.data ) {
+				const newDisplay = res.data.display !== '' ? res.data.display : i18n.empty;
+				if ( valSpan ) {
+					valSpan.textContent = newDisplay;
+					if ( res.data.display === '' ) {
+						valSpan.classList.add( 'laca-inline-empty' );
+					} else {
+						valSpan.classList.remove( 'laca-inline-empty' );
+					}
+				}
+				if ( rawSpan ) {
+					rawSpan.setAttribute( 'data-value', res.data.value );
+				}
+				cell.classList.add( 'laca-save-success' );
+				setTimeout( () => cell.classList.remove( 'laca-save-success' ), 1200 );
+			} else {
+				if ( valSpan ) {
+					valSpan.textContent = originalDisplay;
+				}
+				cell.classList.add( 'laca-save-error' );
+				setTimeout( () => cell.classList.remove( 'laca-save-error' ), 1200 );
+			}
+		} )
+		.catch( () => {
+			cell.classList.remove( 'is-saving' );
+			if ( valSpan ) {
+				valSpan.textContent = originalDisplay;
+			}
+			cell.classList.add( 'laca-save-error' );
+			setTimeout( () => cell.classList.remove( 'laca-save-error' ), 1200 );
+		} );
+}
+
+function openTaxonomyPopover( cell ) {
+	const config = window.lacaInlineTableConfig || {};
+	const ajaxUrl = config.ajaxUrl || window.ajaxurl;
+	const nonce = config.nonce || '';
+	const fields = config.fields || {};
+	const i18n = config.i18n || {
+		saving: 'Đang lưu...',
+		saved: 'Đã lưu!',
+		saveError: 'Lưu thất bại. Vui lòng thử lại.',
+		empty: '—',
+	};
+
+	const postId = parseInt( cell.getAttribute( 'data-post-id' ), 10 );
+	const key = cell.getAttribute( 'data-key' );
+	const fieldMeta = fields[ key ] || { type: 'taxonomy', options: [] };
+	const taxonomySlug = fieldMeta.taxonomy || key;
+
+	const valSpan = cell.querySelector( '.laca-inline-val' );
+	const rawSpan = cell.querySelector( '.laca-inline-raw' );
+	const originalDisplay = valSpan ? valSpan.textContent.trim() : '';
+	const originalRaw = rawSpan ? String( rawSpan.getAttribute( 'data-value' ) || '' ) : '';
+	const initialValues = originalRaw.split( ',' ).map( ( s ) => s.trim() ).filter( Boolean );
+
+	closeAnyOpenTaxonomyPopover();
+
+	cell.classList.add( 'is-editing' );
+
+	const popover = document.createElement( 'div' );
+	popover.className = 'laca-inline-popover';
+
+	const header = document.createElement( 'div' );
+	header.className = 'laca-popover-header';
+	const searchInput = document.createElement( 'input' );
+	searchInput.type = 'search';
+	searchInput.className = 'laca-popover-search';
+	searchInput.placeholder = 'Tìm danh mục...';
+	header.appendChild( searchInput );
+	popover.appendChild( header );
+
+	const listContainer = document.createElement( 'div' );
+	listContainer.className = 'laca-popover-list';
+	listContainer.innerHTML = '<div class="laca-popover-empty">Đang tải...</div>';
+	popover.appendChild( listContainer );
+
+	const footer = document.createElement( 'div' );
+	footer.className = 'laca-popover-footer';
+	const btnCancel = document.createElement( 'button' );
+	btnCancel.type = 'button';
+	btnCancel.className = 'button button-secondary laca-popover-cancel';
+	btnCancel.textContent = 'Huỷ';
+	const btnSave = document.createElement( 'button' );
+	btnSave.type = 'button';
+	btnSave.className = 'button button-primary laca-popover-save';
+	btnSave.textContent = 'Xong';
+	footer.appendChild( btnCancel );
+	footer.appendChild( btnSave );
+	popover.appendChild( footer );
+
+	function updatePosition() {
+		const rect = cell.getBoundingClientRect();
+		const popoverWidth = 280;
+		const popoverHeight = 320;
+		let top = rect.bottom + 4;
+		let left = rect.left;
+
+		if ( top + popoverHeight > window.innerHeight && rect.top - popoverHeight > 0 ) {
+			top = rect.top - popoverHeight - 4;
+		}
+		if ( left + popoverWidth > window.innerWidth - 10 ) {
+			left = window.innerWidth - popoverWidth - 10;
+		}
+		if ( left < 10 ) {
+			left = 10;
+		}
+
+		popover.style.top = `${ top }px`;
+		popover.style.left = `${ left }px`;
+	}
+
+	updatePosition();
+	document.body.appendChild( popover );
+
+	function renderList( optionsList ) {
+		listContainer.innerHTML = '';
+		if ( ! optionsList || optionsList.length === 0 ) {
+			listContainer.innerHTML = '<div class="laca-popover-empty">(Không có mục nào)</div>';
+			return;
+		}
+
+		optionsList.forEach( ( opt ) => {
+			const labelEl = document.createElement( 'label' );
+			labelEl.className = 'laca-popover-item';
+			const depth = opt.depth || 0;
+			if ( depth > 0 ) {
+				labelEl.style.paddingLeft = `${ 12 + depth * 16 }px`;
+			}
+
+			const cb = document.createElement( 'input' );
+			cb.type = 'checkbox';
+			cb.value = String( opt.value );
+			if ( initialValues.includes( String( opt.value ) ) ) {
+				cb.checked = true;
+			}
+
+			const span = document.createElement( 'span' );
+			span.textContent = decodeHtml( opt.label );
+
+			labelEl.appendChild( cb );
+			labelEl.appendChild( span );
+			listContainer.appendChild( labelEl );
+		} );
+	}
+
+	if ( fieldMeta.options && fieldMeta.options.length > 0 ) {
+		renderList( fieldMeta.options );
+	} else if ( taxonomyCache[ taxonomySlug ] ) {
+		renderList( taxonomyCache[ taxonomySlug ] );
+	} else {
+		fetch( `${ ajaxUrl }?action=laca_inline_get_options&taxonomy=${ encodeURIComponent( taxonomySlug ) }&nonce=${ encodeURIComponent( nonce ) }` )
+			.then( ( res ) => res.json() )
+			.then( ( res ) => {
+				if ( res && res.success && res.data && res.data.options ) {
+					taxonomyCache[ taxonomySlug ] = res.data.options;
+					renderList( res.data.options );
+				} else {
+					renderList( [] );
+				}
+			} )
+			.catch( () => renderList( [] ) );
+	}
+
+	searchInput.addEventListener( 'input', () => {
+		const q = removeAccents( searchInput.value.trim() );
+		listContainer.querySelectorAll( '.laca-popover-item' ).forEach( ( item ) => {
+			const text = removeAccents( item.textContent.trim() );
+			item.style.display = text.includes( q ) ? 'flex' : 'none';
+		} );
+	} );
+
+	let closed = false;
+	function closePopover( shouldSave = false ) {
+		if ( closed ) {
+			return;
+		}
+		closed = true;
+
+		document.removeEventListener( 'keydown', onKeyDown, true );
+		document.removeEventListener( 'mousedown', onDocMouseDown, true );
+		window.removeEventListener( 'scroll', onWindowScroll, true );
+		window.removeEventListener( 'resize', onWindowResize );
+
+		if ( popover.parentNode ) {
+			popover.parentNode.removeChild( popover );
+		}
+		cell.classList.remove( 'is-editing' );
+
+		if ( ! shouldSave ) {
+			return;
+		}
+
+		const selectedCbs = Array.from( listContainer.querySelectorAll( 'input[type="checkbox"]:checked' ) );
+		const newValues = selectedCbs.map( ( c ) => c.value );
+		const newRaw = newValues.join( ',' );
+
+		if ( newRaw === originalRaw ) {
+			return;
+		}
+
+		saveTaxonomy( cell, postId, key, newValues, originalDisplay, originalRaw, i18n, ajaxUrl, nonce );
+	}
+
+	popover._closeHandler = closePopover;
+
+	function onKeyDown( e ) {
+		if ( e.key === 'Escape' ) {
+			e.preventDefault();
+			e.stopPropagation();
+			closePopover( false );
+		}
+	}
+
+	function onDocMouseDown( e ) {
+		if ( ! popover.contains( e.target ) && ! cell.contains( e.target ) ) {
+			closePopover( true );
+		}
+	}
+
+	function onWindowScroll( e ) {
+		if ( popover.contains( e.target ) ) {
+			return;
+		}
+		closePopover( true );
+	}
+
+	function onWindowResize() {
+		closePopover( true );
+	}
+
+	btnCancel.addEventListener( 'click', () => closePopover( false ) );
+	btnSave.addEventListener( 'click', () => closePopover( true ) );
+
+	document.addEventListener( 'keydown', onKeyDown, true );
+	document.addEventListener( 'mousedown', onDocMouseDown, true );
+	window.addEventListener( 'scroll', onWindowScroll, true );
+	window.addEventListener( 'resize', onWindowResize );
+
+	setTimeout( () => searchInput.focus(), 50 );
+}
+
 /**
  * Bắt đầu chỉnh sửa một ô dữ liệu.
  *
@@ -281,7 +553,6 @@ function startEditingCell( cell ) {
 		saved: 'Đã lưu!',
 		saveError: 'Lưu thất bại. Vui lòng thử lại.',
 		empty: '—',
-		multiHelp: 'Giữ Ctrl / Cmd để chọn nhiều',
 	};
 
 	const postId = parseInt( cell.getAttribute( 'data-post-id' ), 10 );
@@ -289,6 +560,11 @@ function startEditingCell( cell ) {
 	const type = cell.getAttribute( 'data-type' ) || 'meta';
 
 	if ( ! postId || ! key ) {
+		return;
+	}
+
+	if ( type === 'taxonomy' ) {
+		openTaxonomyPopover( cell );
 		return;
 	}
 
@@ -302,8 +578,7 @@ function startEditingCell( cell ) {
 	cell.classList.add( 'is-editing' );
 
 	let editor;
-	const isSelect = type === 'stock_status' || type === 'taxonomy' || type === 'select';
-	const isMulti = type === 'taxonomy';
+	const isSelect = type === 'stock_status' || type === 'select';
 
 	if ( isSelect ) {
 		const container = document.createElement( 'div' );
@@ -311,82 +586,23 @@ function startEditingCell( cell ) {
 
 		editor = document.createElement( 'select' );
 		editor.className = 'laca-inline-select';
-		if ( isMulti ) {
-			editor.multiple = true;
-		}
-
 		container.appendChild( editor );
 
-		if ( isMulti ) {
-			const hint = document.createElement( 'small' );
-			hint.className = 'laca-inline-select-hint';
-			hint.textContent = i18n.multiHelp;
-			container.appendChild( hint );
-		}
+		const defaultOpt = document.createElement( 'option' );
+		defaultOpt.value = '';
+		defaultOpt.textContent = `— Chọn ${ fieldMeta.label || key } —`;
+		editor.appendChild( defaultOpt );
 
-		const selectedValues = isMulti
-			? originalRaw.split( ',' ).map( ( s ) => s.trim() ).filter( Boolean )
-			: [ originalRaw ];
-
-		function renderOptions( optionsList ) {
-			editor.innerHTML = '';
-
-			if ( ! isMulti ) {
-				const defaultOpt = document.createElement( 'option' );
-				defaultOpt.value = '';
-				defaultOpt.textContent = `— Chọn ${ fieldMeta.label || key } —`;
-				editor.appendChild( defaultOpt );
+		const optionsList = fieldMeta.options || [];
+		optionsList.forEach( ( opt ) => {
+			const optEl = document.createElement( 'option' );
+			optEl.value = opt.value;
+			optEl.textContent = opt.label;
+			if ( String( opt.value ) === originalRaw ) {
+				optEl.selected = true;
 			}
-
-			if ( ! optionsList || optionsList.length === 0 ) {
-				const emptyOpt = document.createElement( 'option' );
-				emptyOpt.value = '';
-				emptyOpt.textContent = '(Không có mục nào)';
-				emptyOpt.disabled = true;
-				editor.appendChild( emptyOpt );
-				return;
-			}
-
-			optionsList.forEach( ( opt ) => {
-				const optEl = document.createElement( 'option' );
-				optEl.value = opt.value;
-				optEl.textContent = opt.label;
-				if ( selectedValues.includes( String( opt.value ) ) ) {
-					optEl.selected = true;
-				}
-				editor.appendChild( optEl );
-			} );
-
-			if ( isMulti ) {
-				editor.size = Math.min( Math.max( optionsList.length, 3 ), 6 );
-			}
-		}
-
-		// Nếu danh sách options có sẵn
-		if ( fieldMeta.options && fieldMeta.options.length > 0 ) {
-			renderOptions( fieldMeta.options );
-		} else if ( type === 'taxonomy' ) {
-			// Dự phòng tải động qua AJAX nếu config chưa nạp kịp
-			const taxonomySlug = fieldMeta.taxonomy || key;
-			const loadingOpt = document.createElement( 'option' );
-			loadingOpt.textContent = 'Đang tải danh mục...';
-			loadingOpt.disabled = true;
-			editor.appendChild( loadingOpt );
-
-			fetch( `${ ajaxUrl }?action=laca_inline_get_options&taxonomy=${ encodeURIComponent( taxonomySlug ) }&nonce=${ encodeURIComponent( nonce ) }` )
-				.then( ( res ) => res.json() )
-				.then( ( res ) => {
-					if ( res && res.success && res.data && res.data.options ) {
-						fieldMeta.options = res.data.options;
-						renderOptions( res.data.options );
-					} else {
-						renderOptions( [] );
-					}
-				} )
-				.catch( () => renderOptions( [] ) );
-		} else {
-			renderOptions( [] );
-		}
+			editor.appendChild( optEl );
+		} );
 
 		cell.innerHTML = '';
 		cell.appendChild( container );
@@ -421,10 +637,10 @@ function startEditingCell( cell ) {
 		cell.appendChild( newValSpan );
 		cell.appendChild( newRawSpan );
 
-		if ( isSuccess ) {
+		if ( isSuccess === true ) {
 			cell.classList.add( 'laca-save-success' );
 			setTimeout( () => cell.classList.remove( 'laca-save-success' ), 1200 );
-		} else {
+		} else if ( isSuccess === false ) {
 			cell.classList.add( 'laca-save-error' );
 			setTimeout( () => cell.classList.remove( 'laca-save-error' ), 1200 );
 		}
@@ -435,16 +651,10 @@ function startEditingCell( cell ) {
 			return;
 		}
 
-		let newValue;
-		if ( isMulti ) {
-			newValue = Array.from( editor.selectedOptions ).map( ( o ) => o.value );
-		} else {
-			newValue = editor.value.trim();
-		}
+		const newValue = isSelect ? editor.value : editor.value.trim();
 
-		const currentRawComparison = isMulti ? newValue.join( ',' ) : newValue;
-		if ( currentRawComparison === originalRaw ) {
-			finish( originalDisplay, originalRaw, false );
+		if ( newValue === originalRaw ) {
+			finish( originalDisplay, originalRaw, null );
 			return;
 		}
 
@@ -456,12 +666,7 @@ function startEditingCell( cell ) {
 		formData.append( 'nonce', nonce );
 		formData.append( 'post_id', postId );
 		formData.append( 'field_key', key );
-
-		if ( Array.isArray( newValue ) ) {
-			newValue.forEach( ( val ) => formData.append( 'value[]', val ) );
-		} else {
-			formData.append( 'value', newValue );
-		}
+		formData.append( 'value', newValue );
 
 		fetch( ajaxUrl, {
 			method: 'POST',
@@ -500,7 +705,7 @@ function startEditingCell( cell ) {
 		if ( isSaving ) {
 			return;
 		}
-		finish( originalDisplay, originalRaw, false );
+		finish( originalDisplay, originalRaw, null );
 	}
 
 	editor.addEventListener( 'keydown', function ( e ) {

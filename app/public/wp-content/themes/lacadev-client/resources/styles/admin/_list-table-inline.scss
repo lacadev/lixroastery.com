@@ -49,15 +49,15 @@ body.edit-php {
     /* Tiêu đề thead & tfoot luôn có màu nền đục, không nhìn xuyên thấu */
     thead th,
     tfoot th {
-      background-color: #f1f5f9 !important;
-      color: #334155 !important;
+      background-color: var(--laca-bg-muted) !important;
+      color: var(--laca-fg) !important;
     }
 
     /* Hàng lẻ: Toàn bộ ô và 3 cột cố định có nền trắng đục 100% */
     tbody tr,
     tbody tr:nth-child(odd),
     tbody tr:not(.alternate):not(:nth-child(even)) {
-      background-color: #ffffff !important;
+      background-color: var(--laca-bg) !important;
 
       > th,
       > td,
@@ -79,14 +79,14 @@ body.edit-php {
       td.name,
       th.column-title,
       td.column-title {
-        background-color: #ffffff !important;
+        background-color: var(--laca-bg) !important;
       }
     }
 
     /* Hàng chẵn: Toàn bộ ô và 3 cột cố định có nền xám nhạt đục 100% */
     tbody tr.alternate,
     tbody tr:nth-child(even) {
-      background-color: #f8fafc !important;
+      background-color: var(--laca-bg-subtle) !important;
 
       > th,
       > td,
@@ -108,13 +108,13 @@ body.edit-php {
       td.name,
       th.column-title,
       td.column-title {
-        background-color: #f8fafc !important;
+        background-color: var(--laca-bg-subtle) !important;
       }
     }
 
-    /* Hover hàng: Toàn bộ ô có nền xanh nhạt đục */
+    /* Hover hàng: Toàn bộ ô có nền xám dịu đục */
     tbody tr:hover {
-      background-color: #eff6ff !important;
+      background-color: var(--laca-bg-muted) !important;
 
       > th,
       > td,
@@ -136,7 +136,7 @@ body.edit-php {
       td.name,
       th.column-title,
       td.column-title {
-        background-color: #eff6ff !important;
+        background-color: var(--laca-bg-muted) !important;
       }
     }
 
@@ -172,8 +172,7 @@ body.edit-php {
       position: sticky !important;
       left: var(--laca-col-title-left, 120px) !important;
       z-index: 13 !important;
-      border-right: 2px solid #cbd5e1 !important;
-      box-shadow: 4px 0 10px -2px rgba(0, 0, 0, 0.12) !important;
+      box-shadow: 1px 0 0 var(--laca-border) !important;
     }
   }
 }
@@ -200,15 +199,15 @@ body.wp-admin.has-laca-table-scroll {
     height: 8px;
   }
   &::-webkit-scrollbar-track {
-    background: #f4f4f5;
+    background: var(--laca-bg-muted);
     border-radius: 4px;
   }
   &::-webkit-scrollbar-thumb {
-    background: #d4d4d8;
+    background: var(--laca-border-emphasized);
     border-radius: 4px;
 
     &:hover {
-      background: #a1a1aa;
+      background: var(--laca-input-border);
     }
   }
 }
@@ -224,30 +223,38 @@ body.wp-admin.has-laca-table-scroll {
   max-width: 100% !important;
   overflow-x: auto !important;
   overflow-y: visible !important;
+  overscroll-behavior-x: contain;
   -webkit-overflow-scrolling: touch !important;
   box-sizing: border-box !important;
   scrollbar-gutter: stable;
-  background: #ffffff;
-  border: 1px solid var(--laca-border, #e4e4e7);
+  background: var(--laca-bg);
+  border: 1px solid var(--laca-border);
   border-radius: var(--laca-radius-l2, 6px);
   margin-top: 10px;
   margin-bottom: 20px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+
+  &.is-scrolled {
+    th.column-title,
+    td.column-title {
+      box-shadow: 1px 0 0 var(--laca-border), 4px 0 6px -4px rgba(0, 0, 0, 0.12) !important;
+    }
+  }
 
   /* Sleek modern scrollbar */
   &::-webkit-scrollbar {
     height: 8px;
   }
   &::-webkit-scrollbar-track {
-    background: #f4f4f5;
+    background: var(--laca-bg-muted);
     border-radius: 4px;
   }
   &::-webkit-scrollbar-thumb {
-    background: #d4d4d8;
+    background: var(--laca-border-emphasized);
     border-radius: 4px;
 
     &:hover {
-      background: #a1a1aa;
+      background: var(--laca-input-border);
     }
   }
 
@@ -275,8 +282,8 @@ body.wp-admin.has-laca-table-scroll {
     th,
     td {
       white-space: nowrap;
-      border-right: 1px solid var(--laca-border-subtle, #f1f5f9);
-      border-bottom: 1px solid var(--laca-border-subtle, #f1f5f9);
+      border-right: 1px solid var(--laca-border-subtle);
+      border-bottom: 1px solid var(--laca-border-subtle);
       padding: 9px 12px;
       font-size: 13px;
       vertical-align: middle;
@@ -334,7 +341,7 @@ body.wp-admin.has-laca-table-scroll {
       max-width: 76px !important;
       text-align: center !important;
       padding: 6px 4px !important;
-      background-color: #ffffff !important;
+      background-color: var(--laca-bg) !important;
       box-sizing: border-box;
 
       .thumbnail-wrap {
@@ -354,9 +361,9 @@ body.wp-admin.has-laca-table-scroll {
           display: flex !important;
           justify-content: center !important;
           align-items: center !important;
-          background-color: #09090b !important;
-          color: #ffffff !important;
-          border: 1.5px solid #ffffff !important;
+          background-color: var(--laca-fg) !important;
+          color: var(--laca-bg) !important;
+          border: 1.5px solid var(--laca-bg) !important;
           border-radius: 50% !important;
           box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35) !important;
           z-index: 10 !important;
@@ -367,8 +374,8 @@ body.wp-admin.has-laca-table-scroll {
           transition: transform 0.15s ease, background-color 0.15s ease !important;
 
           &:hover {
-            background-color: #ef4444 !important;
-            border-color: #ffffff !important;
+            background-color: var(--laca-danger) !important;
+            border-color: var(--laca-bg) !important;
             transform: scale(1.15) !important;
           }
 
@@ -376,12 +383,12 @@ body.wp-admin.has-laca-table-scroll {
             width: 10px !important;
             height: 10px !important;
             display: block !important;
-            stroke: #ffffff !important;
+            stroke: var(--laca-bg) !important;
             fill: none !important;
             pointer-events: none !important;
 
             path {
-              stroke: #ffffff !important;
+              stroke: var(--laca-bg) !important;
               stroke-width: 2 !important;
               stroke-linecap: round !important;
             }
@@ -394,7 +401,7 @@ body.wp-admin.has-laca-table-scroll {
         display: block !important;
         margin: 0 auto !important;
         border-radius: 6px !important;
-        border: 1px solid #cbd5e1 !important;
+        border: 1px solid var(--laca-border-emphasized) !important;
         width: 54px !important;
         height: 54px !important;
         max-width: 54px !important;
@@ -413,10 +420,10 @@ body.wp-admin.has-laca-table-scroll {
         margin: 0 auto !important;
         padding: 2px !important;
         box-sizing: border-box !important;
-        border: 1.5px dashed #cbd5e1 !important;
+        border: 1.5px dashed var(--laca-border-emphasized) !important;
         border-radius: 6px !important;
-        background-color: #f8fafc !important;
-        color: #475569 !important;
+        background-color: var(--laca-bg-subtle) !important;
+        color: var(--laca-fg-subtle) !important;
         font-size: 11px !important;
         font-weight: 500 !important;
         line-height: 1.25 !important;
@@ -435,9 +442,9 @@ body.wp-admin.has-laca-table-scroll {
         }
 
         &:hover {
-          border-color: #3b82f6 !important;
-          color: #2563eb !important;
-          background-color: #eff6ff !important;
+          border-color: var(--laca-fg) !important;
+          color: var(--laca-fg) !important;
+          background-color: var(--laca-bg-muted) !important;
         }
       }
     }
@@ -471,9 +478,9 @@ body.wp-admin.has-laca-table-scroll {
       white-space: normal !important;
       overflow-wrap: anywhere !important;
       word-break: break-word !important;
-      background-color: #ffffff !important;
+      background-color: var(--laca-bg) !important;
       border-right: none !important;
-      box-shadow: 1px 0 0 #e4e4e7 !important;
+      box-shadow: 1px 0 0 var(--laca-border) !important;
       box-sizing: border-box !important;
 
       strong,
@@ -564,7 +571,7 @@ body.wp-admin.has-laca-table-scroll {
        2. MÀU NỀN XEN KẼ (ZEBRA STRIPING) & HOVER CHO CỘT CỐ ĐỊNH
        ------------------------------------------------------------- */
 
-    /* Header & Footer: nền đục #f1f5f9 */
+    /* Header & Footer: nền đục var(--laca-bg-muted) */
     thead th,
     tfoot th,
     thead th.check-column,
@@ -583,17 +590,17 @@ body.wp-admin.has-laca-table-scroll {
     tfoot th.column-image,
     tfoot th.column-name,
     tfoot th.column-title {
-      background-color: #f1f5f9 !important;
+      background-color: var(--laca-bg-muted) !important;
       font-weight: 600;
-      color: #334155 !important;
-      border-bottom: 2px solid #cbd5e1;
+      color: var(--laca-fg) !important;
+      border-bottom: 2px solid var(--laca-border-emphasized);
     }
 
     /* Row Lẻ (Odd): Nền trắng đục 100% cho mọi ô bao gồm 3 cột cố định */
     tbody tr,
     tbody tr:not(.alternate):not(:nth-child(even)),
     tbody tr:nth-child(odd) {
-      background-color: #ffffff !important;
+      background-color: var(--laca-bg) !important;
 
       th,
       td,
@@ -613,14 +620,14 @@ body.wp-admin.has-laca-table-scroll {
       td.column-name,
       th.column-title,
       td.column-title {
-        background-color: #ffffff !important;
+        background-color: var(--laca-bg) !important;
       }
     }
 
     /* Row Chẵn (Even): Nền xám nhạt đục 100% cho mọi ô bao gồm 3 cột cố định */
     tbody tr.alternate,
     tbody tr:nth-child(even) {
-      background-color: #f8fafc !important;
+      background-color: var(--laca-bg-subtle) !important;
 
       th,
       td,
@@ -640,13 +647,13 @@ body.wp-admin.has-laca-table-scroll {
       td.column-name,
       th.column-title,
       td.column-title {
-        background-color: #f8fafc !important;
+        background-color: var(--laca-bg-subtle) !important;
       }
     }
 
     /* Hover toàn bộ row (bao gồm các cột cố định) */
     tbody tr:hover {
-      background-color: #f4f4f5 !important;
+      background-color: var(--laca-bg-muted) !important;
 
       th,
       td,
@@ -666,7 +673,7 @@ body.wp-admin.has-laca-table-scroll {
       td.column-name,
       th.column-title,
       td.column-title {
-        background-color: #f4f4f5 !important;
+        background-color: var(--laca-bg-muted) !important;
       }
     }
 
@@ -675,8 +682,8 @@ body.wp-admin.has-laca-table-scroll {
     td[class*="column-laca_subname"],
     th[class*="column-laca_flavor_"],
     td[class*="column-laca_flavor_"] {
-      min-width: 220px !important;
-      max-width: 280px !important;
+      min-width: 160px !important;
+      max-width: 220px !important;
       white-space: normal !important;
 
       .laca-inline-val {
@@ -743,35 +750,50 @@ body.wp-admin.has-laca-table-scroll {
     }
 
     /* -------------------------------------------------------------
-       3. INLINE EDITABLE CELL & FORM CONTROLS (Monochromatic §2.7)
+       3. INLINE EDITABLE CELL & FORM CONTROLS (Monochromatic §A3/A4)
        ------------------------------------------------------------- */
     .laca-inline-cell {
       display: inline-flex;
       align-items: center;
       min-width: 80px;
       min-height: 28px;
-      padding: 3px 6px;
+      padding: 3px 20px 3px 6px;
+      box-sizing: border-box;
       border-radius: 4px;
       cursor: pointer;
       position: relative;
       transition: background-color 0.15s ease, box-shadow 0.15s ease;
 
+      &::after {
+        content: '✎';
+        position: absolute;
+        right: 4px;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 11px;
+        color: var(--laca-fg-subtle);
+        pointer-events: none;
+        opacity: 0.5;
+        transition: color 0.15s ease, opacity 0.15s ease;
+      }
+
       &:hover:not(.is-editing) {
-        background-color: #f4f4f5;
-        box-shadow: inset 0 0 0 1px #e4e4e7;
+        background-color: var(--laca-bg-muted);
+        box-shadow: inset 0 0 0 1px var(--laca-border-emphasized);
 
         &::after {
-          content: '✎';
-          display: inline-block;
-          margin-left: 6px;
-          font-size: 11px;
-          color: #71717a;
+          opacity: 1;
+          color: var(--laca-fg);
         }
       }
 
       &.is-editing {
         padding: 0;
         cursor: default;
+
+        &::after {
+          display: none;
+        }
       }
 
       .laca-inline-val {
@@ -783,21 +805,22 @@ body.wp-admin.has-laca-table-scroll {
       }
 
       .laca-inline-empty {
-        color: #a1a1aa;
+        color: var(--laca-fg-subtle);
         font-style: italic;
       }
 
       .laca-inline-input {
         box-sizing: border-box;
         height: 28px;
+        width: 100%;
         min-width: 140px;
         max-width: 240px;
         padding: 2px 8px;
         font-size: 13px;
         line-height: 22px;
-        color: #18181b;
-        background: #ffffff;
-        border: 1px solid #18181b;
+        color: var(--laca-fg);
+        background: var(--laca-bg);
+        border: 1px solid var(--laca-fg);
         border-radius: 4px;
         outline: none;
         box-shadow: 0 0 0 2px rgba(24, 24, 27, 0.12);
@@ -808,7 +831,7 @@ body.wp-admin.has-laca-table-scroll {
         flex-direction: column;
         gap: 4px;
         width: 100%;
-        min-width: 160px;
+        min-width: 140px;
         max-width: 240px;
       }
 
@@ -818,35 +841,12 @@ body.wp-admin.has-laca-table-scroll {
         min-width: 140px;
         padding: 4px 6px;
         font-size: 13px;
-        color: #18181b;
-        background: #ffffff;
-        border: 1px solid #18181b;
+        color: var(--laca-fg);
+        background: var(--laca-bg);
+        border: 1px solid var(--laca-fg);
         border-radius: 4px;
         outline: none;
         box-shadow: 0 0 0 2px rgba(24, 24, 27, 0.12);
-
-        &[multiple] {
-          min-height: 100px;
-          max-height: 180px;
-          padding: 4px;
-
-          option {
-            padding: 4px 6px;
-            border-radius: 2px;
-
-            &:checked {
-              background: #18181b;
-              color: #ffffff;
-            }
-          }
-        }
-      }
-
-      .laca-inline-select-hint {
-        font-size: 11px;
-        color: #71717a;
-        font-style: italic;
-        line-height: 1.2;
       }
 
       .laca-inline-saving {
@@ -854,7 +854,7 @@ body.wp-admin.has-laca-table-scroll {
         align-items: center;
         gap: 6px;
         font-size: 12px;
-        color: #71717a;
+        color: var(--laca-fg-subtle);
         font-weight: 500;
         opacity: 0.7;
 
@@ -863,8 +863,8 @@ body.wp-admin.has-laca-table-scroll {
           display: inline-block;
           width: 12px;
           height: 12px;
-          border: 2px solid #e4e4e7;
-          border-top-color: #18181b;
+          border: 2px solid var(--laca-border);
+          border-top-color: var(--laca-fg);
           border-radius: 50%;
           animation: laca-spin 0.6s linear infinite;
         }
@@ -872,13 +872,114 @@ body.wp-admin.has-laca-table-scroll {
     }
 
     .laca-save-success {
-      background-color: #f4f4f5 !important;
-      box-shadow: inset 0 0 0 1px #e4e4e7 !important;
+      background-color: var(--laca-bg-muted) !important;
+      box-shadow: inset 0 0 0 1px var(--laca-border) !important;
       transition: background-color 1s ease;
     }
 
     .laca-save-error {
-      border: 2px solid #18181b !important;
+      box-shadow: inset 0 0 0 2px var(--laca-fg) !important;
+    }
+  }
+}
+
+/* -------------------------------------------------------------
+   4. TAXONOMY POPOVER (§A4)
+   ------------------------------------------------------------- */
+.laca-inline-popover {
+  position: fixed;
+  z-index: 999999;
+  width: 280px;
+  max-height: 320px;
+  background: var(--laca-bg);
+  border: 1px solid var(--laca-border-emphasized);
+  border-radius: 6px;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.15), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  overflow: hidden;
+
+  .laca-popover-header {
+    padding: 8px;
+    border-bottom: 1px solid var(--laca-border);
+    background: var(--laca-bg);
+
+    .laca-popover-search {
+      width: 100%;
+      box-sizing: border-box;
+      height: 28px;
+      padding: 4px 8px;
+      font-size: 13px;
+      border: 1px solid var(--laca-border-emphasized);
+      border-radius: 4px;
+      outline: none;
+      color: var(--laca-fg);
+      background: var(--laca-bg);
+
+      &:focus {
+        border-color: var(--laca-fg);
+        box-shadow: 0 0 0 1px var(--laca-fg);
+      }
+    }
+  }
+
+  .laca-popover-list {
+    flex: 1;
+    overflow-y: auto;
+    max-height: 220px;
+    padding: 4px 0;
+    overscroll-behavior: contain;
+
+    .laca-popover-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 12px;
+      font-size: 13px;
+      color: var(--laca-fg);
+      cursor: pointer;
+      user-select: none;
+      transition: background-color 0.1s ease;
+
+      &:hover {
+        background-color: var(--laca-bg-muted);
+      }
+
+      input[type="checkbox"],
+      input[type="radio"] {
+        margin: 0;
+        cursor: pointer;
+      }
+
+      span {
+        line-height: 1.3;
+        word-break: break-word;
+      }
+    }
+
+    .laca-popover-empty {
+      padding: 12px;
+      font-size: 12px;
+      color: var(--laca-fg-subtle);
+      text-align: center;
+      font-style: italic;
+    }
+  }
+
+  .laca-popover-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 6px;
+    padding: 8px 12px;
+    border-top: 1px solid var(--laca-border);
+    background: var(--laca-bg-subtle);
+
+    button {
+      height: 26px;
+      line-height: 24px;
+      padding: 0 10px;
+      font-size: 12px;
     }
   }
 }
@@ -907,11 +1008,11 @@ body.wp-admin.has-laca-table-scroll {
   display: inline-block;
   background: linear-gradient(
     90deg,
-    #f1f5f9 0%,
-    #e2e8f0 35%,
-    #f8fafc 50%,
-    #e2e8f0 65%,
-    #f1f5f9 100%
+    var(--laca-bg-muted) 0%,
+    var(--laca-bg-emphasized) 35%,
+    var(--laca-bg-subtle) 50%,
+    var(--laca-bg-emphasized) 65%,
+    var(--laca-bg-muted) 100%
   );
   background-size: 300% 100%;
   animation: laca-shimmer-wave 1.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
@@ -947,8 +1048,8 @@ body.wp-admin.has-laca-table-scroll {
 .laca-table-skeleton {
   display: none;
   width: 100%;
-  background: #ffffff;
-  border: 1px solid var(--laca-border, #e2e8f0);
+  background: var(--laca-bg);
+  border: 1px solid var(--laca-border);
   border-radius: 8px;
   margin-top: 12px;
   margin-bottom: 20px;
@@ -971,16 +1072,16 @@ body.wp-admin.has-laca-table-scroll {
 
   .laca-skeleton-row {
     display: table-row;
-    background: #ffffff;
+    background: var(--laca-bg);
 
     &.is-alt {
-      background: #f8fafc;
+      background: var(--laca-bg-subtle);
     }
 
     &.is-header {
-      background: #f1f5f9;
+      background: var(--laca-bg-muted);
       .laca-skeleton-cell {
-        border-bottom: 2px solid #cbd5e1;
+        border-bottom: 2px solid var(--laca-border-emphasized);
       }
     }
   }
@@ -989,8 +1090,8 @@ body.wp-admin.has-laca-table-scroll {
     display: table-cell;
     padding: 12px 14px;
     vertical-align: middle;
-    border-right: 1px solid #f1f5f9;
-    border-bottom: 1px solid #f1f5f9;
+    border-right: 1px solid var(--laca-bg-muted);
+    border-bottom: 1px solid var(--laca-bg-muted);
     white-space: nowrap;
 
     &.is-cb {
@@ -1012,7 +1113,7 @@ body.wp-admin.has-laca-table-scroll {
     &.is-name {
       width: 280px;
       min-width: 280px;
-      border-right: 2px solid #cbd5e1;
+      border-right: 2px solid var(--laca-border-emphasized);
     }
   }
 }
