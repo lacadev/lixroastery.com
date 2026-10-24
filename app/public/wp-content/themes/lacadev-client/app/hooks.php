@@ -77,14 +77,7 @@ add_action('init', function () {
     }
 });
 
-/**
- * Hệ thống xem trước giao diện Admin (UI Preview Switcher - cookie-driven).
- */
-add_action('init', function () {
-    if (is_admin() && class_exists('\App\Settings\LacaAdmin\UiPreview')) {
-        (new \App\Settings\LacaAdmin\UiPreview())->register();
-    }
-});
+
 
 /**
  * Checklist phát hành production — đầu trang Laca Admin (chỉ Super User).
