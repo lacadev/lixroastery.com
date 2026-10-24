@@ -259,7 +259,7 @@ $isAddNew = isset($_GET['action']) && $_GET['action'] === 'new';
                     $itemSources = $item['sources'] ?? [];
                     ?>
                     <tr>
-                        <td><strong>#<?php echo esc_html((string) $item['id']); ?></strong></td>
+                        <td class="laca-col-id"><strong>#<?php echo esc_html((string) $item['id']); ?></strong></td>
                         <td>
                             <?php foreach ($itemSources as $src): ?>
                                 <div class="laca-mb-1">
@@ -275,10 +275,10 @@ $isAddNew = isset($_GET['action']) && $_GET['action'] === 'new';
                                 <em class="laca-text-muted">(Không có đích đến)</em>
                             <?php endif; ?>
                         </td>
-                        <td><span class="laca-badge laca-badge--subtle"><?php echo esc_html((string) $item['header_code']); ?></span></td>
-                        <td><?php echo esc_html(number_format_i18n((int) $item['hits'])); ?></td>
-                        <td><small><?php echo ($item['last_accessed'] && $item['last_accessed'] !== '0000-00-00 00:00:00') ? esc_html($item['last_accessed']) : 'Chưa có'; ?></small></td>
-                        <td>
+                        <td class="laca-col-http"><span class="laca-badge laca-badge--subtle"><?php echo esc_html((string) $item['header_code']); ?></span></td>
+                        <td class="laca-col-count"><?php echo esc_html(number_format_i18n((int) $item['hits'])); ?></td>
+                        <td class="laca-col-time"><small><?php echo ($item['last_accessed'] && $item['last_accessed'] !== '0000-00-00 00:00:00') ? esc_html($item['last_accessed']) : 'Chưa có'; ?></small></td>
+                        <td class="laca-col-action">
                             <?php if ($item['status'] === 'trashed'): ?>
                                 <a href="<?php echo esc_url(wp_nonce_url(add_query_arg(['action' => 'restore', 'id' => $item['id']]), 'laca_seo_redir_action')); ?>">Khôi phục</a> |
                                 <a href="<?php echo esc_url(wp_nonce_url(add_query_arg(['action' => 'delete', 'id' => $item['id']]), 'laca_seo_redir_action')); ?>" class="laca-action-delete">Xoá vĩnh viễn</a>

@@ -7,15 +7,16 @@
 .wp-core-ui {
   .button,
   .button-secondary {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 6px !important;
     height: var(--laca-height-sm);
     padding: 0 var(--laca-space-4);
     font-family: var(--laca-font);
     font-size: var(--laca-font-size-sm);
     font-weight: 500;
-    line-height: 1;
+    line-height: 1 !important;
     color: var(--laca-fg) !important;
     background-color: var(--laca-bg) !important;
     border: 1px solid var(--laca-border) !important;
@@ -27,6 +28,34 @@
     transition: var(--laca-transition);
     white-space: nowrap;
     box-sizing: border-box;
+
+    .dashicons,
+    svg,
+    i {
+      display: inline-flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      font-size: 16px !important;
+      width: 16px !important;
+      height: 16px !important;
+      line-height: 16px !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      vertical-align: middle !important;
+      transform: translateY(-0.5px);
+      flex-shrink: 0;
+
+      &::before {
+        display: inline-block !important;
+        font-size: 16px !important;
+        width: 16px !important;
+        height: 16px !important;
+        line-height: 16px !important;
+        margin: 0 !important;
+        vertical-align: middle !important;
+        text-align: center !important;
+      }
+    }
 
     &:hover:not(:disabled) {
       background-color: var(--laca-bg-muted) !important;
@@ -52,12 +81,46 @@
   .button-primary,
   #publish,
   #save-post {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 6px !important;
+    line-height: 1 !important;
     background-color: var(--laca-accent) !important;
     border-color: var(--laca-accent) !important;
     color: var(--laca-bg) !important;
     text-shadow: none !important;
     box-shadow: none !important;
     font-weight: 500;
+
+    .dashicons,
+    svg,
+    i {
+      display: inline-flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      font-size: 16px !important;
+      width: 16px !important;
+      height: 16px !important;
+      line-height: 16px !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      vertical-align: middle !important;
+      transform: translateY(-0.5px);
+      color: inherit !important;
+      flex-shrink: 0;
+
+      &::before {
+        display: inline-block !important;
+        font-size: 16px !important;
+        width: 16px !important;
+        height: 16px !important;
+        line-height: 16px !important;
+        margin: 0 !important;
+        vertical-align: middle !important;
+        text-align: center !important;
+      }
+    }
 
     &:hover:not(:disabled) {
       background-color: var(--laca-accent-hover) !important;
@@ -77,7 +140,7 @@
     height: var(--laca-height-xs) !important;
     padding: 0 var(--laca-space-3) !important;
     font-size: var(--laca-font-size-xs) !important;
-    line-height: var(--laca-height-xs) !important;
+    line-height: 1 !important;
   }
 
   .button-link-delete,
@@ -258,6 +321,7 @@ div.error {
     padding: var(--laca-space-3) var(--laca-space-4) !important;
     border-bottom: 1px solid var(--laca-border) !important;
     border-top: none !important;
+    white-space: nowrap !important;
     overflow: hidden;
   }
 
@@ -283,7 +347,8 @@ div.error {
       color: var(--laca-fg);
       vertical-align: middle;
       font-size: var(--laca-font-size-sm);
-      overflow: hidden;
+      word-break: break-all;
+      overflow-wrap: anywhere;
     }
 
     a.row-title {
@@ -397,10 +462,12 @@ div.error {
 // Tabs WP Core (.nav-tab-wrapper — Option B: pill buttons)
 .nav-tab-wrapper {
   border-bottom: none !important;
-  padding: 4px 0 !important;
+  border: 1px solid var(--laca-border) !important;
+  background: var(--laca-bg) !important;
+  border-radius: var(--laca-radius-l2) !important;
+  padding: 8px 12px !important;
   display: flex;
   gap: 8px !important;
-  background: transparent;
   max-width: 100%;
   overflow-x: auto;
   white-space: nowrap;
@@ -412,7 +479,7 @@ div.error {
     border: 1px solid transparent !important;
     border-radius: var(--laca-radius-full) !important;
     padding: 6px 16px !important;
-    color: var(--laca-fg-muted) !important;
+    color: var(--laca-fg) !important;
     font-family: var(--laca-font) !important;
     font-size: 13px !important;
     font-weight: 500 !important;
@@ -554,8 +621,8 @@ body.wp-admin {
 
 // General Admin Links — Monochromatic, no blue
 body.wp-admin {
-  a:not(.button):not(.laca-btn):not(.nav-tab):not(.ab-item):not(.page-title-action):not(.components-button):not(.laca-seo-tabs-list__link),
-  a:not(.button):not(.laca-btn):not(.nav-tab):not(.ab-item):not(.page-title-action):not(.components-button):not(.laca-seo-tabs-list__link):visited {
+  a:not(.button):not(.laca-btn):not(.nav-tab):not(.ab-item):not(.page-title-action):not(.components-button):not(.laca-seo-tabs-list__link):not(.laca-admin-dock__item),
+  a:not(.button):not(.laca-btn):not(.nav-tab):not(.ab-item):not(.page-title-action):not(.components-button):not(.laca-seo-tabs-list__link):not(.laca-admin-dock__item):visited {
     color: var(--laca-fg) !important;
 
     &:hover {

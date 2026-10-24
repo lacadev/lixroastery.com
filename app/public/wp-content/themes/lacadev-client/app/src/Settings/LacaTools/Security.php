@@ -17,6 +17,10 @@ class Security
             $this->disableRestApi();
         }
 
+        if (get_option('_disable_xml_rpc') === 'yes') {
+            $this->disableXmlRpc();
+        }
+
         if (get_option('_disable_wp_embed') === 'yes') {
             $this->disableWpEmbed();
         }

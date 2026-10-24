@@ -99,7 +99,7 @@ $totalPages = ceil($total / $limit);
             <tr>
                 <th class="laca-col-id">ID</th>
                 <th>URL bị lỗi 404 (URI)</th>
-                <th class="laca-col-http">Lượt truy cập</th>
+                <th class="laca-col-count">Lượt truy cập</th>
                 <th class="laca-col-time">Thời gian cuối</th>
                 <th>Nguồn giới thiệu (Referer)</th>
                 <th class="laca-col-action">Thao tác</th>
@@ -115,12 +115,12 @@ $totalPages = ceil($total / $limit);
             <?php else: ?>
                 <?php foreach ($items as $item): ?>
                     <tr>
-                        <td><strong>#<?php echo esc_html((string) $item['id']); ?></strong></td>
+                        <td class="laca-col-id"><strong>#<?php echo esc_html((string) $item['id']); ?></strong></td>
                         <td>
                             <code>/<?php echo esc_html(urldecode($item['uri'])); ?></code>
                         </td>
-                        <td><strong><?php echo esc_html(number_format_i18n((int) $item['times_accessed'])); ?></strong></td>
-                        <td><small><?php echo esc_html($item['accessed']); ?></small></td>
+                        <td class="laca-col-count"><strong><?php echo esc_html(number_format_i18n((int) $item['times_accessed'])); ?></strong></td>
+                        <td class="laca-col-time"><small><?php echo esc_html($item['accessed']); ?></small></td>
                         <td>
                             <?php if (!empty($item['referer'])): ?>
                                 <small><a href="<?php echo esc_url($item['referer']); ?>" target="_blank" rel="noopener"><?php echo esc_html($item['referer']); ?></a></small>
@@ -128,7 +128,7 @@ $totalPages = ceil($total / $limit);
                                 <em class="laca-text-muted">(Trực tiếp / Không có)</em>
                             <?php endif; ?>
                         </td>
-                        <td>
+                        <td class="laca-col-action">
                             <a href="<?php echo esc_url(add_query_arg(['page' => 'laca-seo', 'view' => 'redirections', 'action' => 'new', 'url_to' => '', 'sources[0][pattern]' => urldecode($item['uri'])], admin_url('admin.php'))); ?>" class="button button-small">
                                 Tạo chuyển hướng
                             </a>

@@ -145,40 +145,54 @@
 }
 
 .laca-col-id {
-    width: 40px;
+    width: 68px !important;
+    min-width: 68px !important;
+    white-space: nowrap !important;
     color: var(--laca-fg-subtle);
 }
 
 .laca-col-ip {
-    width: 140px;
+    width: 130px !important;
+    min-width: 110px !important;
+    white-space: nowrap !important;
     color: var(--laca-fg-muted);
     font-size: 12px;
 }
 
 .laca-col-time {
-    width: 160px;
+    width: 140px !important;
+    min-width: 120px !important;
+    white-space: nowrap !important;
     color: var(--laca-fg-muted);
     font-size: 12px;
 }
 
 .laca-col-status {
-    width: 80px;
+    width: 90px !important;
+    min-width: 80px !important;
+    white-space: nowrap !important;
 }
 
 .laca-col-source {
-    width: 120px;
+    width: 120px !important;
+    min-width: 100px !important;
 }
 
 .laca-col-reason {
-    width: 220px;
+    width: 200px !important;
 }
 
 .laca-col-count {
-    width: 160px;
+    width: 110px !important;
+    min-width: 90px !important;
+    white-space: nowrap !important;
 }
 
 .laca-col-action {
-    width: 140px;
+    width: 130px !important;
+    min-width: 110px !important;
+    white-space: nowrap !important;
+    text-align: right;
 }
 
 .laca-db-analyzer {
@@ -1505,6 +1519,12 @@
         + .laca-rc__item {
             border-top: 1px solid var(--laca-border);
         }
+
+        &.is-saving {
+            opacity: 0.6;
+            pointer-events: none;
+            transition: opacity 0.2s ease;
+        }
     }
 
     &__mark {
@@ -1789,7 +1809,8 @@ body.is-merchant-admin {
 }
 
 .laca-align-middle {
-    vertical-align: middle;
+    vertical-align: middle !important;
+    margin: 0 !important;
 }
 
 .laca-mb-1 { margin-bottom: 4px; }
@@ -1827,7 +1848,10 @@ body.is-merchant-admin {
 }
 
 .laca-col-http {
-    width: 90px;
+    width: 90px !important;
+    min-width: 80px !important;
+    white-space: nowrap !important;
+    text-align: center !important;
 }
 
 .laca-table-empty {

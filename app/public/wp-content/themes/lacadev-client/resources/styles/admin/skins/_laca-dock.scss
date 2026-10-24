@@ -58,14 +58,14 @@
 
     &__group-title {
       align-items: center;
-      color: var(--laca-fg-muted);
+      color: var(--laca-fg-subtle);
       display: flex;
       font-family: var(--laca-font);
-      font-size: var(--laca-font-size-xs);
-      font-weight: 500;
+      font-size: 11px;
+      font-weight: 600;
       line-height: var(--laca-line-height-xs);
-      letter-spacing: normal;
-      text-transform: none; // sentence-case
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
       margin: 0 0 var(--laca-spacing-1-5);
       padding: 0 var(--laca-spacing-2);
 
@@ -78,24 +78,34 @@
     &__items {
       display: flex;
       flex-direction: column;
-      gap: 2px;
+      gap: 3px;
       margin: 0;
+    }
+
+    &__indicator {
+      display: none;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      margin-right: 8px;
+      flex-shrink: 0;
+      transition: transform var(--laca-durations-fast);
     }
 
     &__item {
       display: flex;
       align-items: center;
-      height: 32px;
+      height: 34px;
       padding: 0 var(--laca-spacing-2-5);
       font-family: var(--laca-font);
       font-size: var(--laca-font-size-sm);
-      font-weight: 400;
+      font-weight: 450;
       line-height: var(--laca-line-height-sm);
       color: var(--laca-fg-muted);
       text-decoration: none;
       border-radius: var(--laca-radii-l2);
       border: 1px solid transparent;
-      transition: background-color var(--laca-durations-fast), color var(--laca-durations-fast);
+      transition: background-color var(--laca-durations-fast), color var(--laca-durations-fast), transform var(--laca-durations-fast);
 
       &:hover,
       &:focus {
@@ -106,12 +116,59 @@
 
       &.is-active,
       &[aria-current="page"] {
-        background-color: var(--laca-accent-subtle);
-        color: var(--laca-accent-fg);
-        font-weight: 500;
+        background-color: var(--laca-fg) !important;
+        color: #ffffff !important;
+        font-weight: 600;
         border-color: transparent;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+
+        .laca-admin-dock__item-text {
+          color: #ffffff !important;
+        }
+
+        .laca-admin-dock__indicator {
+          transform: scale(1.15);
+        }
+      }
+
+      // Indicator dots cho các nhóm chức năng nổi bật
+      &--laca-tools {
+        .laca-admin-dock__indicator {
+          display: inline-block;
+          background-color: #10b981; // emerald/green (Hiệu năng)
+        }
+      }
+
+      &--laca-security {
+        .laca-admin-dock__indicator {
+          display: inline-block;
+          background-color: #f59e0b; // amber/orange (Bảo mật)
+        }
+      }
+
+      &--laca-recaptcha {
+        .laca-admin-dock__indicator {
+          display: inline-block;
+          background-color: #3b82f6; // blue (Google)
+        }
       }
     }
+  }
+}
+
+// Shared Pill Tabs Wrapper trên đầu trang
+.laca-shared-tabs-wrapper {
+  max-width: 100%;
+  margin: 12px 0 20px 0;
+
+  .nav-tab-wrapper.laca-shared-tabs {
+    border: 1px solid var(--laca-border) !important;
+    background: var(--laca-bg) !important;
+    border-radius: var(--laca-radius-l2) !important;
+    padding: 8px 12px !important;
+    display: inline-flex;
+    gap: 8px !important;
+    margin: 0 !important;
   }
 }
 

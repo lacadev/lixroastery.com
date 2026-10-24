@@ -17,6 +17,7 @@ class SaveHandler
     public function register(): void
     {
         add_action('admin_post_laca_seo_save', [$this, 'handleSave']);
+        add_action('wp_ajax_laca_seo_save', [$this, 'handleSave']);
         add_action('admin_post_laca_seo_reset_tab', [$this, 'handleResetTab']);
     }
 
@@ -25,9 +26,20 @@ class SaveHandler
      */
     public function handleSave(): void
     {
-        check_admin_referer('laca_seo_save_action', 'laca_seo_nonce');
+        $isAjax = wp_doing_ajax() || !empty($_POST['is_ajax']);
+
+        if ($isAjax) {
+            if (!check_ajax_referer('laca_seo_save_action', 'laca_seo_nonce', false) && !wp_verify_nonce($_POST['laca_seo_nonce'] ?? '', 'laca_seo_save_action')) {
+                wp_send_json_error(['message' => __('Phiên làm việc đã hết hạn. Vui lòng tải lại trang.', 'lacadev')], 403);
+            }
+        } else {
+            check_admin_referer('laca_seo_save_action', 'laca_seo_nonce');
+        }
 
         if (!current_user_can('manage_options')) {
+            if ($isAjax) {
+                wp_send_json_error(['message' => __('Bạn không có quyền thực hiện thao tác này.', 'lacadev')], 403);
+            }
             wp_die(esc_html__('Bạn không có quyền thực hiện thao tác này.', 'lacadev'));
         }
 
@@ -84,6 +96,13 @@ class SaveHandler
                 \App\Features\LacaSeo\Sitemap\Cache::invalidateStorage();
             }
             flush_rewrite_rules();
+        }
+
+        if ($isAjax) {
+            wp_send_json_success([
+                'message'   => __('Đã tự động lưu cài đặt Laca SEO.', 'lacadev'),
+                'timestamp' => current_time('H:i:s'),
+            ]);
         }
 
         // Redirect back with success flag

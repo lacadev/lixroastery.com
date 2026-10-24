@@ -20,6 +20,102 @@
     * {
         box-sizing: border-box;
     }
+
+    .button,
+    .button-primary,
+    .button-secondary {
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 6px !important;
+        line-height: 1 !important;
+        white-space: nowrap !important;
+
+        .dashicons,
+        svg,
+        i {
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            font-size: 16px !important;
+            width: 16px !important;
+            height: 16px !important;
+            line-height: 16px !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            vertical-align: middle !important;
+            transform: translateY(-0.5px);
+            color: inherit !important;
+            flex-shrink: 0;
+
+            &::before {
+                display: inline-block !important;
+                font-size: 16px !important;
+                width: 16px !important;
+                height: 16px !important;
+                line-height: 16px !important;
+                margin: 0 !important;
+                vertical-align: middle !important;
+                text-align: center !important;
+            }
+        }
+    }
+
+    .wp-list-table {
+        table-layout: fixed;
+        width: 100%;
+
+        thead th,
+        tfoot th {
+            white-space: nowrap !important;
+        }
+
+        .laca-col-id {
+            width: 68px !important;
+            min-width: 68px !important;
+            white-space: nowrap !important;
+            color: var(--laca-fg-subtle);
+        }
+
+        .laca-col-http {
+            width: 90px !important;
+            min-width: 80px !important;
+            white-space: nowrap !important;
+            text-align: center !important;
+        }
+
+        .laca-col-count {
+            width: 110px !important;
+            min-width: 90px !important;
+            white-space: nowrap !important;
+        }
+
+        .laca-col-time {
+            width: 140px !important;
+            min-width: 120px !important;
+            white-space: nowrap !important;
+        }
+
+        .laca-col-action {
+            width: 130px !important;
+            min-width: 110px !important;
+            white-space: nowrap !important;
+            text-align: right;
+        }
+
+        tbody td {
+            word-break: break-all;
+            overflow-wrap: anywhere;
+
+            code,
+            a {
+                word-break: break-all;
+                overflow-wrap: anywhere;
+                max-width: 100%;
+                display: inline-block;
+            }
+        }
+    }
 }
 
 // ─── Header (Page Header style) ──────────────────────────────
@@ -63,8 +159,7 @@
         max-width: 100%;
 
         .button {
-            white-space: normal;
-            max-width: 100%;
+            white-space: nowrap !important;
         }
     }
 }
@@ -407,11 +502,11 @@
 
 // Sub-tabs pill variant cuộn ngang 1 hàng (Option B: pill buttons)
 .laca-seo-tabs-sidebar {
-    background: transparent;
-    border: none;
-    border-radius: 0;
-    padding: 4px 0 16px;
-    margin-bottom: 8px;
+    background: var(--laca-bg);
+    border: 1px solid var(--laca-border);
+    border-radius: var(--laca-radius-l2);
+    padding: 8px 12px;
+    margin-bottom: 16px;
     width: 100%;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
@@ -735,6 +830,61 @@
                 justify-content: center !important;
             }
         }
+    }
+}
+
+.laca-seo-autosave-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 14px;
+    border-radius: var(--laca-radius-full);
+    font-size: 13px;
+    font-weight: 500;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    margin-right: auto;
+
+    &.is-idle {
+        opacity: 0;
+        pointer-events: none;
+    }
+
+    &.is-saving {
+        opacity: 1;
+        background: var(--laca-bg-muted, #f4f4f5);
+        color: var(--laca-fg, #18181b);
+        border: 1px solid var(--laca-border, #e4e4e7);
+    }
+
+    &.is-saved {
+        opacity: 1;
+        background: #ecfdf5;
+        color: #059669;
+        border: 1px solid #a7f3d0;
+    }
+
+    &.is-error {
+        opacity: 1;
+        background: #fef2f2;
+        color: #dc2626;
+        border: 1px solid #fecaca;
+    }
+
+    .laca-seo-autosave-icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 16px;
+        height: 16px;
+
+        svg {
+            width: 16px;
+            height: 16px;
+        }
+    }
+
+    .laca-seo-autosave-spinner {
+        animation: laca-spin 0.8s linear infinite;
     }
 }
 

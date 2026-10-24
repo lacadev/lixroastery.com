@@ -52,6 +52,9 @@ class SecurityManager
         // ── AJAX: 2FA Master Toggle ────────────────────────────────────────────
         add_action('wp_ajax_laca_save_2fa_settings',     [$this, 'ajaxSave2faSettings']);
 
+        // ── AJAX: Security Hardening Settings ──────────────────────────────────
+        add_action('wp_ajax_laca_save_hardening_settings', [$this, 'ajaxSaveHardeningSettings']);
+
         // ── AJAX: Super User ─────────────────────────────────────────────────
         add_action('wp_ajax_laca_toggle_super_user',     [$this, 'ajaxToggleSuperUser']);
     }
@@ -87,19 +90,20 @@ class SecurityManager
     {
         $activeTab = sanitize_key($_GET['tab'] ?? 'audit');
         $tabs = [
-            'audit'   => '📊 Kiểm tra bảo mật',
-            'fim'     => '🗂️ Giám sát file',
-            'malware' => '🦠 Quét mã độc',
-            'users'   => '👥 User ẩn',
-            'login'   => '🔑 URL đăng nhập',
-            '2fa'     => '📱 2FA TOTP',
-            'superuser' => '👑 Super User',
+            'audit'     => 'Kiểm tra bảo mật',
+            'fim'       => 'Giám sát file',
+            'malware'   => 'Quét mã độc',
+            'users'     => 'User ẩn',
+            'login'     => 'URL đăng nhập',
+            '2fa'       => '2FA TOTP',
+            'hardening' => 'Thiết lập bảo vệ',
+            'superuser' => 'Super User',
         ];
         ?>
         <div class="wrap">
-            <h1>🔒 Bảo mật</h1>
+            <h1>Bảo mật</h1>
             <div class="laca-alert laca-alert--info">
-                <p class="laca-alert__title">🔧 Bảo mật website</p>
+                <p class="laca-alert__title">Bảo mật website</p>
                 <p class="laca-alert__desc">Trang này tập hợp các công cụ giúp bảo vệ site: kiểm tra điểm bảo mật tổng quan, giám sát file bị thay đổi, quét mã độc, phát hiện tài khoản admin ẩn, đổi URL đăng nhập để tránh dò mật khẩu, và bật xác thực 2 bước (2FA) cho tài khoản quản trị.</p>
             </div>
             <nav class="nav-tab-wrapper">
@@ -113,12 +117,13 @@ class SecurityManager
             <div class="tab-content laca-security-tab-content">
                 <?php
                 switch ($activeTab) {
-                    case 'audit':   $this->renderAuditTab();   break;
-                    case 'fim':     $this->renderFimTab();     break;
-                    case 'malware': $this->renderMalwareTab(); break;
-                    case 'users':   $this->renderUsersTab();   break;
-                    case 'login':   $this->renderLoginTab();   break;
-                    case '2fa':     $this->render2faTab();     break;
+                    case 'audit':     $this->renderAuditTab();     break;
+                    case 'fim':       $this->renderFimTab();       break;
+                    case 'malware':   $this->renderMalwareTab();   break;
+                    case 'users':     $this->renderUsersTab();     break;
+                    case 'login':     $this->renderLoginTab();     break;
+                    case '2fa':       $this->render2faTab();       break;
+                    case 'hardening': $this->renderHardeningTab(); break;
                     case 'superuser': $this->renderSuperUserTab(); break;
                 }
                 ?>
@@ -152,12 +157,12 @@ class SecurityManager
             <p>Baseline cuối: <strong><?php echo esc_html($status['baseline_time']); ?></strong>
                (<?php echo number_format($status['file_count']); ?> file)</p>
             <div class="laca-security-flex">
-                <button id="btn-fim-scan" class="button button-primary">🔍 So sánh với baseline</button>
-                <button id="btn-fim-update" class="button button-secondary">🔄 Cập nhật baseline</button>
+                <button id="btn-fim-scan" class="button button-primary">So sánh với baseline</button>
+                <button id="btn-fim-update" class="button button-secondary">Cập nhật baseline</button>
             </div>
         <?php else: ?>
             <p>Chưa có baseline. Nhấn <strong>Tạo baseline</strong> để ghi lại trạng thái file hiện tại.</p>
-            <button id="btn-fim-scan" class="button button-primary">📸 Tạo baseline</button>
+            <button id="btn-fim-scan" class="button button-primary">Tạo baseline</button>
         <?php endif; ?>
         <div id="fim-progress" class="laca-security-progress" style="display:none; /* động */">Đang quét...</div>
         <div id="fim-result" class="laca-security-result"></div>
@@ -181,7 +186,7 @@ class SecurityManager
                     </label>
                 <?php endforeach; ?>
             </div>
-            <button id="btn-malware-scan" class="button button-primary">🦠 Bắt đầu quét</button>
+            <button id="btn-malware-scan" class="button button-primary">Bắt đầu quét</button>
         </div>
         <div id="malware-progress" class="laca-security-progress" style="display:none; /* động */">
             <div class="laca-progress" style="margin-top:12px;">
@@ -200,7 +205,7 @@ class SecurityManager
         ?>
         <h2>Quét User Ẩn</h2>
         <p>Phát hiện tài khoản admin/user trong database nhưng bị ẩn khỏi màn hình Người dùng wp-admin.</p>
-        <button id="btn-user-scan" class="button button-primary">🔍 Quét ngay</button>
+        <button id="btn-user-scan" class="button button-primary">Quét ngay</button>
         <div id="user-scan-progress" class="laca-security-progress" style="display:none; /* động */">Đang quét...</div>
         <div id="user-scan-result" class="laca-security-result"></div>
         <?php
@@ -231,7 +236,7 @@ class SecurityManager
                 </td>
             </tr>
         </table>
-        <button id="btn-save-login" class="button button-primary">💾 Lưu cài đặt</button>
+        <button id="btn-save-login" class="button button-primary">Lưu cài đặt</button>
         <span id="login-save-msg" class="laca-ml-2"></span>
         <div class="laca-alert laca-alert--warning" style="margin-top:20px;">
             <p class="laca-alert__title">⚠️ Lưu ý quan trọng:</p>
@@ -264,7 +269,7 @@ class SecurityManager
                 </td>
             </tr>
         </table>
-        <button id="btn-save-2fa" class="button button-primary">💾 Lưu cài đặt</button>
+        <button id="btn-save-2fa" class="button button-primary">Lưu cài đặt</button>
         <span id="2fa-save-msg" class="laca-ml-2"></span>
 
         <hr style="margin:24px 0;">
@@ -292,6 +297,75 @@ class SecurityManager
         <?php
     }
 
+    // ── Tab: Hardening ────────────────────────────────────────────────────────
+
+    private function renderHardeningTab(): void
+    {
+        $disableRestApi   = get_option('_disable_rest_api') === 'yes';
+        $disableXmlRpc    = get_option('_disable_xml_rpc') === 'yes';
+        $disableWpEmbed   = get_option('_disable_wp_embed') === 'yes';
+        $disableXPingback = get_option('_disable_x_pingback') === 'yes';
+        $removeBloat      = get_option('_enable_remove_wordpress_bloat') === 'yes';
+        ?>
+        <h2>Thiết lập bảo vệ hệ thống</h2>
+        <p>Vô hiệu hóa các endpoint và tính năng mặc định dễ bị khai thác tấn công nếu website không cần dùng đến.</p>
+        <table class="form-table">
+            <tr>
+                <th scope="row">REST API</th>
+                <td>
+                    <label>
+                        <input type="checkbox" id="laca-opt-disable-rest" <?php checked($disableRestApi); ?>>
+                        <strong>Tắt REST API đối với khách vãng lai</strong>
+                    </label>
+                    <p class="description">Chỉ người dùng đã đăng nhập mới có thể truy vấn REST API. Ngăn chặn quét thông tin người dùng và bài viết ngoài luồng.</p>
+                </td>
+            </tr>
+            <tr>
+                <th scope="row">XML-RPC</th>
+                <td>
+                    <label>
+                        <input type="checkbox" id="laca-opt-disable-xmlrpc" <?php checked($disableXmlRpc); ?>>
+                        <strong>Tắt hoàn toàn XML-RPC (xmlrpc.php)</strong>
+                    </label>
+                    <p class="description">XML-RPC thường bị bot lạm dụng để dò mật khẩu (brute-force) hoặc tấn công DDoS. Khuyến cáo tắt nếu không dùng app WordPress trên điện thoại.</p>
+                </td>
+            </tr>
+            <tr>
+                <th scope="row">WP-Embed</th>
+                <td>
+                    <label>
+                        <input type="checkbox" id="laca-opt-disable-wpembed" <?php checked($disableWpEmbed); ?>>
+                        <strong>Tắt WP-Embed</strong>
+                    </label>
+                    <p class="description">Tắt script wp-embed.js và các liên kết oEmbed khám phá nếu website không cần nhúng nội dung sang các blog khác.</p>
+                </td>
+            </tr>
+            <tr>
+                <th scope="row">X-Pingback</th>
+                <td>
+                    <label>
+                        <input type="checkbox" id="laca-opt-disable-pingback" <?php checked($disableXPingback); ?>>
+                        <strong>Tắt Header X-Pingback</strong>
+                    </label>
+                    <p class="description">Gỡ bỏ header thông báo pingback giúp tránh spam trackback và các cuộc tấn công khuếch đại pingback.</p>
+                </td>
+            </tr>
+            <tr>
+                <th scope="row">WordPress Bloat</th>
+                <td>
+                    <label>
+                        <input type="checkbox" id="laca-opt-remove-bloat" <?php checked($removeBloat); ?>>
+                        <strong>Loại bỏ thành phần thừa (Bloat) của WordPress</strong>
+                    </label>
+                    <p class="description">Gỡ bỏ emoji scripts, RSD link, wlwmanifest và thẻ generator version WordPress trong HTML header để tăng tính bảo mật và giảm tải.</p>
+                </td>
+            </tr>
+        </table>
+        <button id="btn-save-hardening" class="button button-primary">Lưu thiết lập bảo vệ</button>
+        <span id="hardening-save-msg" class="laca-ml-2"></span>
+        <?php
+    }
+
     // ── Tab: Super User ──────────────────────────────────────────────────────
 
     private function renderSuperUserTab(): void
@@ -299,7 +373,7 @@ class SecurityManager
         $users        = get_users(['orderby' => 'registered', 'order' => 'ASC']);
         $superLogins  = \App\Settings\AdminSettings::getSuperUserLogins();
         ?>
-        <h2>👑 Quản lý Super User</h2>
+        <h2>Quản lý Super User</h2>
         <p>Super User được ẩn khỏi danh sách Người dùng đối với người khác, và không bị áp các giới hạn quản trị (chế độ bảo trì, ẩn menu, khoá cập nhật...) mà site áp dụng cho user thường.
            Tài khoản mặc định <code><?php echo esc_html(SuperUserGuard::PROTECTED_LOGIN); ?></code> luôn là Super User —
            không Super User nào khác có thể xoá hoặc đổi quyền (role) của tài khoản này.</p>
@@ -335,18 +409,18 @@ class SecurityManager
                     </td>
                     <td>
                         <?php if ($isSuper): ?>
-                            <span class="laca-status-super">👑 Super User</span>
+                            <span class="laca-status-super">Super User</span>
                         <?php else: ?>
                             <span class="laca-status-muted">—</span>
                         <?php endif; ?>
                     </td>
                     <td>
                         <?php if ($isProtected): ?>
-                            <span class="laca-status-muted">🔒 Mặc định — không thể đổi</span>
+                            <span class="laca-status-muted">Mặc định — không thể đổi</span>
                         <?php elseif ($isSuper): ?>
-                            <button class="button btn-toggle-super" data-user-id="<?php echo esc_attr($u->ID); ?>" data-do-action="demote">↩️ Bỏ Super User</button>
+                            <button class="button btn-toggle-super" data-user-id="<?php echo esc_attr($u->ID); ?>" data-do-action="demote">Bỏ Super User</button>
                         <?php else: ?>
-                            <button class="button button-primary btn-toggle-super" data-user-id="<?php echo esc_attr($u->ID); ?>" data-do-action="promote">👑 Đặt Super User</button>
+                            <button class="button button-primary btn-toggle-super" data-user-id="<?php echo esc_attr($u->ID); ?>" data-do-action="promote">Đặt Super User</button>
                         <?php endif; ?>
                     </td>
                 </tr>
@@ -517,6 +591,26 @@ class SecurityManager
         $enabled = !empty($_POST['enabled']) ? 1 : 0;
         update_option('laca_2fa_master_enabled', $enabled);
         wp_send_json_success($enabled ? '2FA đã bật toàn site.' : '2FA đã tắt.');
+    }
+
+    // Security Hardening Settings
+
+    public function ajaxSaveHardeningSettings(): void
+    {
+        $this->checkNonce();
+        $disableRestApi   = !empty($_POST['disable_rest']) ? 'yes' : 'no';
+        $disableXmlRpc    = !empty($_POST['disable_xmlrpc']) ? 'yes' : 'no';
+        $disableWpEmbed   = !empty($_POST['disable_wpembed']) ? 'yes' : 'no';
+        $disableXPingback = !empty($_POST['disable_pingback']) ? 'yes' : 'no';
+        $removeBloat      = !empty($_POST['remove_bloat']) ? 'yes' : 'no';
+
+        update_option('_disable_rest_api', $disableRestApi);
+        update_option('_disable_xml_rpc', $disableXmlRpc);
+        update_option('_disable_wp_embed', $disableWpEmbed);
+        update_option('_disable_x_pingback', $disableXPingback);
+        update_option('_enable_remove_wordpress_bloat', $removeBloat);
+
+        wp_send_json_success('Đã lưu thiết lập bảo vệ hệ thống thành công.');
     }
 
     // Super User
@@ -755,6 +849,28 @@ class SecurityManager
                     $('#btn-save-2fa').prop('disabled',false);
                     if (res.success) { $('#2fa-save-msg').text('✓ '+res.data).css('color','green'); }
                     else             { $('#2fa-save-msg').text('✗ '+res.data).css('color','red'); }
+                });
+            });
+
+            // ── Hardening Settings ─────────────────────────────────────────────
+            $('#btn-save-hardening').on('click', function(){
+                $(this).prop('disabled', true);
+                $('#hardening-save-msg').text('Đang lưu...').css('color', '#666');
+                $.post(ajaxUrl, {
+                    action: 'laca_save_hardening_settings',
+                    nonce: nonce,
+                    disable_rest:     $('#laca-opt-disable-rest').is(':checked') ? 1 : 0,
+                    disable_xmlrpc:   $('#laca-opt-disable-xmlrpc').is(':checked') ? 1 : 0,
+                    disable_wpembed:  $('#laca-opt-disable-wpembed').is(':checked') ? 1 : 0,
+                    disable_pingback: $('#laca-opt-disable-pingback').is(':checked') ? 1 : 0,
+                    remove_bloat:     $('#laca-opt-remove-bloat').is(':checked') ? 1 : 0,
+                }, function(res){
+                    $('#btn-save-hardening').prop('disabled', false);
+                    if (res.success) {
+                        $('#hardening-save-msg').text('✓ ' + res.data).css('color', 'green');
+                    } else {
+                        $('#hardening-save-msg').text('✗ ' + res.data).css('color', 'red');
+                    }
                 });
             });
 

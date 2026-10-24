@@ -27,6 +27,7 @@ final class ReleaseChecklist
     {
         add_action('all_admin_notices', [$this, 'render'], 20);
         add_action('admin_post_' . self::ACTION, [$this, 'handle']);
+        add_action('wp_ajax_' . self::ACTION, [$this, 'handle']);
     }
 
     private static function canManage(): bool
@@ -943,10 +944,22 @@ final class ReleaseChecklist
 
     public function handle(): void
     {
+        $isAjax = wp_doing_ajax() || !empty($_POST['is_ajax']);
+
         if (!self::canManage()) {
+            if ($isAjax) {
+                wp_send_json_error(['message' => __('Bạn không có quyền thực hiện thao tác này.', 'laca')], 403);
+            }
             wp_die(esc_html__('Bạn không có quyền thực hiện thao tác này.', 'laca'), '', ['response' => 403]);
         }
-        check_admin_referer(self::ACTION);
+
+        $nonce = $_POST['_wpnonce'] ?? '';
+        if (!wp_verify_nonce($nonce, self::ACTION)) {
+            if ($isAjax) {
+                wp_send_json_error(['message' => __('Phiên làm việc đã hết hạn. Vui lòng tải lại trang.', 'laca')], 403);
+            }
+            check_admin_referer(self::ACTION);
+        }
 
         $id = sanitize_key(wp_unslash($_POST['item'] ?? ''));
         $op = sanitize_key(wp_unslash($_POST['op'] ?? ''));
@@ -971,6 +984,73 @@ final class ReleaseChecklist
                 unset($state[$id]);
             }
             update_option(self::STATE_OPTION, $state, false);
+        }
+
+        if ($isAjax) {
+            $r = self::evaluate();
+            $doneCount = $r['done'];
+            $total = max(1, $r['total']);
+            $percent = (int) round($doneCount / $total * 100);
+            $allDone = $r['done'] === $r['total'];
+
+            $highLeft = 0;
+            $matchedItem = null;
+            $groupStats = [];
+
+            foreach ($r['groups'] as $group) {
+                $gDone = count(array_filter($group['items'], static fn ($i) => 'done' === $i['status']));
+                $gTotal = count(array_filter($group['items'], static fn ($i) => 'skipped' !== $i['status']));
+                $groupStats[$group['key']] = [
+                    'done' => $gDone,
+                    'total' => $gTotal,
+                    'is_complete' => $gDone === $gTotal,
+                    'text' => sprintf('%d/%d', $gDone, $gTotal),
+                ];
+
+                foreach ($group['items'] as $it) {
+                    if (!empty($it['high']) && in_array($it['status'], ['fail', 'todo'], true)) {
+                        $highLeft++;
+                    }
+                    if ($it['id'] === $id) {
+                        $matchedItem = $it;
+                    }
+                }
+            }
+
+            $itemHtml = '';
+            if ($matchedItem) {
+                ob_start();
+                $this->renderItem($matchedItem, false);
+                $itemHtml = ob_get_clean();
+            }
+
+            $summaryParts = [];
+            if ($allDone) {
+                $summaryHtml = esc_html__('Mọi mục đã đạt. Mục tự kiểm sẽ tự báo lại nếu cấu hình bị đổi.', 'laca');
+            } else {
+                if ($highLeft) {
+                    $summaryParts[] = '<strong class="laca-rc__danger">' . esc_html(sprintf(__('%d mục quan trọng chưa xong', 'laca'), $highLeft)) . '</strong>';
+                }
+                $summaryParts[] = esc_html(sprintf(__('%d tự kiểm chưa đạt · %d chưa tick', 'laca'), $r['fail'], $r['todo']));
+                if ($r['skipped']) {
+                    $summaryParts[] = esc_html(sprintf(__(' · %d không áp dụng', 'laca'), $r['skipped']));
+                }
+                $summaryHtml = implode(' · ', $summaryParts);
+            }
+
+            wp_send_json_success([
+                'id' => $id,
+                'op' => $op,
+                'item_html' => $itemHtml,
+                'percent' => $percent,
+                'done_count' => $doneCount,
+                'total_count' => $r['total'],
+                'count_text' => sprintf('%d / %d mục', $doneCount, $r['total']),
+                'title_text' => $allDone ? __('Sẵn sàng production', 'laca') : __('Checklist phát hành production', 'laca'),
+                'summary_html' => $summaryHtml,
+                'all_done' => $allDone,
+                'groups' => $groupStats,
+            ]);
         }
 
         wp_safe_redirect(add_query_arg('rc', $id, admin_url('admin.php?page=laca-admin')) . '#rc-' . $id);
@@ -1034,7 +1114,7 @@ final class ReleaseChecklist
                 $gOpen = '' !== $openId && in_array($openId, array_column($group['items'], 'id'), true);
                 // name chung = accordion độc quyền do trình duyệt xử lý: mở nhóm này thì nhóm đang mở tự đóng.
                 ?>
-                <details class="laca-rc__group" name="laca-rc-group" <?php echo $gOpen ? 'open' : ''; ?>>
+                <details class="laca-rc__group" data-group-key="<?php echo esc_attr($group['key']); ?>" name="laca-rc-group" <?php echo $gOpen ? 'open' : ''; ?>>
                     <summary class="laca-rc__group-head">
                         <span class="laca-rc__group-title"><?php echo esc_html($group['title']); ?></span>
                         <span class="laca-rc__group-count<?php echo $gComplete ? ' is-complete' : ''; ?>"><?php echo esc_html(sprintf('%d/%d', $gDone, $gTotal)); ?></span>

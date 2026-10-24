@@ -71,6 +71,19 @@ $optionsPage = Container::make('theme_options', __('Laca Theme', 'laca'))
 			->set_width(33.33),
 	])
 
+	->add_tab(__('Giao diện', 'laca'), [
+		Field::make('html', 'layout_intro', __('', 'laca'))
+			->set_html('<div style="background:#f4f4f5;border:1px solid #e4e4e7;border-radius:6px;padding:14px 16px;margin:8px 0"><p style="margin:0 0 8px;font-weight:600;color:#18181b">📐 Khung giao diện website</p><p style="margin:0;font-size:13px;color:#374151">Cài đặt bố cục khung toàn trang cho website. Bạn có thể chọn chế độ Fluid (tràn viền toàn chiều rộng) hoặc Boxed (cố định độ rộng tối đa và căn giữa).</p></div>'),
+
+		Field::make('select', 'layout_container_mode', __('Khung giao diện website', 'laca'))
+			->set_options([
+				'fluid' => __('Fluid (Toàn chiều rộng + lề chuẩn)', 'laca'),
+				'boxed' => __('Boxed (Cố định chiều rộng tối đa, căn giữa)', 'laca'),
+			])
+			->set_default_value('fluid')
+			->set_help_text(__('Mặc định website dùng Fluid (toàn rộng). Chọn Boxed nếu muốn giới hạn độ rộng tối đa toàn site.', 'laca')),
+	])
+
 	->add_tab(__('Contact | Liên hệ', 'laca'), [
 		Field::make('html', 'contact_intro', __('', 'laca'))
 			->set_html('<div style="background:#f4f4f5;border:1px solid #e4e4e7;border-radius:6px;padding:14px 16px;margin:8px 0"><p style="margin:0 0 8px;font-weight:600;color:#18181b">🔧 Liên hệ</p><p style="margin:0;font-size:13px;color:#374151">Nhập thông tin liên hệ của công ty (địa chỉ, số điện thoại, hotline, giờ làm việc, mạng xã hội). Các thông tin này sẽ tự động hiển thị ở footer và các khối liên hệ trên site.</p></div>'),

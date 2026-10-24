@@ -14,6 +14,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initGroupRepeaters();
     initVariableFields();
     initAutoDismiss();
+    initLacaSeoAutoSave();
 });
 
 /**
@@ -234,8 +235,14 @@ function initMediaUploaders() {
 
                 customUploader.on('select', () => {
                     const attachment = customUploader.state().get('selection').first().toJSON();
-                    if (urlInput) urlInput.value = attachment.url;
-                    if (idInput) idInput.value = attachment.id;
+                    if (urlInput) {
+                        urlInput.value = attachment.url;
+                        urlInput.dispatchEvent(new Event('change', { bubbles: true }));
+                    }
+                    if (idInput) {
+                        idInput.value = attachment.id;
+                        idInput.dispatchEvent(new Event('change', { bubbles: true }));
+                    }
                     if (clearBtn) clearBtn.style.display = '';
                     if (preview) {
                         preview.innerHTML = `<img src="${attachment.url}" style="max-height:80px;border-radius:4px;border:1px solid #ddd;">`;
@@ -250,8 +257,14 @@ function initMediaUploaders() {
         if (clearBtn) {
             clearBtn.addEventListener('click', (e) => {
                 e.preventDefault();
-                if (urlInput) urlInput.value = '';
-                if (idInput) idInput.value = '';
+                if (urlInput) {
+                    urlInput.value = '';
+                    urlInput.dispatchEvent(new Event('change', { bubbles: true }));
+                }
+                if (idInput) {
+                    idInput.value = '';
+                    idInput.dispatchEvent(new Event('change', { bubbles: true }));
+                }
                 clearBtn.style.display = 'none';
                 if (preview) {
                     preview.innerHTML = '';
@@ -273,6 +286,8 @@ function initCodeReset() {
             const textarea = document.getElementById(targetId);
             if (textarea && defaultVal !== null) {
                 textarea.value = defaultVal;
+                textarea.dispatchEvent(new Event('input', { bubbles: true }));
+                textarea.dispatchEvent(new Event('change', { bubbles: true }));
             }
         });
     });
@@ -305,6 +320,7 @@ function initGroupRepeaters() {
                 });
 
                 itemsContainer.appendChild(clone);
+                repeater.closest('.laca-seo-form')?.dispatchEvent(new Event('change', { bubbles: true }));
             });
         }
 
@@ -312,7 +328,10 @@ function initGroupRepeaters() {
             if (e.target && e.target.classList.contains('laca-seo-group-remove')) {
                 e.preventDefault();
                 const item = e.target.closest('.laca-seo-group-item');
-                if (item) item.remove();
+                if (item) {
+                    item.remove();
+                    repeater.closest('.laca-seo-form')?.dispatchEvent(new Event('change', { bubbles: true }));
+                }
             }
         });
     });
@@ -569,3 +588,165 @@ function insertVariable( field, tag ) {
 		}
 	} );
 } );
+
+/**
+ * 9. Laca SEO Form Auto-Save
+ */
+function initLacaSeoAutoSave() {
+	const forms = document.querySelectorAll( '.laca-seo-form' );
+	if ( ! forms.length ) return;
+
+	forms.forEach( ( form ) => {
+		const footerInner = form.querySelector( '.laca-seo-sticky-footer__inner' );
+		let badge = form.querySelector( '.laca-seo-autosave-badge' );
+		if ( ! badge ) {
+			badge = document.createElement( 'div' );
+			badge.className = 'laca-seo-autosave-badge is-idle';
+			badge.setAttribute( 'aria-live', 'polite' );
+			badge.innerHTML = `
+				<span class="laca-seo-autosave-icon" aria-hidden="true"></span>
+				<span class="laca-seo-autosave-text"></span>
+			`;
+			if ( footerInner ) {
+				footerInner.appendChild( badge );
+			} else {
+				form.appendChild( badge );
+			}
+		}
+
+		const iconEl = badge.querySelector( '.laca-seo-autosave-icon' );
+		const textEl = badge.querySelector( '.laca-seo-autosave-text' );
+
+		let isSaving = false;
+		let hasPendingChanges = false;
+		let debounceTimer = null;
+		let hideTimer = null;
+
+		function setStatus( status, message ) {
+			clearTimeout( hideTimer );
+			badge.className = `laca-seo-autosave-badge is-${ status }`;
+
+			if ( textEl ) {
+				textEl.textContent = message;
+			}
+
+			if ( iconEl ) {
+				if ( status === 'saving' ) {
+					iconEl.innerHTML = '<svg class="laca-seo-autosave-spinner" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48 2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48 2.83-2.83"/></svg>';
+				} else if ( status === 'saved' ) {
+					iconEl.innerHTML = '<svg class="laca-seo-autosave-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6 9 17l-5-5"/></svg>';
+				} else if ( status === 'error' ) {
+					iconEl.innerHTML = '<svg class="laca-seo-autosave-alert" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>';
+				} else {
+					iconEl.innerHTML = '';
+				}
+			}
+
+			if ( status === 'saved' ) {
+				hideTimer = setTimeout( () => {
+					badge.classList.remove( 'is-saved' );
+					badge.classList.add( 'is-idle' );
+				}, 3500 );
+			}
+		}
+
+		function executeSave() {
+			if ( isSaving ) {
+				hasPendingChanges = true;
+				return;
+			}
+
+			isSaving = true;
+			setStatus( 'saving', 'Đang lưu...' );
+
+			const formData = new FormData( form );
+			formData.append( 'is_ajax', '1' );
+			formData.set( 'action', 'laca_seo_save' );
+
+			const ajaxUrl = window.ajaxurl || window.lacaSeoData?.ajaxUrl || form.action || '/wp-admin/admin-ajax.php';
+
+			fetch( ajaxUrl, {
+				method: 'POST',
+				body: formData,
+				headers: {
+					'X-Requested-With': 'XMLHttpRequest',
+				},
+			} )
+				.then( ( res ) => res.json() )
+				.then( ( res ) => {
+					isSaving = false;
+
+					if ( res.success ) {
+						const time = res.data?.timestamp || new Date().toLocaleTimeString( 'vi-VN' );
+						setStatus( 'saved', `Đã tự động lưu (${ time })` );
+					} else {
+						setStatus( 'error', res.data?.message || 'Lưu thất bại' );
+					}
+
+					if ( hasPendingChanges ) {
+						hasPendingChanges = false;
+						executeSave();
+					}
+				} )
+				.catch( ( err ) => {
+					console.error( '[laca-seo-autosave] Error:', err );
+					isSaving = false;
+					setStatus( 'error', 'Lỗi kết nối' );
+
+					if ( hasPendingChanges ) {
+						hasPendingChanges = false;
+					}
+				} );
+		}
+
+		function queueSave( immediate = false ) {
+			clearTimeout( debounceTimer );
+			if ( immediate ) {
+				executeSave();
+			} else {
+				debounceTimer = setTimeout( () => {
+					executeSave();
+				}, 600 );
+			}
+		}
+
+		// Input events (debounce 600ms)
+		form.addEventListener( 'input', ( e ) => {
+			const target = e.target;
+			if ( ! target ) return;
+			if ( target.id === 'laca-seo-search-input' || target.classList.contains( 'laca-seo-var-search' ) ) {
+				return;
+			}
+			queueSave( false );
+		} );
+
+		// Change events (immediate)
+		form.addEventListener( 'change', ( e ) => {
+			const target = e.target;
+			if ( ! target ) return;
+			if ( target.id === 'laca-seo-search-input' || target.classList.contains( 'laca-seo-var-search' ) ) {
+				return;
+			}
+			queueSave( true );
+		} );
+
+		// Form submit (khi bấm Enter hoặc submit button)
+		form.addEventListener( 'submit', ( e ) => {
+			const submitter = e.submitter;
+			if ( submitter && submitter.value === 'laca_seo_reset_tab' ) {
+				return;
+			}
+			e.preventDefault();
+			queueSave( true );
+		} );
+
+		// Save button click
+		const saveBtn = form.querySelector( '.laca-seo-save-btn' );
+		if ( saveBtn ) {
+			saveBtn.addEventListener( 'click', ( e ) => {
+				e.preventDefault();
+				queueSave( true );
+			} );
+		}
+	} );
+}

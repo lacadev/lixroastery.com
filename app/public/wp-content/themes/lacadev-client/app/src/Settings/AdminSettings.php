@@ -858,15 +858,6 @@ class AdminSettings
 						->set_html('<i class="fa-regular fa-lightbulb-on"></i> Khi bật chế độ này, bạn sẽ không thể xem menu bình luận trong trang admin.'),
 
 				])
-				->add_tab(__('Giao diện', 'laca'), [
-					Field::make('select', 'layout_container_mode', __('Khung giao diện website', 'laca'))
-						->set_options([
-							'fluid' => __('Fluid (Toàn chiều rộng + lề chuẩn)', 'laca'),
-							'boxed' => __('Boxed (Cố định chiều rộng tối đa, căn giữa)', 'laca'),
-						])
-						->set_default_value('fluid')
-						->set_help_text(__('Mặc định website dùng Fluid (toàn rộng). Chọn Boxed nếu muốn giới hạn độ rộng tối đa toàn site.', 'laca')),
-				])
 				->add_tab(__('SMTP', 'laca'), [
 					Field::make('checkbox', 'use_smtp', __('Sử dụng SMTP để gửi mail', 'laca')),
 
@@ -1026,42 +1017,9 @@ class AdminSettings
 					Field::make('html', 'enable_register_service_worker_desc')
 						->set_width(70)
 						->set_html('<i class="fa-regular fa-lightbulb-on"></i> Đăng ký service worker để tăng tốc tải trang và cache tài nguyên.'),
-				])
-				// Security
-				->add_tab(__('Security', 'laca'), [
-					// Enhance website security
-					Field::make('separator', 'title_enhance_website_security', __('Enhance website security')),
-					Field::make('checkbox', 'disable_rest_api', __('Disable REST API', 'laca'))
-						->set_width(30),
-					Field::make('html', 'disable_rest_api_desc')
-						->set_width(70)
-						->set_html('<i class="fa-regular fa-lightbulb-on"></i> REST API mặc định trong WordPress cho phép ứng dụng bên ngoài giao tiếp với WordPress để lấy dữ liệu hoặc đăng nội dung, bạn nên vô hiệu hóa nó cho mục đích bảo mật.'),
 
-					Field::make('checkbox', 'disable_xml_rpc', __('Disable XML RPC', 'laca'))
-						->set_width(30),
-					Field::make('html', 'disable_xml_rpc_desc')
-						->set_width(70)
-						->set_html('<i class="fa-regular fa-lightbulb-on"></i> XML-RPC là giao thức cho phép quản lý website từ xa thông qua ứng dụng như WordPress App hoặc Jetpack.<br> <b>Khuyến cáo:</b> Nên tắt hoàn toàn nếu không dùng tới.'),
-
-					Field::make('checkbox', 'disable_wp_embed', __('Disable Wp-Embed', 'laca'))
-						->set_width(30),
-					Field::make('html', 'disable_wp_embed_desc')
-						->set_width(70)
-						->set_html('<i class="fa-regular fa-lightbulb-on"></i> WP-Embed cho phép nội dung của trang WordPress được nhúng vào trang web khác thông qua oEmbed.<br> <b>Khuyến cáo:</b> Nếu không dùng, nên tắt để giảm thiểu tải không cần thiết.'),
-
-					Field::make('checkbox', 'disable_x_pingback', __('Disable X-Pingback', 'laca'))
-						->set_width(30),
-					Field::make('html', 'disable_x_pingback_desc')
-						->set_width(70)
-						->set_html('<i class="fa-regular fa-lightbulb-on"></i> X-Pingback là cơ chế thông báo giữa các blog (khi ai đó liên kết đến trang web).<br> <b>Khuyến cáo:</b> Nên tắt hoàn toàn nếu không dùng tới.'),
-
-					// Thêm các field bảo mật mới
-					Field::make('checkbox', 'enable_remove_wordpress_bloat', __('Loại bỏ bloat WordPress', 'laca'))
-						->set_width(30),
-					Field::make('html', 'enable_remove_wordpress_bloat_desc')
-						->set_width(70)
-						->set_html('<i class="fa-regular fa-lightbulb-on"></i> Loại bỏ các thành phần không cần thiết của WordPress để tăng bảo mật và hiệu suất.'),
-
+					// Tối ưu hóa Database & Bộ nhớ
+					Field::make('separator', 'title_database_memory_optimization', __('Tối ưu hóa Database & Bộ nhớ', 'laca')),
 					Field::make('checkbox', 'enable_optimize_database_queries', __('Tối ưu hóa truy vấn database', 'laca'))
 						->set_width(30),
 					Field::make('html', 'enable_optimize_database_queries_desc')
@@ -1094,7 +1052,7 @@ class AdminSettings
 				]);
 
 			// LacaDev Block Sync
-			Container::make('theme_options', __('🧩 LacaDev', 'laca'))
+			Container::make('theme_options', __('Đồng bộ Block', 'laca'))
 				->set_page_parent($options)
 				->set_page_file(__('laca-block-sync', 'laca'))
 				->add_fields([

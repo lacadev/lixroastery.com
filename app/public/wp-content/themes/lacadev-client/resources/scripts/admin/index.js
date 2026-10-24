@@ -1,6 +1,8 @@
 import '@styles/admin';
 import './custom_thumbnail_support.js';
 import './contact-form.js';
+import { initReleaseChecklistAjax } from './release-checklist.js';
+import { initCarbonFieldsAutoSave } from './carbon-autosave.js';
 
 
 import Swal from 'sweetalert2';
@@ -454,11 +456,15 @@ document.addEventListener( 'DOMContentLoaded', function () {
 
 	// Initialize on DOM ready
 	if ( document.readyState === 'loading' ) {
-		document.addEventListener( 'DOMContentLoaded', () =>
-			LacaDashboard.init()
-		);
+		document.addEventListener( 'DOMContentLoaded', () => {
+			LacaDashboard.init();
+			initReleaseChecklistAjax();
+			initCarbonFieldsAutoSave();
+		} );
 	} else {
 		LacaDashboard.init();
+		initReleaseChecklistAjax();
+		initCarbonFieldsAutoSave();
 	}
 
 	window.LacaDashboard = LacaDashboard;

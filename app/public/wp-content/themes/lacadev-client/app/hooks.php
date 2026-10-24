@@ -140,6 +140,18 @@ add_filter('login_message', 'app_login_google_admin_message');
 add_action('carbon_fields_register_fields', 'app_bootstrap_carbon_fields_register_fields');
 
 /**
+ * Carbon Fields AJAX Auto-Save Handler for Theme Options (Laca Theme & Laca Admin).
+ */
+add_action('carbon_fields_theme_options_container_saved', static function ($user_data, $container) {
+    if (!empty($_POST['carbon_fields_auto_save']) || wp_doing_ajax()) {
+        wp_send_json_success([
+            'message'   => __('Đã tự động lưu cài đặt thành công.', 'lacadev'),
+            'timestamp' => current_time('H:i:s'),
+        ]);
+    }
+}, 10, 2);
+
+/**
  * Theme Updater — tự động check & nhận update từ clients.lacadev.com
  * Chỉ chạy ở admin để tiết kiệm tài nguyên frontend
  */
