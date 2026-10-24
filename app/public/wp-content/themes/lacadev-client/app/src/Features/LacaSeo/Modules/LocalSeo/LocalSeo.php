@@ -24,7 +24,12 @@ class LocalSeo
 
         // Register CPT laca_seo_locations
         $singular = (string) Settings::get('titles.locations_post_type_label', 'Location');
-        $plural = $singular . 's';
+        if ($singular === 'RM Locations' || $singular === 'RM Location' || $singular === 'Location') {
+            $singular = __('Địa điểm', 'lacadev');
+            $plural = __('Địa điểm', 'lacadev');
+        } else {
+            $plural = $singular . 's';
+        }
 
         register_post_type('laca_seo_locations', [
             'labels' => [
@@ -39,11 +44,11 @@ class LocalSeo
                 'not_found'          => sprintf(__('No %s found', 'lacadev'), $plural),
                 'not_found_in_trash' => sprintf(__('No %s found in Trash', 'lacadev'), $plural),
             ],
-            'public'       => true,
-            'show_ui'      => true,
-            'show_in_menu' => 'laca-seo',
+            'public'       => $useMulti,
+            'show_ui'      => $useMulti,
+            'show_in_menu' => $useMulti ? 'laca-seo' : false,
             'supports'     => ['title', 'editor', 'thumbnail', 'excerpt'],
-            'has_archive'  => true,
+            'has_archive'  => $useMulti,
             'rewrite'      => ['slug' => 'locations'],
         ]);
 
@@ -53,9 +58,9 @@ class LocalSeo
                 'name'          => __('Location Categories', 'lacadev'),
                 'singular_name' => __('Location Category', 'lacadev'),
             ],
-            'show_ui'           => true,
-            'show_admin_column' => true,
-            'query_var'         => true,
+            'show_ui'           => $useMulti,
+            'show_admin_column' => $useMulti,
+            'query_var'         => $useMulti,
             'rewrite'           => ['slug' => 'location-category'],
         ]);
     }

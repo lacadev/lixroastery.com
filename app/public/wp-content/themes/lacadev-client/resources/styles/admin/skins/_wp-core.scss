@@ -554,8 +554,8 @@ body.wp-admin {
 
 // General Admin Links — Monochromatic, no blue
 body.wp-admin {
-  a:not(.button):not(.laca-btn):not(.nav-tab):not(.ab-item):not(.page-title-action):not(.components-button),
-  a:not(.button):not(.laca-btn):not(.nav-tab):not(.ab-item):not(.page-title-action):not(.components-button):visited {
+  a:not(.button):not(.laca-btn):not(.nav-tab):not(.ab-item):not(.page-title-action):not(.components-button):not(.laca-seo-tabs-list__link),
+  a:not(.button):not(.laca-btn):not(.nav-tab):not(.ab-item):not(.page-title-action):not(.components-button):not(.laca-seo-tabs-list__link):visited {
     color: var(--laca-fg) !important;
 
     &:hover {

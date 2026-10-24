@@ -35,6 +35,12 @@
     margin: 0 0 var(--laca-space-6, 24px) 0 !important;
     max-width: 100%;
     overflow-x: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+
+    &::-webkit-scrollbar {
+      display: none;
+    }
   }
 
   &__tabs-list,
@@ -43,10 +49,16 @@
     flex-wrap: nowrap;
     gap: 8px;
     margin: 0;
-    padding: 0;
+    padding: 4px 0;
     list-style: none;
     border: none;
     overflow-x: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+
+    &::-webkit-scrollbar {
+      display: none;
+    }
   }
 
   &__tabs-item,

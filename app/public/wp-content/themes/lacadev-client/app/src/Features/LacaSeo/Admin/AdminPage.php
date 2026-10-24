@@ -19,7 +19,8 @@ class AdminPage
 
     public function register(): void
     {
-        add_action('admin_menu', [$this, 'registerMenu'], 20);
+        add_action('admin_menu', [$this, 'registerMenu'], 9);
+        add_action('admin_menu', [$this, 'ensureDashboardFirstInMenu'], 999);
         add_action('admin_enqueue_scripts', [$this, 'enqueueAssets']);
         add_action('current_screen', [$this, 'suppressForeignNotices']);
         add_action('wp_ajax_laca_seo_toggle_module', [$this, 'ajaxToggleModule']);
@@ -62,6 +63,33 @@ class AdminPage
             self::MENU_SLUG,
             [$this, 'renderPage']
         );
+    }
+
+    /**
+     * Ensure the Laca SEO dashboard ("Bảng điều khiển") is always the first submenu item,
+     * so clicking the top-level "Laca SEO" menu item opens the dashboard directly.
+     */
+    public function ensureDashboardFirstInMenu(): void
+    {
+        global $submenu;
+        if (empty($submenu[self::MENU_SLUG]) || !is_array($submenu[self::MENU_SLUG])) {
+            return;
+        }
+
+        $dashboardIdx = null;
+        foreach ($submenu[self::MENU_SLUG] as $idx => $item) {
+            if (isset($item[2]) && $item[2] === self::MENU_SLUG) {
+                $dashboardIdx = $idx;
+                break;
+            }
+        }
+
+        if ($dashboardIdx !== null && $dashboardIdx !== 0) {
+            $dashItem = $submenu[self::MENU_SLUG][$dashboardIdx];
+            unset($submenu[self::MENU_SLUG][$dashboardIdx]);
+            array_unshift($submenu[self::MENU_SLUG], $dashItem);
+            $submenu[self::MENU_SLUG] = array_values($submenu[self::MENU_SLUG]);
+        }
     }
 
     /**

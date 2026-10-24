@@ -405,17 +405,18 @@
     width: 100%;
 }
 
-// Sub-tabs line variant cuộn ngang 1 hàng
+// Sub-tabs pill variant cuộn ngang 1 hàng (Option B: pill buttons)
 .laca-seo-tabs-sidebar {
     background: transparent;
     border: none;
     border-radius: 0;
-    padding: 0;
-    margin-bottom: 16px;
+    padding: 4px 0 16px;
+    margin-bottom: 8px;
     width: 100%;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
+    -ms-overflow-style: none;
 
     &::-webkit-scrollbar {
         display: none;
@@ -425,11 +426,11 @@
 .laca-seo-tabs-list {
     display: flex;
     flex-wrap: nowrap;
-    border-bottom: 1px solid var(--laca-border);
+    border-bottom: none;
     margin: 0;
     padding: 0;
     list-style: none;
-    gap: 4px;
+    gap: 8px;
     width: max-content;
     min-width: 100%;
 
@@ -441,23 +442,36 @@
     &__link {
         display: inline-flex;
         align-items: center;
-        padding: 8px 14px;
-        font-size: 13px;
-        font-weight: 500;
-        color: var(--laca-fg-muted);
-        text-decoration: none;
-        border-bottom: 2px solid transparent;
+        padding: 6px 16px !important;
+        font-size: 13px !important;
+        font-weight: 500 !important;
+        color: var(--laca-fg) !important;
+        text-decoration: none !important;
+        background: var(--laca-bg-muted) !important;
+        border: 1px solid transparent !important;
+        border-radius: var(--laca-radius-full) !important;
         white-space: nowrap;
-        transition: color 0.15s ease, border-color 0.15s ease;
+        transition: none !important;
+        outline: none;
 
         &:hover {
-            color: var(--laca-fg);
+            background: var(--laca-bg-emphasized) !important;
+            color: var(--laca-fg) !important;
+            border-color: transparent !important;
+            text-decoration: none !important;
         }
 
         &.is-active {
-            color: var(--laca-accent-fg);
-            border-bottom-color: var(--laca-accent);
-            font-weight: 600;
+            background: var(--laca-accent) !important;
+            color: var(--laca-bg) !important;
+            border-color: var(--laca-accent) !important;
+            font-weight: 600 !important;
+            text-decoration: none !important;
+        }
+
+        &:focus-visible {
+            outline: 2px solid var(--laca-focus-ring) !important;
+            outline-offset: 2px !important;
         }
     }
 }
