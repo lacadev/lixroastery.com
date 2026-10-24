@@ -307,7 +307,7 @@ div.error {
   box-shadow: none !important;
   border-collapse: separate;
   border-spacing: 0;
-  overflow: hidden;
+  overflow: visible;
 
   thead th,
   tfoot th {
@@ -322,7 +322,7 @@ div.error {
     border-bottom: 1px solid var(--laca-border) !important;
     border-top: none !important;
     white-space: nowrap !important;
-    overflow: hidden;
+    overflow: visible;
   }
 
   tbody tr {
@@ -347,8 +347,8 @@ div.error {
       color: var(--laca-fg);
       vertical-align: middle;
       font-size: var(--laca-font-size-sm);
-      word-break: break-all;
-      overflow-wrap: anywhere;
+      word-break: normal;
+      overflow-wrap: break-word;
     }
 
     a.row-title {
@@ -374,12 +374,16 @@ div.error {
 
     &:hover td,
     &:hover th {
-      background-color: var(--laca-bg-subtle) !important;
+      background-color: var(--laca-bg-subtle, #eff6ff) !important;
+    }
+
+    &:nth-child(odd) {
+      background-color: var(--laca-bg, #ffffff) !important;
     }
 
     &.alternate,
-    &:nth-child(odd) {
-      background-color: transparent !important;
+    &:nth-child(even) {
+      background-color: var(--laca-bg-muted, #f8fafc) !important;
     }
 
     &:last-child td,

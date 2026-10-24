@@ -1,0 +1,1064 @@
+// -------------------------------------------------------------
+// List Table Horizontal Scroll & Inline Editing Styles
+// -------------------------------------------------------------
+
+/* 0. Ngăn chặn tuyệt đối vỡ chữ / co rúm cột trước khi JS chạy */
+html.edit-php,
+body.edit-php {
+  overflow-x: hidden !important;
+  overflow-x: clip !important;
+
+  #wpbody-content,
+  .wrap {
+    min-width: 0 !important;
+    max-width: 100% !important;
+    overflow-x: clip !important;
+    box-sizing: border-box !important;
+  }
+
+  /* Khung posts-filter và tablenav tuyệt đối không scroll ngang để thanh công cụ (bulk actions, filters, search) cố định */
+  #posts-filter {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    overflow: visible !important;
+    box-sizing: border-box !important;
+  }
+
+  .tablenav,
+  .tablenav.top,
+  .tablenav.bottom {
+    overflow: visible !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  table.wp-list-table {
+    width: max-content !important;
+    min-width: 100% !important;
+    table-layout: auto !important;
+    white-space: nowrap !important;
+
+    th,
+    td {
+      white-space: nowrap !important;
+      word-break: normal !important;
+      overflow-wrap: normal !important;
+    }
+
+    /* Tiêu đề thead & tfoot luôn có màu nền đục, không nhìn xuyên thấu */
+    thead th,
+    tfoot th {
+      background-color: #f1f5f9 !important;
+      color: #334155 !important;
+    }
+
+    /* Hàng lẻ: Toàn bộ ô và 3 cột cố định có nền trắng đục 100% */
+    tbody tr,
+    tbody tr:nth-child(odd),
+    tbody tr:not(.alternate):not(:nth-child(even)) {
+      background-color: #ffffff !important;
+
+      > th,
+      > td,
+      th.check-column,
+      td.check-column,
+      th.column-cb,
+      td.column-cb,
+      th.column-thumb,
+      td.column-thumb,
+      td.thumb,
+      th.column-lacadev_thumb,
+      td.column-lacadev_thumb,
+      th.column-featured_image,
+      td.column-featured_image,
+      th.column-image,
+      td.column-image,
+      th.column-name,
+      td.column-name,
+      td.name,
+      th.column-title,
+      td.column-title {
+        background-color: #ffffff !important;
+      }
+    }
+
+    /* Hàng chẵn: Toàn bộ ô và 3 cột cố định có nền xám nhạt đục 100% */
+    tbody tr.alternate,
+    tbody tr:nth-child(even) {
+      background-color: #f8fafc !important;
+
+      > th,
+      > td,
+      th.check-column,
+      td.check-column,
+      th.column-cb,
+      td.column-cb,
+      th.column-thumb,
+      td.column-thumb,
+      td.thumb,
+      th.column-lacadev_thumb,
+      td.column-lacadev_thumb,
+      th.column-featured_image,
+      td.column-featured_image,
+      th.column-image,
+      td.column-image,
+      th.column-name,
+      td.column-name,
+      td.name,
+      th.column-title,
+      td.column-title {
+        background-color: #f8fafc !important;
+      }
+    }
+
+    /* Hover hàng: Toàn bộ ô có nền xanh nhạt đục */
+    tbody tr:hover {
+      background-color: #eff6ff !important;
+
+      > th,
+      > td,
+      th.check-column,
+      td.check-column,
+      th.column-cb,
+      td.column-cb,
+      th.column-thumb,
+      td.column-thumb,
+      td.thumb,
+      th.column-lacadev_thumb,
+      td.column-lacadev_thumb,
+      th.column-featured_image,
+      td.column-featured_image,
+      th.column-image,
+      td.column-image,
+      th.column-name,
+      td.column-name,
+      td.name,
+      th.column-title,
+      td.column-title {
+        background-color: #eff6ff !important;
+      }
+    }
+
+    /* Vị trí sticky cho các cột cố định */
+    th.check-column,
+    td.check-column,
+    th.column-cb,
+    td.column-cb {
+      position: sticky !important;
+      left: 0 !important;
+      z-index: 15 !important;
+    }
+
+    th.column-thumb,
+    td.column-thumb,
+    td.thumb,
+    th.column-lacadev_thumb,
+    td.column-lacadev_thumb,
+    th.column-featured_image,
+    td.column-featured_image,
+    th.column-image,
+    td.column-image {
+      position: sticky !important;
+      left: 44px !important;
+      z-index: 14 !important;
+    }
+
+    th.column-name,
+    td.column-name,
+    td.name,
+    th.column-title,
+    td.column-title {
+      position: sticky !important;
+      left: var(--laca-col-title-left, 120px) !important;
+      z-index: 13 !important;
+      border-right: 2px solid #cbd5e1 !important;
+      box-shadow: 4px 0 10px -2px rgba(0, 0, 0, 0.12) !important;
+    }
+  }
+}
+
+html.edit-php,
+body.wp-admin.has-laca-table-scroll {
+  overflow-x: hidden !important;
+  overflow-x: clip !important;
+}
+
+.laca-table-scroll-top {
+  display: none;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  height: 10px;
+  box-sizing: border-box;
+  margin-top: 8px;
+  margin-bottom: 4px;
+  scrollbar-gutter: stable;
+
+  &::-webkit-scrollbar {
+    height: 8px;
+  }
+  &::-webkit-scrollbar-track {
+    background: #f4f4f5;
+    border-radius: 4px;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: #d4d4d8;
+    border-radius: 4px;
+
+    &:hover {
+      background: #a1a1aa;
+    }
+  }
+}
+
+.laca-table-scroll-top-inner {
+  height: 1px;
+}
+
+.laca-table-scroll,
+#posts-filter .laca-table-scroll {
+  display: block !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  overflow-x: auto !important;
+  overflow-y: visible !important;
+  -webkit-overflow-scrolling: touch !important;
+  box-sizing: border-box !important;
+  scrollbar-gutter: stable;
+  background: #ffffff;
+  border: 1px solid var(--laca-border, #e4e4e7);
+  border-radius: var(--laca-radius-l2, 6px);
+  margin-top: 10px;
+  margin-bottom: 20px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+
+  /* Sleek modern scrollbar */
+  &::-webkit-scrollbar {
+    height: 8px;
+  }
+  &::-webkit-scrollbar-track {
+    background: #f4f4f5;
+    border-radius: 4px;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: #d4d4d8;
+    border-radius: 4px;
+
+    &:hover {
+      background: #a1a1aa;
+    }
+  }
+
+  .wp-list-table,
+  .wp-list-table.widefat {
+    width: max-content !important;
+    min-width: 100% !important;
+    table-layout: auto !important;
+    white-space: nowrap !important;
+    border-collapse: separate !important;
+    border-spacing: 0 !important;
+    border: none !important;
+    overflow: visible !important;
+
+    thead,
+    tbody,
+    tfoot,
+    tr {
+      overflow: visible !important;
+      transform: none !important;
+      filter: none !important;
+      perspective: none !important;
+    }
+
+    th,
+    td {
+      white-space: nowrap;
+      border-right: 1px solid var(--laca-border-subtle, #f1f5f9);
+      border-bottom: 1px solid var(--laca-border-subtle, #f1f5f9);
+      padding: 9px 12px;
+      font-size: 13px;
+      vertical-align: middle;
+      box-sizing: border-box;
+    }
+
+    th:last-child,
+    td:last-child {
+      border-right: none;
+    }
+
+    /* -------------------------------------------------------------
+       1. FIXED STICKY COLUMNS (Checkbox, Image, Title/Name)
+       ------------------------------------------------------------- */
+
+    /* Cột 1: Checkbox (vị trí: 0px, rộng: 44px) */
+    th.check-column,
+    td.check-column,
+    th.column-cb,
+    td.column-cb,
+    .column-cb {
+      position: sticky !important;
+      left: 0 !important;
+      width: 44px !important;
+      min-width: 44px !important;
+      max-width: 44px !important;
+      text-align: center;
+      box-sizing: border-box;
+    }
+    thead th.check-column,
+    thead th.column-cb,
+    tfoot th.check-column,
+    tfoot th.column-cb {
+      z-index: 25 !important;
+    }
+    tbody th.check-column,
+    tbody td.check-column,
+    tbody td.column-cb {
+      z-index: 15 !important;
+    }
+
+    /* Cột 2: Hình ảnh (Thumbnail) (vị trí: 44px, rộng: 76px) */
+    th.column-thumb,
+    td.column-thumb,
+    th.column-lacadev_thumb,
+    td.column-lacadev_thumb,
+    th.column-featured_image,
+    td.column-featured_image,
+    th.column-image,
+    td.column-image {
+      position: sticky !important;
+      left: 44px !important;
+      width: 76px !important;
+      min-width: 76px !important;
+      max-width: 76px !important;
+      text-align: center !important;
+      padding: 6px 4px !important;
+      background-color: #ffffff !important;
+      box-sizing: border-box;
+
+      .thumbnail-wrap {
+        position: relative !important;
+        display: inline-block !important;
+        line-height: 0 !important;
+
+        .remove-thumbnail,
+        a.remove-thumbnail {
+          position: absolute !important;
+          top: -6px !important;
+          right: -6px !important;
+          width: 18px !important;
+          height: 18px !important;
+          min-width: 18px !important;
+          min-height: 18px !important;
+          display: flex !important;
+          justify-content: center !important;
+          align-items: center !important;
+          background-color: #09090b !important;
+          color: #ffffff !important;
+          border: 1.5px solid #ffffff !important;
+          border-radius: 50% !important;
+          box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35) !important;
+          z-index: 10 !important;
+          cursor: pointer !important;
+          padding: 0 !important;
+          margin: 0 !important;
+          text-decoration: none !important;
+          transition: transform 0.15s ease, background-color 0.15s ease !important;
+
+          &:hover {
+            background-color: #ef4444 !important;
+            border-color: #ffffff !important;
+            transform: scale(1.15) !important;
+          }
+
+          svg {
+            width: 10px !important;
+            height: 10px !important;
+            display: block !important;
+            stroke: #ffffff !important;
+            fill: none !important;
+            pointer-events: none !important;
+
+            path {
+              stroke: #ffffff !important;
+              stroke-width: 2 !important;
+              stroke-linecap: round !important;
+            }
+          }
+        }
+      }
+
+      img,
+      .thumbnail-preview {
+        display: block !important;
+        margin: 0 auto !important;
+        border-radius: 6px !important;
+        border: 1px solid #cbd5e1 !important;
+        width: 54px !important;
+        height: 54px !important;
+        max-width: 54px !important;
+        max-height: 54px !important;
+        object-fit: cover !important;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06) !important;
+      }
+
+      .no-image-text {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        justify-content: center !important;
+        width: 54px !important;
+        height: 54px !important;
+        margin: 0 auto !important;
+        padding: 2px !important;
+        box-sizing: border-box !important;
+        border: 1.5px dashed #cbd5e1 !important;
+        border-radius: 6px !important;
+        background-color: #f8fafc !important;
+        color: #475569 !important;
+        font-size: 11px !important;
+        font-weight: 500 !important;
+        line-height: 1.25 !important;
+        text-align: center !important;
+        word-break: normal !important;
+        overflow-wrap: normal !important;
+        white-space: normal !important;
+        cursor: pointer !important;
+        transition: all 0.2s ease !important;
+
+        span {
+          display: block !important;
+          word-break: normal !important;
+          white-space: nowrap !important;
+          line-height: 1.2 !important;
+        }
+
+        &:hover {
+          border-color: #3b82f6 !important;
+          color: #2563eb !important;
+          background-color: #eff6ff !important;
+        }
+      }
+    }
+    thead th.column-thumb,
+    thead th.column-lacadev_thumb,
+    thead th.column-featured_image,
+    thead th.column-image,
+    tfoot th.column-thumb,
+    tfoot th.column-lacadev_thumb,
+    tfoot th.column-featured_image,
+    tfoot th.column-image {
+      z-index: 24 !important;
+    }
+    tbody td.column-thumb,
+    tbody td.column-lacadev_thumb,
+    tbody td.column-featured_image,
+    tbody td.column-image {
+      z-index: 14 !important;
+    }
+
+    /* Cột 3: Tên sản phẩm / Tiêu đề (Name / Title) */
+    th.column-name,
+    td.column-name,
+    th.column-title,
+    td.column-title {
+      position: sticky !important;
+      left: var(--laca-col-title-left, 120px) !important;
+      width: 320px !important;
+      min-width: 320px !important;
+      max-width: 320px !important;
+      white-space: normal !important;
+      overflow-wrap: anywhere !important;
+      word-break: break-word !important;
+      background-color: #ffffff !important;
+      border-right: none !important;
+      box-shadow: 1px 0 0 #e4e4e7 !important;
+      box-sizing: border-box !important;
+
+      strong,
+      .row-title,
+      a.row-title {
+        display: -webkit-box !important;
+        -webkit-line-clamp: 3 !important;
+        -webkit-box-orient: vertical !important;
+        overflow: hidden !important;
+        white-space: normal !important;
+        overflow-wrap: anywhere !important;
+        word-break: break-word !important;
+      }
+
+      .row-actions {
+        white-space: normal !important;
+        margin-top: 4px;
+      }
+
+      @media screen and (max-width: 1023px) {
+        width: 240px !important;
+        min-width: 240px !important;
+        max-width: 240px !important;
+      }
+    }
+
+    @media screen and (max-width: 782px) {
+      th.check-column,
+      td.check-column,
+      th.column-cb,
+      td.column-cb,
+      th.column-thumb,
+      td.column-thumb,
+      td.thumb,
+      th.column-lacadev_thumb,
+      td.column-lacadev_thumb,
+      th.column-featured_image,
+      td.column-featured_image,
+      th.column-image,
+      td.column-image,
+      th.column-name,
+      td.column-name,
+      td.name,
+      th.column-title,
+      td.column-title {
+        position: static !important;
+        left: auto !important;
+        width: auto !important;
+        min-width: 0 !important;
+        max-width: none !important;
+        box-shadow: none !important;
+        border-right: none !important;
+      }
+    }
+
+    /* Khi bảng có cột ảnh */
+    &.has-col-thumb {
+      th.column-name,
+      td.column-name,
+      th.column-title,
+      td.column-title {
+        left: 120px !important;
+      }
+    }
+
+    /* Khi bảng KHÔNG có cột ảnh */
+    &.no-col-thumb {
+      th.column-name,
+      td.column-name,
+      th.column-title,
+      td.column-title {
+        left: 44px !important;
+      }
+    }
+
+    thead th.column-name,
+    thead th.column-title,
+    tfoot th.column-name,
+    tfoot th.column-title {
+      z-index: 23 !important;
+    }
+    tbody td.column-name,
+    tbody td.column-title {
+      z-index: 13 !important;
+    }
+
+    /* -------------------------------------------------------------
+       2. MÀU NỀN XEN KẼ (ZEBRA STRIPING) & HOVER CHO CỘT CỐ ĐỊNH
+       ------------------------------------------------------------- */
+
+    /* Header & Footer: nền đục #f1f5f9 */
+    thead th,
+    tfoot th,
+    thead th.check-column,
+    thead th.column-cb,
+    thead th.column-thumb,
+    thead th.column-lacadev_thumb,
+    thead th.column-featured_image,
+    thead th.column-image,
+    thead th.column-name,
+    thead th.column-title,
+    tfoot th.check-column,
+    tfoot th.column-cb,
+    tfoot th.column-thumb,
+    tfoot th.column-lacadev_thumb,
+    tfoot th.column-featured_image,
+    tfoot th.column-image,
+    tfoot th.column-name,
+    tfoot th.column-title {
+      background-color: #f1f5f9 !important;
+      font-weight: 600;
+      color: #334155 !important;
+      border-bottom: 2px solid #cbd5e1;
+    }
+
+    /* Row Lẻ (Odd): Nền trắng đục 100% cho mọi ô bao gồm 3 cột cố định */
+    tbody tr,
+    tbody tr:not(.alternate):not(:nth-child(even)),
+    tbody tr:nth-child(odd) {
+      background-color: #ffffff !important;
+
+      th,
+      td,
+      th.check-column,
+      td.check-column,
+      th.column-cb,
+      td.column-cb,
+      th.column-thumb,
+      td.column-thumb,
+      th.column-lacadev_thumb,
+      td.column-lacadev_thumb,
+      th.column-featured_image,
+      td.column-featured_image,
+      th.column-image,
+      td.column-image,
+      th.column-name,
+      td.column-name,
+      th.column-title,
+      td.column-title {
+        background-color: #ffffff !important;
+      }
+    }
+
+    /* Row Chẵn (Even): Nền xám nhạt đục 100% cho mọi ô bao gồm 3 cột cố định */
+    tbody tr.alternate,
+    tbody tr:nth-child(even) {
+      background-color: #f8fafc !important;
+
+      th,
+      td,
+      th.check-column,
+      td.check-column,
+      th.column-cb,
+      td.column-cb,
+      th.column-thumb,
+      td.column-thumb,
+      th.column-lacadev_thumb,
+      td.column-lacadev_thumb,
+      th.column-featured_image,
+      td.column-featured_image,
+      th.column-image,
+      td.column-image,
+      th.column-name,
+      td.column-name,
+      th.column-title,
+      td.column-title {
+        background-color: #f8fafc !important;
+      }
+    }
+
+    /* Hover toàn bộ row (bao gồm các cột cố định) */
+    tbody tr:hover {
+      background-color: #f4f4f5 !important;
+
+      th,
+      td,
+      th.check-column,
+      td.check-column,
+      th.column-cb,
+      td.column-cb,
+      th.column-thumb,
+      td.column-thumb,
+      th.column-lacadev_thumb,
+      td.column-lacadev_thumb,
+      th.column-featured_image,
+      td.column-featured_image,
+      th.column-image,
+      td.column-image,
+      th.column-name,
+      td.column-name,
+      th.column-title,
+      td.column-title {
+        background-color: #f4f4f5 !important;
+      }
+    }
+
+    /* Bề rộng cột theo loại dữ liệu (§2.3) */
+    th[class*="column-laca_subname"],
+    td[class*="column-laca_subname"],
+    th[class*="column-laca_flavor_"],
+    td[class*="column-laca_flavor_"] {
+      min-width: 220px !important;
+      max-width: 280px !important;
+      white-space: normal !important;
+
+      .laca-inline-val {
+        display: -webkit-box !important;
+        -webkit-line-clamp: 2 !important;
+        -webkit-box-orient: vertical !important;
+        overflow: hidden !important;
+        white-space: normal !important;
+      }
+    }
+
+    th[class*="column-taxonomy-"],
+    td[class*="column-taxonomy-"],
+    th[class*="column-laca_product_cat"],
+    td[class*="column-laca_product_cat"],
+    th[class*="column-laca_variety_cat"],
+    td[class*="column-laca_variety_cat"],
+    th[class*="column-laca_category"],
+    td[class*="column-laca_category"],
+    th[class*="column-laca_product_brand"],
+    td[class*="column-laca_product_brand"] {
+      min-width: 160px !important;
+      max-width: 240px !important;
+      white-space: normal !important;
+
+      .laca-inline-val {
+        display: -webkit-box !important;
+        -webkit-line-clamp: 2 !important;
+        -webkit-box-orient: vertical !important;
+        overflow: hidden !important;
+        white-space: normal !important;
+      }
+    }
+
+    th[class*="column-laca_stock_status"],
+    td[class*="column-laca_stock_status"],
+    th.column-is_in_stock,
+    td.column-is_in_stock {
+      min-width: 130px !important;
+      max-width: 160px !important;
+    }
+
+    th[class*="column-laca_menu_order"],
+    td[class*="column-laca_menu_order"],
+    th[class*="column-laca_related_products_count"],
+    td[class*="column-laca_related_products_count"] {
+      min-width: 80px !important;
+      max-width: 120px !important;
+      text-align: center;
+    }
+
+    th.column-date,
+    td.column-date {
+      min-width: 140px !important;
+      max-width: 180px !important;
+    }
+
+    /* Quick Edit native WordPress */
+    .inline-edit-wrapper {
+      max-width: 80vw;
+    }
+    .inline-edit-wrapper fieldset {
+      float: none !important;
+    }
+
+    /* -------------------------------------------------------------
+       3. INLINE EDITABLE CELL & FORM CONTROLS (Monochromatic §2.7)
+       ------------------------------------------------------------- */
+    .laca-inline-cell {
+      display: inline-flex;
+      align-items: center;
+      min-width: 80px;
+      min-height: 28px;
+      padding: 3px 6px;
+      border-radius: 4px;
+      cursor: pointer;
+      position: relative;
+      transition: background-color 0.15s ease, box-shadow 0.15s ease;
+
+      &:hover:not(.is-editing) {
+        background-color: #f4f4f5;
+        box-shadow: inset 0 0 0 1px #e4e4e7;
+
+        &::after {
+          content: '✎';
+          display: inline-block;
+          margin-left: 6px;
+          font-size: 11px;
+          color: #71717a;
+        }
+      }
+
+      &.is-editing {
+        padding: 0;
+        cursor: default;
+      }
+
+      .laca-inline-val {
+        display: inline-block;
+        max-width: 240px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .laca-inline-empty {
+        color: #a1a1aa;
+        font-style: italic;
+      }
+
+      .laca-inline-input {
+        box-sizing: border-box;
+        height: 28px;
+        min-width: 140px;
+        max-width: 240px;
+        padding: 2px 8px;
+        font-size: 13px;
+        line-height: 22px;
+        color: #18181b;
+        background: #ffffff;
+        border: 1px solid #18181b;
+        border-radius: 4px;
+        outline: none;
+        box-shadow: 0 0 0 2px rgba(24, 24, 27, 0.12);
+      }
+
+      .laca-inline-select-wrap {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        width: 100%;
+        min-width: 160px;
+        max-width: 240px;
+      }
+
+      .laca-inline-select {
+        box-sizing: border-box;
+        width: 100%;
+        min-width: 140px;
+        padding: 4px 6px;
+        font-size: 13px;
+        color: #18181b;
+        background: #ffffff;
+        border: 1px solid #18181b;
+        border-radius: 4px;
+        outline: none;
+        box-shadow: 0 0 0 2px rgba(24, 24, 27, 0.12);
+
+        &[multiple] {
+          min-height: 100px;
+          max-height: 180px;
+          padding: 4px;
+
+          option {
+            padding: 4px 6px;
+            border-radius: 2px;
+
+            &:checked {
+              background: #18181b;
+              color: #ffffff;
+            }
+          }
+        }
+      }
+
+      .laca-inline-select-hint {
+        font-size: 11px;
+        color: #71717a;
+        font-style: italic;
+        line-height: 1.2;
+      }
+
+      .laca-inline-saving {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 12px;
+        color: #71717a;
+        font-weight: 500;
+        opacity: 0.7;
+
+        &::before {
+          content: '';
+          display: inline-block;
+          width: 12px;
+          height: 12px;
+          border: 2px solid #e4e4e7;
+          border-top-color: #18181b;
+          border-radius: 50%;
+          animation: laca-spin 0.6s linear infinite;
+        }
+      }
+    }
+
+    .laca-save-success {
+      background-color: #f4f4f5 !important;
+      box-shadow: inset 0 0 0 1px #e4e4e7 !important;
+      transition: background-color 1s ease;
+    }
+
+    .laca-save-error {
+      border: 2px solid #18181b !important;
+    }
+  }
+}
+
+@keyframes laca-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* -------------------------------------------------------------
+   4. SKELETON SHIMMER ANIMATION & CONTAINER
+   ------------------------------------------------------------- */
+
+@keyframes laca-shimmer-wave {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.laca-shimmer-line,
+.laca-shimmer-box {
+  display: inline-block;
+  background: linear-gradient(
+    90deg,
+    #f1f5f9 0%,
+    #e2e8f0 35%,
+    #f8fafc 50%,
+    #e2e8f0 65%,
+    #f1f5f9 100%
+  );
+  background-size: 300% 100%;
+  animation: laca-shimmer-wave 1.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  border-radius: 4px;
+}
+
+.laca-shimmer-line {
+  height: 14px;
+  &.is-w70 { width: 70px; }
+  &.is-w80 { width: 80px; }
+  &.is-w90 { width: 90px; }
+  &.is-w100 { width: 100px; }
+  &.is-w110 { width: 110px; }
+  &.is-w120 { width: 120px; }
+  &.is-w140 { width: 140px; }
+  &.is-w180 { width: 180px; }
+  &.is-w220 { width: 220px; }
+}
+
+.laca-shimmer-box {
+  &.is-cb {
+    width: 18px;
+    height: 18px;
+    border-radius: 4px;
+  }
+  &.is-thumb {
+    width: 54px;
+    height: 54px;
+    border-radius: 6px;
+  }
+}
+
+.laca-table-skeleton {
+  display: none;
+  width: 100%;
+  background: #ffffff;
+  border: 1px solid var(--laca-border, #e2e8f0);
+  border-radius: 8px;
+  margin-top: 12px;
+  margin-bottom: 20px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+
+  .laca-skeleton-scroll {
+    overflow-x: auto;
+    width: 100%;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .laca-skeleton-table {
+    display: table;
+    width: max-content;
+    min-width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+  }
+
+  .laca-skeleton-row {
+    display: table-row;
+    background: #ffffff;
+
+    &.is-alt {
+      background: #f8fafc;
+    }
+
+    &.is-header {
+      background: #f1f5f9;
+      .laca-skeleton-cell {
+        border-bottom: 2px solid #cbd5e1;
+      }
+    }
+  }
+
+  .laca-skeleton-cell {
+    display: table-cell;
+    padding: 12px 14px;
+    vertical-align: middle;
+    border-right: 1px solid #f1f5f9;
+    border-bottom: 1px solid #f1f5f9;
+    white-space: nowrap;
+
+    &.is-cb {
+      width: 44px;
+      min-width: 44px;
+      max-width: 44px;
+      text-align: center;
+      padding: 12px 6px;
+    }
+
+    &.is-thumb {
+      width: 76px;
+      min-width: 76px;
+      max-width: 76px;
+      text-align: center;
+      padding: 6px 4px;
+    }
+
+    &.is-name {
+      width: 280px;
+      min-width: 280px;
+      border-right: 2px solid #cbd5e1;
+    }
+  }
+}
+
+/* KHI ĐANG LOADING: Hiển thị Skeleton và ẩn bảng thật */
+html.laca-table-loading {
+  .laca-table-skeleton {
+    display: block !important;
+  }
+
+  body.edit-php #posts-filter table.wp-list-table,
+  body.edit-php #posts-filter .laca-table-scroll {
+    opacity: 0 !important;
+    height: 0 !important;
+    max-height: 0 !important;
+    overflow: hidden !important;
+    position: absolute !important;
+    left: -9999px !important;
+    pointer-events: none !important;
+  }
+}
+
+/* KHI READY: Hiển thị bảng thật với hiệu ứng mượt */
+html:not(.laca-table-loading),
+html.laca-table-ready {
+  .laca-table-skeleton {
+    display: none !important;
+  }
+
+  body.edit-php #posts-filter table.wp-list-table {
+    opacity: 1 !important;
+    position: static !important;
+    height: auto !important;
+    max-height: none !important;
+    pointer-events: auto !important;
+    transition: opacity 0.25s ease-in-out !important;
+  }
+
+  body.edit-php #posts-filter .laca-table-scroll {
+    opacity: 1 !important;
+    position: static !important;
+    height: auto !important;
+    max-height: none !important;
+    overflow-x: auto !important;
+    overflow-y: visible !important;
+    pointer-events: auto !important;
+    transition: opacity 0.25s ease-in-out !important;
+  }
+}

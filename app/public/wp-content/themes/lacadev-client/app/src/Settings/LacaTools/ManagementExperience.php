@@ -6,6 +6,7 @@ use App\Settings\LacaTools\Management\ContentAuditService;
 use App\Settings\LacaTools\Management\MediaService;
 use App\Settings\LacaTools\Management\DashboardWidgets;
 use App\Settings\LacaTools\Management\ListTableEnhancements;
+use App\Settings\LacaTools\Management\ListTableInlineEditor;
 use App\Settings\LacaTools\Management\AdminUxService;
 use App\Settings\LacaTools\Management\DatabaseCleaner;
 use App\Settings\LacaTools\Management\QuickNotesWidget;
@@ -44,6 +45,10 @@ class ManagementExperience
         // 3. List-table enhancements (Views column, IDs, duplication)
         $listTable = new ListTableEnhancements($auditService);
         $listTable->register();
+
+        // 3b. List-table horizontal scroll & inline editing (Product & all CPTs)
+        $inlineEditor = new ListTableInlineEditor();
+        $inlineEditor->register();
 
         // 4. Navigation & UX simplification
         $adminUx = new AdminUxService();

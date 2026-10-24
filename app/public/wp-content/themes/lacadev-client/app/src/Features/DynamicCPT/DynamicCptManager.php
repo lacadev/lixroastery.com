@@ -98,12 +98,12 @@ class DynamicCptManager
                 echo "<img src='" . esc_url($thumbnail) . "' class='thumbnail-preview' alt='Thumbnail'/>";
                 echo "</a>";
                 echo "<a class='remove-thumbnail' href='javascript:void(0)' data-trigger-remove-thumbnail data-post-id='{$post_id_attr}' data-nonce='{$nonce_attr}' title='Remove thumbnail'>"
-                   . "<svg viewBox='0 0 12 12'><path d='M11 1L1 11M1 1l10 10' stroke='currentColor' stroke-width='2' stroke-linecap='round'/></svg>"
+                   . "<svg viewBox='0 0 12 12'><path d='M10 2L2 10M2 2L10 10' stroke='#ffffff' stroke-width='2' stroke-linecap='round'/></svg>"
                    . "</a>";
                 echo "</div>";
             } else {
                 echo "<a href='javascript:void(0)' data-trigger-change-thumbnail-id data-post-id='{$post_id_attr}' data-nonce='{$nonce_attr}'>";
-                echo "<div class='no-image-text'>Choose image</div>";
+                echo "<div class='no-image-text'><span>Choose</span><span>image</span></div>";
                 echo "</a>";
             }
         }, 10, 2);

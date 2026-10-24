@@ -26,6 +26,9 @@ require_once CHILD_APP_DIR . 'helpers/top-hero-helpers.php';
 // ── AJAX pagination markup (matches parent thePagination() BEM) ──────────────
 require_once CHILD_APP_DIR . 'helpers/ajax-pagination-markup.php';
 
+// ── Admin List Table Inline Editor Fields (LIX Roastery) ─────────────────────
+require_once CHILD_APP_DIR . 'helpers/list-table-fields.php';
+
 // ── Gallery/PdnTv/Project Archive AJAX Handler — TẠM TẮT (audit) ─────────────
 // Cả 3 handler đăng ký đúng action (lacadev_gallery_archive_load,
 // lacadev_pdn_tv_archive_load, lacadev_project_archive_load) và render card
