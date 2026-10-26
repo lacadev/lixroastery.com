@@ -559,6 +559,16 @@ class GeneralFields
                     'Dùng để truy vấn dữ liệu báo cáo qua Google Analytics Data API.'
                 ),
 
+            Field::make('ga4_goal_events', 'textarea', 'Sự kiện mục tiêu chuyển đổi (Goal Events)')
+                ->default('')
+                ->tab('analytics')
+                ->group('general')
+                ->note(
+                    'Danh sách sự kiện GA4 quan trọng cần theo dõi chuyển đổi trên Bảng điều khiển (mỗi dòng một sự kiện theo cú pháp: event_name|Nhãn hiển thị).',
+                    'Ví dụ: add_to_cart|Bấm Mua / Thêm giỏ\ngenerate_lead|Gửi Form / Đặt lịch workshop\npurchase|Đơn hàng thành công',
+                    'Dữ liệu số lượt diễn ra và tỷ lệ tăng trưởng so với kỳ trước sẽ được truy vấn tự động từ GA4 Data API.'
+                ),
+
             Field::make('gsc_site_url', 'text', 'Google Search Console Site Property')
                 ->default('')
                 ->tab('analytics')

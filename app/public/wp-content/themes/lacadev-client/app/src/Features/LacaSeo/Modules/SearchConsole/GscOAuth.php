@@ -196,13 +196,13 @@ class GscOAuth
         if (!$creds) {
             return false;
         }
-        $granted = $creds['scopes'] ?? [];
+        $granted = $creds['scopes'] ?? ($creds['scope'] ?? []);
         if (empty($granted)) {
             // Legacy token had only GSC scope
             return $scope === self::SCOPE_GSC;
         }
         if (is_string($granted)) {
-            $granted = explode(' ', $granted);
+            $granted = preg_split('/\s+/', trim($granted)) ?: [];
         }
         return in_array($scope, $granted, true);
     }

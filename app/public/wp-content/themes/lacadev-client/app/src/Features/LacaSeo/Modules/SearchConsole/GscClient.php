@@ -227,6 +227,69 @@ class GscClient
         $parsed['endDate']   = $endDate;
         $parsed['siteUrl']   = $siteUrl;
 
+        // Query prior period without dimensions for aggregate comparison totals
+        $prevEndDate   = date('Y-m-d', strtotime('-' . ($days + 3) . ' days'));
+        $prevStartDate = date('Y-m-d', strtotime('-' . (2 * $days + 2) . ' days'));
+
+        $prevRequestBody = [
+            'startDate' => $prevStartDate,
+            'endDate'   => $prevEndDate,
+        ];
+
+        $prevResponse = wp_remote_post($url, [
+            'timeout' => 15,
+            'headers' => [
+                'Authorization' => 'Bearer ' . $token,
+                'Content-Type'  => 'application/json',
+            ],
+            'body'    => json_encode($prevRequestBody),
+        ]);
+
+        if (is_wp_error($prevResponse)) {
+            return $prevResponse;
+        }
+
+        $prevCode = (int) wp_remote_retrieve_response_code($prevResponse);
+        if ($prevCode < 200 || $prevCode >= 300) {
+            return new \WP_Error('http_' . $prevCode, sprintf(__('Lỗi kết nối Google Search Console kỳ trước (%d)', 'lacadev'), $prevCode));
+        }
+
+        $prevData = json_decode(wp_remote_retrieve_body($prevResponse), true);
+        if (!is_array($prevData)) {
+            return new \WP_Error('invalid_response', __('Phản hồi từ Google Search Console kỳ trước không hợp lệ.', 'lacadev'));
+        }
+
+        $prevClicks = 0;
+        $prevImpressions = 0;
+        $prevCtr = 0.0;
+        $prevPosition = 0.0;
+        $hasPrevData = false;
+
+        if (!empty($prevData['rows']) && is_array($prevData['rows'])) {
+            $hasPrevData = true;
+            if (count($prevData['rows']) === 1 && empty($prevData['rows'][0]['keys'])) {
+                $pRow = $prevData['rows'][0];
+                $prevClicks      = (int) ($pRow['clicks'] ?? 0);
+                $prevImpressions = (int) ($pRow['impressions'] ?? 0);
+                $prevCtr         = round(((float) ($pRow['ctr'] ?? 0)) * 100, 2);
+                $prevPosition    = round((float) ($pRow['position'] ?? 0), 1);
+            } else {
+                $pParsed         = self::parsePerformanceResponse($prevData);
+                $prevClicks      = (int) ($pParsed['totalClicks'] ?? 0);
+                $prevImpressions = (int) ($pParsed['totalImpressions'] ?? 0);
+                $prevCtr         = (float) ($pParsed['avgCtr'] ?? 0);
+                $prevPosition    = (float) ($pParsed['avgPosition'] ?? 0);
+            }
+        }
+
+        $parsed['prevStartDate']   = $prevStartDate;
+        $parsed['prevEndDate']     = $prevEndDate;
+        $parsed['prevClicks']      = $prevClicks;
+        $parsed['prevImpressions'] = $prevImpressions;
+        $parsed['prevCtr']         = $prevCtr;
+        $parsed['prevPosition']    = $prevPosition;
+        $parsed['hasPrevData']     = $hasPrevData;
+
         // Optionally fetch top landing pages
         $pages = self::getTopLandingPages($siteUrl, $range, $forceRefresh);
         if (is_array($pages)) {

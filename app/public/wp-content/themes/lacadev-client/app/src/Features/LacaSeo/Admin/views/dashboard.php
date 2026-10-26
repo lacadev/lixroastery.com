@@ -55,7 +55,7 @@ $rangeLabels = [
                     <strong style="font-size: 14px; color: #18181b;"><?php esc_html_e('Báo cáo Hiệu quả Tìm kiếm & Lưu lượng Truy cập', 'lacadev'); ?></strong>
                     <div style="font-size: 12px; color: #71717a;">
                         <?php if (!empty($gsc['isMock'])): ?>
-                            <span class="laca-badge" style="background: #fef3c7; color: #92400e; padding: 2px 6px; border-radius: 3px; font-weight: 600; font-size: 10.5px;">Dữ liệu mẫu LIX Roastery</span>
+                            <span class="laca-badge"><?php esc_html_e('Dữ liệu mẫu', 'lacadev'); ?></span>
                         <?php else: ?>
                             <span><?php echo esc_html($rangeLabels[$range] ?? '28 ngày qua'); ?></span>
                         <?php endif; ?>
@@ -88,6 +88,16 @@ $rangeLabels = [
             </div>
         </div>
     </div>
+
+    <?php if (!empty($gsc['isMock']) || !empty($ga['isMock'])): ?>
+        <div class="laca-alert laca-alert--info" role="alert" style="margin-bottom: 20px;">
+            <span class="dashicons dashicons-info laca-alert__icon" aria-hidden="true"></span>
+            <div class="laca-alert__content">
+                <h3 class="laca-alert__title"><?php esc_html_e('DỮ LIỆU MẪU — không phải số liệu thật', 'lacadev'); ?></h3>
+                <p class="laca-alert__description"><?php esc_html_e('Đang hiển thị dữ liệu mô phỏng do có tham số ?laca_mock_google=1 trên môi trường phát triển cục bộ.', 'lacadev'); ?></p>
+            </div>
+        </div>
+    <?php endif; ?>
 
     <!-- ==================== BỐ CỤC 2 CỘT SONG SONG (PHƯƠNG ÁN B) ==================== -->
     <div class="laca-google-dual-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(460px, 1fr)); gap: 24px; align-items: start; margin-bottom: 24px;">
@@ -147,9 +157,15 @@ $rangeLabels = [
                         <div style="font-size: 22px; font-weight: 700; color: #18181b; line-height: 1.2;">
                             <?php echo number_format_i18n($gsc['clicks'] ?? 0); ?>
                         </div>
+                        <?php
+                        $cDelta = (string) ($gsc['clicks_delta'] ?? '—');
+                        $cColor = str_starts_with($cDelta, '+') ? '#10b981' : (str_starts_with($cDelta, '-') ? '#ef4444' : '#71717a');
+                        ?>
                         <div style="font-size: 11.5px; margin-top: 4px;">
-                            <span style="color: #10b981; font-weight: 600;"><?php echo esc_html($gsc['clicks_delta'] ?? '+0%'); ?></span>
-                            <span style="color: #71717a;"><?php esc_html_e('vs kỳ trước', 'lacadev'); ?></span>
+                            <span style="color: <?php echo esc_attr($cColor); ?>; font-weight: 600;"><?php echo esc_html($cDelta); ?></span>
+                            <?php if ($cDelta !== '—'): ?>
+                                <span style="color: #71717a;"><?php esc_html_e('vs kỳ trước', 'lacadev'); ?></span>
+                            <?php endif; ?>
                         </div>
                     </div>
 
@@ -158,9 +174,15 @@ $rangeLabels = [
                         <div style="font-size: 22px; font-weight: 700; color: #18181b; line-height: 1.2;">
                             <?php echo number_format_i18n($gsc['impressions'] ?? 0); ?>
                         </div>
+                        <?php
+                        $iDelta = (string) ($gsc['impressions_delta'] ?? '—');
+                        $iColor = str_starts_with($iDelta, '+') ? '#10b981' : (str_starts_with($iDelta, '-') ? '#ef4444' : '#71717a');
+                        ?>
                         <div style="font-size: 11.5px; margin-top: 4px;">
-                            <span style="color: #10b981; font-weight: 600;"><?php echo esc_html($gsc['impressions_delta'] ?? '+0%'); ?></span>
-                            <span style="color: #71717a;"><?php esc_html_e('vs kỳ trước', 'lacadev'); ?></span>
+                            <span style="color: <?php echo esc_attr($iColor); ?>; font-weight: 600;"><?php echo esc_html($iDelta); ?></span>
+                            <?php if ($iDelta !== '—'): ?>
+                                <span style="color: #71717a;"><?php esc_html_e('vs kỳ trước', 'lacadev'); ?></span>
+                            <?php endif; ?>
                         </div>
                     </div>
 
@@ -169,9 +191,15 @@ $rangeLabels = [
                         <div style="font-size: 22px; font-weight: 700; color: #18181b; line-height: 1.2;">
                             <?php echo esc_html((string) ($gsc['ctr'] ?? 0)); ?>%
                         </div>
+                        <?php
+                        $ctrDelta = (string) ($gsc['ctr_delta'] ?? '—');
+                        $ctrColor = str_starts_with($ctrDelta, '+') ? '#10b981' : (str_starts_with($ctrDelta, '-') ? '#ef4444' : '#71717a');
+                        ?>
                         <div style="font-size: 11.5px; margin-top: 4px;">
-                            <span style="color: #10b981; font-weight: 600;"><?php echo esc_html($gsc['ctr_delta'] ?? '+0%'); ?></span>
-                            <span style="color: #71717a;"><?php esc_html_e('vs kỳ trước', 'lacadev'); ?></span>
+                            <span style="color: <?php echo esc_attr($ctrColor); ?>; font-weight: 600;"><?php echo esc_html($ctrDelta); ?></span>
+                            <?php if ($ctrDelta !== '—'): ?>
+                                <span style="color: #71717a;"><?php esc_html_e('vs kỳ trước', 'lacadev'); ?></span>
+                            <?php endif; ?>
                         </div>
                     </div>
 
@@ -180,9 +208,15 @@ $rangeLabels = [
                         <div style="font-size: 22px; font-weight: 700; color: #18181b; line-height: 1.2;">
                             <?php echo esc_html((string) ($gsc['position'] ?? 0)); ?>
                         </div>
+                        <?php
+                        $posDelta = (string) ($gsc['position_delta'] ?? '—');
+                        $posColor = str_starts_with($posDelta, '+') ? '#10b981' : (str_starts_with($posDelta, '-') ? '#ef4444' : '#71717a');
+                        ?>
                         <div style="font-size: 11.5px; margin-top: 4px;">
-                            <span style="color: #10b981; font-weight: 600;"><?php echo esc_html($gsc['position_delta'] ?? '+0'); ?></span>
-                            <span style="color: #71717a;"><?php esc_html_e('thứ hạng', 'lacadev'); ?></span>
+                            <span style="color: <?php echo esc_attr($posColor); ?>; font-weight: 600;"><?php echo esc_html($posDelta); ?></span>
+                            <?php if ($posDelta !== '—'): ?>
+                                <span style="color: #71717a;"><?php esc_html_e('thứ hạng', 'lacadev'); ?></span>
+                            <?php endif; ?>
                         </div>
                     </div>
                 </div>
@@ -345,9 +379,15 @@ $rangeLabels = [
                         <div style="font-size: 22px; font-weight: 700; color: #18181b; line-height: 1.2;">
                             <?php echo number_format_i18n($ga['users'] ?? 0); ?>
                         </div>
+                        <?php
+                        $uDelta = (string) ($ga['users_delta'] ?? '—');
+                        $uColor = str_starts_with($uDelta, '+') ? '#10b981' : (str_starts_with($uDelta, '-') ? '#ef4444' : '#71717a');
+                        ?>
                         <div style="font-size: 11.5px; margin-top: 4px;">
-                            <span style="color: #10b981; font-weight: 600;"><?php echo esc_html($ga['users_delta'] ?? '+0%'); ?></span>
-                            <span style="color: #71717a;"><?php esc_html_e('vs kỳ trước', 'lacadev'); ?></span>
+                            <span style="color: <?php echo esc_attr($uColor); ?>; font-weight: 600;"><?php echo esc_html($uDelta); ?></span>
+                            <?php if ($uDelta !== '—'): ?>
+                                <span style="color: #71717a;"><?php esc_html_e('vs kỳ trước', 'lacadev'); ?></span>
+                            <?php endif; ?>
                         </div>
                     </div>
 
@@ -356,9 +396,15 @@ $rangeLabels = [
                         <div style="font-size: 22px; font-weight: 700; color: #18181b; line-height: 1.2;">
                             <?php echo number_format_i18n($ga['sessions'] ?? 0); ?>
                         </div>
+                        <?php
+                        $sDelta = (string) ($ga['sessions_delta'] ?? '—');
+                        $sColor = str_starts_with($sDelta, '+') ? '#10b981' : (str_starts_with($sDelta, '-') ? '#ef4444' : '#71717a');
+                        ?>
                         <div style="font-size: 11.5px; margin-top: 4px;">
-                            <span style="color: #10b981; font-weight: 600;"><?php echo esc_html($ga['sessions_delta'] ?? '+0%'); ?></span>
-                            <span style="color: #71717a;"><?php esc_html_e('vs kỳ trước', 'lacadev'); ?></span>
+                            <span style="color: <?php echo esc_attr($sColor); ?>; font-weight: 600;"><?php echo esc_html($sDelta); ?></span>
+                            <?php if ($sDelta !== '—'): ?>
+                                <span style="color: #71717a;"><?php esc_html_e('vs kỳ trước', 'lacadev'); ?></span>
+                            <?php endif; ?>
                         </div>
                     </div>
 
@@ -367,21 +413,42 @@ $rangeLabels = [
                         <div style="font-size: 22px; font-weight: 700; color: #18181b; line-height: 1.2;">
                             <?php echo esc_html($ga['avgEngagement'] ?? '0s'); ?>
                         </div>
+                        <?php
+                        $eDelta = (string) ($ga['avgEngagement_delta'] ?? '—');
+                        $eColor = str_starts_with($eDelta, '+') ? '#10b981' : (str_starts_with($eDelta, '-') ? '#ef4444' : '#71717a');
+                        ?>
                         <div style="font-size: 11.5px; margin-top: 4px;">
-                            <span style="color: #10b981; font-weight: 600;"><?php echo esc_html($ga['avgEngagement_delta'] ?? '+0s'); ?></span>
-                            <span style="color: #71717a;"><?php esc_html_e('đọc sâu hơn', 'lacadev'); ?></span>
+                            <span style="color: <?php echo esc_attr($eColor); ?>; font-weight: 600;"><?php echo esc_html($eDelta); ?></span>
+                            <?php if ($eDelta !== '—'): ?>
+                                <span style="color: #71717a;"><?php esc_html_e('đọc sâu hơn', 'lacadev'); ?></span>
+                            <?php endif; ?>
                         </div>
                     </div>
 
                     <div style="background: #fafafa; border: 1px solid var(--laca-border-emphasized, #d4d4d8); padding: 12px 14px; border-radius: 6px;">
                         <div style="color: #71717a; font-size: 12px; margin-bottom: 2px;"><?php esc_html_e('Tỷ lệ chuyển đổi chung', 'lacadev'); ?></div>
-                        <div style="font-size: 22px; font-weight: 700; color: #18181b; line-height: 1.2;">
-                            <?php echo esc_html($ga['conversionRate'] ?? '0%'); ?>
-                        </div>
-                        <div style="font-size: 11.5px; margin-top: 4px;">
-                            <span style="color: #10b981; font-weight: 600;"><?php echo esc_html($ga['conversionRate_delta'] ?? '+0%'); ?></span>
-                            <span style="color: #71717a;">(Key Events)</span>
-                        </div>
+                        <?php if (!empty($ga['conversionRate'])): ?>
+                            <div style="font-size: 22px; font-weight: 700; color: #18181b; line-height: 1.2;">
+                                <?php echo esc_html($ga['conversionRate']); ?>
+                            </div>
+                            <?php
+                            $crDelta = (string) ($ga['conversionRate_delta'] ?? '—');
+                            $crColor = str_starts_with($crDelta, '+') ? '#10b981' : (str_starts_with($crDelta, '-') ? '#ef4444' : '#71717a');
+                            ?>
+                            <div style="font-size: 11.5px; margin-top: 4px;">
+                                <span style="color: <?php echo esc_attr($crColor); ?>; font-weight: 600;"><?php echo esc_html($crDelta); ?></span>
+                                <span style="color: #71717a;">(Key Events)</span>
+                            </div>
+                        <?php else: ?>
+                            <div style="font-size: 12px; font-weight: 500; color: #71717a; line-height: 1.4; margin: 4px 0 2px 0;">
+                                <?php esc_html_e('Chưa cấu hình sự kiện chính trong GA4', 'lacadev'); ?>
+                            </div>
+                            <div style="font-size: 11px;">
+                                <a href="https://support.google.com/analytics/answer/12844695" target="_blank" rel="noopener noreferrer" style="color: #2563eb; text-decoration: none;">
+                                    <?php esc_html_e('Hướng dẫn Key Events', 'lacadev'); ?> &rarr;
+                                </a>
+                            </div>
+                        <?php endif; ?>
                     </div>
                 </div>
 
@@ -420,24 +487,28 @@ $rangeLabels = [
                 </div>
 
                 <!-- Khối Hành động mục tiêu / Chuyển đổi (Business KPI / Key Events) -->
-                <div style="padding: 0 20px 16px 20px;">
-                    <h4 style="margin: 0 0 8px 0; font-size: 13.5px; font-weight: 600; color: #18181b;">
-                        <?php esc_html_e('Hành động mục tiêu giá trị (Key Events / Conversions)', 'lacadev'); ?>
-                    </h4>
-                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;">
-                        <?php if (!empty($ga['businessKpis'])): ?>
+                <?php if (!empty($ga['businessKpis'])): ?>
+                    <div style="padding: 0 20px 16px 20px;">
+                        <h4 style="margin: 0 0 8px 0; font-size: 13.5px; font-weight: 600; color: #18181b;">
+                            <?php esc_html_e('Hành động mục tiêu giá trị (Key Events / Conversions)', 'lacadev'); ?>
+                        </h4>
+                        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;">
                             <?php foreach ($ga['businessKpis'] as $kpi): ?>
+                                <?php
+                                $kDelta = (string) ($kpi['delta'] ?? '—');
+                                $kColor = str_starts_with($kDelta, '+') ? '#10b981' : (str_starts_with($kDelta, '-') ? '#ef4444' : '#71717a');
+                                ?>
                                 <div style="background: #fafafa; border: 1px solid var(--laca-border, #e4e4e7); border-left: 3px solid #18181b; padding: 10px 12px; border-radius: 4px;">
                                     <div style="font-size: 11.5px; color: #52525b;"><?php echo esc_html($kpi['title']); ?></div>
                                     <div style="font-size: 18px; font-weight: 700; color: #18181b; margin-top: 2px;">
                                         <?php echo number_format_i18n((int) $kpi['value']); ?> <span style="font-size: 12px; font-weight: normal; color: #71717a;"><?php esc_html_e('lượt', 'lacadev'); ?></span>
                                     </div>
-                                    <small style="color: #10b981; font-weight: 600; font-size: 11px;"><?php echo esc_html($kpi['delta']); ?></small>
+                                    <small style="color: <?php echo esc_attr($kColor); ?>; font-weight: 600; font-size: 11px;"><?php echo esc_html($kDelta); ?></small>
                                 </div>
                             <?php endforeach; ?>
-                        <?php endif; ?>
+                        </div>
                     </div>
-                </div>
+                <?php endif; ?>
 
                 <!-- Bảng Top trang có lượt xem cao & Thời gian tương tác TB -->
                 <div style="padding: 0 20px 16px 20px;">

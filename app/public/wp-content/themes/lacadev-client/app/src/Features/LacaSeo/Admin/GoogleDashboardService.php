@@ -21,14 +21,13 @@ class GoogleDashboardService
      */
     public static function isMockMode(): bool
     {
-        if (isset($_GET['laca_mock_google']) && current_user_can('manage_options')) {
+        if (
+            !empty($_GET['laca_mock_google'])
+            && function_exists('wp_get_environment_type')
+            && wp_get_environment_type() === 'local'
+            && current_user_can('manage_options')
+        ) {
             return true;
-        }
-
-        if (function_exists('wp_get_environment_type') && wp_get_environment_type() === 'local') {
-            if (!GscOAuth::isConnected() || !empty($_GET['laca_preview_google'])) {
-                return true;
-            }
         }
 
         return false;
@@ -78,18 +77,34 @@ class GoogleDashboardService
         $queries = $result['queries'] ?? [];
         $pages = $result['pages'] ?? [];
 
+        $clicks = (int) ($result['totalClicks'] ?? 0);
+        $prevClicks = isset($result['prevClicks']) && !empty($result['hasPrevData']) ? (int) $result['prevClicks'] : null;
+        $clicksDelta = self::calcPercentDelta($clicks, $prevClicks);
+
+        $impressions = (int) ($result['totalImpressions'] ?? 0);
+        $prevImpressions = isset($result['prevImpressions']) && !empty($result['hasPrevData']) ? (int) $result['prevImpressions'] : null;
+        $impressionsDelta = self::calcPercentDelta($impressions, $prevImpressions);
+
+        $ctr = (float) ($result['avgCtr'] ?? 0);
+        $prevCtr = isset($result['prevCtr']) && !empty($result['hasPrevData']) ? (float) $result['prevCtr'] : null;
+        $ctrDelta = self::calcPointDelta($ctr, $prevCtr);
+
+        $position = (float) ($result['avgPosition'] ?? 0);
+        $prevPosition = isset($result['prevPosition']) && !empty($result['hasPrevData']) ? (float) $result['prevPosition'] : null;
+        $positionDelta = self::calcPositionDelta($position, $prevPosition);
+
         return [
             'connected'         => true,
             'isMock'            => false,
             'siteUrl'           => $siteUrl,
-            'clicks'            => (int) ($result['totalClicks'] ?? 0),
-            'clicks_delta'      => '+12.4%',
-            'impressions'       => (int) ($result['totalImpressions'] ?? 0),
-            'impressions_delta' => '+18.2%',
-            'ctr'               => (float) ($result['avgCtr'] ?? 0),
-            'ctr_delta'         => '+0.5%',
-            'position'          => (float) ($result['avgPosition'] ?? 0),
-            'position_delta'    => '+1.8',
+            'clicks'            => $clicks,
+            'clicks_delta'      => $clicksDelta,
+            'impressions'       => $impressions,
+            'impressions_delta' => $impressionsDelta,
+            'ctr'               => $ctr,
+            'ctr_delta'         => $ctrDelta,
+            'position'          => $position,
+            'position_delta'    => $positionDelta,
             'queries'           => $queries,
             'pages'             => $pages,
             'lagNotice'         => __('Dữ liệu đến 3 ngày trước (Google Search Console có độ trễ 2–3 ngày)', 'lacadev'),
@@ -130,7 +145,7 @@ class GoogleDashboardService
             ];
         }
 
-        $summary = $result['summary'] ?? [];
+        $summary = $result['summary'] ?? $result;
         $channels = $result['channels'] ?? [];
         $topPages = $result['topPages'] ?? [];
 
@@ -154,37 +169,150 @@ class GoogleDashboardService
             $idx++;
         }
 
-        $avgSec = (int) ($summary['averageSessionDuration'] ?? 105);
+        $users = (int) ($summary['activeUsers'] ?? $summary['users'] ?? 0);
+        $prevUsers = isset($summary['prevActiveUsers']) ? (int) $summary['prevActiveUsers'] : (isset($summary['prevUsers']) ? (int) $summary['prevUsers'] : null);
+        $usersDelta = self::calcPercentDelta($users, $prevUsers);
+
+        $sessions = (int) ($summary['sessions'] ?? 0);
+        $prevSessions = isset($summary['prevSessions']) ? (int) $summary['prevSessions'] : null;
+        $sessionsDelta = self::calcPercentDelta($sessions, $prevSessions);
+
+        $avgSec = (int) round((float) ($summary['averageSessionDuration'] ?? $summary['avgSessionDuration'] ?? 0));
+        $prevAvgSec = isset($summary['prevAverageSessionDuration']) ? (int) round((float) $summary['prevAverageSessionDuration']) : (isset($summary['prevAvgSessionDuration']) ? (int) round((float) $summary['prevAvgSessionDuration']) : null);
+        $avgEngagementDelta = self::calcDurationDelta($avgSec, $prevAvgSec);
+
+        $currKeyEvents = (int) ($summary['keyEvents'] ?? 0);
+        $prevKeyEvents = isset($summary['prevKeyEvents']) ? (int) $summary['prevKeyEvents'] : null;
+
+        // Conversion rate: null if no key events configured/recorded in both periods
+        $conversionRate = null;
+        $conversionRateDelta = '—';
+        if ($currKeyEvents > 0 || ($prevKeyEvents !== null && $prevKeyEvents > 0)) {
+            $convRate = $sessions > 0 ? round(($currKeyEvents / $sessions) * 100, 1) : 0.0;
+            $conversionRate = $convRate . '%';
+            $prevConvRate = ($prevSessions !== null && $prevSessions > 0) ? round(($prevKeyEvents / $prevSessions) * 100, 1) : null;
+            $conversionRateDelta = self::calcPointDelta($convRate, $prevConvRate);
+        }
+
+        // Business KPIs from configured ga4_goal_events
+        $businessKpis = [];
+        $rawGoals = (string) Settings::get('general.ga4_goal_events', '');
+        if ($rawGoals !== '') {
+            $goalMap = [];
+            foreach (explode("\n", $rawGoals) as $line) {
+                $line = trim($line);
+                if ($line === '' || str_starts_with($line, '#')) {
+                    continue;
+                }
+                $parts = explode('|', $line, 2);
+                $eName = trim($parts[0]);
+                $eLabel = isset($parts[1]) && trim($parts[1]) !== '' ? trim($parts[1]) : $eName;
+                if ($eName !== '') {
+                    $goalMap[$eName] = $eLabel;
+                }
+            }
+
+            if (!empty($goalMap)) {
+                $days = match ($range) {
+                    '7d', '7'   => 7,
+                    '90d', '90' => 90,
+                    default     => 28,
+                };
+                $goalResult = GaClient::runGoalEventsReport($propertyId, $days, $goalMap, $forceRefresh);
+                if (is_array($goalResult)) {
+                    $businessKpis = $goalResult;
+                }
+            }
+        }
 
         return [
             'connected'            => true,
             'isMock'               => false,
             'propertyId'           => $propertyId,
-            'users'                => (int) ($summary['activeUsers'] ?? 0),
-            'users_delta'          => '+14.1%',
-            'sessions'             => (int) ($summary['sessions'] ?? 0),
-            'sessions_delta'       => '+9.8%',
+            'users'                => $users,
+            'users_delta'          => $usersDelta,
+            'sessions'             => $sessions,
+            'sessions_delta'       => $sessionsDelta,
             'avgEngagement'        => self::formatDuration($avgSec),
-            'avgEngagement_delta'  => '+15s',
-            'conversionRate'       => '4.7%',
-            'conversionRate_delta' => '+0.8%',
+            'avgEngagement_delta'  => $avgEngagementDelta,
+            'conversionRate'       => $conversionRate,
+            'conversionRate_delta' => $conversionRateDelta,
             'channels'             => $formattedChannels,
-            'businessKpis'         => [
-                [
-                    'title' => __('Bấm Mua / Thêm giỏ (Cà phê)', 'lacadev'),
-                    'value' => 186,
-                    'delta' => '+18.5% so với kỳ trước',
-                    'badge' => __('Hạt cà phê', 'lacadev'),
-                ],
-                [
-                    'title' => __('Gửi Form / Đặt lịch workshop', 'lacadev'),
-                    'value' => 62,
-                    'delta' => '6.5% tỷ lệ trên trang liên hệ',
-                    'badge' => __('Workshop', 'lacadev'),
-                ],
-            ],
+            'businessKpis'         => $businessKpis,
             'topPages'             => array_slice($topPages, 0, 5),
         ];
+    }
+
+    /**
+     * Calculate percentage difference between current and previous period.
+     */
+    public static function calcPercentDelta(int|float $current, int|float|null $previous): string
+    {
+        if ($previous === null || $previous <= 0) {
+            return '—';
+        }
+
+        $diff = $current - $previous;
+        $pct = round(($diff / $previous) * 100, 1);
+        $sign = $pct > 0 ? '+' : '';
+
+        return $sign . $pct . '%';
+    }
+
+    /**
+     * Calculate percentage point difference (e.g. CTR, conversion rate).
+     */
+    public static function calcPointDelta(float $current, ?float $previous): string
+    {
+        if ($previous === null || $previous <= 0) {
+            return '—';
+        }
+
+        $diff = round($current - $previous, 1);
+        if ($diff == 0.0) {
+            return '0%';
+        }
+        $sign = $diff > 0 ? '+' : '';
+
+        return $sign . $diff . '%';
+    }
+
+    /**
+     * Calculate position delta where a lower position number represents an improvement.
+     */
+    public static function calcPositionDelta(float $current, ?float $previous): string
+    {
+        if ($previous === null || $previous <= 0 || $current <= 0) {
+            return '—';
+        }
+
+        $diff = round($previous - $current, 1);
+        if ($diff == 0.0) {
+            return '0';
+        }
+
+        $sign = $diff > 0 ? '+' : '';
+
+        return $sign . number_format($diff, 1);
+    }
+
+    /**
+     * Calculate duration delta formatted in seconds.
+     */
+    public static function calcDurationDelta(int $currentSec, ?int $previousSec): string
+    {
+        if ($previousSec === null || $previousSec <= 0) {
+            return '—';
+        }
+
+        $diff = $currentSec - $previousSec;
+        if ($diff === 0) {
+            return '0s';
+        }
+
+        $sign = $diff > 0 ? '+' : '';
+
+        return $sign . $diff . 's';
     }
 
     /**

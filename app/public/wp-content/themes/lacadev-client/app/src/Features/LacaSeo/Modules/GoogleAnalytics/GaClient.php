@@ -243,10 +243,14 @@ class GaClient
             default     => 28,
         };
 
-        // Query metrics with date dimension
+        $prevDays    = 2 * $days;
+        $prevEndDays = $days + 1;
+
+        // Query metrics with date dimension across 2 date ranges for real comparison
         $requestBody = [
             'dateRanges' => [
-                ['startDate' => "{$days}daysAgo", 'endDate' => 'yesterday'],
+                ['name' => 'date_range_0', 'startDate' => "{$days}daysAgo", 'endDate' => 'yesterday'],
+                ['name' => 'date_range_1', 'startDate' => "{$prevDays}daysAgo", 'endDate' => "{$prevEndDays}daysAgo"],
             ],
             'dimensions' => [
                 ['name' => 'date'],
@@ -258,11 +262,12 @@ class GaClient
                 ['name' => 'screenPageViews'],
                 ['name' => 'averageSessionDuration'],
                 ['name' => 'engagementRate'],
+                ['name' => 'keyEvents'],
             ],
             'orderBys' => [
                 ['dimension' => ['dimensionName' => 'date'], 'desc' => false],
             ],
-            'limit' => 100,
+            'limit' => 250,
         ];
 
         $url = self::DATA_API_BASE . '/properties/' . $propertyId . ':runReport';
@@ -425,41 +430,139 @@ class GaClient
         $pageViewsIdx  = $metricIndexes['screenPageViews'] ?? 3;
         $durationIdx   = $metricIndexes['averageSessionDuration'] ?? 4;
         $engagementIdx = $metricIndexes['engagementRate'] ?? 5;
+        $keyEventsIdx  = $metricIndexes['keyEvents'] ?? $metricIndexes['conversions'] ?? null;
 
-        // Check if aggregate totals are provided in totals row
-        $totals = $data['totals'][0]['metricValues'] ?? null;
+        $hasPrevData = false;
+        $currTotals = null;
+        $prevTotals = null;
+
+        if (!empty($data['totals']) && is_array($data['totals'])) {
+            if (count($data['totals']) >= 2) {
+                $hasPrevData = true;
+                $assigned = false;
+                foreach ($data['totals'] as $tot) {
+                    $dimVals = array_map(static fn($v) => (string) ($v['value'] ?? ''), $tot['dimensionValues'] ?? []);
+                    if (in_array('date_range_1', $dimVals, true)) {
+                        $prevTotals = $tot['metricValues'] ?? null;
+                        $assigned = true;
+                    } elseif (in_array('date_range_0', $dimVals, true)) {
+                        $currTotals = $tot['metricValues'] ?? null;
+                        $assigned = true;
+                    }
+                }
+                if (!$assigned) {
+                    $currTotals = $data['totals'][0]['metricValues'] ?? null;
+                    $prevTotals = $data['totals'][1]['metricValues'] ?? null;
+                }
+            } else {
+                $currTotals = $data['totals'][0]['metricValues'] ?? null;
+            }
+        }
+
         $totalUsers       = 0;
         $totalNewUsers    = 0;
         $totalSessions    = 0;
         $totalPageViews   = 0;
         $totalAvgDuration = 0.0;
         $totalEngagement  = 0.0;
+        $totalKeyEvents   = 0;
 
-        if (is_array($totals) && !empty($totals)) {
-            $totalUsers       = (int) ($totals[$usersIdx]['value'] ?? 0);
-            $totalNewUsers    = (int) ($totals[$newUsersIdx]['value'] ?? 0);
-            $totalSessions    = (int) ($totals[$sessionsIdx]['value'] ?? 0);
-            $totalPageViews   = (int) ($totals[$pageViewsIdx]['value'] ?? 0);
-            $totalAvgDuration = round((float) ($totals[$durationIdx]['value'] ?? 0), 1);
-            $totalEngagement  = round(((float) ($totals[$engagementIdx]['value'] ?? 0)) * 100, 2);
-        } else {
-            // Aggregate from rows
-            $rowCount = count($rows);
-            $sumDuration = 0.0;
-            $sumEngagement = 0.0;
+        $prevUsers       = 0;
+        $prevNewUsers    = 0;
+        $prevSessions    = 0;
+        $prevPageViews   = 0;
+        $prevAvgDuration = 0.0;
+        $prevEngagement  = 0.0;
+        $prevKeyEvents   = 0;
+
+        if (is_array($currTotals) && !empty($currTotals)) {
+            $totalUsers       = (int) ($currTotals[$usersIdx]['value'] ?? 0);
+            $totalNewUsers    = (int) ($currTotals[$newUsersIdx]['value'] ?? 0);
+            $totalSessions    = (int) ($currTotals[$sessionsIdx]['value'] ?? 0);
+            $totalPageViews   = (int) ($currTotals[$pageViewsIdx]['value'] ?? 0);
+            $totalAvgDuration = round((float) ($currTotals[$durationIdx]['value'] ?? 0), 1);
+            $totalEngagement  = round(((float) ($currTotals[$engagementIdx]['value'] ?? 0)) * 100, 2);
+            $totalKeyEvents   = $keyEventsIdx !== null ? (int) ($currTotals[$keyEventsIdx]['value'] ?? 0) : 0;
+        }
+
+        if (is_array($prevTotals) && !empty($prevTotals)) {
+            $prevUsers       = (int) ($prevTotals[$usersIdx]['value'] ?? 0);
+            $prevNewUsers    = (int) ($prevTotals[$newUsersIdx]['value'] ?? 0);
+            $prevSessions    = (int) ($prevTotals[$sessionsIdx]['value'] ?? 0);
+            $prevPageViews   = (int) ($prevTotals[$pageViewsIdx]['value'] ?? 0);
+            $prevAvgDuration = round((float) ($prevTotals[$durationIdx]['value'] ?? 0), 1);
+            $prevEngagement  = round(((float) ($prevTotals[$engagementIdx]['value'] ?? 0)) * 100, 2);
+            $prevKeyEvents   = $keyEventsIdx !== null ? (int) ($prevTotals[$keyEventsIdx]['value'] ?? 0) : 0;
+        }
+
+        if ($currTotals === null) {
+            $dateRangeDimIdx = null;
+            if (!empty($data['dimensionHeaders']) && is_array($data['dimensionHeaders'])) {
+                foreach ($data['dimensionHeaders'] as $idx => $hdr) {
+                    if (($hdr['name'] ?? '') === 'dateRange') {
+                        $dateRangeDimIdx = $idx;
+                        break;
+                    }
+                }
+            }
+
+            $currCount = 0;
+            $currSumDuration = 0.0;
+            $currSumEngagement = 0.0;
+
+            $prevCount = 0;
+            $prevSumDuration = 0.0;
+            $prevSumEngagement = 0.0;
 
             foreach ($rows as $row) {
                 $mv = $row['metricValues'] ?? [];
-                $totalUsers      += (int) ($mv[$usersIdx]['value'] ?? 0);
-                $totalNewUsers   += (int) ($mv[$newUsersIdx]['value'] ?? 0);
-                $totalSessions   += (int) ($mv[$sessionsIdx]['value'] ?? 0);
-                $totalPageViews  += (int) ($mv[$pageViewsIdx]['value'] ?? 0);
-                $sumDuration     += (float) ($mv[$durationIdx]['value'] ?? 0);
-                $sumEngagement   += (float) ($mv[$engagementIdx]['value'] ?? 0);
+                $dimVals = array_map(static fn($v) => (string) ($v['value'] ?? ''), $row['dimensionValues'] ?? []);
+                $isPrev = false;
+
+                if ($dateRangeDimIdx !== null) {
+                    $isPrev = (($dimVals[$dateRangeDimIdx] ?? '') === 'date_range_1');
+                } else {
+                    foreach ($dimVals as $dv) {
+                        if ($dv === 'date_range_1') {
+                            $isPrev = true;
+                            break;
+                        }
+                    }
+                }
+
+                if ($isPrev) {
+                    $hasPrevData = true;
+                    $prevCount++;
+                    $prevUsers        += (int) ($mv[$usersIdx]['value'] ?? 0);
+                    $prevNewUsers     += (int) ($mv[$newUsersIdx]['value'] ?? 0);
+                    $prevSessions     += (int) ($mv[$sessionsIdx]['value'] ?? 0);
+                    $prevPageViews    += (int) ($mv[$pageViewsIdx]['value'] ?? 0);
+                    $prevSumDuration  += (float) ($mv[$durationIdx]['value'] ?? 0);
+                    $prevSumEngagement += (float) ($mv[$engagementIdx]['value'] ?? 0);
+                    if ($keyEventsIdx !== null) {
+                        $prevKeyEvents += (int) ($mv[$keyEventsIdx]['value'] ?? 0);
+                    }
+                } else {
+                    $currCount++;
+                    $totalUsers        += (int) ($mv[$usersIdx]['value'] ?? 0);
+                    $totalNewUsers     += (int) ($mv[$newUsersIdx]['value'] ?? 0);
+                    $totalSessions     += (int) ($mv[$sessionsIdx]['value'] ?? 0);
+                    $totalPageViews    += (int) ($mv[$pageViewsIdx]['value'] ?? 0);
+                    $currSumDuration   += (float) ($mv[$durationIdx]['value'] ?? 0);
+                    $currSumEngagement += (float) ($mv[$engagementIdx]['value'] ?? 0);
+                    if ($keyEventsIdx !== null) {
+                        $totalKeyEvents += (int) ($mv[$keyEventsIdx]['value'] ?? 0);
+                    }
+                }
             }
 
-            $totalAvgDuration = $rowCount > 0 ? round($sumDuration / $rowCount, 1) : 0.0;
-            $totalEngagement  = $rowCount > 0 ? round(($sumEngagement / $rowCount) * 100, 2) : 0.0;
+            $totalAvgDuration = $currCount > 0 ? round($currSumDuration / $currCount, 1) : 0.0;
+            $totalEngagement  = $currCount > 0 ? round(($currSumEngagement / $currCount) * 100, 2) : 0.0;
+
+            if ($prevCount > 0) {
+                $prevAvgDuration = round($prevSumDuration / $prevCount, 1);
+                $prevEngagement  = round(($prevSumEngagement / $prevCount) * 100, 2);
+            }
         }
 
         $byDate = [];
@@ -468,9 +571,17 @@ class GaClient
             $dimVals = array_map(static fn($v) => (string) ($v['value'] ?? ''), $row['dimensionValues'] ?? []);
             $mv = $row['metricValues'] ?? [];
 
-            // If date dimension present
-            if (!empty($dimVals[0]) && preg_match('/^\d{8}$/', $dimVals[0])) {
-                $date = $dimVals[0];
+            // Filter out date_range_1 rows from byDate/topPages charts so charts show current period
+            if (in_array('date_range_1', $dimVals, true)) {
+                continue;
+            }
+
+            // Extract date or pagePath
+            $nonRangeVals = array_values(array_filter($dimVals, static fn($v) => $v !== 'date_range_0' && $v !== 'date_range_1'));
+            $firstVal = $nonRangeVals[0] ?? '';
+
+            if ($firstVal !== '' && preg_match('/^\d{8}$/', $firstVal)) {
+                $date = $firstVal;
                 $formattedDate = substr($date, 0, 4) . '-' . substr($date, 4, 2) . '-' . substr($date, 6, 2);
                 $byDate[] = [
                     'date'      => $formattedDate,
@@ -481,8 +592,8 @@ class GaClient
                 ];
             } else {
                 $topPages[] = [
-                    'pagePath'  => $dimVals[0] ?? '',
-                    'pageTitle' => $dimVals[1] ?? ($dimVals[0] ?? ''),
+                    'pagePath'  => $firstVal,
+                    'pageTitle' => $nonRangeVals[1] ?? $firstVal,
                     'users'     => (int) ($mv[$usersIdx]['value'] ?? 0),
                     'sessions'  => (int) ($mv[$sessionsIdx]['value'] ?? 0),
                     'pageViews' => (int) ($mv[$pageViewsIdx]['value'] ?? 0),
@@ -499,12 +610,197 @@ class GaClient
             'pageviews'          => $totalPageViews,
             'avgSessionDuration' => $totalAvgDuration,
             'engagementRate'     => $totalEngagement,
+            'keyEvents'          => $totalKeyEvents,
+
+            'prevUsers'              => $prevUsers,
+            'prevNewUsers'           => $prevNewUsers,
+            'prevSessions'           => $prevSessions,
+            'prevPageViews'          => $prevPageViews,
+            'prevAvgSessionDuration' => $prevAvgDuration,
+            'prevEngagementRate'     => $prevEngagement,
+            'prevKeyEvents'          => $prevKeyEvents,
+            'hasPrevData'            => $hasPrevData,
+
+            'summary'            => [
+                'activeUsers'            => $totalUsers,
+                'newUsers'               => $totalNewUsers,
+                'sessions'               => $totalSessions,
+                'screenPageViews'        => $totalPageViews,
+                'averageSessionDuration' => $totalAvgDuration,
+                'engagementRate'         => $totalEngagement,
+                'keyEvents'              => $totalKeyEvents,
+
+                'prevActiveUsers'            => $prevUsers,
+                'prevSessions'               => $prevSessions,
+                'prevAverageSessionDuration' => $prevAvgDuration,
+                'prevKeyEvents'              => $prevKeyEvents,
+                'hasPrevData'                => $hasPrevData,
+            ],
+
             'byDate'             => $byDate,
             'topPages'           => $topPages,
             'rows'               => $topPages,
             'channels'           => [],
             'devices'            => [],
         ];
+    }
+
+    /**
+     * Run goal events report for configured business events across 2 date ranges.
+     *
+     * @param string $propertyId
+     * @param int $days
+     * @param array<string, string> $goalEvents Map of event_name => display_label
+     * @param bool $forceRefresh
+     * @return array<array{title: string, value: int, delta: string, badge: string}>|\WP_Error
+     */
+    public static function runGoalEventsReport(string $propertyId, int $days, array $goalEvents, bool $forceRefresh = false): array|\WP_Error
+    {
+        $propertyId = preg_replace('/\D/', '', $propertyId);
+        if ($propertyId === '' || empty($goalEvents)) {
+            return [];
+        }
+
+        $cacheKey = 'laca_ga_goals_' . md5($propertyId . '_' . $days . '_' . serialize($goalEvents));
+        if (!$forceRefresh) {
+            $cached = get_transient($cacheKey);
+            if (is_array($cached)) {
+                return $cached;
+            }
+        }
+
+        $token = GscOAuth::getValidAccessToken();
+        if (!$token) {
+            return new \WP_Error('no_token', __('Chưa kết nối tài khoản Google hoặc phiên đã hết hạn.', 'lacadev'));
+        }
+
+        $prevDays    = 2 * $days;
+        $prevEndDays = $days + 1;
+
+        $requestBody = [
+            'dateRanges' => [
+                ['name' => 'date_range_0', 'startDate' => "{$days}daysAgo", 'endDate' => 'yesterday'],
+                ['name' => 'date_range_1', 'startDate' => "{$prevDays}daysAgo", 'endDate' => "{$prevEndDays}daysAgo"],
+            ],
+            'dimensions' => [
+                ['name' => 'eventName'],
+            ],
+            'metrics' => [
+                ['name' => 'eventCount'],
+            ],
+            'dimensionFilter' => [
+                'filter' => [
+                    'fieldName' => 'eventName',
+                    'inListFilter' => [
+                        'values' => array_keys($goalEvents),
+                    ],
+                ],
+            ],
+            'limit' => 100,
+        ];
+
+        $url = self::DATA_API_BASE . '/properties/' . $propertyId . ':runReport';
+        $response = wp_remote_post($url, [
+            'timeout' => 15,
+            'headers' => [
+                'Authorization' => 'Bearer ' . $token,
+                'Content-Type'  => 'application/json',
+            ],
+            'body'    => json_encode($requestBody),
+        ]);
+
+        if (is_wp_error($response)) {
+            return $response;
+        }
+
+        $code = (int) wp_remote_retrieve_response_code($response);
+        $body = wp_remote_retrieve_body($response);
+        $data = json_decode($body, true);
+
+        if ($code < 200 || $code >= 300) {
+            $rawMsg = is_array($data) && isset($data['error']['message']) ? $data['error']['message'] : '';
+            return new \WP_Error('http_' . $code, sprintf(__('Lỗi truy vấn sự kiện mục tiêu GA4 (%d): %s', 'lacadev'), $code, $rawMsg));
+        }
+
+        if (!is_array($data)) {
+            return new \WP_Error('invalid_response', __('Phản hồi sự kiện GA4 không hợp lệ.', 'lacadev'));
+        }
+
+        $dateRangeIdx = null;
+        $eventNameIdx = null;
+        if (!empty($data['dimensionHeaders']) && is_array($data['dimensionHeaders'])) {
+            foreach ($data['dimensionHeaders'] as $idx => $hdr) {
+                $name = $hdr['name'] ?? '';
+                if ($name === 'dateRange') {
+                    $dateRangeIdx = $idx;
+                } elseif ($name === 'eventName') {
+                    $eventNameIdx = $idx;
+                }
+            }
+        }
+        if ($eventNameIdx === null) {
+            $eventNameIdx = 0;
+        }
+
+        $currCounts = [];
+        $prevCounts = [];
+        foreach ($goalEvents as $eName => $eLabel) {
+            $currCounts[$eName] = 0;
+            $prevCounts[$eName] = 0;
+        }
+
+        $rows = $data['rows'] ?? [];
+        if (is_array($rows)) {
+            foreach ($rows as $row) {
+                $dimVals = array_map(static fn($v) => (string) ($v['value'] ?? ''), $row['dimensionValues'] ?? []);
+                $count   = (int) ($row['metricValues'][0]['value'] ?? 0);
+
+                $dateRange = $dateRangeIdx !== null ? ($dimVals[$dateRangeIdx] ?? 'date_range_0') : 'date_range_0';
+                $eventName = $dimVals[$eventNameIdx] ?? '';
+
+                if (!isset($goalEvents[$eventName])) {
+                    foreach ($dimVals as $dv) {
+                        if (isset($goalEvents[$dv])) {
+                            $eventName = $dv;
+                            break;
+                        }
+                    }
+                }
+
+                if (isset($goalEvents[$eventName])) {
+                    if ($dateRange === 'date_range_1') {
+                        $prevCounts[$eventName] += $count;
+                    } else {
+                        $currCounts[$eventName] += $count;
+                    }
+                }
+            }
+        }
+
+        $kpis = [];
+        foreach ($goalEvents as $eName => $eLabel) {
+            $curr = $currCounts[$eName] ?? 0;
+            $prev = $prevCounts[$eName] ?? 0;
+
+            if ($prev <= 0) {
+                $delta = '—';
+            } else {
+                $diff = $curr - $prev;
+                $pct = round(($diff / $prev) * 100, 1);
+                $sign = $pct > 0 ? '+' : '';
+                $delta = $sign . $pct . '% vs kỳ trước';
+            }
+
+            $kpis[] = [
+                'title' => $eLabel,
+                'value' => $curr,
+                'delta' => $delta,
+                'badge' => $eName,
+            ];
+        }
+
+        set_transient($cacheKey, $kpis, HOUR_IN_SECONDS);
+        return $kpis;
     }
 
     /**

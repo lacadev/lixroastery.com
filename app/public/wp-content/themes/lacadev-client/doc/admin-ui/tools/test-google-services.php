@@ -22,6 +22,7 @@ use App\Features\LacaSeo\Modules\GoogleAnalytics\GaClient;
 use App\Features\LacaSeo\Frontend\Tracking;
 use App\Features\LacaSeo\Core\Settings;
 use App\Settings\LacaAdmin\GoogleServicesPage;
+use App\Features\LacaSeo\Admin\GoogleDashboardService;
 
 $pass = 0;
 $fail = 0;
@@ -530,7 +531,7 @@ runTest('GoogleServicesPage::handleActions: Empty secret uses saved secret from 
     } finally {
         remove_filter('pre_option_' . GscOAuth::OPTION_KEY, $mockFilter);
         remove_filter('wp_redirect', $redirectFilter);
-        wp_set_current_user($oldUser);
+        wp_set_current_user($oldUser instanceof \WP_User ? $oldUser->ID : (int) $oldUser);
         $_POST = [];
         delete_option('laca_seo_gsc_pending');
     }
@@ -602,6 +603,406 @@ runTest('GoogleServicesPage HTML: Client Secret is NEVER printed in rendered HTM
         return true;
     } finally {
         remove_filter('pre_option_' . GscOAuth::OPTION_KEY, $mockFilter);
+    }
+}, $pass, $fail);
+
+// -------------------------------------------------------------
+// Test 12: GSC Clicks delta so sánh kỳ trước thật (API comparison)
+// -------------------------------------------------------------
+runTest('GSC Comparison Delta: clicks=10 vs prev=5 => +100%, prev=0 => —', function () {
+    $delta1 = GoogleDashboardService::calcPercentDelta(10, 5);
+    if ($delta1 !== '+100%') {
+        return "Expected '+100%', got '{$delta1}'";
+    }
+
+    $delta2 = GoogleDashboardService::calcPercentDelta(10, 0);
+    if ($delta2 !== '—') {
+        return "Expected '—' when prev=0, got '{$delta2}'";
+    }
+
+    $delta3 = GoogleDashboardService::calcPercentDelta(10, null);
+    if ($delta3 !== '—') {
+        return "Expected '—' when prev=null, got '{$delta3}'";
+    }
+
+    return true;
+}, $pass, $fail);
+
+// -------------------------------------------------------------
+// Test 13: GA4 2 dateRanges: activeUsers 30 vs 20 => +50%, sessions 0 vs 0 => —, keyEvents 0 => không có conversionRate số
+// -------------------------------------------------------------
+runTest('GA4 2 DateRanges Comparison: activeUsers +50%, sessions —, no conversionRate when keyEvents=0', function () {
+    $mockReportData = [
+        'totals' => [
+            [
+                'dimensionValues' => [['value' => 'date_range_0']],
+                'metricValues'    => [
+                    ['value' => '30'], // activeUsers
+                    ['value' => '10'], // newUsers
+                    ['value' => '0'],  // sessions
+                    ['value' => '50'], // screenPageViews
+                    ['value' => '120'], // averageSessionDuration
+                    ['value' => '0.5'], // engagementRate
+                    ['value' => '0'],  // keyEvents
+                ],
+            ],
+            [
+                'dimensionValues' => [['value' => 'date_range_1']],
+                'metricValues'    => [
+                    ['value' => '20'], // activeUsers
+                    ['value' => '5'],  // newUsers
+                    ['value' => '0'],  // sessions
+                    ['value' => '40'], // screenPageViews
+                    ['value' => '100'], // averageSessionDuration
+                    ['value' => '0.4'], // engagementRate
+                    ['value' => '0'],  // keyEvents
+                ],
+            ],
+        ],
+        'metricHeaders' => [
+            ['name' => 'activeUsers'],
+            ['name' => 'newUsers'],
+            ['name' => 'sessions'],
+            ['name' => 'screenPageViews'],
+            ['name' => 'averageSessionDuration'],
+            ['name' => 'engagementRate'],
+            ['name' => 'keyEvents'],
+        ],
+        'rows' => [],
+    ];
+
+    $parsed = GaClient::parseReportResponse($mockReportData);
+    $usersDelta = GoogleDashboardService::calcPercentDelta($parsed['users'], $parsed['prevUsers']);
+    if ($usersDelta !== '+50%') {
+        return "Expected activeUsers delta '+50%', got '{$usersDelta}'";
+    }
+
+    $sessionsDelta = GoogleDashboardService::calcPercentDelta($parsed['sessions'], $parsed['prevSessions']);
+    if ($sessionsDelta !== '—') {
+        return "Expected sessions delta '—' when sessions=0, got '{$sessionsDelta}'";
+    }
+
+    // Test through GoogleDashboardService with mock HTTP response
+    $savedOpt = get_option('laca_seo_general', []);
+    $testOpt = $savedOpt;
+    $testOpt['ga4_property_id'] = '123456789';
+    update_option('laca_seo_general', $testOpt);
+    Settings::clearCache();
+
+    $oldCreds = GscOAuth::getCredentials();
+    GscOAuth::saveCredentials([
+        'access_token'  => 'mock-token',
+        'refresh_token' => 'mock-refresh',
+        'created_at'    => time(),
+        'expires_in'    => 3600,
+        'client_id'     => 'mock-client',
+        'client_secret' => 'mock-secret',
+        'scopes'        => [GscOAuth::SCOPE_GA, GscOAuth::SCOPE_GSC],
+    ]);
+
+    $mockFilter = function ($preempt, $parsed_args, $url) use ($mockReportData) {
+        if (str_contains($url, 'analyticsdata.googleapis.com') && str_contains($url, ':runReport')) {
+            return [
+                'response' => ['code' => 200, 'message' => 'OK'],
+                'body'     => json_encode($mockReportData),
+                'headers'  => ['content-type' => 'application/json'],
+            ];
+        }
+        return $preempt;
+    };
+    add_filter('pre_http_request', $mockFilter, 10, 3);
+
+    try {
+        $gaData = GoogleDashboardService::getGa4Data('28d', true);
+
+        if (($gaData['users_delta'] ?? '') !== '+50%') {
+            return "Expected gaData users_delta '+50%', got '" . ($gaData['users_delta'] ?? '') . "'";
+        }
+        if (($gaData['sessions_delta'] ?? '') !== '—') {
+            return "Expected gaData sessions_delta '—', got '" . ($gaData['sessions_delta'] ?? '') . "'";
+        }
+        if ($gaData['conversionRate'] !== null) {
+            return "Expected conversionRate to be null when keyEvents=0, got: " . var_export($gaData['conversionRate'], true);
+        }
+
+        return true;
+    } finally {
+        remove_filter('pre_http_request', $mockFilter, 10);
+        update_option('laca_seo_general', $savedOpt);
+        Settings::clearCache();
+        if ($oldCreds) {
+            GscOAuth::saveCredentials($oldCreds);
+        } else {
+            GscOAuth::disconnect();
+        }
+    }
+}, $pass, $fail);
+
+// -------------------------------------------------------------
+// Test 14: ga4_goal_events: Không cấu hình => rỗng, cấu hình add_to_cart|Thêm giỏ => value 7, delta —
+// -------------------------------------------------------------
+runTest('GA4 Goal Events: Empty when unconfigured, parsed with real counts & delta — when prev=0', function () {
+    $savedOpt = get_option('laca_seo_general', []);
+
+    // 1. Without ga4_goal_events configured
+    $testOpt = $savedOpt;
+    $testOpt['ga4_property_id'] = '123456789';
+    $testOpt['ga4_goal_events'] = '';
+    update_option('laca_seo_general', $testOpt);
+    Settings::clearCache();
+
+    $oldCreds = GscOAuth::getCredentials();
+    GscOAuth::saveCredentials([
+        'access_token'  => 'mock-token',
+        'refresh_token' => 'mock-refresh',
+        'created_at'    => time(),
+        'expires_in'    => 3600,
+        'client_id'     => 'mock-client',
+        'client_secret' => 'mock-secret',
+        'scopes'        => [GscOAuth::SCOPE_GA, GscOAuth::SCOPE_GSC],
+    ]);
+
+    $mockFilter = function ($preempt, $parsed_args, $url) {
+        if (str_contains($url, 'analyticsdata.googleapis.com') && str_contains($url, ':runReport')) {
+            $body = json_decode($parsed_args['body'] ?? '{}', true);
+            $dimNames = array_column($body['dimensions'] ?? [], 'name');
+            if (in_array('eventName', $dimNames, true)) {
+                return [
+                    'response' => ['code' => 200, 'message' => 'OK'],
+                    'body'     => json_encode([
+                        'dimensionHeaders' => [
+                            ['name' => 'dateRange'],
+                            ['name' => 'eventName'],
+                        ],
+                        'metricHeaders' => [
+                            ['name' => 'eventCount'],
+                        ],
+                        'rows' => [
+                            [
+                                'dimensionValues' => [
+                                    ['value' => 'date_range_0'],
+                                    ['value' => 'add_to_cart'],
+                                ],
+                                'metricValues' => [
+                                    ['value' => '7'],
+                                ],
+                            ],
+                        ],
+                    ]),
+                    'headers'  => ['content-type' => 'application/json'],
+                ];
+            }
+
+            return [
+                'response' => ['code' => 200, 'message' => 'OK'],
+                'body'     => json_encode([
+                    'totals' => [
+                        [
+                            'dimensionValues' => [['value' => 'date_range_0']],
+                            'metricValues'    => [
+                                ['value' => '50'], ['value' => '20'], ['value' => '60'],
+                                ['value' => '120'], ['value' => '90'], ['value' => '0.6'], ['value' => '7'],
+                            ],
+                        ],
+                        [
+                            'dimensionValues' => [['value' => 'date_range_1']],
+                            'metricValues'    => [
+                                ['value' => '40'], ['value' => '15'], ['value' => '50'],
+                                ['value' => '100'], ['value' => '80'], ['value' => '0.5'], ['value' => '0'],
+                            ],
+                        ],
+                    ],
+                    'metricHeaders' => [
+                        ['name' => 'activeUsers'], ['name' => 'newUsers'], ['name' => 'sessions'],
+                        ['name' => 'screenPageViews'], ['name' => 'averageSessionDuration'], ['name' => 'engagementRate'], ['name' => 'keyEvents'],
+                    ],
+                    'rows' => [],
+                ]),
+                'headers'  => ['content-type' => 'application/json'],
+            ];
+        }
+        return $preempt;
+    };
+    add_filter('pre_http_request', $mockFilter, 10, 3);
+
+    try {
+        // Case 1: unconfigured -> businessKpis is []
+        $gaDataEmpty = GoogleDashboardService::getGa4Data('28d', true);
+        if (!empty($gaDataEmpty['businessKpis'])) {
+            return "Expected empty businessKpis when ga4_goal_events is empty, got: " . print_r($gaDataEmpty['businessKpis'], true);
+        }
+
+        // Case 2: configured with 'add_to_cart|Thêm giỏ'
+        $testOpt['ga4_goal_events'] = "add_to_cart|Thêm giỏ";
+        update_option('laca_seo_general', $testOpt);
+        Settings::clearCache();
+
+        $gaDataConfigured = GoogleDashboardService::getGa4Data('28d', true);
+        $kpis = $gaDataConfigured['businessKpis'] ?? [];
+        if (count($kpis) !== 1) {
+            return "Expected 1 KPI item, got " . count($kpis);
+        }
+        if ($kpis[0]['title'] !== 'Thêm giỏ') {
+            return "Expected KPI title 'Thêm giỏ', got '{$kpis[0]['title']}'";
+        }
+        if ($kpis[0]['value'] !== 7) {
+            return "Expected KPI value 7, got " . var_export($kpis[0]['value'], true);
+        }
+        if ($kpis[0]['delta'] !== '—') {
+            return "Expected KPI delta '—' when prev=0, got '{$kpis[0]['delta']}'";
+        }
+
+        return true;
+    } finally {
+        remove_filter('pre_http_request', $mockFilter, 10);
+        update_option('laca_seo_general', $savedOpt);
+        Settings::clearCache();
+        if ($oldCreds) {
+            GscOAuth::saveCredentials($oldCreds);
+        } else {
+            GscOAuth::disconnect();
+        }
+    }
+}, $pass, $fail);
+
+// -------------------------------------------------------------
+// Test 15: Render views/dashboard.php với response thật (không bật mock) KHÔNG chứa số bịa
+// -------------------------------------------------------------
+runTest('views/dashboard.php HTML: Never contains fabricated numbers (186, 12.4%, 14.1%, 4.7%, Dữ liệu mẫu)', function () {
+    unset($_GET['laca_mock_google']);
+    unset($_GET['laca_preview_google']);
+
+    $savedOpt = get_option('laca_seo_general', []);
+    $testOpt = $savedOpt;
+    $testOpt['ga4_property_id'] = '123456789';
+    $testOpt['gsc_site_url']    = 'https://lixroastery.com/';
+    $testOpt['ga4_goal_events'] = '';
+    update_option('laca_seo_general', $testOpt);
+    Settings::clearCache();
+
+    $oldCreds = GscOAuth::getCredentials();
+    GscOAuth::saveCredentials([
+        'access_token'  => 'mock-token',
+        'refresh_token' => 'mock-refresh',
+        'created_at'    => time(),
+        'expires_in'    => 3600,
+        'client_id'     => 'mock-client',
+        'client_secret' => 'mock-secret',
+        'scope'         => 'https://www.googleapis.com/auth/analytics.readonly https://www.googleapis.com/auth/webmasters.readonly',
+    ]);
+
+    $mockFilter = function ($preempt, $parsed_args, $url) {
+        if (str_contains($url, 'searchanalytics/query')) {
+            return [
+                'response' => ['code' => 200, 'message' => 'OK'],
+                'body'     => json_encode([
+                    'rows' => [
+                        ['keys' => ['test query'], 'clicks' => 50, 'impressions' => 500, 'ctr' => 0.1, 'position' => 5.0],
+                    ],
+                ]),
+                'headers'  => ['content-type' => 'application/json'],
+            ];
+        }
+        if (str_contains($url, 'analyticsdata.googleapis.com') && str_contains($url, ':runReport')) {
+            return [
+                'response' => ['code' => 200, 'message' => 'OK'],
+                'body'     => json_encode([
+                    'totals' => [
+                        [
+                            'dimensionValues' => [['value' => 'date_range_0']],
+                            'metricValues'    => [
+                                ['value' => '50'], ['value' => '20'], ['value' => '60'],
+                                ['value' => '120'], ['value' => '90'], ['value' => '0.6'], ['value' => '0'],
+                            ],
+                        ],
+                    ],
+                    'metricHeaders' => [
+                        ['name' => 'activeUsers'], ['name' => 'newUsers'], ['name' => 'sessions'],
+                        ['name' => 'screenPageViews'], ['name' => 'averageSessionDuration'], ['name' => 'engagementRate'], ['name' => 'keyEvents'],
+                    ],
+                    'rows' => [],
+                ]),
+                'headers'  => ['content-type' => 'application/json'],
+            ];
+        }
+        return $preempt;
+    };
+    add_filter('pre_http_request', $mockFilter, 10, 3);
+
+    $oldUser = wp_get_current_user();
+    $adminId = 1;
+    $admins = get_users(['role' => 'administrator', 'number' => 1]);
+    if (!empty($admins)) {
+        $adminId = $admins[0]->ID;
+    }
+    wp_set_current_user($adminId);
+
+    try {
+        ob_start();
+        $viewPath = dirname(__DIR__, 3) . '/app/src/Features/LacaSeo/Admin/views/dashboard.php';
+        include $viewPath;
+        $html = ob_get_clean();
+
+        $forbidden = ['186', '12.4%', '14.1%', '4.7%', 'Dữ liệu mẫu'];
+        foreach ($forbidden as $bad) {
+            if (str_contains($html, $bad)) {
+                return "Fabricated string '{$bad}' was found in rendered dashboard HTML!";
+            }
+        }
+
+        return true;
+    } finally {
+        remove_filter('pre_http_request', $mockFilter, 10);
+        update_option('laca_seo_general', $savedOpt);
+        Settings::clearCache();
+        if ($oldCreds) {
+            GscOAuth::saveCredentials($oldCreds);
+        } else {
+            GscOAuth::disconnect();
+        }
+        wp_set_current_user($oldUser instanceof \WP_User ? $oldUser->ID : (int) $oldUser);
+    }
+}, $pass, $fail);
+
+// -------------------------------------------------------------
+// Test 16: isMockMode() là false khi không có ?laca_mock_google=1 kể cả local chưa kết nối
+// -------------------------------------------------------------
+runTest('GoogleDashboardService::isMockMode: Strictly false without ?laca_mock_google=1 on local', function () {
+    unset($_GET['laca_mock_google']);
+    unset($_GET['laca_preview_google']);
+
+    $oldUser = wp_get_current_user();
+    $admins = get_users(['role' => 'administrator', 'number' => 1]);
+    $adminId = !empty($admins) ? $admins[0]->ID : 1;
+    wp_set_current_user($adminId);
+
+    $oldCreds = GscOAuth::getCredentials();
+    GscOAuth::disconnect();
+
+    try {
+        if (GoogleDashboardService::isMockMode() !== false) {
+            return "Expected isMockMode() === false when disconnected on local without query parameter";
+        }
+
+        // With ?laca_mock_google=1 and manage_options on local
+        $_GET['laca_mock_google'] = '1';
+        if (GoogleDashboardService::isMockMode() !== true) {
+            return "Expected isMockMode() === true when ?laca_mock_google=1 and user can manage_options on local";
+        }
+
+        // Without manage_options
+        wp_set_current_user(0);
+        if (GoogleDashboardService::isMockMode() !== false) {
+            return "Expected isMockMode() === false when user cannot manage_options";
+        }
+
+        return true;
+    } finally {
+        unset($_GET['laca_mock_google']);
+        wp_set_current_user($oldUser instanceof \WP_User ? $oldUser->ID : (int) $oldUser);
+        if ($oldCreds) {
+            GscOAuth::saveCredentials($oldCreds);
+        }
     }
 }, $pass, $fail);
 

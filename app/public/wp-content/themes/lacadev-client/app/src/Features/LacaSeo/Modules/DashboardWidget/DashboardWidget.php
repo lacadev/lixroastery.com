@@ -94,7 +94,7 @@ class DashboardWidget
                         <span class="dashicons dashicons-chart-area" style="color: #18181b;"></span>
                         <strong>Google Analytics (28 ngày):</strong>
                         <span><?php echo number_format_i18n((int) ($ga['users'] ?? 0)); ?> người dùng</span>
-                        <span style="color:#71717a;">· <?php echo number_format_i18n((int) ($ga['sessions'] ?? 0)); ?> phiên · Tương tác <?php echo esc_html($ga['avgEngagement'] ?? '0s'); ?> · Chuyển đổi <?php echo esc_html($ga['conversionRate'] ?? '0%'); ?></span>
+                        <span style="color:#71717a;">· <?php echo number_format_i18n((int) ($ga['sessions'] ?? 0)); ?> phiên · Tương tác <?php echo esc_html($ga['avgEngagement'] ?? '0s'); ?><?php echo !empty($ga['conversionRate']) ? ' · Chuyển đổi ' . esc_html($ga['conversionRate']) : ''; ?></span>
                     </li>
                 <?php endif; ?>
             </ul>
