@@ -23,6 +23,8 @@ use App\Features\GoogleServices\Tracking;
 use App\Features\GoogleServices\GoogleDashboardService;
 use App\Features\GoogleServices\GoogleServices;
 use App\Features\GoogleServices\DateRange;
+use App\Features\GoogleServices\PageSpeedClient;
+use App\Features\GoogleServices\EntityStats;
 use App\Features\LacaSeo\Core\Settings;
 use App\Settings\LacaAdmin\GoogleServicesPage;
 
@@ -2587,6 +2589,22 @@ runTest('G1: setupState (4 states + error), index.php hidden when unconfigured, 
             return "Expected index.php to NOT contain #laca-google-report when unconfigured";
         }
 
+        // Test production environment with ?laca_mock_google=1 while unconfigured:
+        // Must NOT output #laca-google-report
+        $prodEnvFilter = function () {
+            return 'production';
+        };
+        add_filter('pre_wp_get_environment_type', $prodEnvFilter);
+        $_GET['laca_mock_google'] = '1';
+        ob_start();
+        GoogleServices::renderDashboardNotice();
+        $htmlProdMock = ob_get_clean();
+        remove_filter('pre_wp_get_environment_type', $prodEnvFilter);
+        unset($_GET['laca_mock_google']);
+        if (str_contains($htmlProdMock, 'id="laca-google-report"')) {
+            return "Expected index.php on production to NOT render report with ?laca_mock_google=1 when unconfigured";
+        }
+
         // --- 2. Test setupState: Case B - Có OAuth nhưng thiếu property ---
         $mockOAuth = function () {
             return GscCrypto::encrypt([
@@ -2727,6 +2745,10 @@ runTest('G1: setupState (4 states + error), index.php hidden when unconfigured, 
         if (isset($mockServicesComplete)) {
             remove_filter('pre_option_laca_google_services', $mockServicesComplete);
         }
+        if (isset($prodEnvFilter)) {
+            remove_filter('pre_wp_get_environment_type', $prodEnvFilter);
+        }
+        unset($_GET['laca_mock_google']);
         delete_transient('laca_ga_streams_123456');
         delete_transient('laca_gsc_last_error_code');
         delete_transient('laca_ga_last_error_code');
@@ -3007,6 +3029,283 @@ runTest('G2: DateRange calculations, GA4 batch & hostName, GSC domain filter, 42
         delete_transient('laca_ga_batch_' . md5('438291045_28d'));
         delete_transient('laca_gsc_perf_' . md5('sc-domain:lixroastery.local_28d'));
         delete_transient('laca_gsc_perf_' . md5('https://lixroastery.local/_28d'));
+    }
+}, $pass, $fail);
+
+// -------------------------------------------------------------
+// Test 32: G4 — PageSpeed Insights: Parse Field & Lab data, Encrypted API Key, Secrecy in HTML
+// -------------------------------------------------------------
+runTest('G4: PageSpeed Insights parsing (Field + Lab), encrypted API key in DB, never exposed in HTML', function () {
+    $rawResponse = [
+        'loadingExperience' => [
+            'overall_category' => 'FAST',
+            'metrics'          => [
+                'LARGEST_CONTENTFUL_PAINT_MS' => [
+                    'percentile' => 2500,
+                    'category'   => 'FAST',
+                ],
+                'INTERACTION_TO_NEXT_PAINT' => [
+                    'percentile' => 150,
+                    'category'   => 'FAST',
+                ],
+                'CUMULATIVE_LAYOUT_SHIFT_SCORE' => [
+                    'percentile' => 5,
+                    'category'   => 'FAST',
+                ],
+            ],
+        ],
+        'lighthouseResult' => [
+            'categories' => [
+                'performance' => [
+                    'score' => 0.85,
+                ],
+            ],
+            'audits' => [
+                'largest-contentful-paint' => [
+                    'score'        => 0.88,
+                    'displayValue' => '2.8 s',
+                ],
+                'cumulative-layout-shift' => [
+                    'score'        => 0.95,
+                    'displayValue' => '0.04',
+                ],
+                'total-blocking-time' => [
+                    'score'        => 0.82,
+                    'displayValue' => '210 ms',
+                ],
+                'first-contentful-paint' => [
+                    'score'        => 0.92,
+                    'displayValue' => '1.5 s',
+                ],
+            ],
+        ],
+    ];
+
+    // 1. Test parser
+    $parsed = PageSpeedClient::parseResponse($rawResponse, 'https://lixroastery.com/', 'mobile');
+
+    if (empty($parsed['field']['hasData'])) {
+        return "Expected field.hasData=true";
+    }
+    if (($parsed['field']['metrics']['lcp']['value'] ?? '') !== '2.5s') {
+        return "Expected field LCP 2.5s, got " . ($parsed['field']['metrics']['lcp']['value'] ?? 'null');
+    }
+    if (($parsed['field']['metrics']['inp']['value'] ?? '') !== '150ms') {
+        return "Expected field INP 150ms, got " . ($parsed['field']['metrics']['inp']['value'] ?? 'null');
+    }
+    if (($parsed['field']['metrics']['cls']['value'] ?? '') !== '0.05') {
+        return "Expected field CLS 0.05, got " . ($parsed['field']['metrics']['cls']['value'] ?? 'null');
+    }
+
+    if (($parsed['lab']['score'] ?? 0) !== 85) {
+        return "Expected lab score 85, got " . ($parsed['lab']['score'] ?? 'null');
+    }
+    if (($parsed['lab']['metrics']['lcp']['displayValue'] ?? '') !== '2.8 s') {
+        return "Expected lab LCP 2.8 s, got " . ($parsed['lab']['metrics']['lcp']['displayValue'] ?? 'null');
+    }
+    if (($parsed['lab']['metrics']['cls']['displayValue'] ?? '') !== '0.04') {
+        return "Expected lab CLS 0.04, got " . ($parsed['lab']['metrics']['cls']['displayValue'] ?? 'null');
+    }
+    if (($parsed['lab']['metrics']['tbt']['displayValue'] ?? '') !== '210 ms') {
+        return "Expected lab TBT 210 ms, got " . ($parsed['lab']['metrics']['tbt']['displayValue'] ?? 'null');
+    }
+    if (($parsed['lab']['metrics']['fcp']['displayValue'] ?? '') !== '1.5 s') {
+        return "Expected lab FCP 1.5 s, got " . ($parsed['lab']['metrics']['fcp']['displayValue'] ?? 'null');
+    }
+
+    // 2. Test API key encryption and secrecy
+    $secretKey = 'AIzaSySampleTestKey9876543210Secret';
+    PageSpeedClient::setApiKey($secretKey);
+
+    $rawOptions = get_option(PageSpeedClient::OPTION_KEY, []);
+    $storedCipher = $rawOptions['pagespeed_api_key'] ?? '';
+
+    if (empty($storedCipher)) {
+        return "Expected pagespeed_api_key to be saved in option";
+    }
+    if (str_contains($storedCipher, $secretKey)) {
+        return "Expected API key to be ENCRYPTED in DB, but found plain key!";
+    }
+
+    $decrypted = PageSpeedClient::getApiKey();
+    if ($decrypted !== $secretKey) {
+        return "Expected getApiKey() to decrypt correctly, got: {$decrypted}";
+    }
+    if (!PageSpeedClient::hasApiKey()) {
+        return "Expected hasApiKey() to be true";
+    }
+
+    // 3. Test HTML rendering never exposes the secret key
+    $page = new GoogleServicesPage();
+    ob_start();
+    $page->renderSearchConsolePage();
+    $renderedHtml = ob_get_clean();
+
+    if (str_contains($renderedHtml, $secretKey)) {
+        return "CRITICAL: Secret API key was printed in rendered HTML!";
+    }
+    if (!str_contains($renderedHtml, 'Google PageSpeed Insights API Key')) {
+        return "Expected PageSpeed API key card to be rendered on Search Console page";
+    }
+
+    // 4. Test clearing API key
+    PageSpeedClient::setApiKey('');
+    if (PageSpeedClient::hasApiKey()) {
+        return "Expected hasApiKey() to be false after clearing";
+    }
+    if (PageSpeedClient::getApiKey() !== '') {
+        return "Expected getApiKey() to return empty string after clearing";
+    }
+
+    return true;
+}, $pass, $fail);
+
+// -------------------------------------------------------------
+// Test 33: G5 — Entity Stats: GSC page equals filter, GA4 pagePath & hostName, metabox status gate
+// -------------------------------------------------------------
+runTest('G5: Entity Stats filters (GSC page equals, GA4 pagePath & hostName), metabox hidden on draft', function () {
+    global $post, $wp_meta_boxes;
+
+    // 1. Metabox registration gate: Draft post should NOT have metabox
+    $origPost = $post;
+    $origMetaBoxes = $wp_meta_boxes;
+
+    $mockOAuthFilter = function () {
+        return GscCrypto::encrypt([
+            'access_token'  => 'mock-token',
+            'refresh_token' => 'mock-refresh',
+            'created_at'    => time(),
+            'expires_in'    => 3600,
+            'scopes'        => [GscOAuth::SCOPE_GSC, GscOAuth::SCOPE_GA],
+        ]);
+    };
+    add_filter('pre_option_' . GscOAuth::OPTION_KEY, $mockOAuthFilter);
+
+    $mockServices = function () {
+        return [
+            'gsc_property'       => 'https://lixroastery.com/',
+            'ga4_property_id'    => '438291045',
+            'ga4_measurement_id' => 'G-CORRECTID1',
+        ];
+    };
+    add_filter('pre_option_laca_google_services', $mockServices);
+
+    $capFilter = function ($allcaps) {
+        $allcaps['manage_options'] = true;
+        return $allcaps;
+    };
+    add_filter('user_has_cap', $capFilter);
+
+    set_transient('laca_ga_streams_438291045', [
+        ['displayName' => 'Web Stream', 'measurementId' => 'G-CORRECTID1'],
+    ], 3600);
+
+    try {
+        // Case A: Draft post
+        $post = (object) [
+            'ID'          => 9991,
+            'post_status' => 'draft',
+            'post_type'   => 'post',
+        ];
+        $wp_meta_boxes = [];
+        EntityStats::registerMetabox();
+
+        if (!empty($wp_meta_boxes['post']['side']['default']['laca_entity_stats_box'])) {
+            return "Metabox should NOT be registered for draft post";
+        }
+
+        // Case B: Published post
+        $post = (object) [
+            'ID'          => 9992,
+            'post_status' => 'publish',
+            'post_type'   => 'post',
+        ];
+        $wp_meta_boxes = [];
+        EntityStats::registerMetabox();
+
+        if (empty($wp_meta_boxes['post']['side']['default']['laca_entity_stats_box'])) {
+            return "Expected metabox laca_entity_stats_box to be registered for published post";
+        }
+
+        // 2. Test live stats query filters
+        $capturedGscBody = null;
+        $capturedGaBody  = null;
+
+        $mockHttp = function ($preempt, $parsedArgs, $url) use (&$capturedGscBody, &$capturedGaBody) {
+            if (str_contains($url, 'searchAnalytics/query')) {
+                $capturedGscBody = json_decode($parsedArgs['body'] ?? '{}', true);
+                return [
+                    'response' => ['code' => 200, 'message' => 'OK'],
+                    'body'     => json_encode([
+                        'rows' => [
+                            ['clicks' => 25, 'impressions' => 300, 'ctr' => 0.0833, 'position' => 3.2],
+                        ],
+                    ]),
+                    'headers'  => ['content-type' => 'application/json'],
+                ];
+            }
+
+            if (str_contains($url, 'analyticsdata.googleapis.com') && str_contains($url, ':runReport')) {
+                $capturedGaBody = json_decode($parsedArgs['body'] ?? '{}', true);
+                return [
+                    'response' => ['code' => 200, 'message' => 'OK'],
+                    'body'     => json_encode([
+                        'rows' => [
+                            [
+                                'dimensionValues' => [['value' => '/journal/test-slug/']],
+                                'metricValues'    => [
+                                    ['value' => '150'],
+                                    ['value' => '90'],
+                                    ['value' => '450'],
+                                ],
+                            ],
+                        ],
+                    ]),
+                    'headers'  => ['content-type' => 'application/json'],
+                ];
+            }
+
+            return $preempt;
+        };
+        add_filter('pre_http_request', $mockHttp, 10, 3);
+
+        $testUrl = 'https://lixroastery.com/journal/test-slug/';
+        $stats = EntityStats::fetchLiveStats($testUrl);
+
+        // Verify GSC filter
+        $gscFilters = $capturedGscBody['dimensionFilterGroups'][0]['filters'][0] ?? [];
+        if (($gscFilters['dimension'] ?? '') !== 'page' || ($gscFilters['operator'] ?? '') !== 'equals' || ($gscFilters['expression'] ?? '') !== $testUrl) {
+            return "GSC query missing exact page equals filter: " . json_encode($gscFilters);
+        }
+
+        // Verify GA4 filter
+        $gaExpressions = $capturedGaBody['dimensionFilter']['andGroup']['expressions'] ?? [];
+        $pagePathFilter = $gaExpressions[0]['filter'] ?? [];
+        if (($pagePathFilter['fieldName'] ?? '') !== 'pagePath' || ($pagePathFilter['stringFilter']['value'] ?? '') !== '/journal/test-slug/') {
+            return "GA4 query missing exact pagePath filter: " . json_encode($pagePathFilter);
+        }
+
+        if ($stats['gsc']['clicks'] !== 25) {
+            return "Expected parsed GSC clicks 25, got " . $stats['gsc']['clicks'];
+        }
+        if ($stats['ga4']['views'] !== 150 || $stats['ga4']['users'] !== 90) {
+            return "Expected parsed GA4 views 150 and users 90";
+        }
+        if ($stats['ga4']['duration'] !== '0m 5s') {
+            return "Expected duration 0m 5s, got " . $stats['ga4']['duration'];
+        }
+
+        return true;
+    } finally {
+        $post = $origPost;
+        $wp_meta_boxes = $origMetaBoxes;
+        remove_filter('pre_option_' . GscOAuth::OPTION_KEY, $mockOAuthFilter);
+        remove_filter('pre_option_laca_google_services', $mockServices);
+        remove_filter('user_has_cap', $capFilter);
+        if (isset($mockHttp)) {
+            remove_filter('pre_http_request', $mockHttp, 10);
+        }
+        delete_transient('laca_ga_streams_438291045');
     }
 }, $pass, $fail);
 

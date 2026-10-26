@@ -16,10 +16,14 @@ class GoogleDashboardService
      */
     public static function isMockMode(): bool
     {
+        $env = apply_filters('pre_wp_get_environment_type', null);
+        if ($env === null && function_exists('wp_get_environment_type')) {
+            $env = wp_get_environment_type();
+        }
+
         if (
             !empty($_GET['laca_mock_google'])
-            && function_exists('wp_get_environment_type')
-            && wp_get_environment_type() === 'local'
+            && $env === 'local'
             && current_user_can('manage_options')
         ) {
             return true;

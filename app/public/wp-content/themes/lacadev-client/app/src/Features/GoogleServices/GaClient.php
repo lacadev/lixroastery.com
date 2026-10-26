@@ -525,6 +525,51 @@ class GaClient
     }
 
     /**
+     * Run a custom report query against GA4 Data API.
+     *
+     * @param string $propertyId
+     * @param array<string, mixed> $requestBody
+     * @return array<string, mixed>|\WP_Error
+     */
+    public static function queryReport(string $propertyId, array $requestBody): array|\WP_Error
+    {
+        $propertyId = preg_replace('/\D/', '', $propertyId);
+        if ($propertyId === '') {
+            return new \WP_Error('invalid_property', __('Chưa chọn Property ID của Google Analytics 4.', 'lacadev'));
+        }
+
+        $token = GscOAuth::getValidAccessToken();
+        if (!$token) {
+            return new \WP_Error('no_token', __('Chưa kết nối tài khoản Google Analytics.', 'lacadev'));
+        }
+
+        $url = self::DATA_API_BASE . '/properties/' . $propertyId . ':runReport';
+        $response = wp_remote_post($url, [
+            'timeout' => 15,
+            'headers' => [
+                'Authorization' => 'Bearer ' . $token,
+                'Content-Type'  => 'application/json',
+            ],
+            'body'    => json_encode($requestBody),
+        ]);
+
+        if (is_wp_error($response)) {
+            return $response;
+        }
+
+        $code = (int) wp_remote_retrieve_response_code($response);
+        $body = wp_remote_retrieve_body($response);
+        $data = json_decode($body, true);
+
+        if ($code < 200 || $code >= 300) {
+            $rawMsg = is_array($data) && isset($data['error']['message']) ? $data['error']['message'] : '';
+            return new \WP_Error('http_' . $code, sprintf(__('Lỗi truy vấn GA4 (%d): %s', 'lacadev'), $code, $rawMsg));
+        }
+
+        return is_array($data) ? $data : [];
+    }
+
+    /**
      * Run GA4 report for the given property and range (7d, 28d, 90d).
      *
      * @param string $propertyId

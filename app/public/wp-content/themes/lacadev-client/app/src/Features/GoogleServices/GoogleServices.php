@@ -26,6 +26,7 @@ class GoogleServices
         'ga4_property_id',
         'ga4_goal_events',
         'gsc_site_url',
+        'pagespeed_api_key',
     ];
 
     /**
@@ -42,6 +43,9 @@ class GoogleServices
         // Register frontend tracking
         Tracking::register();
 
+        // Register entity stats (metabox & admin bar)
+        EntityStats::register();
+
         if (is_admin()) {
             (new \App\Settings\LacaAdmin\GoogleServicesPage())->register();
             add_action('admin_notices', [self::class, 'renderDashboardNotice']);
@@ -51,6 +55,7 @@ class GoogleServices
         // AJAX handlers for dashboard report
         add_action('wp_ajax_laca_google_report', [self::class, 'ajaxGoogleReport']);
         add_action('wp_ajax_laca_ga4_realtime', [self::class, 'ajaxGa4Realtime']);
+        add_action('wp_ajax_laca_pagespeed_run', [self::class, 'ajaxPageSpeedRun']);
     }
 
     /**
@@ -335,7 +340,7 @@ class GoogleServices
             return;
         }
 
-        $isMock = !empty($_GET['laca_mock_google']) ? '1' : '0';
+        $isMock = GoogleDashboardService::isMockMode() ? '1' : '0';
         $state  = self::setupState();
 
         // Chỉ hiển thị khối báo cáo khi ít nhất 1 dịch vụ complete (hoặc ở chế độ mock)
@@ -392,7 +397,7 @@ class GoogleServices
             return;
         }
 
-        $isMock = !empty($_GET['laca_mock_google']) ? '1' : '0';
+        $isMock = GoogleDashboardService::isMockMode() ? '1' : '0';
         $state  = self::setupState();
 
         if ($isMock !== '1' && empty($state['is_any_complete'])) {
@@ -456,7 +461,7 @@ class GoogleServices
 
         $refresh = !empty($_REQUEST['refresh']);
 
-        if (!empty($_REQUEST['laca_mock_google'])) {
+        if (!empty($_REQUEST['laca_mock_google']) && function_exists('wp_get_environment_type') && wp_get_environment_type() === 'local' && current_user_can('manage_options')) {
             $_GET['laca_mock_google'] = '1';
         }
 
@@ -491,7 +496,7 @@ class GoogleServices
             wp_send_json_error(['message' => __('Bạn không có quyền thực hiện thao tác này.', 'lacadev')], 403);
         }
 
-        if (!empty($_REQUEST['laca_mock_google'])) {
+        if (!empty($_REQUEST['laca_mock_google']) && function_exists('wp_get_environment_type') && wp_get_environment_type() === 'local' && current_user_can('manage_options')) {
             $_GET['laca_mock_google'] = '1';
         }
 
@@ -516,5 +521,38 @@ class GoogleServices
 
         $activeUsers = (int) ($result['activeUsers'] ?? 0);
         wp_send_json_success(['activeUsers' => $activeUsers]);
+    }
+
+    /**
+     * AJAX endpoint to run PageSpeed Insights audit.
+     */
+    public static function ajaxPageSpeedRun(): void
+    {
+        $nonce = $_REQUEST['nonce'] ?? $_REQUEST['_ajax_nonce'] ?? '';
+        $valid = wp_verify_nonce($nonce, 'laca_google_report_nonce') || wp_verify_nonce($nonce, 'laca_seo_admin_nonce');
+        if (!$valid) {
+            wp_die('-1', 403);
+        }
+
+        if (!self::userCanViewReport()) {
+            wp_send_json_error(['message' => __('Bạn không có quyền thực hiện thao tác này.', 'lacadev')], 403);
+        }
+
+        $strategy = sanitize_key(wp_unslash($_REQUEST['strategy'] ?? 'mobile'));
+        $targetUrl = esc_url_raw(wp_unslash($_REQUEST['url'] ?? home_url('/')));
+        $refresh = !empty($_REQUEST['refresh']);
+
+        // Mock support on local
+        if (GoogleDashboardService::isMockMode()) {
+            $mockData = PageSpeedClient::getMockData($targetUrl, $strategy);
+            wp_send_json_success($mockData);
+        }
+
+        $result = PageSpeedClient::run($targetUrl, $strategy, $refresh);
+        if (is_wp_error($result)) {
+            wp_send_json_error(['message' => $result->get_error_message()]);
+        }
+
+        wp_send_json_success($result);
     }
 }

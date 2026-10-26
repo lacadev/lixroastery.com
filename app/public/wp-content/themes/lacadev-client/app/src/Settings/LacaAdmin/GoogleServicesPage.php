@@ -8,6 +8,7 @@ use App\Features\GoogleServices\GscOAuth;
 use App\Features\GoogleServices\GaClient;
 use App\Features\GoogleServices\Tracking;
 use App\Features\GoogleServices\GuideContent;
+use App\Features\GoogleServices\PageSpeedClient;
 
 defined('ABSPATH') || exit;
 
@@ -289,6 +290,40 @@ class GoogleServicesPage
             ]);
 
             wp_safe_redirect(add_query_arg(['updated' => '1'], admin_url('admin.php?page=' . self::PAGE_ANALYTICS)));
+            exit;
+        }
+
+        // 7. Save PageSpeed API Key
+        if (isset($_POST['laca_save_pagespeed_api_key'])) {
+            check_admin_referer('laca_save_pagespeed_api_key_action');
+            if (!current_user_can('manage_options')) {
+                wp_die(__('Bạn không có quyền thực hiện thao tác này.', 'lacadev'));
+            }
+
+            $key = sanitize_text_field(wp_unslash($_POST['pagespeed_api_key'] ?? ''));
+            if (!empty($key)) {
+                PageSpeedClient::setApiKey($key);
+                $arg = 'psi_updated';
+            } else {
+                $arg = 'updated';
+            }
+
+            $returnTo = sanitize_text_field(wp_unslash($_POST['return_to'] ?? self::PAGE_SEARCH_CONSOLE));
+            wp_safe_redirect(add_query_arg([$arg => '1'], admin_url('admin.php?page=' . $returnTo)));
+            exit;
+        }
+
+        // 7b. Clear PageSpeed API Key
+        if (isset($_POST['laca_clear_pagespeed_api_key'])) {
+            check_admin_referer('laca_save_pagespeed_api_key_action');
+            if (!current_user_can('manage_options')) {
+                wp_die(__('Bạn không có quyền thực hiện thao tác này.', 'lacadev'));
+            }
+
+            PageSpeedClient::setApiKey('');
+
+            $returnTo = sanitize_text_field(wp_unslash($_POST['return_to'] ?? self::PAGE_SEARCH_CONSOLE));
+            wp_safe_redirect(add_query_arg(['psi_cleared' => '1'], admin_url('admin.php?page=' . $returnTo)));
             exit;
         }
     }
@@ -910,6 +945,44 @@ class GoogleServicesPage
                     <?php endif; ?>
                 </div>
             </div>
+
+            <!-- Card: PageSpeed Insights API Key (Tuỳ chọn) -->
+            <div class="laca-card" style="margin-top: 24px;">
+                <div class="laca-card__header">
+                    <h2 class="laca-card__title" style="display: flex; align-items: center; gap: 8px;">
+                        <span class="dashicons dashicons-performance" style="font-size: 20px; width: 20px; height: 20px; color: var(--laca-fg, #18181b);" aria-hidden="true"></span>
+                        <?php esc_html_e('Google PageSpeed Insights API Key (Tùy chọn)', 'lacadev'); ?>
+                    </h2>
+                </div>
+                <div class="laca-card__body">
+                    <p style="color: var(--laca-fg-muted, #71717a); font-size: 13px; margin: 0 0 16px 0;">
+                        <?php esc_html_e('Không bắt buộc: PageSpeed Insights API v5 có thể kiểm tra hiệu suất ẩn danh. Thêm API Key từ Google Cloud Console để tăng giới hạn truy vấn (quota). Khóa API được lưu mã hóa an toàn và không bao giờ in trực tiếp ra mã HTML.', 'lacadev'); ?>
+                    </p>
+                    <form method="post" style="display: flex; gap: 12px; align-items: flex-end; flex-wrap: wrap;">
+                        <?php wp_nonce_field('laca_save_pagespeed_api_key_action'); ?>
+                        <input type="hidden" name="return_to" value="<?php echo esc_attr(self::PAGE_SEARCH_CONSOLE); ?>">
+                        <div style="flex: 1; min-width: 320px;">
+                            <label for="pagespeed_api_key_input" style="display: block; font-weight: 600; margin-bottom: 6px;">
+                                <?php esc_html_e('PageSpeed Insights API Key:', 'lacadev'); ?>
+                                <?php if (PageSpeedClient::hasApiKey()): ?>
+                                    <span class="laca-badge laca-badge--success" style="margin-left: 8px; font-weight: normal; font-size: 11px;">
+                                        ✓ <?php esc_html_e('Đã cấu hình & mã hóa an toàn', 'lacadev'); ?>
+                                    </span>
+                                <?php endif; ?>
+                            </label>
+                            <input type="password" id="pagespeed_api_key_input" name="pagespeed_api_key" value="" placeholder="<?php echo PageSpeedClient::hasApiKey() ? '••••••••••••••••••••••••••••••••' : esc_attr__('AIzaSy...', 'lacadev'); ?>" autocomplete="off" style="width: 100%; max-width: 560px;">
+                        </div>
+                        <button type="submit" name="laca_save_pagespeed_api_key" class="button button-secondary">
+                            <?php echo PageSpeedClient::hasApiKey() ? esc_html__('Cập nhật khóa mới', 'lacadev') : esc_html__('Lưu API Key', 'lacadev'); ?>
+                        </button>
+                        <?php if (PageSpeedClient::hasApiKey()): ?>
+                            <button type="submit" name="laca_clear_pagespeed_api_key" class="button button-link-delete" style="color: #b32d2e; text-decoration: none; padding: 4px 8px;" onclick="return confirm('<?php echo esc_js(__('Bạn có chắc chắn muốn xóa khóa PageSpeed API?', 'lacadev')); ?>');">
+                                <?php esc_html_e('Xóa khóa API', 'lacadev'); ?>
+                            </button>
+                        <?php endif; ?>
+                    </form>
+                </div>
+            </div>
         </div>
         <?php
     }
@@ -924,6 +997,12 @@ class GoogleServicesPage
         }
         if (isset($_GET['updated'])) {
             echo '<div class="notice notice-success is-dismissible"><p>' . esc_html__('Đã lưu cài đặt thành công.', 'lacadev') . '</p></div>';
+        }
+        if (isset($_GET['psi_updated'])) {
+            echo '<div class="notice notice-success is-dismissible"><p>' . esc_html__('Đã lưu khóa API PageSpeed Insights (đã mã hóa an toàn).', 'lacadev') . '</p></div>';
+        }
+        if (isset($_GET['psi_cleared'])) {
+            echo '<div class="notice notice-success is-dismissible"><p>' . esc_html__('Đã xóa khóa API PageSpeed Insights.', 'lacadev') . '</p></div>';
         }
         if (isset($_GET['refreshed'])) {
             echo '<div class="notice notice-success is-dismissible"><p>' . esc_html__('Đã làm mới danh sách property từ Google Search Console.', 'lacadev') . '</p></div>';

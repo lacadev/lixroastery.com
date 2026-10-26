@@ -215,6 +215,46 @@ class GscClient
     }
 
     /**
+     * Raw query to Search Analytics API endpoint.
+     *
+     * @param string $siteUrl
+     * @param array<string, mixed> $requestBody
+     * @return array<string, mixed>|\WP_Error
+     */
+    public static function searchAnalytics(string $siteUrl, array $requestBody): array|\WP_Error
+    {
+        $token = GscOAuth::getValidAccessToken();
+        if (!$token) {
+            return new \WP_Error('no_token', __('Chưa kết nối tài khoản Google Search Console.', 'lacadev'));
+        }
+
+        $url = self::WEBMASTERS_API_BASE . '/sites/' . rawurlencode($siteUrl) . '/searchAnalytics/query';
+
+        $response = wp_remote_post($url, [
+            'timeout' => 15,
+            'headers' => [
+                'Authorization' => 'Bearer ' . $token,
+                'Content-Type'  => 'application/json',
+            ],
+            'body'    => json_encode($requestBody),
+        ]);
+
+        if (is_wp_error($response)) {
+            return $response;
+        }
+
+        $code = (int) wp_remote_retrieve_response_code($response);
+        $body = wp_remote_retrieve_body($response);
+        $data = json_decode($body, true);
+
+        if ($code < 200 || $code >= 300) {
+            return new \WP_Error('gsc_error_' . $code, sprintf(__('Lỗi Search Console (HTTP %d)', 'lacadev'), $code));
+        }
+
+        return is_array($data) ? $data : [];
+    }
+
+    /**
      * Get performance statistics (7d, 28d, 90d).
      *
      * @param string $siteUrl
