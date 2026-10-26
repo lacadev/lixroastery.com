@@ -77,12 +77,18 @@ class GoogleServices
             update_option(self::OPTION_KEY, $currentSettings, false);
         }
 
-        // Copy OAuth credentials if new option does not exist yet
+        // Copy OAuth credentials if new option does not exist yet or lacks valid tokens
         $oauthCurrent = get_option(GscOAuth::OPTION_KEY, null);
-        if ($oauthCurrent === null) {
+        $currentCreds = (is_string($oauthCurrent) && $oauthCurrent !== '') ? GscCrypto::decrypt($oauthCurrent, true) : null;
+        $hasCurrentTokens = is_array($currentCreds) && (!empty($currentCreds['access_token']) || !empty($currentCreds['refresh_token']));
+
+        if (!$hasCurrentTokens) {
             $oauthLegacy = get_option(self::LEGACY_OAUTH_KEY, null);
-            if ($oauthLegacy !== null) {
-                update_option(GscOAuth::OPTION_KEY, $oauthLegacy, false);
+            if (is_string($oauthLegacy) && $oauthLegacy !== '') {
+                $legacyCreds = GscCrypto::decrypt($oauthLegacy, true);
+                if (is_array($legacyCreds) && (!empty($legacyCreds['access_token']) || !empty($legacyCreds['refresh_token']))) {
+                    update_option(GscOAuth::OPTION_KEY, $oauthLegacy, false);
+                }
             }
         }
 

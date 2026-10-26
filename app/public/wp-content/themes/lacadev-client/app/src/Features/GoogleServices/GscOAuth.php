@@ -379,14 +379,22 @@ class GscOAuth
     public static function getCredentials(): ?array
     {
         $raw = get_option(self::OPTION_KEY, null);
-        if (!$raw || !is_string($raw)) {
-            $raw = get_option(self::LEGACY_OPTION_KEY, null);
-        }
-        if (!$raw || !is_string($raw)) {
-            return null;
+        $data = (is_string($raw) && $raw !== '') ? GscCrypto::decrypt($raw, true) : null;
+        if (is_array($data) && (!empty($data['access_token']) || !empty($data['refresh_token']))) {
+            return $data;
         }
 
-        $data = GscCrypto::decrypt($raw, true);
+        // Fallback to legacy option if new option is missing, empty, or has no valid tokens
+        $legacyRaw = get_option(self::LEGACY_OPTION_KEY, null);
+        if (is_string($legacyRaw) && $legacyRaw !== '') {
+            $legacyData = GscCrypto::decrypt($legacyRaw, true);
+            if (is_array($legacyData) && (!empty($legacyData['access_token']) || !empty($legacyData['refresh_token']))) {
+                // Backfill to new option so next read is fast and migrated
+                update_option(self::OPTION_KEY, $legacyRaw, false);
+                return $legacyData;
+            }
+        }
+
         return is_array($data) ? $data : null;
     }
 

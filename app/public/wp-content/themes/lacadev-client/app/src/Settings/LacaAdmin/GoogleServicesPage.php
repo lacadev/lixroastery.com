@@ -7,6 +7,7 @@ use App\Features\GoogleServices\GscClient;
 use App\Features\GoogleServices\GscOAuth;
 use App\Features\GoogleServices\GaClient;
 use App\Features\GoogleServices\Tracking;
+use App\Features\GoogleServices\GuideContent;
 
 defined('ABSPATH') || exit;
 
@@ -60,8 +61,16 @@ class GoogleServicesPage
 
         wp_enqueue_media();
 
-        $stylePath = get_theme_file_path('dist/styles/laca-seo.css');
-        $styleUri  = get_theme_file_uri('dist/styles/laca-seo.css');
+        // Enqueue bundled laca-seo styles and scripts from child/parent dist
+        $distDir = dirname(get_stylesheet_directory()) . '/dist/';
+        $themeRootUri = dirname(get_stylesheet_directory_uri());
+        if (!file_exists($distDir . 'styles/laca-seo.css')) {
+            $distDir = dirname(get_template_directory()) . '/dist/';
+            $themeRootUri = dirname(get_template_directory_uri());
+        }
+
+        $stylePath = $distDir . 'styles/laca-seo.css';
+        $styleUri  = $themeRootUri . '/dist/styles/laca-seo.css';
         if (file_exists($stylePath)) {
             wp_enqueue_style(
                 'laca-seo-admin',
@@ -71,8 +80,8 @@ class GoogleServicesPage
             );
         }
 
-        $scriptPath = get_theme_file_path('dist/laca-seo.js');
-        $scriptUri  = get_theme_file_uri('dist/laca-seo.js');
+        $scriptPath = $distDir . 'laca-seo.js';
+        $scriptUri  = $themeRootUri . '/dist/laca-seo.js';
         if (file_exists($scriptPath)) {
             wp_enqueue_script(
                 'laca-seo-admin',
@@ -402,6 +411,9 @@ class GoogleServicesPage
                 </div>
             <?php endif; ?>
 
+            <!-- Hướng dẫn Google Analytics 4 (Google Cloud & GA) -->
+            <?php GuideContent::renderForAnalytics(home_url()); ?>
+
             <!-- Khối kết nối Google OAuth cho GA4 Data API -->
             <div class="laca-seo-card" style="margin-bottom: 24px;">
                 <div class="laca-seo-card__header laca-seo-header-flex">
@@ -507,7 +519,7 @@ class GoogleServicesPage
                                 </label>
                             </div>
                             <div class="laca-seo-field-row__control-col">
-                                <input type="text" name="ga4_measurement_id" id="ga4_measurement_id" class="regular-text" value="<?php echo esc_attr($currentMsId); ?>" placeholder="G-XXXXXXXXXX" style="max-width: 460px;">
+                                <input type="text" name="ga4_measurement_id" id="ga4_measurement_id" class="regular-text laca-seo-input" value="<?php echo esc_attr($currentMsId); ?>" placeholder="G-XXXXXXXXXX" style="width: 100%; max-width: 560px;">
                                 <p class="description laca-seo-field-desc">
                                     <?php esc_html_e('Mã đo lường GA4 (bắt đầu bằng "G-"). Hệ thống sẽ tự động chèn gtag.js và cấu hình đo lường.', 'lacadev'); ?>
                                 </p>
@@ -522,7 +534,7 @@ class GoogleServicesPage
                                 </label>
                             </div>
                             <div class="laca-seo-field-row__control-col">
-                                <input type="text" name="gtm_container_id" id="gtm_container_id" class="regular-text" value="<?php echo esc_attr($gtmId); ?>" placeholder="GTM-XXXXXXX" style="max-width: 460px;">
+                                <input type="text" name="gtm_container_id" id="gtm_container_id" class="regular-text laca-seo-input" value="<?php echo esc_attr($gtmId); ?>" placeholder="GTM-XXXXXXX" style="width: 100%; max-width: 560px;">
                                 <p class="description laca-seo-field-desc">
                                     <?php esc_html_e('Mã vùng chứa Google Tag Manager (bắt đầu bằng "GTM-"). Hệ thống sẽ chèn đoạn mã trong <head> và iframe noscript trong <body>.', 'lacadev'); ?>
                                 </p>
@@ -537,8 +549,9 @@ class GoogleServicesPage
                                 </label>
                             </div>
                             <div class="laca-seo-field-row__control-col">
+                                <input type="hidden" name="ga_anonymize_ip" value="off">
                                 <label class="laca-seo-switch">
-                                    <input type="checkbox" name="ga_anonymize_ip" id="ga_anonymize_ip" value="on" <?php checked($anonymize); ?>>
+                                    <input type="checkbox" role="switch" name="ga_anonymize_ip" id="ga_anonymize_ip" value="on" <?php checked($anonymize); ?>>
                                     <span class="laca-seo-switch__slider"></span>
                                 </label>
                                 <p class="description laca-seo-field-desc">
@@ -555,8 +568,9 @@ class GoogleServicesPage
                                 </label>
                             </div>
                             <div class="laca-seo-field-row__control-col">
+                                <input type="hidden" name="ga_exclude_loggedin" value="off">
                                 <label class="laca-seo-switch">
-                                    <input type="checkbox" name="ga_exclude_loggedin" id="ga_exclude_loggedin" value="on" <?php checked($excludeAdmin); ?>>
+                                    <input type="checkbox" role="switch" name="ga_exclude_loggedin" id="ga_exclude_loggedin" value="on" <?php checked($excludeAdmin); ?>>
                                     <span class="laca-seo-switch__slider"></span>
                                 </label>
                                 <p class="description laca-seo-field-desc">
@@ -573,7 +587,7 @@ class GoogleServicesPage
                                 </label>
                             </div>
                             <div class="laca-seo-field-row__control-col">
-                                <textarea name="ga4_goal_events" id="ga4_goal_events" rows="4" class="regular-text" style="width: 100%; max-width: 560px; font-family: monospace; font-size: 13px;"><?php echo esc_textarea($goalEvents); ?></textarea>
+                                <textarea name="ga4_goal_events" id="ga4_goal_events" rows="4" class="regular-text laca-seo-input" style="width: 100%; max-width: 560px; font-family: monospace; font-size: 13px;"><?php echo esc_textarea($goalEvents); ?></textarea>
                                 <p class="description laca-seo-field-desc">
                                     <?php esc_html_e('Mỗi dòng một mục tiêu theo định dạng: event_name|Nhãn hiển thị. Ví dụ:', 'lacadev'); ?><br>
                                     <code>purchase|Đơn hàng</code><br>
@@ -668,7 +682,7 @@ class GoogleServicesPage
                 </div>
 
                 <div class="laca-seo-fields-container" style="padding: 20px;">
-                    <?php $this->renderGoogleCloudPrepDetails($redirectUri); ?>
+                    <?php GuideContent::renderForSearchConsole(home_url(), $redirectUri, GscOAuth::getLegacyRedirectUri()); ?>
 
                     <?php if (!$isConnected): ?>
                         <form method="post" class="laca-seo-form-limit" style="margin-top: 20px;">
@@ -762,51 +776,6 @@ class GoogleServicesPage
                 </div>
             </div>
         </div>
-        <?php
-    }
-
-    /**
-     * Render common Google Cloud preparation instructions.
-     */
-    private function renderGoogleCloudPrepDetails(string $redirectUri): void
-    {
-        $legacyRedirectUri = GscOAuth::getLegacyRedirectUri();
-        ?>
-        <details class="laca-seo-prep-details" open style="border: 1px solid var(--laca-border, #e4e4e7); border-radius: 6px; padding: 12px 16px; background: var(--laca-bg-card, #fff);">
-            <summary class="laca-seo-prep-details__summary" style="cursor: pointer; font-weight: 600;">
-                <span class="dashicons dashicons-info" style="color: var(--laca-accent, #2563eb);"></span>
-                <?php esc_html_e('Hướng dẫn chuẩn bị Google Cloud Console (Bắt buộc)', 'lacadev'); ?>
-            </summary>
-            <div class="laca-seo-prep-details__content" style="margin-top: 12px; font-size: 13.5px; line-height: 1.6;">
-                <ol style="margin-left: 20px; padding-left: 0;">
-                    <li style="margin-bottom: 8px;">
-                        <strong><?php esc_html_e('Bật các API Google:', 'lacadev'); ?></strong>
-                        <?php esc_html_e('Trong Google Cloud Console › APIs & Services › Library, tìm và bật: "Google Search Console API", "Google Analytics Data API", và "Google Analytics Admin API".', 'lacadev'); ?>
-                    </li>
-                    <li style="margin-bottom: 8px;">
-                        <strong><?php esc_html_e('OAuth Consent / Test Users:', 'lacadev'); ?></strong>
-                        <?php esc_html_e('Nếu ứng dụng OAuth đang ở chế độ Testing, hãy thêm email tài khoản Google của bạn vào Test users (Audience) hoặc bấm Publish app để tránh lỗi 403 access_denied.', 'lacadev'); ?>
-                    </li>
-                    <li style="margin-bottom: 8px;">
-                        <strong><?php esc_html_e('Tạo OAuth Client ID:', 'lacadev'); ?></strong>
-                        <?php esc_html_e('Tại mục Credentials, tạo Client ID loại Web application. Nhập địa chỉ Authorized redirect URI sau:', 'lacadev'); ?>
-                        <div style="display: flex; gap: 8px; align-items: center; margin-top: 6px;">
-                            <code style="background: var(--laca-bg-subtle, #f4f4f5); padding: 4px 8px; border-radius: 4px; font-size: 12px; word-break: break-all;"><?php echo esc_html($redirectUri); ?></code>
-                            <button type="button" class="button button-small" onclick="navigator.clipboard.writeText('<?php echo esc_js($redirectUri); ?>'); alert(window.lacaSeoData?.i18n?.copied || 'Đã sao chép!');">
-                                <span class="dashicons dashicons-admin-page" style="margin-top: 2px;"></span> <?php esc_html_e('Sao chép', 'lacadev'); ?>
-                            </button>
-                        </div>
-                        <p style="margin: 6px 0 0 0; font-size: 12px; color: var(--laca-fg-muted, #71717a);">
-                            <?php printf(esc_html__('Lưu ý: URI cũ (%s) vẫn tạm thời được hỗ trợ trong giai đoạn chuyển tiếp.', 'lacadev'), '<code>' . esc_html($legacyRedirectUri) . '</code>'); ?>
-                        </p>
-                    </li>
-                    <li>
-                        <strong><?php esc_html_e('Phạm vi truy cập (Scopes):', 'lacadev'); ?></strong>
-                        <code>webmasters.readonly</code>, <code>analytics.readonly</code>, <code>openid</code>, <code>email</code>.
-                    </li>
-                </ol>
-            </div>
-        </details>
         <?php
     }
 
