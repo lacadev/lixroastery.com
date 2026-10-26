@@ -225,6 +225,306 @@ class GaClient
     }
 
     /**
+     * Get hostName dimension filter for current website domain.
+     *
+     * @return array<string, mixed>
+     */
+    public static function getHostFilter(): array
+    {
+        $host = (string) wp_parse_url(home_url(), PHP_URL_HOST);
+        $cleanHost = preg_replace('/^www\./i', '', $host);
+        $hostValues = array_values(array_unique(array_filter([$cleanHost, 'www.' . $cleanHost])));
+
+        return [
+            'filter' => [
+                'fieldName'    => 'hostName',
+                'inListFilter' => [
+                    'values' => $hostValues,
+                ],
+            ],
+        ];
+    }
+
+    /**
+     * Run batch reports against Google Analytics 4 Data API (properties/{id}:batchRunReports).
+     * Accepts up to 5 report requests to combine multiple queries into a single HTTP round-trip.
+     *
+     * @param string $propertyId
+     * @param array<array<string, mixed>> $requests Max 5 report requests
+     * @param bool $forceRefresh
+     * @return array<array<string, mixed>>|\WP_Error
+     */
+    public static function batchRunReports(string $propertyId, array $requests, bool $forceRefresh = false): array|\WP_Error
+    {
+        $propertyId = preg_replace('/\D/', '', $propertyId);
+        if ($propertyId === '') {
+            return new \WP_Error('invalid_property', __('Chưa chọn Property ID của Google Analytics 4.', 'lacadev'));
+        }
+
+        if (empty($requests)) {
+            return [];
+        }
+
+        $requests = array_slice($requests, 0, 5);
+
+        $cacheKey = 'laca_ga_batch_' . md5($propertyId . '_' . serialize($requests));
+        if (!$forceRefresh) {
+            $cached = get_transient($cacheKey);
+            if (is_array($cached)) {
+                return $cached;
+            }
+        }
+
+        if (get_transient('laca_ga_429_limit')) {
+            return new \WP_Error('rate_limit_exceeded', __('Google đang giới hạn truy vấn, thử lại sau ít phút.', 'lacadev'), ['status' => 429]);
+        }
+
+        $token = GscOAuth::getValidAccessToken();
+        if (!$token) {
+            return new \WP_Error('no_token', __('Chưa kết nối tài khoản Google hoặc phiên đã hết hạn.', 'lacadev'));
+        }
+
+        $url = self::DATA_API_BASE . '/properties/' . $propertyId . ':batchRunReports';
+        $response = wp_remote_post($url, [
+            'timeout' => 20,
+            'headers' => [
+                'Authorization' => 'Bearer ' . $token,
+                'Content-Type'  => 'application/json',
+            ],
+            'body'    => json_encode(['requests' => $requests]),
+        ]);
+
+        if (is_wp_error($response)) {
+            return $response;
+        }
+
+        $code = (int) wp_remote_retrieve_response_code($response);
+        $body = wp_remote_retrieve_body($response);
+        $data = json_decode($body, true);
+
+        if ($code === 429) {
+            set_transient('laca_ga_429_limit', 1, 10 * MINUTE_IN_SECONDS);
+            return new \WP_Error('http_429', __('Google đang giới hạn truy vấn, thử lại sau ít phút.', 'lacadev'), ['status' => 429]);
+        }
+
+        if ($code < 200 || $code >= 300) {
+            if (in_array($code, [401, 403, 404], true)) {
+                set_transient('laca_ga_last_error_code', $code, 12 * HOUR_IN_SECONDS);
+            }
+            $rawMsg = is_array($data) && isset($data['error']['message']) ? $data['error']['message'] : '';
+            return new \WP_Error('http_' . $code, sprintf(__('Lỗi Google Analytics (%d)%s', 'lacadev'), $code, $rawMsg ? ': ' . $rawMsg : ''), [
+                'status' => $code,
+                'data'   => $data,
+            ]);
+        }
+
+        delete_transient('laca_ga_last_error_code');
+
+        $reports = $data['reports'] ?? [];
+        if (!is_array($reports)) {
+            return new \WP_Error('invalid_response', __('Phản hồi từ Google Analytics không hợp lệ.', 'lacadev'));
+        }
+
+        set_transient($cacheKey, $reports, HOUR_IN_SECONDS);
+
+        return $reports;
+    }
+
+    /**
+     * Get complete dashboard overview dataset via a single batchRunReports HTTP request.
+     *
+     * @param string $propertyId
+     * @param string $range
+     * @param bool $forceRefresh
+     * @return array<string, mixed>|\WP_Error
+     */
+    public static function getBatchOverview(string $propertyId, string $range = '28d', bool $forceRefresh = false): array|\WP_Error
+    {
+        $propertyId = preg_replace('/\D/', '', $propertyId);
+        if ($propertyId === '') {
+            return new \WP_Error('invalid_property', __('Chưa chọn Property ID của Google Analytics 4.', 'lacadev'));
+        }
+
+        $rangeInfo   = DateRange::get($range);
+        $days        = $rangeInfo['days'];
+        $prevDays    = 2 * $days;
+        $prevEndDays = $days + 1;
+        $hostFilter  = self::getHostFilter();
+
+        $requests = [
+            // 0. Overview KPI with totals and daily sparkline
+            [
+                'dateRanges' => [
+                    ['startDate' => "{$days}daysAgo", 'endDate' => 'yesterday'],
+                    ['startDate' => "{$prevDays}daysAgo", 'endDate' => "{$prevEndDays}daysAgo"],
+                ],
+                'dimensions' => [['name' => 'date']],
+                'metrics' => [
+                    ['name' => 'activeUsers'],
+                    ['name' => 'newUsers'],
+                    ['name' => 'sessions'],
+                    ['name' => 'screenPageViews'],
+                    ['name' => 'averageSessionDuration'],
+                    ['name' => 'engagementRate'],
+                    ['name' => 'keyEvents'],
+                ],
+                'dimensionFilter'    => $hostFilter,
+                'metricAggregations' => ['TOTAL'],
+                'keepEmptyRows'      => true,
+                'orderBys' => [
+                    ['dimension' => ['dimensionName' => 'date'], 'desc' => false],
+                ],
+                'limit' => 250,
+            ],
+            // 1. Top Pages
+            [
+                'dateRanges' => [
+                    ['startDate' => "{$days}daysAgo", 'endDate' => 'yesterday'],
+                ],
+                'dimensions' => [
+                    ['name' => 'pagePath'],
+                    ['name' => 'pageTitle'],
+                ],
+                'metrics' => [
+                    ['name' => 'screenPageViews'],
+                    ['name' => 'userEngagementDuration'],
+                    ['name' => 'activeUsers'],
+                ],
+                'dimensionFilter' => $hostFilter,
+                'orderBys' => [
+                    ['metric' => ['metricName' => 'screenPageViews'], 'desc' => true],
+                ],
+                'limit' => 10,
+            ],
+            // 2. Channels
+            [
+                'dateRanges' => [
+                    ['startDate' => "{$days}daysAgo", 'endDate' => 'yesterday'],
+                ],
+                'dimensions' => [
+                    ['name' => 'sessionDefaultChannelGroup'],
+                ],
+                'metrics' => [
+                    ['name' => 'sessions'],
+                ],
+                'dimensionFilter' => $hostFilter,
+                'orderBys' => [
+                    ['metric' => ['metricName' => 'sessions'], 'desc' => true],
+                ],
+                'limit' => 5,
+            ],
+            // 3. Devices
+            [
+                'dateRanges' => [
+                    ['startDate' => "{$days}daysAgo", 'endDate' => 'yesterday'],
+                ],
+                'dimensions' => [
+                    ['name' => 'deviceCategory'],
+                ],
+                'metrics' => [
+                    ['name' => 'sessions'],
+                ],
+                'dimensionFilter' => $hostFilter,
+                'orderBys' => [
+                    ['metric' => ['metricName' => 'sessions'], 'desc' => true],
+                ],
+                'limit' => 5,
+            ],
+        ];
+
+        $reports = self::batchRunReports($propertyId, $requests, $forceRefresh);
+        if (is_wp_error($reports)) {
+            return $reports;
+        }
+
+        if (empty($reports) || !isset($reports[0])) {
+            return new \WP_Error('empty_reports', __('Không nhận được dữ liệu báo cáo batch từ GA4.', 'lacadev'));
+        }
+
+        $parsed = self::parseReportResponse($reports[0]);
+        $parsed['propertyId'] = $propertyId;
+        $parsed['range']      = $range;
+
+        if (isset($reports[1])) {
+            $parsed['topPages'] = self::parseSubReport($reports[1], ['pagePath', 'pageTitle'], ['screenPageViews', 'userEngagementDuration', 'activeUsers']);
+        }
+        if (isset($reports[2])) {
+            $parsed['channels'] = self::parseSubReport($reports[2], ['sessionDefaultChannelGroup'], ['sessions']);
+        }
+        if (isset($reports[3])) {
+            $parsed['devices'] = self::parseSubReport($reports[3], ['deviceCategory'], ['sessions']);
+        }
+
+        if (($parsed['totalUsers'] ?? 0) > 0 || ($parsed['totalPageViews'] ?? 0) > 0 || ($parsed['totalSessions'] ?? 0) > 0) {
+            update_option('laca_google_data_available_ga', 1, false);
+        }
+
+        return $parsed;
+    }
+
+    /**
+     * Parse dimension and metric rows from a raw report object.
+     *
+     * @param array<string, mixed> $report
+     * @param string[] $dimensionNames
+     * @param string[] $metricNames
+     * @return array<array<string, mixed>>
+     */
+    public static function parseSubReport(array $report, array $dimensionNames, array $metricNames): array
+    {
+        if (empty($report['rows']) || !is_array($report['rows'])) {
+            return [];
+        }
+
+        $metricIndexes = [];
+        if (!empty($report['metricHeaders']) && is_array($report['metricHeaders'])) {
+            foreach ($report['metricHeaders'] as $idx => $hdr) {
+                $name = $hdr['name'] ?? '';
+                if ($name !== '') {
+                    $metricIndexes[$name] = $idx;
+                }
+            }
+        }
+
+        $primaryMetric = $metricNames[0] ?? 'sessions';
+        $results = [];
+
+        foreach ($report['rows'] as $row) {
+            $dimValues = array_map(static fn($v) => (string) ($v['value'] ?? ''), $row['dimensionValues'] ?? []);
+            $item = [];
+            foreach ($dimensionNames as $i => $name) {
+                $item[$name] = $dimValues[$i] ?? '';
+            }
+
+            foreach ($metricNames as $j => $mName) {
+                $valIdx = $metricIndexes[$mName] ?? $j;
+                $val = (int) ($row['metricValues'][$valIdx]['value'] ?? 0);
+                $item[$mName] = $val;
+            }
+
+            $item['metric'] = $item[$primaryMetric] ?? 0;
+            if (isset($item['screenPageViews'])) {
+                $item['views'] = $item['screenPageViews'];
+            }
+
+            if (in_array('userEngagementDuration', $metricNames, true) && in_array('activeUsers', $metricNames, true)) {
+                $engagementSec = (float) ($item['userEngagementDuration'] ?? 0);
+                $pageUsers     = (int) ($item['activeUsers'] ?? 0);
+                if ($pageUsers > 0 && $engagementSec > 0) {
+                    $avgPageSec = (int) round($engagementSec / $pageUsers);
+                    $item['duration'] = GoogleDashboardService::formatDuration($avgPageSec);
+                } else {
+                    $item['duration'] = '—';
+                }
+            }
+
+            $results[] = $item;
+        }
+
+        return $results;
+    }
+
+    /**
      * Run GA4 report for the given property and range (7d, 28d, 90d).
      *
      * @param string $propertyId
@@ -247,17 +547,17 @@ class GaClient
             }
         }
 
+        if (get_transient('laca_ga_429_limit')) {
+            return new \WP_Error('rate_limit_exceeded', __('Google đang giới hạn truy vấn, thử lại sau ít phút.', 'lacadev'), ['status' => 429]);
+        }
+
         $token = GscOAuth::getValidAccessToken();
         if (!$token) {
             return new \WP_Error('no_token', __('Chưa kết nối tài khoản Google hoặc phiên đã hết hạn.', 'lacadev'));
         }
 
-        $days = match ($range) {
-            '7d', '7'   => 7,
-            '90d', '90' => 90,
-            default     => 28,
-        };
-
+        $rangeInfo   = DateRange::get($range);
+        $days        = $rangeInfo['days'];
         $prevDays    = 2 * $days;
         $prevEndDays = $days + 1;
 
@@ -280,6 +580,9 @@ class GaClient
                 ['name' => 'engagementRate'],
                 ['name' => 'keyEvents'],
             ],
+            'dimensionFilter'    => self::getHostFilter(),
+            'metricAggregations' => ['TOTAL'],
+            'keepEmptyRows'      => true,
             'orderBys' => [
                 ['dimension' => ['dimensionName' => 'date'], 'desc' => false],
             ],
@@ -303,6 +606,11 @@ class GaClient
         $code = (int) wp_remote_retrieve_response_code($response);
         $body = wp_remote_retrieve_body($response);
         $data = json_decode($body, true);
+
+        if ($code === 429) {
+            set_transient('laca_ga_429_limit', 1, 10 * MINUTE_IN_SECONDS);
+            return new \WP_Error('http_429', __('Google đang giới hạn truy vấn, thử lại sau ít phút.', 'lacadev'), ['status' => 429]);
+        }
 
         if ($code < 200 || $code >= 300) {
             if (in_array($code, [401, 403, 404], true)) {
@@ -351,11 +659,16 @@ class GaClient
             $parsed['devices'] = $devices;
         }
 
+        if (($parsed['totalUsers'] ?? 0) > 0 || ($parsed['totalPageViews'] ?? 0) > 0 || ($parsed['totalSessions'] ?? 0) > 0) {
+            update_option('laca_google_data_available_ga', 1, false);
+        }
+
         // Cache 1 hour
         set_transient($cacheKey, $parsed, HOUR_IN_SECONDS);
 
         return $parsed;
     }
+
 
     /**
      * Run a sub-report for dimensions like pagePath, channel, device.
@@ -386,6 +699,7 @@ class GaClient
             ],
             'dimensions' => $dimensions,
             'metrics'    => $metrics,
+            'dimensionFilter' => self::getHostFilter(),
             'orderBys' => [
                 ['metric' => ['metricName' => $primaryMetric], 'desc' => true],
             ],

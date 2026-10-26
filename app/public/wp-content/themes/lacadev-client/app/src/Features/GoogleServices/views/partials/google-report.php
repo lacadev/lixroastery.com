@@ -11,12 +11,8 @@
 
 defined('ABSPATH') || exit;
 
-$range = $range ?? '28d';
-$rangeLabels = $rangeLabels ?? [
-    '7d'  => __('7 ngày qua', 'lacadev'),
-    '28d' => __('28 ngày qua', 'lacadev'),
-    '90d' => __('90 ngày qua', 'lacadev'),
-];
+$range = $range ?? \App\Features\GoogleServices\DateRange::getUserRange();
+$rangeLabels = $rangeLabels ?? \App\Features\GoogleServices\DateRange::getRangeLabels();
 
 $isMock = !empty($gsc['isMock']) || !empty($ga['isMock']);
 $setupState = \App\Features\GoogleServices\GoogleServices::setupState();
@@ -46,16 +42,25 @@ if (!$gscComplete && !$gaComplete) {
                 </div>
             </div>
 
-            <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
-                <div class="button-group" role="group" aria-label="<?php esc_attr_e('Khoảng thời gian', 'lacadev'); ?>">
+            <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap; max-width: 100%;">
+                <div class="button-group" role="group" aria-label="<?php esc_attr_e('Khoảng thời gian', 'lacadev'); ?>" style="display: inline-flex; flex-wrap: wrap; max-width: 100%;">
                     <?php foreach ($rangeLabels as $rKey => $rLabel): ?>
+                        <?php
+                        $shortLabel = match ($rKey) {
+                            '7d'  => '7 ngày',
+                            '14d' => '14 ngày',
+                            '28d' => '28 ngày',
+                            '90d' => '90 ngày',
+                            default => $rLabel,
+                        };
+                        ?>
                         <button
                             type="button"
                             class="button laca-google-range-btn <?php echo $range === $rKey ? 'button-primary' : 'button-secondary'; ?>"
                             data-range="<?php echo esc_attr($rKey); ?>"
-                            style="font-size: 12px; height: 30px; line-height: 28px;"
+                            style="font-size: 11.5px; height: 28px; line-height: 26px; padding: 0 8px;"
                         >
-                            <?php echo esc_html($rLabel); ?>
+                            <?php echo esc_html($shortLabel); ?>
                         </button>
                     <?php endforeach; ?>
                 </div>
@@ -148,6 +153,28 @@ if (!$gscComplete && !$gaComplete) {
                     </div>
                 </div>
             <?php else: ?>
+                <?php if (!empty($gsc['isCollecting'])): ?>
+                    <div style="padding: 16px 20px 0 20px;">
+                        <div class="laca-alert laca-alert--info" style="margin: 0; padding: 12px 14px; border: 1px solid #bfdbfe; background: #eff6ff; border-radius: 6px;">
+                            <span class="dashicons dashicons-update laca-alert__icon" style="color: #2563eb;" aria-hidden="true"></span>
+                            <div class="laca-alert__content">
+                                <h4 class="laca-alert__title" style="color: #1e40af; font-size: 13px; font-weight: 600; margin: 0 0 2px 0;"><?php esc_html_e('Đang thu thập dữ liệu', 'lacadev'); ?></h4>
+                                <p class="laca-alert__description" style="color: #1e3a8a; font-size: 12px; margin: 0;"><?php esc_html_e('Google cần 24–48 giờ để bắt đầu có số liệu báo cáo.', 'lacadev'); ?></p>
+                            </div>
+                        </div>
+                    </div>
+                <?php elseif (!empty($gsc['isZeroData'])): ?>
+                    <div style="padding: 16px 20px 0 20px;">
+                        <div class="laca-alert laca-alert--info" style="margin: 0; padding: 12px 14px; border: 1px solid #e4e4e7; background: #fafafa; border-radius: 6px;">
+                            <span class="dashicons dashicons-info laca-alert__icon" style="color: #71717a;" aria-hidden="true"></span>
+                            <div class="laca-alert__content">
+                                <h4 class="laca-alert__title" style="color: #27272a; font-size: 13px; font-weight: 600; margin: 0 0 2px 0;"><?php esc_html_e('Chưa có lượt truy cập trong khoảng này', 'lacadev'); ?></h4>
+                                <p class="laca-alert__description" style="color: #71717a; font-size: 12px; margin: 0;"><?php esc_html_e('Không có lượt hiển thị hay nhấp chuột nào được ghi nhận.', 'lacadev'); ?></p>
+                            </div>
+                        </div>
+                    </div>
+                <?php endif; ?>
+
                 <!-- Dòng dữ liệu đến ngày -->
                 <div style="padding: 12px 20px 0 20px; font-size: 12px; color: var(--laca-fg-muted, #71717a); display: flex; align-items: center; gap: 6px;">
                     <span class="dashicons dashicons-calendar-alt" style="font-size: 14px; width: 14px; height: 14px; color: var(--laca-fg-subtle, #a1a1aa);"></span>
@@ -401,6 +428,28 @@ if (!$gscComplete && !$gaComplete) {
                     </div>
                 </div>
             <?php else: ?>
+                <?php if (!empty($ga['isCollecting'])): ?>
+                    <div style="padding: 16px 20px 0 20px;">
+                        <div class="laca-alert laca-alert--info" style="margin: 0; padding: 12px 14px; border: 1px solid #bfdbfe; background: #eff6ff; border-radius: 6px;">
+                            <span class="dashicons dashicons-update laca-alert__icon" style="color: #2563eb;" aria-hidden="true"></span>
+                            <div class="laca-alert__content">
+                                <h4 class="laca-alert__title" style="color: #1e40af; font-size: 13px; font-weight: 600; margin: 0 0 2px 0;"><?php esc_html_e('Đang thu thập dữ liệu', 'lacadev'); ?></h4>
+                                <p class="laca-alert__description" style="color: #1e3a8a; font-size: 12px; margin: 0;"><?php esc_html_e('Google cần 24–48 giờ để bắt đầu có số liệu báo cáo.', 'lacadev'); ?></p>
+                            </div>
+                        </div>
+                    </div>
+                <?php elseif (!empty($ga['isZeroData'])): ?>
+                    <div style="padding: 16px 20px 0 20px;">
+                        <div class="laca-alert laca-alert--info" style="margin: 0; padding: 12px 14px; border: 1px solid #e4e4e7; background: #fafafa; border-radius: 6px;">
+                            <span class="dashicons dashicons-info laca-alert__icon" style="color: #71717a;" aria-hidden="true"></span>
+                            <div class="laca-alert__content">
+                                <h4 class="laca-alert__title" style="color: #27272a; font-size: 13px; font-weight: 600; margin: 0 0 2px 0;"><?php esc_html_e('Chưa có lượt truy cập trong khoảng này', 'lacadev'); ?></h4>
+                                <p class="laca-alert__description" style="color: #71717a; font-size: 12px; margin: 0;"><?php esc_html_e('Không có phiên hay người dùng nào được ghi nhận.', 'lacadev'); ?></p>
+                            </div>
+                        </div>
+                    </div>
+                <?php endif; ?>
+
                 <!-- Ô Realtime Active Users (30 phút qua) -->
                 <div class="laca-ga-realtime-card" style="margin: 16px 20px 0 20px; padding: 12px 16px; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; display: flex; align-items: center; justify-content: space-between; gap: 12px;">
                     <div style="display: flex; align-items: center; gap: 10px;">

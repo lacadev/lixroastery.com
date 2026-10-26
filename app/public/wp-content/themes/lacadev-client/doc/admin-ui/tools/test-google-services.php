@@ -22,6 +22,7 @@ use App\Features\GoogleServices\GaClient;
 use App\Features\GoogleServices\Tracking;
 use App\Features\GoogleServices\GoogleDashboardService;
 use App\Features\GoogleServices\GoogleServices;
+use App\Features\GoogleServices\DateRange;
 use App\Features\LacaSeo\Core\Settings;
 use App\Settings\LacaAdmin\GoogleServicesPage;
 
@@ -2733,8 +2734,285 @@ runTest('G1: setupState (4 states + error), index.php hidden when unconfigured, 
     }
 }, $pass, $fail);
 
+// -------------------------------------------------------------
+// Test 31: G2 Data Layer: DateRange, GA4 batchRunReports, hostName filter, GSC sc-domain filter, 429 caching, and data state notices
+// -------------------------------------------------------------
+runTest('G2: DateRange calculations, GA4 batch & hostName, GSC domain filter, 429 cache 10m, and data states', function () {
+    // --- 1. DateRange Tests ---
+    $ranges = ['7d' => 7, '14d' => 14, '28d' => 28, '90d' => 90];
+    $expectedEnd = date('Y-m-d', strtotime('-1 day'));
+
+    foreach ($ranges as $rKey => $days) {
+        $info = DateRange::get($rKey);
+        if ($info['days'] !== $days) {
+            return "DateRange::get({$rKey}) expected days={$days}, got {$info['days']}";
+        }
+        if ($info['endDate'] !== $expectedEnd) {
+            return "DateRange::get({$rKey}) expected endDate={$expectedEnd}, got {$info['endDate']}";
+        }
+        $expectedStart = date('Y-m-d', strtotime("-{$days} days"));
+        if ($info['startDate'] !== $expectedStart) {
+            return "DateRange::get({$rKey}) expected startDate={$expectedStart}, got {$info['startDate']}";
+        }
+        $expectedPrevEnd = date('Y-m-d', strtotime('-' . ($days + 1) . ' days'));
+        if ($info['prevEndDate'] !== $expectedPrevEnd) {
+            return "DateRange::get({$rKey}) expected prevEndDate={$expectedPrevEnd}, got {$info['prevEndDate']}";
+        }
+        $expectedPrevStart = date('Y-m-d', strtotime('-' . ($days * 2) . ' days'));
+        if ($info['prevStartDate'] !== $expectedPrevStart) {
+            return "DateRange::get({$rKey}) expected prevStartDate={$expectedPrevStart}, got {$info['prevStartDate']}";
+        }
+    }
+
+    // User meta preference
+    $testUid = 99999;
+    DateRange::setUserRange('14d', $testUid);
+    if (DateRange::getUserRange($testUid) !== '14d') {
+        return "Expected saved user range '14d', got " . DateRange::getUserRange($testUid);
+    }
+    delete_user_meta($testUid, 'laca_google_range');
+
+    // --- 2. GA4 Request Body Verification (metricAggregations, hostName filter, keepEmptyRows) ---
+    $mockOAuthFilter = function () {
+        return GscCrypto::encrypt([
+            'access_token'  => 'mock-token-g2',
+            'refresh_token' => 'mock-refresh-g2',
+            'created_at'    => time(),
+            'expires_in'    => 3600,
+            'client_id'     => 'mock-client',
+            'client_secret' => 'mock-secret',
+            'scopes'        => [GscOAuth::SCOPE_GA, GscOAuth::SCOPE_GSC],
+        ]);
+    };
+    add_filter('pre_option_' . GscOAuth::OPTION_KEY, $mockOAuthFilter);
+
+    $capturedGaBody = null;
+    $capturedGscBody = null;
+    $capturedBatchBody = null;
+
+    $mockHttp = function ($preempt, $parsedArgs, $url) use (&$capturedGaBody, &$capturedGscBody, &$capturedBatchBody) {
+        if (str_contains($url, 'analyticsdata.googleapis.com')) {
+            if (str_contains($url, ':batchRunReports')) {
+                $capturedBatchBody = json_decode($parsedArgs['body'] ?? '{}', true);
+                return [
+                    'response' => ['code' => 200, 'message' => 'OK'],
+                    'body'     => json_encode([
+                        'reports' => [
+                            // Report 0: Overview
+                            [
+                                'dimensionHeaders' => [['name' => 'date']],
+                                'metricHeaders'    => [['name' => 'activeUsers'], ['name' => 'newUsers'], ['name' => 'sessions'], ['name' => 'screenPageViews'], ['name' => 'averageSessionDuration'], ['name' => 'engagementRate'], ['name' => 'keyEvents']],
+                                'totals'           => [
+                                    ['dimensionValues' => [['value' => 'date_range_0']], 'metricValues' => [['value' => '500'], ['value' => '300'], ['value' => '700'], ['value' => '2500'], ['value' => '120'], ['value' => '0.65'], ['value' => '15']]],
+                                ],
+                                'rows'             => [],
+                            ],
+                            // Report 1: Top Pages
+                            [
+                                'dimensionHeaders' => [['name' => 'pagePath'], ['name' => 'pageTitle']],
+                                'metricHeaders'    => [['name' => 'screenPageViews'], ['name' => 'userEngagementDuration'], ['name' => 'activeUsers']],
+                                'rows'             => [
+                                    ['dimensionValues' => [['value' => '/product/arabica/'], ['value' => 'Arabica Coffee']], 'metricValues' => [['value' => '400'], ['value' => '600'], ['value' => '10']]],
+                                ],
+                            ],
+                            // Report 2: Channels
+                            [
+                                'dimensionHeaders' => [['name' => 'sessionDefaultChannelGroup']],
+                                'metricHeaders'    => [['name' => 'sessions']],
+                                'rows'             => [
+                                    ['dimensionValues' => [['value' => 'Organic Search']], 'metricValues' => [['value' => '450']]],
+                                ],
+                            ],
+                            // Report 3: Devices
+                            [
+                                'dimensionHeaders' => [['name' => 'deviceCategory']],
+                                'metricHeaders'    => [['name' => 'sessions']],
+                                'rows'             => [
+                                    ['dimensionValues' => [['value' => 'mobile']], 'metricValues' => [['value' => '550']]],
+                                ],
+                            ],
+                        ],
+                    ]),
+                    'headers' => ['content-type' => 'application/json'],
+                ];
+            }
+
+            if (str_contains($url, ':runReport')) {
+                $body = json_decode($parsedArgs['body'] ?? '{}', true);
+                if (!empty($body['dimensions']) && ($body['dimensions'][0]['name'] ?? '') === 'date') {
+                    $capturedGaBody = $body;
+                }
+                return [
+                    'response' => ['code' => 200, 'message' => 'OK'],
+                    'body'     => json_encode([
+                        'dimensionHeaders' => [['name' => 'date']],
+                        'metricHeaders'    => [['name' => 'activeUsers'], ['name' => 'newUsers'], ['name' => 'sessions'], ['name' => 'screenPageViews'], ['name' => 'averageSessionDuration'], ['name' => 'engagementRate'], ['name' => 'keyEvents']],
+                        'totals'           => [
+                            ['dimensionValues' => [['value' => 'date_range_0']], 'metricValues' => [['value' => '100'], ['value' => '60'], ['value' => '120'], ['value' => '400'], ['value' => '60'], ['value' => '0.6'], ['value' => '2']]],
+                        ],
+                        'rows'             => [],
+                    ]),
+                    'headers' => ['content-type' => 'application/json'],
+                ];
+            }
+        }
+
+        if (str_contains($url, 'searchAnalytics/query')) {
+            $capturedGscBody = json_decode($parsedArgs['body'] ?? '{}', true);
+            return [
+                'response' => ['code' => 200, 'message' => 'OK'],
+                'body'     => json_encode([
+                    'rows' => [
+                        ['clicks' => 50, 'impressions' => 1000, 'ctr' => 0.05, 'position' => 12.3],
+                    ],
+                ]),
+                'headers' => ['content-type' => 'application/json'],
+            ];
+        }
+
+        return $preempt;
+    };
+    add_filter('pre_http_request', $mockHttp, 10, 3);
+
+    try {
+        // Test GA4 runReport request body
+        delete_transient('laca_ga_rep_' . md5('438291045_28d'));
+        GaClient::runReport('438291045', '28d', true);
+
+        if (!$capturedGaBody) {
+            return "Expected GA4 runReport request to be captured";
+        }
+        if (($capturedGaBody['metricAggregations'] ?? []) !== ['TOTAL']) {
+            return "Expected GA4 metricAggregations: ['TOTAL'], got " . json_encode($capturedGaBody['metricAggregations'] ?? null);
+        }
+        if (($capturedGaBody['keepEmptyRows'] ?? false) !== true) {
+            return "Expected GA4 keepEmptyRows: true";
+        }
+        if (!isset($capturedGaBody['dimensionFilter']['filter']['fieldName']) || $capturedGaBody['dimensionFilter']['filter']['fieldName'] !== 'hostName') {
+            return "Expected GA4 dimensionFilter on hostName, got " . json_encode($capturedGaBody['dimensionFilter'] ?? null);
+        }
+
+        // Test GA4 getBatchOverview
+        delete_transient('laca_ga_batch_' . md5('438291045_28d'));
+        $batchResult = GaClient::getBatchOverview('438291045', '28d', true);
+
+        if (is_wp_error($batchResult)) {
+            return "Expected getBatchOverview to succeed, got: " . $batchResult->get_error_message();
+        }
+        if (!$capturedBatchBody || empty($capturedBatchBody['requests'])) {
+            return "Expected batchRunReports request with sub-requests";
+        }
+        if (count($capturedBatchBody['requests']) > 5) {
+            return "batchRunReports exceeded max 5 requests: " . count($capturedBatchBody['requests']);
+        }
+        if (($batchResult['users'] ?? 0) !== 500) {
+            return "Expected batch overview users=500, got " . ($batchResult['users'] ?? 0);
+        }
+        if (empty($batchResult['topPages']) || ($batchResult['topPages'][0]['views'] ?? 0) !== 400) {
+            return "Expected topPages parsed from batch report 1";
+        }
+        if (empty($batchResult['channels']) || ($batchResult['channels'][0]['sessions'] ?? 0) !== 450) {
+            return "Expected channels parsed from batch report 2";
+        }
+
+        // Test GSC sc-domain: filter
+        delete_transient('laca_gsc_perf_' . md5('sc-domain:lixroastery.local_28d'));
+        GscClient::getPerformanceSummary('sc-domain:lixroastery.local', '28d', true);
+
+        if (!$capturedGscBody) {
+            return "Expected GSC request to be captured";
+        }
+        if (empty($capturedGscBody['dimensionFilterGroups'])) {
+            return "Expected dimensionFilterGroups for sc-domain: property";
+        }
+        $gscFilter = $capturedGscBody['dimensionFilterGroups'][0]['filters'][0] ?? [];
+        if (($gscFilter['dimension'] ?? '') !== 'page' || ($gscFilter['operator'] ?? '') !== 'contains') {
+            return "Expected page contains filter in GSC request, got " . json_encode($gscFilter);
+        }
+
+        // --- 3. Rate limiting 429 tests ---
+        remove_filter('pre_http_request', $mockHttp, 10);
+
+        $mock429 = function ($preempt, $parsedArgs, $url) {
+            return [
+                'response' => ['code' => 429, 'message' => 'Too Many Requests'],
+                'body'     => json_encode(['error' => ['message' => 'Rate limit exceeded']]),
+                'headers'  => ['content-type' => 'application/json'],
+            ];
+        };
+        add_filter('pre_http_request', $mock429, 10, 3);
+
+        delete_transient('laca_ga_429_limit');
+        $ga429 = GaClient::runReport('438291045', '28d', true);
+
+        if (!is_wp_error($ga429) || (int) ($ga429->get_error_data()['status'] ?? 0) !== 429) {
+            return "Expected GA4 429 WP_Error on rate limit";
+        }
+        if (!get_transient('laca_ga_429_limit')) {
+            return "Expected transient laca_ga_429_limit to be set on 429 response";
+        }
+        if (!str_contains($ga429->get_error_message(), 'Google đang giới hạn truy vấn')) {
+            return "Expected friendly 429 notice in message, got: " . $ga429->get_error_message();
+        }
+
+        delete_transient('laca_ga_429_limit');
+        remove_filter('pre_http_request', $mock429, 10);
+
+        // --- 4. Data Collection State tests ---
+        delete_option('laca_google_data_available_gsc');
+        delete_option('laca_google_data_available_ga');
+
+        // Test collecting notice when no data ever
+        $mockZeroData = function ($preempt, $parsedArgs, $url) {
+            if (str_contains($url, 'searchAnalytics/query')) {
+                return [
+                    'response' => ['code' => 200, 'message' => 'OK'],
+                    'body'     => json_encode(['rows' => []]),
+                    'headers'  => ['content-type' => 'application/json'],
+                ];
+            }
+            return $preempt;
+        };
+        add_filter('pre_http_request', $mockZeroData, 10, 3);
+
+        delete_transient('laca_gsc_perf_' . md5('https://lixroastery.local/_28d'));
+        $gscEmpty = GoogleDashboardService::getGscData('28d', true);
+
+        if (empty($gscEmpty['isCollecting']) || empty($gscEmpty['collectingNotice'])) {
+            return "Expected isCollecting=true and collectingNotice when site has never had data";
+        }
+
+        // Test zero data notice when site previously had data
+        update_option('laca_google_data_available_gsc', 1);
+        delete_transient('laca_gsc_perf_' . md5('https://lixroastery.local/_28d'));
+        $gscZero = GoogleDashboardService::getGscData('28d', true);
+
+        if (!empty($gscZero['isCollecting']) || empty($gscZero['isZeroData']) || empty($gscZero['zeroDataNotice'])) {
+            return "Expected isZeroData=true and zeroDataNotice when data was previously available but current range is 0";
+        }
+
+        return true;
+    } finally {
+        remove_filter('pre_option_' . GscOAuth::OPTION_KEY, $mockOAuthFilter);
+        remove_filter('pre_http_request', $mockHttp, 10);
+        if (isset($mock429)) {
+            remove_filter('pre_http_request', $mock429, 10);
+        }
+        if (isset($mockZeroData)) {
+            remove_filter('pre_http_request', $mockZeroData, 10);
+        }
+        delete_transient('laca_ga_429_limit');
+        delete_transient('laca_gsc_429_limit');
+        delete_transient('laca_ga_rep_' . md5('438291045_28d'));
+        delete_transient('laca_ga_batch_' . md5('438291045_28d'));
+        delete_transient('laca_gsc_perf_' . md5('sc-domain:lixroastery.local_28d'));
+        delete_transient('laca_gsc_perf_' . md5('https://lixroastery.local/_28d'));
+    }
+}, $pass, $fail);
+
 echo "SUMMARY pass={$pass} fail={$fail}\n";
 exit($fail === 0 ? 0 : 1);
+
 
 
 

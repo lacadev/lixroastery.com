@@ -343,10 +343,11 @@ class GoogleServices
             return;
         }
 
-        $nonce   = wp_create_nonce('laca_google_report_nonce');
-        $ajaxUrl = admin_url('admin-ajax.php');
+        $nonce     = wp_create_nonce('laca_google_report_nonce');
+        $ajaxUrl   = admin_url('admin-ajax.php');
+        $userRange = DateRange::getUserRange();
         ?>
-        <div id="laca-google-report" class="laca-google-report-wrap" data-ajax-url="<?php echo esc_url($ajaxUrl); ?>" data-nonce="<?php echo esc_attr($nonce); ?>" data-mock="<?php echo esc_attr($isMock); ?>" style="margin: 20px 0 24px 0; clear: both;">
+        <div id="laca-google-report" class="laca-google-report-wrap" data-ajax-url="<?php echo esc_url($ajaxUrl); ?>" data-nonce="<?php echo esc_attr($nonce); ?>" data-mock="<?php echo esc_attr($isMock); ?>" data-range="<?php echo esc_attr($userRange); ?>" style="margin: 20px 0 24px 0; clear: both;">
             <div class="laca-google-report-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
                 <div class="laca-google-report-header__title" style="display: flex; align-items: center; gap: 8px;">
                     <span class="dashicons dashicons-chart-area" style="font-size: 20px; width: 20px; height: 20px; color: var(--laca-fg, #18181b);" aria-hidden="true"></span>
@@ -445,10 +446,13 @@ class GoogleServices
             wp_send_json_error(['message' => __('Bạn không có quyền thực hiện thao tác này.', 'lacadev')], 403);
         }
 
-        $range = sanitize_key(wp_unslash($_REQUEST['range'] ?? '28d'));
-        if (!in_array($range, ['7d', '28d', '90d'], true)) {
-            $range = '28d';
+        $range = sanitize_key(wp_unslash($_REQUEST['range'] ?? DateRange::getUserRange()));
+        if (!in_array($range, DateRange::SUPPORTED_RANGES, true)) {
+            $range = DateRange::DEFAULT_RANGE;
         }
+
+        // Save preference per-user
+        DateRange::setUserRange($range);
 
         $refresh = !empty($_REQUEST['refresh']);
 
@@ -460,11 +464,7 @@ class GoogleServices
         $gsc = $report['gsc'];
         $ga  = $report['ga4'];
 
-        $rangeLabels = [
-            '7d'  => __('7 ngày qua', 'lacadev'),
-            '28d' => __('28 ngày qua', 'lacadev'),
-            '90d' => __('90 ngày qua', 'lacadev'),
-        ];
+        $rangeLabels = DateRange::getRangeLabels();
 
         ob_start();
         include __DIR__ . '/views/partials/google-report.php';

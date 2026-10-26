@@ -105,6 +105,10 @@ class GoogleDashboardService
         $prevPosition = isset($result['prevPosition']) && !empty($result['hasPrevData']) ? (float) $result['prevPosition'] : null;
         $positionDelta = self::calcPositionDelta($position, $prevPosition);
 
+        $isZeroData  = ($clicks === 0 && $impressions === 0 && empty($queries) && empty($pages));
+        $hasDataEver = (bool) get_option('laca_google_data_available_gsc', 0);
+        $isCollecting = ($isZeroData && !$hasDataEver);
+
         return [
             'connected'         => true,
             'isMock'            => false,
@@ -119,6 +123,10 @@ class GoogleDashboardService
             'position_delta'    => $positionDelta,
             'queries'           => $queries,
             'pages'             => $pages,
+            'isCollecting'      => $isCollecting,
+            'collectingNotice'  => $isCollecting ? __('Đang thu thập dữ liệu (Google cần 24–48 giờ)', 'lacadev') : null,
+            'isZeroData'        => ($isZeroData && $hasDataEver),
+            'zeroDataNotice'    => ($isZeroData && $hasDataEver) ? __('Chưa có lượt truy cập trong khoảng này', 'lacadev') : null,
             'dataDate'          => (string) ($result['dataDate'] ?? date('d/m', strtotime($result['endDate'] ?? '-1 day'))),
             'lagNotice'         => sprintf(__('Dữ liệu đến ngày %s', 'lacadev'), (string) ($result['dataDate'] ?? date('d/m', strtotime($result['endDate'] ?? '-1 day')))),
         ];
@@ -154,7 +162,10 @@ class GoogleDashboardService
             return self::getMockGa4Data($range);
         }
 
-        $result = GaClient::runReport($propertyId, $range, $forceRefresh);
+        $result = GaClient::getBatchOverview($propertyId, $range, $forceRefresh);
+        if (is_wp_error($result) || empty($result)) {
+            $result = GaClient::runReport($propertyId, $range, $forceRefresh);
+        }
         if (is_wp_error($result)) {
             $realtimeUsers = 0;
             $rt = GaClient::runRealtimeReport($propertyId, $forceRefresh);
@@ -288,6 +299,13 @@ class GoogleDashboardService
             }
         }
 
+        $totalUsers    = (int) ($summary['totalUsers'] ?? 0);
+        $totalViews    = (int) ($summary['totalPageViews'] ?? 0);
+        $totalSessions = (int) ($summary['totalSessions'] ?? 0);
+        $isZeroData    = ($totalUsers === 0 && $totalViews === 0 && $totalSessions === 0 && empty($formattedTopPages));
+        $hasDataEver   = (bool) get_option('laca_google_data_available_ga', 0);
+        $isCollecting  = ($isZeroData && !$hasDataEver);
+
         return [
             'connected'            => true,
             'isMock'               => false,
@@ -304,6 +322,10 @@ class GoogleDashboardService
             'businessKpis'         => $businessKpis,
             'topPages'             => array_slice($formattedTopPages, 0, 5),
             'realtimeUsers'        => $realtimeUsers,
+            'isCollecting'         => $isCollecting,
+            'collectingNotice'     => $isCollecting ? __('Đang thu thập dữ liệu (Google cần 24–48 giờ)', 'lacadev') : null,
+            'isZeroData'           => ($isZeroData && $hasDataEver),
+            'zeroDataNotice'       => ($isZeroData && $hasDataEver) ? __('Chưa có lượt truy cập trong khoảng này', 'lacadev') : null,
         ];
     }
 

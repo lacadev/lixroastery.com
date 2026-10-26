@@ -49,7 +49,7 @@
         }
 
         // 2. AJAX Load Report
-        let currentRange = '28d';
+        let currentRange = wrap.dataset.range || '28d';
 
         function loadReport(range, isRefresh) {
             if (!container || !ajaxUrl || !nonce) return;
@@ -230,7 +230,7 @@
         }
 
         // Start loading initial report
-        loadReport('28d', false);
+        loadReport(currentRange, false);
     }
 })();
 

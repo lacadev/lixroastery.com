@@ -181,6 +181,47 @@ class GscClient
      * @param bool $forceRefresh
      * @return array|\WP_Error
      */
+    /**
+     * Get domain page filter for Search Console domain properties (sc-domain:...).
+     *
+     * @param string $siteUrl
+     * @return array<string, mixed>
+     */
+    public static function getDomainFilter(string $siteUrl): array
+    {
+        if (!str_starts_with($siteUrl, 'sc-domain:')) {
+            return [];
+        }
+
+        $host = (string) wp_parse_url(home_url(), PHP_URL_HOST);
+        $cleanHost = preg_replace('/^www\./i', '', $host);
+        if ($cleanHost === '') {
+            return [];
+        }
+
+        return [
+            'dimensionFilterGroups' => [
+                [
+                    'filters' => [
+                        [
+                            'dimension'  => 'page',
+                            'operator'   => 'contains',
+                            'expression' => $cleanHost,
+                        ],
+                    ],
+                ],
+            ],
+        ];
+    }
+
+    /**
+     * Get performance statistics (7d, 28d, 90d).
+     *
+     * @param string $siteUrl
+     * @param string $range
+     * @param bool $forceRefresh
+     * @return array|\WP_Error
+     */
     public static function getPerformanceSummary(string $siteUrl, string $range = '28d', bool $forceRefresh = false): array|\WP_Error
     {
         $cacheKey = 'laca_gsc_perf_' . md5($siteUrl . '_' . $range);
@@ -191,29 +232,32 @@ class GscClient
             }
         }
 
+        if (get_transient('laca_gsc_429_limit')) {
+            return new \WP_Error('rate_limit_exceeded', __('Google đang giới hạn truy vấn, thử lại sau ít phút.', 'lacadev'), ['status' => 429]);
+        }
+
         $token = GscOAuth::getValidAccessToken();
         if (!$token) {
             return new \WP_Error('no_token', __('Chưa kết nối tài khoản Google Search Console.', 'lacadev'));
         }
 
-        $days = match ($range) {
-            '7d', '7'   => 7,
-            '90d', '90' => 90,
-            default     => 28,
-        };
+        $rangeInfo     = DateRange::get($range);
+        $days          = $rangeInfo['days'];
+        $startDate     = $rangeInfo['startDate'];
+        $endDate       = $rangeInfo['endDate'];
+        $prevStartDate = $rangeInfo['prevStartDate'];
+        $prevEndDate   = $rangeInfo['prevEndDate'];
 
-        // GSC dataState => all includes fresh data (up to yesterday)
-        $endDate   = date('Y-m-d', strtotime('-1 day'));
-        $startDate = date('Y-m-d', strtotime('-' . $days . ' days'));
+        $domainFilters = self::getDomainFilter($siteUrl);
 
         $url = self::WEBMASTERS_API_BASE . '/sites/' . rawurlencode($siteUrl) . '/searchAnalytics/query';
 
         // 1. Fetch aggregate totals for current period (NO dimensions => 1 weighted summary row)
-        $totalsRequestBody = [
+        $totalsRequestBody = array_merge([
             'startDate' => $startDate,
             'endDate'   => $endDate,
             'dataState' => 'all',
-        ];
+        ], $domainFilters);
 
         $response = wp_remote_post($url, [
             'timeout' => 15,
@@ -231,6 +275,11 @@ class GscClient
         $code = (int) wp_remote_retrieve_response_code($response);
         $body = wp_remote_retrieve_body($response);
         $data = json_decode($body, true);
+
+        if ($code === 429) {
+            set_transient('laca_gsc_429_limit', 1, 10 * MINUTE_IN_SECONDS);
+            return new \WP_Error('http_429', __('Google đang giới hạn truy vấn, thử lại sau ít phút.', 'lacadev'), ['status' => 429]);
+        }
 
         if ($code < 200 || $code >= 300) {
             if (in_array($code, [401, 403, 404], true)) {
@@ -281,13 +330,13 @@ class GscClient
         }
 
         // 2. Fetch top queries for current period (with dimension 'query')
-        $queriesRequestBody = [
+        $queriesRequestBody = array_merge([
             'startDate'  => $startDate,
             'endDate'    => $endDate,
             'dimensions' => ['query'],
             'dataState'  => 'all',
             'rowLimit'   => 50,
-        ];
+        ], $domainFilters);
 
         $queryResponse = wp_remote_post($url, [
             'timeout' => 15,
@@ -310,14 +359,11 @@ class GscClient
         }
 
         // 3. Query prior period without dimensions for aggregate comparison totals
-        $prevEndDate   = date('Y-m-d', strtotime('-' . ($days + 1) . ' days'));
-        $prevStartDate = date('Y-m-d', strtotime('-' . (2 * $days) . ' days'));
-
-        $prevRequestBody = [
+        $prevRequestBody = array_merge([
             'startDate' => $prevStartDate,
             'endDate'   => $prevEndDate,
             'dataState' => 'all',
-        ];
+        ], $domainFilters);
 
         $prevResponse = wp_remote_post($url, [
             'timeout' => 15,
@@ -389,6 +435,10 @@ class GscClient
             'hasPrevData'      => $hasPrevData,
         ];
 
+        if ($totalClicks > 0 || $totalImpressions > 0 || !empty($queries) || !empty($pages)) {
+            update_option('laca_google_data_available_gsc', 1, false);
+        }
+
         // Cache 1 hour
         set_transient($cacheKey, $parsed, HOUR_IN_SECONDS);
 
@@ -418,22 +468,19 @@ class GscClient
             return new \WP_Error('no_token', __('Chưa kết nối tài khoản Google Search Console.', 'lacadev'));
         }
 
-        $days = match ($range) {
-            '7d', '7'   => 7,
-            '90d', '90' => 90,
-            default     => 28,
-        };
+        $rangeInfo = DateRange::get($range);
+        $startDate = $rangeInfo['startDate'];
+        $endDate   = $rangeInfo['endDate'];
 
-        $endDate   = date('Y-m-d', strtotime('-1 day'));
-        $startDate = date('Y-m-d', strtotime('-' . $days . ' days'));
+        $domainFilters = self::getDomainFilter($siteUrl);
 
-        $requestBody = [
+        $requestBody = array_merge([
             'startDate'  => $startDate,
             'endDate'    => $endDate,
             'dimensions' => ['page'],
             'dataState'  => 'all',
             'rowLimit'   => 15,
-        ];
+        ], $domainFilters);
 
         $url = self::WEBMASTERS_API_BASE . '/sites/' . rawurlencode($siteUrl) . '/searchAnalytics/query';
         $response = wp_remote_post($url, [
