@@ -1,11 +1,6 @@
 <?php
 
-namespace App\Features\LacaSeo\Admin;
-
-use App\Features\LacaSeo\Core\Settings;
-use App\Features\LacaSeo\Modules\SearchConsole\GscClient;
-use App\Features\LacaSeo\Modules\SearchConsole\GscOAuth;
-use App\Features\LacaSeo\Modules\GoogleAnalytics\GaClient;
+namespace App\Features\GoogleServices;
 
 defined('ABSPATH') || exit;
 
@@ -74,9 +69,12 @@ class GoogleDashboardService
                     $siteUrl
                 );
             } elseif ($status === 403) {
+                $email = GscOAuth::getConnectedEmail();
+                $emailDisplay = !empty($email) ? $email : __('Chưa rõ email, hãy kết nối lại để hiển thị', 'lacadev');
                 $msg = sprintf(
-                    __('Tài khoản chưa có quyền truy cập property "%s". Hãy kiểm tra lại quyền hoặc chọn property khác.', 'lacadev'),
-                    $siteUrl
+                    __('Tài khoản %s chưa có property này. Ngắt kết nối và đăng nhập bằng tài khoản sở hữu site, hoặc thêm %s vào Search Console → Cài đặt → Người dùng và quyền.', 'lacadev'),
+                    $emailDisplay,
+                    $emailDisplay
                 );
             }
             return [
@@ -136,7 +134,11 @@ class GoogleDashboardService
     {
         $isConnected = GscOAuth::isConnected();
         $hasGaScope  = GscOAuth::hasAnalyticsScope();
-        $propertyId  = (string) Settings::get('general.ga4_property_id', '');
+        $googleOpts  = get_option('laca_google_services', []);
+        $propertyId  = is_array($googleOpts) ? (string) ($googleOpts['ga4_property_id'] ?? '') : '';
+        if ($propertyId === '' && class_exists(\App\Features\LacaSeo\Core\Settings::class)) {
+            $propertyId = (string) \App\Features\LacaSeo\Core\Settings::get('general.ga4_property_id', '');
+        }
 
         if ((!$isConnected || !$hasGaScope || empty($propertyId)) && !self::isMockMode()) {
             return [
@@ -210,7 +212,10 @@ class GoogleDashboardService
 
         // Business KPIs from configured ga4_goal_events
         $businessKpis = [];
-        $rawGoals = (string) Settings::get('general.ga4_goal_events', '');
+        $rawGoals = is_array($googleOpts) ? (string) ($googleOpts['ga4_goal_events'] ?? '') : '';
+        if ($rawGoals === '' && class_exists(\App\Features\LacaSeo\Core\Settings::class)) {
+            $rawGoals = (string) \App\Features\LacaSeo\Core\Settings::get('general.ga4_goal_events', '');
+        }
         if ($rawGoals !== '') {
             $goalMap = [];
             foreach (explode("\n", $rawGoals) as $line) {

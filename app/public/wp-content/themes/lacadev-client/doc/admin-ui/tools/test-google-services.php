@@ -15,14 +15,15 @@ if (file_exists($wp_load)) {
     require_once dirname(__DIR__, 3) . '/vendor/autoload.php';
 }
 
-use App\Features\LacaSeo\Modules\SearchConsole\GscClient;
-use App\Features\LacaSeo\Modules\SearchConsole\GscOAuth;
-use App\Features\LacaSeo\Modules\SearchConsole\GscCrypto;
-use App\Features\LacaSeo\Modules\GoogleAnalytics\GaClient;
-use App\Features\LacaSeo\Frontend\Tracking;
+use App\Features\GoogleServices\GscClient;
+use App\Features\GoogleServices\GscOAuth;
+use App\Features\GoogleServices\GscCrypto;
+use App\Features\GoogleServices\GaClient;
+use App\Features\GoogleServices\Tracking;
+use App\Features\GoogleServices\GoogleDashboardService;
+use App\Features\GoogleServices\GoogleServices;
 use App\Features\LacaSeo\Core\Settings;
 use App\Settings\LacaAdmin\GoogleServicesPage;
-use App\Features\LacaSeo\Admin\GoogleDashboardService;
 
 $pass = 0;
 $fail = 0;
@@ -362,11 +363,17 @@ runTest('Anti-Double Counting: Tracking omits script when ID is in header script
     // Mock header script via Carbon option or direct option
     update_option('_crb_header_script', $mockHeaderScript);
 
-    // Set duplicate ID in Settings
+    // Set duplicate ID in both laca_google_services and Settings
+    $origGoogle = get_option('laca_google_services', []);
+    update_option('laca_google_services', array_merge((array) $origGoogle, [
+        'ga4_measurement_id'  => $duplicateId,
+        'ga_exclude_loggedin' => 'off',
+    ]));
+
     $origSettings = Settings::getGroup('general');
     $testSettings = $origSettings;
     $testSettings['ga4_measurement_id'] = $duplicateId;
-    $testSettings['ga_exclude_loggedin'] = 'off'; // ensure not excluded by user check
+    $testSettings['ga_exclude_loggedin'] = 'off';
     Settings::updateGroup('general', $testSettings);
 
     try {
@@ -374,10 +381,6 @@ runTest('Anti-Double Counting: Tracking omits script when ID is in header script
         ob_start();
         $tracking->outputHeadTracking();
         $output = ob_get_clean();
-
-        // Restore
-        delete_option('_crb_header_script');
-        Settings::updateGroup('general', $origSettings);
 
         $scriptTagCount = substr_count($output, 'googletagmanager.com/gtag/js');
         if ($scriptTagCount !== 0) {
@@ -389,22 +392,28 @@ runTest('Anti-Double Counting: Tracking omits script when ID is in header script
         }
 
         return true;
-    } catch (\Throwable $e) {
+    } finally {
         delete_option('_crb_header_script');
+        update_option('laca_google_services', $origGoogle);
         Settings::updateGroup('general', $origSettings);
-        throw $e;
     }
 }, $pass, $fail);
 
 // -------------------------------------------------------------
 // Test 7: OAuth Redirect URI phải GIỐNG HỆT chuỗi gốc
 // -------------------------------------------------------------
-runTest('OAuth Redirect URI: Exactly matches canonical URI', function () {
-    $expected = admin_url('admin.php?page=laca-seo&view=search-console&laca_gsc_oauth=1');
+runTest('OAuth Redirect URI: Exactly matches canonical and legacy URIs', function () {
+    $expected = admin_url('admin.php?page=laca-google-search-console&laca_google_oauth=1');
     $actual = GscOAuth::getRedirectUri();
 
     if ($actual !== $expected) {
         return "Expected '{$expected}', got '{$actual}'";
+    }
+
+    $legacyExpected = admin_url('admin.php?page=laca-seo&view=search-console&laca_gsc_oauth=1');
+    $legacyActual = GscOAuth::getLegacyRedirectUri();
+    if ($legacyActual !== $legacyExpected) {
+        return "Expected legacy '{$legacyExpected}', got '{$legacyActual}'";
     }
 
     return true;
@@ -464,8 +473,13 @@ runTest('GoogleServicesPage::handleActions: Initiates OAuth with 2 scopes and ca
         }
 
         $scope = $queryParams['scope'] ?? '';
-        if (!str_contains($scope, GscOAuth::SCOPE_GSC) || !str_contains($scope, GscOAuth::SCOPE_GA)) {
-            return "Expected scope to contain both GSC and GA scopes, got: '{$scope}'";
+        if (!str_contains($scope, GscOAuth::SCOPE_GSC) || !str_contains($scope, GscOAuth::SCOPE_GA) || !str_contains($scope, 'openid') || !str_contains($scope, 'email')) {
+            return "Expected scope to contain GSC, GA, openid, and email scopes, got: '{$scope}'";
+        }
+
+        $prompt = $queryParams['prompt'] ?? '';
+        if (!str_contains($prompt, 'consent') || !str_contains($prompt, 'select_account')) {
+            return "Expected prompt to contain 'consent select_account', got: '{$prompt}'";
         }
 
         return true;
@@ -939,7 +953,12 @@ runTest('views/dashboard.php HTML: Never contains fabricated numbers (186, 12.4%
 
     try {
         ob_start();
-        $viewPath = dirname(__DIR__, 3) . '/app/src/Features/LacaSeo/Admin/views/dashboard.php';
+        $range = '28d';
+        $isForceRefresh = false;
+        $viewPath = dirname(__DIR__, 3) . '/app/src/Features/GoogleServices/views/partials/google-report.php';
+        $report = GoogleDashboardService::getDashboardReport($range, $isForceRefresh);
+        $gsc = $report['gsc'];
+        $ga  = $report['ga4'];
         include $viewPath;
         $html = ob_get_clean();
 
@@ -1053,7 +1072,7 @@ runTest('views/search-console.php: Gracefully renders on 404 and 403 without fat
     add_filter('pre_http_request', $mockFilter404, 10, 3);
     try {
         ob_start();
-        include dirname(__DIR__, 3) . '/app/src/Features/LacaSeo/Admin/views/search-console.php';
+        include dirname(__DIR__, 3) . '/app/src/Features/GoogleServices/views/search-console.php';
         $html404 = ob_get_clean();
     } catch (\Throwable $e) {
         ob_end_clean();
@@ -1093,7 +1112,7 @@ runTest('views/search-console.php: Gracefully renders on 404 and 403 without fat
     add_filter('pre_http_request', $mockFilter403, 10, 3);
     try {
         ob_start();
-        include dirname(__DIR__, 3) . '/app/src/Features/LacaSeo/Admin/views/search-console.php';
+        include dirname(__DIR__, 3) . '/app/src/Features/GoogleServices/views/search-console.php';
         $html403 = ob_get_clean();
     } catch (\Throwable $e) {
         ob_end_clean();
@@ -1295,7 +1314,7 @@ runTest('DashboardWidget::ajaxGoogleReport: Rejects without nonce and returns 2-
         $caughtDie = null;
         try {
             ob_start();
-            $widget->ajaxGoogleReport();
+            GoogleServices::ajaxGoogleReport();
             ob_end_clean();
         } catch (\RuntimeException $e) {
             $caughtDie = $e->getMessage();
@@ -1318,7 +1337,7 @@ runTest('DashboardWidget::ajaxGoogleReport: Rejects without nonce and returns 2-
         $jsonOutput = '';
         try {
             ob_start();
-            $widget->ajaxGoogleReport();
+            GoogleServices::ajaxGoogleReport();
         } catch (\RuntimeException $e) {
             $jsonOutput = ob_get_clean();
         }
@@ -1455,6 +1474,121 @@ runTest('GSC Client: Calls exact canonical endpoints (Webmasters v3 vs SearchCon
     }
 
     return true;
+}, $pass, $fail);
+
+// -------------------------------------------------------------
+// Test 22: Decode email from Google JWT id_token payload
+// -------------------------------------------------------------
+runTest('GscOAuth::extractEmailFromIdToken: Decodes email from JWT payload without verification', function () {
+    $payload = ['email' => 'xliiicoffeeeverywhere@gmail.com', 'sub' => '1234567890'];
+    $fakeJwt = 'eyJhbGciOiJSUzI1NiJ9.' . rtrim(strtr(base64_encode(json_encode($payload)), '+/', '-_'), '=') . '.sig';
+    $email = GscOAuth::extractEmailFromIdToken($fakeJwt);
+    if ($email !== 'xliiicoffeeeverywhere@gmail.com') {
+        return "Expected 'xliiicoffeeeverywhere@gmail.com', got '{$email}'";
+    }
+
+    $invalidJwt = 'invalid-jwt-token';
+    if (GscOAuth::extractEmailFromIdToken($invalidJwt) !== null) {
+        return "Expected null for invalid JWT";
+    }
+
+    return true;
+}, $pass, $fail);
+
+// -------------------------------------------------------------
+// Test 23: Changing client_id purges old tokens
+// -------------------------------------------------------------
+runTest('GscOAuth::setPendingCredentials: Changing client_id purges old tokens', function () {
+    GscOAuth::saveCredentials([
+        'client_id'     => 'initial-client-id.apps.googleusercontent.com',
+        'client_secret' => 'old-secret',
+        'access_token'  => 'tok-123',
+        'refresh_token' => 'ref-123',
+    ]);
+
+    if (!GscOAuth::isConnected()) {
+        return 'Precondition failed: should be connected';
+    }
+
+    // Set pending with different client_id
+    GscOAuth::setPendingCredentials('new-client-id.apps.googleusercontent.com', 'new-secret');
+
+    if (GscOAuth::isConnected()) {
+        return 'Expected old tokens to be deleted when client_id changes';
+    }
+
+    return true;
+}, $pass, $fail);
+
+// -------------------------------------------------------------
+// Test 24: Migration copies options without deleting legacy options
+// -------------------------------------------------------------
+runTest('GoogleServices::migrate: Copies 7 settings keys without deleting legacy options', function () {
+    delete_option('laca_google_services_migrated');
+    delete_option('laca_google_services');
+
+    update_option('laca_seo_general', [
+        'ga4_measurement_id'  => 'G-MIGRATE123',
+        'gtm_container_id'    => 'GTM-MIGRATE456',
+        'ga_anonymize_ip'     => 'off',
+        'ga_exclude_loggedin' => 'on',
+        'ga4_property_id'     => '987654321',
+        'ga4_goal_events'     => 'purchase|Order',
+        'gsc_site_url'        => 'https://migratedsite.com/',
+        'other_seo_key'       => 'preserve_me',
+    ]);
+
+    GoogleServices::migrate();
+
+    $migrated = get_option('laca_google_services');
+    if (!is_array($migrated) || ($migrated['ga4_measurement_id'] ?? '') !== 'G-MIGRATE123') {
+        return "Migration failed to copy ga4_measurement_id: " . json_encode($migrated);
+    }
+    if (($migrated['gsc_site_url'] ?? '') !== 'https://migratedsite.com/') {
+        return "Migration failed to copy gsc_site_url";
+    }
+
+    $legacy = get_option('laca_seo_general');
+    if (!is_array($legacy) || ($legacy['other_seo_key'] ?? '') !== 'preserve_me') {
+        return "Legacy option laca_seo_general was corrupted or deleted during migration";
+    }
+
+    return true;
+}, $pass, $fail);
+
+// -------------------------------------------------------------
+// Test 25: Tracking runs independent of LacaSeo and outputs GA4/GTM scripts
+// -------------------------------------------------------------
+runTest('Tracking: Independent from LacaSeo and outputs GA4/GTM scripts', function () {
+    $origGoogle = get_option('laca_google_services', []);
+    update_option('laca_google_services', [
+        'ga4_measurement_id'  => 'G-STANDALONE',
+        'gtm_container_id'    => 'GTM-STANDALONE',
+        'ga_anonymize_ip'     => 'on',
+        'ga_exclude_loggedin' => 'off',
+    ]);
+
+    try {
+        ob_start();
+        (new Tracking())->outputHeadTracking();
+        $head = ob_get_clean();
+
+        if (!str_contains($head, 'G-STANDALONE') || !str_contains($head, 'GTM-STANDALONE')) {
+            return "Expected head tracking output to include G-STANDALONE and GTM-STANDALONE, got: " . substr($head, 0, 300);
+        }
+
+        ob_start();
+        (new Tracking())->outputBodyTracking();
+        $body = ob_get_clean();
+
+        if (!str_contains($body, 'GTM-STANDALONE')) {
+            return "Expected body tracking output to include GTM-STANDALONE noscript";
+        }
+
+        return true;
+    } finally {
+        update_option('laca_google_services', $origGoogle);
+    }
 }, $pass, $fail);
 
 echo "SUMMARY pass={$pass} fail={$fail}\n";

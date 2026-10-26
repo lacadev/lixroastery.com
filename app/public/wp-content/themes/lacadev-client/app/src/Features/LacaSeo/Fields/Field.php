@@ -22,6 +22,7 @@ class Field
         'result' => '',
     ];
     private bool $translatable = false;
+    private string $description = '';
     private ?string $group = null;
     private ?string $tab = null;
     private array $attributes = [];
@@ -76,6 +77,17 @@ class Field
     {
         $this->translatable = $translatable;
         return $this;
+    }
+
+    public function description(string $description): self
+    {
+        $this->description = $description;
+        return $this;
+    }
+
+    public function getDescription(): string
+    {
+        return $this->description;
     }
 
     public function group(string $group): self

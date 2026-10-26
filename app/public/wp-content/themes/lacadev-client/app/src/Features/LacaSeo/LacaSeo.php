@@ -11,7 +11,6 @@ use App\Features\LacaSeo\Frontend\Head;
 use App\Features\LacaSeo\Frontend\LinkAttributes;
 use App\Features\LacaSeo\Frontend\Rewrite;
 use App\Features\LacaSeo\Frontend\RobotsTxt;
-use App\Features\LacaSeo\Frontend\Tracking;
 
 defined('ABSPATH') || exit;
 
@@ -89,7 +88,6 @@ class LacaSeo
                 (new LinkAttributes())->register();
                 (new Rewrite())->register();
                 (new RobotsTxt())->register();
-                (new Tracking())->register();
                 (new \App\Features\LacaSeo\Frontend\FrontendSeoScore())->register();
             }
         } catch (\Throwable $e) {

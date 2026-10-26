@@ -73,6 +73,9 @@ class Renderer
         // Right column: Control
         echo '<div class="laca-seo-field-row__control-col">';
         self::renderControl($field, $currentValue);
+        if (!empty($field->getDescription())) {
+            echo '<p class="description laca-seo-field-desc" style="margin: 4px 0 0 0; color: var(--laca-fg-muted); font-size: 13px; line-height: 1.5;">' . wp_kses_post($field->getDescription()) . '</p>';
+        }
         echo '</div>';
 
         echo '</div>';

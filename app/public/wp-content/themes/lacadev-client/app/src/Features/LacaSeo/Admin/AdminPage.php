@@ -26,7 +26,6 @@ class AdminPage
         add_action('current_screen', [$this, 'suppressForeignNotices']);
         add_action('wp_ajax_laca_seo_toggle_module', [$this, 'ajaxToggleModule']);
         add_action('wp_ajax_laca_seo_preview_vars', [$this, 'ajaxPreviewVars']);
-        add_action('wp_ajax_laca_google_report', [$this, 'ajaxGoogleReport']);
     }
 
     /**
@@ -173,7 +172,6 @@ class AdminPage
                     'instant-indexing' => ['label' => 'Index tức thì (IndexNow)', 'icon' => 'dashicons-update'],
                     'redirections'     => ['label' => 'Chuyển hướng (Redirections)', 'icon' => 'dashicons-randomize'],
                     '404-monitor'      => ['label' => 'Theo dõi 404 (404 Monitor)', 'icon' => 'dashicons-dismiss'],
-                    'search-console'   => ['label' => 'Search Console', 'icon' => 'dashicons-google'],
                 ],
             ],
             'system' => [
@@ -285,8 +283,8 @@ class AdminPage
                             include __DIR__ . '/views/404-monitor.php';
                             break;
                         case 'search-console':
-                            include __DIR__ . '/views/search-console.php';
-                            break;
+                            wp_safe_redirect(admin_url('admin.php?page=laca-google-search-console'));
+                            exit;
                         case 'dashboard':
                         default:
                             include __DIR__ . '/views/dashboard.php';
@@ -447,49 +445,5 @@ class AdminPage
         return null;
     }
 
-    /**
-     * AJAX endpoint to fetch / refresh GSC and GA4 report data and return HTML partial.
-     */
-    public function ajaxGoogleReport(): void
-    {
-        $nonce = $_REQUEST['nonce'] ?? $_REQUEST['_ajax_nonce'] ?? '';
-        $valid = wp_verify_nonce($nonce, 'laca_google_report_nonce') || wp_verify_nonce($nonce, 'laca_seo_admin_nonce');
-        if (!$valid) {
-            wp_die('-1', 403);
-        }
 
-        if (!CapabilityManager::hasCap('site_analysis') && !current_user_can('manage_options')) {
-            wp_send_json_error(['message' => __('Bạn không có quyền thực hiện thao tác này.', 'lacadev')], 403);
-        }
-
-        $range = sanitize_key(wp_unslash($_REQUEST['range'] ?? '28d'));
-        if (!in_array($range, ['7d', '28d', '90d'], true)) {
-            $range = '28d';
-        }
-
-        $refresh = !empty($_REQUEST['refresh']);
-
-        if (!empty($_REQUEST['laca_mock_google'])) {
-            $_GET['laca_mock_google'] = '1';
-        }
-
-        $report = GoogleDashboardService::getDashboardReport($range, $refresh);
-        $gsc = $report['gsc'];
-        $ga  = $report['ga4'];
-
-        $rangeLabels = [
-            '7d'  => __('7 ngày qua', 'lacadev'),
-            '28d' => __('28 ngày qua', 'lacadev'),
-            '90d' => __('90 ngày qua', 'lacadev'),
-        ];
-
-        ob_start();
-        include __DIR__ . '/views/partials/google-report.php';
-        $html = ob_get_clean();
-
-        wp_send_json_success([
-            'html'  => $html,
-            'range' => $range,
-        ]);
-    }
 }

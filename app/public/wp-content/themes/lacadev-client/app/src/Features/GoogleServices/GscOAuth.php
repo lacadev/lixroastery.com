@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Features\LacaSeo\Modules\SearchConsole;
+namespace App\Features\GoogleServices;
 
 defined('ABSPATH') || exit;
 
@@ -11,22 +11,35 @@ defined('ABSPATH') || exit;
  */
 class GscOAuth
 {
-    public const OPTION_KEY = 'laca_seo_gsc';
-    public const SCOPE_GSC  = 'https://www.googleapis.com/auth/webmasters.readonly';
-    public const SCOPE_GA   = 'https://www.googleapis.com/auth/analytics.readonly';
-    public const SCOPES     = [
+    public const OPTION_KEY        = 'laca_google_oauth';
+    public const LEGACY_OPTION_KEY = 'laca_seo_gsc';
+    public const SCOPE_GSC         = 'https://www.googleapis.com/auth/webmasters.readonly';
+    public const SCOPE_GA          = 'https://www.googleapis.com/auth/analytics.readonly';
+    public const SCOPE_OPENID      = 'openid';
+    public const SCOPE_EMAIL       = 'email';
+    public const SCOPES            = [
         self::SCOPE_GSC,
         self::SCOPE_GA,
+        self::SCOPE_OPENID,
+        self::SCOPE_EMAIL,
     ];
-    public const SCOPE      = 'https://www.googleapis.com/auth/webmasters.readonly https://www.googleapis.com/auth/analytics.readonly';
-    public const AUTH_URI   = 'https://accounts.google.com/o/oauth2/v2/auth';
-    public const TOKEN_URI  = 'https://oauth2.googleapis.com/token';
-    public const REVOKE_URI = 'https://oauth2.googleapis.com/revoke';
+    public const SCOPE             = 'https://www.googleapis.com/auth/webmasters.readonly https://www.googleapis.com/auth/analytics.readonly openid email';
+    public const AUTH_URI          = 'https://accounts.google.com/o/oauth2/v2/auth';
+    public const TOKEN_URI         = 'https://oauth2.googleapis.com/token';
+    public const REVOKE_URI        = 'https://oauth2.googleapis.com/revoke';
 
     /**
-     * Get redirect URI for Google Cloud Console OAuth setup.
+     * Get redirect URI for Google Cloud Console OAuth setup (Laca Admin).
      */
     public static function getRedirectUri(): string
+    {
+        return admin_url('admin.php?page=laca-google-search-console&laca_google_oauth=1');
+    }
+
+    /**
+     * Get legacy redirect URI for backward compatibility.
+     */
+    public static function getLegacyRedirectUri(): string
     {
         return admin_url('admin.php?page=laca-seo&view=search-console&laca_gsc_oauth=1');
     }
@@ -82,7 +95,7 @@ class GscOAuth
             'scope'                  => implode(' ', $scopeList),
             'access_type'            => 'offline',
             'include_granted_scopes' => 'true',
-            'prompt'                 => 'consent',
+            'prompt'                 => 'consent select_account',
             'state'                  => $state,
             'code_challenge'         => $pkce['challenge'],
             'code_challenge_method'  => 'S256',
@@ -127,15 +140,80 @@ class GscOAuth
     }
 
     /**
+     * Decode email from Google JWT id_token payload without signature verification.
+     * Safe because token is received directly from Google token endpoint over HTTPS.
+     */
+    public static function extractEmailFromIdToken(string $idToken): ?string
+    {
+        $parts = explode('.', $idToken);
+        if (count($parts) < 2) {
+            return null;
+        }
+
+        $payload = json_decode(base64_decode(strtr($parts[1], '-_', '+/')), true);
+        if (is_array($payload) && !empty($payload['email']) && is_string($payload['email'])) {
+            return $payload['email'];
+        }
+
+        return null;
+    }
+
+    /**
+     * Fetch connected user email via Google UserInfo endpoint.
+     */
+    public static function fetchUserInfoEmail(string $accessToken): ?string
+    {
+        $response = wp_remote_get('https://openidconnect.googleapis.com/v1/userinfo', [
+            'timeout' => 5,
+            'headers' => [
+                'Authorization' => 'Bearer ' . $accessToken,
+            ],
+        ]);
+
+        if (!is_wp_error($response) && (int) wp_remote_retrieve_response_code($response) === 200) {
+            $data = json_decode(wp_remote_retrieve_body($response), true);
+            if (!empty($data['email']) && is_string($data['email'])) {
+                return $data['email'];
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Set pending credentials before redirecting to Google.
+     * If Client ID has changed, purge old tokens.
+     */
+    public static function setPendingCredentials(string $clientId, string $clientSecret): void
+    {
+        $existing = self::getCredentials();
+        if ($existing && !empty($existing['client_id']) && $existing['client_id'] !== $clientId) {
+            delete_option(self::OPTION_KEY);
+            delete_option(self::LEGACY_OPTION_KEY);
+        }
+
+        update_option('laca_google_pending', [
+            'client_id'     => $clientId,
+            'client_secret' => $clientSecret,
+        ], false);
+
+        update_option('laca_seo_gsc_pending', [
+            'client_id'     => $clientId,
+            'client_secret' => $clientSecret,
+        ], false);
+    }
+
+    /**
      * Exchange authorization code for tokens.
      *
      * @param string $code
      * @param string $clientId
      * @param string $clientSecret
      * @param int|null $userId
+     * @param string|null $redirectUri
      * @return array{success: bool, error?: string}
      */
-    public static function handleCallback(string $code, string $clientId, string $clientSecret, ?int $userId = null): array
+    public static function handleCallback(string $code, string $clientId, string $clientSecret, ?int $userId = null, ?string $redirectUri = null): array
     {
         $uid = $userId ?: get_current_user_id();
         $verifier = get_transient('laca_gsc_pkce_' . $uid);
@@ -145,7 +223,7 @@ class GscOAuth
             'code'          => $code,
             'client_id'     => $clientId,
             'client_secret' => $clientSecret,
-            'redirect_uri'  => self::getRedirectUri(),
+            'redirect_uri'  => $redirectUri ?: self::getRedirectUri(),
             'grant_type'    => 'authorization_code',
         ];
         if (!empty($verifier)) {
@@ -174,6 +252,17 @@ class GscOAuth
             $scopes = $existing['scopes'];
         }
 
+        $email = null;
+        if (!empty($data['id_token']) && is_string($data['id_token'])) {
+            $email = self::extractEmailFromIdToken($data['id_token']);
+        }
+        if (!$email && !empty($data['access_token'])) {
+            $email = self::fetchUserInfoEmail($data['access_token']);
+        }
+        if (!$email && !empty($existing['email'])) {
+            $email = $existing['email'];
+        }
+
         self::saveCredentials([
             'client_id'     => $clientId,
             'client_secret' => $clientSecret,
@@ -182,6 +271,7 @@ class GscOAuth
             'expires_in'    => $data['expires_in'] ?? 3600,
             'created_at'    => time(),
             'scopes'        => $scopes,
+            'email'         => $email,
         ]);
 
         return ['success' => true];
@@ -233,7 +323,7 @@ class GscOAuth
     }
 
     /**
-     * Get the email of the connected Google account (from credentials, ID token, or tokeninfo).
+     * Get the email of the connected Google account (from credentials, ID token, or userinfo).
      */
     public static function getConnectedEmail(): ?string
     {
@@ -242,7 +332,7 @@ class GscOAuth
             return null;
         }
 
-        if (!empty($creds['email'])) {
+        if (!empty($creds['email']) && is_string($creds['email'])) {
             return (string) $creds['email'];
         }
 
@@ -257,18 +347,25 @@ class GscOAuth
             return $cached;
         }
 
-        $response = wp_remote_get('https://www.googleapis.com/oauth2/v3/tokeninfo?access_token=' . urlencode($token), [
-            'timeout' => 5,
-        ]);
+        $email = self::fetchUserInfoEmail($token);
+        if (!$email) {
+            $response = wp_remote_get('https://www.googleapis.com/oauth2/v3/tokeninfo?access_token=' . urlencode($token), [
+                'timeout' => 5,
+            ]);
 
-        if (is_wp_error($response) || (int) wp_remote_retrieve_response_code($response) !== 200) {
-            return null;
+            if (!is_wp_error($response) && (int) wp_remote_retrieve_response_code($response) === 200) {
+                $data = json_decode(wp_remote_retrieve_body($response), true);
+                if (!empty($data['email']) && is_string($data['email'])) {
+                    $email = $data['email'];
+                }
+            }
         }
 
-        $data = json_decode(wp_remote_retrieve_body($response), true);
-        if (!empty($data['email']) && is_string($data['email'])) {
-            set_transient($cacheKey, $data['email'], 12 * HOUR_IN_SECONDS);
-            return $data['email'];
+        if ($email) {
+            set_transient($cacheKey, $email, 12 * HOUR_IN_SECONDS);
+            $creds['email'] = $email;
+            self::saveCredentials($creds);
+            return $email;
         }
 
         return null;
@@ -282,6 +379,9 @@ class GscOAuth
     public static function getCredentials(): ?array
     {
         $raw = get_option(self::OPTION_KEY, null);
+        if (!$raw || !is_string($raw)) {
+            $raw = get_option(self::LEGACY_OPTION_KEY, null);
+        }
         if (!$raw || !is_string($raw)) {
             return null;
         }
@@ -377,6 +477,7 @@ class GscOAuth
             ]);
         }
 
+        delete_option(self::LEGACY_OPTION_KEY);
         return delete_option(self::OPTION_KEY);
     }
 }

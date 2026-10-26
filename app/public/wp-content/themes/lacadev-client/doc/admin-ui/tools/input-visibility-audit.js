@@ -12,12 +12,10 @@ const ROOT = path.resolve(THEMES, '../../../..');
 const PHP = process.env.HOME + '/Library/Application Support/Local/lightning-services/php-8.3.17+1/bin/darwin-arm64/bin/php';
 const SOCK = process.env.HOME + '/Library/Application Support/Local/run/nan2TUtPY/mysql/mysqld.sock';
 const URLS = [
-  'admin.php?page=laca-seo&view=general&tab=analytics',
   'admin.php?page=laca-seo&view=general&tab=webmaster',
   'admin.php?page=laca-seo&view=general&tab=breadcrumbs',
   'admin.php?page=laca-seo&view=titles',
   'admin.php?page=laca-seo&view=sitemap',
-  'admin.php?page=laca-seo&view=search-console',
   'admin.php?page=laca-recaptcha',
   'admin.php?page=laca-login-socials',
   'admin.php?page=laca-google-analytics',

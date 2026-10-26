@@ -1,6 +1,5 @@
 <?php
 
-use App\Features\LacaSeo\Admin\GoogleDashboardService;
 use App\Features\LacaSeo\Core\Helper;
 use App\Features\LacaSeo\Core\Modules;
 use App\Features\LacaSeo\Guide\GuideData;
@@ -26,26 +25,24 @@ $missing_count = (int) $wpdb->get_var("
 $redirStats = \App\Features\LacaSeo\Modules\Redirections\DB::getStats();
 $notFoundStats = \App\Features\LacaSeo\Modules\NotFoundMonitor\DB::getStats();
 
-// 2. Google Services Report (GSC + GA4)
-$range = sanitize_key($_GET['range'] ?? '28d');
-if (!in_array($range, ['7d', '28d', '90d'], true)) {
-    $range = '28d';
-}
-
-$isForceRefresh = !empty($_GET['refresh']);
-$report = GoogleDashboardService::getDashboardReport($range, $isForceRefresh);
-$gsc = $report['gsc'];
-$ga  = $report['ga4'];
-
-$rangeLabels = [
-    '7d'  => __('7 ngày qua', 'lacadev'),
-    '28d' => __('28 ngày qua', 'lacadev'),
-    '90d' => __('90 ngày qua', 'lacadev'),
-];
-
 ?>
 <div class="laca-seo-dashboard">
-    <?php include __DIR__ . '/partials/google-report.php'; ?>
+    <div class="laca-seo-card" style="margin-bottom: 24px;">
+        <div class="laca-seo-card__header laca-seo-header-flex">
+            <div>
+                <h2 class="laca-seo-card__title"><?php esc_html_e('Báo cáo Google Search Console & Google Analytics 4', 'lacadev'); ?></h2>
+                <p class="laca-seo-card__subtitle"><?php esc_html_e('Báo cáo chi tiết GSC & GA4 hiện hiển thị độc lập tại Bảng điều khiển WordPress và cài đặt tại menu Dịch vụ Google.', 'lacadev'); ?></p>
+            </div>
+            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                <a href="<?php echo esc_url(admin_url('index.php#laca-google-report')); ?>" class="button button-primary">
+                    <span class="dashicons dashicons-chart-area" style="margin-top: 3px;"></span> <?php esc_html_e('Xem Báo cáo trên Bảng điều khiển', 'lacadev'); ?>
+                </a>
+                <a href="<?php echo esc_url(admin_url('admin.php?page=laca-google-search-console')); ?>" class="button button-secondary">
+                    <span class="dashicons dashicons-google" style="margin-top: 3px;"></span> <?php esc_html_e('Cấu hình Dịch vụ Google', 'lacadev'); ?>
+                </a>
+            </div>
+        </div>
+    </div>
 
     <!-- Khối Stat boxes cốt lõi của website -->
     <div class="laca-seo-stats-grid" style="margin-bottom: 24px;">

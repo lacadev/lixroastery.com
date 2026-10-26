@@ -1,21 +1,21 @@
 <?php
 
-namespace App\Features\LacaSeo\Frontend;
-
-use App\Features\LacaSeo\Core\Settings;
+namespace App\Features\GoogleServices;
 
 defined('ABSPATH') || exit;
 
 /**
  * Injects Google Analytics 4 and Google Tag Manager measurement scripts.
  * Supports IP anonymization and exclusion of logged-in administrators.
+ * Runs completely independent of Laca SEO and Rank Math.
  */
 class Tracking
 {
-    public function register(): void
+    public static function register(): void
     {
-        add_action('wp_head', [$this, 'outputHeadTracking'], 20);
-        add_action('wp_body_open', [$this, 'outputBodyTracking'], 1);
+        $instance = new self();
+        add_action('wp_head', [$instance, 'outputHeadTracking'], 20);
+        add_action('wp_body_open', [$instance, 'outputBodyTracking'], 1);
     }
 
     /**
@@ -27,9 +27,21 @@ class Tracking
             return;
         }
 
-        $ga4_id = trim((string) Settings::get('general.ga4_measurement_id', ''));
-        $gtm_id = trim((string) Settings::get('general.gtm_container_id', ''));
-        $anonymize = Settings::get('general.ga_anonymize_ip', 'on') === 'on';
+        $googleOpts = get_option('laca_google_services', []);
+        $ga4_id = is_array($googleOpts) ? trim((string) ($googleOpts['ga4_measurement_id'] ?? '')) : '';
+        if ($ga4_id === '' && class_exists(\App\Features\LacaSeo\Core\Settings::class)) {
+            $ga4_id = trim((string) \App\Features\LacaSeo\Core\Settings::get('general.ga4_measurement_id', ''));
+        }
+
+        $gtm_id = is_array($googleOpts) ? trim((string) ($googleOpts['gtm_container_id'] ?? '')) : '';
+        if ($gtm_id === '' && class_exists(\App\Features\LacaSeo\Core\Settings::class)) {
+            $gtm_id = trim((string) \App\Features\LacaSeo\Core\Settings::get('general.gtm_container_id', ''));
+        }
+
+        $anonymize = is_array($googleOpts) && isset($googleOpts['ga_anonymize_ip'])
+            ? ($googleOpts['ga_anonymize_ip'] === 'on')
+            : (class_exists(\App\Features\LacaSeo\Core\Settings::class) ? \App\Features\LacaSeo\Core\Settings::get('general.ga_anonymize_ip', 'on') === 'on' : true);
+
         $manualScripts = self::getManualScripts();
 
         // 1. Google Analytics 4 (Chống đếm trùng nếu đã chèn thủ công ở Laca Theme -> Scripts)
@@ -37,7 +49,7 @@ class Tracking
             if (stripos($manualScripts, $ga4_id) !== false) {
                 echo "<!-- Google tag (gtag.js) [{$ga4_id}] omitted: already embedded in Laca Theme Scripts -->\n";
             } else {
-                echo "<!-- Google tag (gtag.js) - Laca SEO -->\n";
+                echo "<!-- Google tag (gtag.js) -->\n";
                 echo '<script async src="https://www.googletagmanager.com/gtag/js?id=' . esc_attr($ga4_id) . '"></script>' . "\n";
                 echo "<script>\n";
                 echo "  window.dataLayer = window.dataLayer || [];\n";
@@ -77,13 +89,18 @@ class Tracking
             return;
         }
 
-        $gtm_id = trim((string) Settings::get('general.gtm_container_id', ''));
+        $googleOpts = get_option('laca_google_services', []);
+        $gtm_id = is_array($googleOpts) ? trim((string) ($googleOpts['gtm_container_id'] ?? '')) : '';
+        if ($gtm_id === '' && class_exists(\App\Features\LacaSeo\Core\Settings::class)) {
+            $gtm_id = trim((string) \App\Features\LacaSeo\Core\Settings::get('general.gtm_container_id', ''));
+        }
+
         if (!empty($gtm_id)) {
             $manualScripts = self::getManualScripts();
             if (stripos($manualScripts, $gtm_id) !== false) {
                 return;
             }
-            echo '<!-- Google Tag Manager (noscript) - Laca SEO -->' . "\n";
+            echo '<!-- Google Tag Manager (noscript) -->' . "\n";
             echo '<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=' . esc_attr($gtm_id) . '" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>' . "\n";
             echo '<!-- End Google Tag Manager (noscript) -->' . "\n";
         }
@@ -129,7 +146,12 @@ class Tracking
      */
     private function shouldExcludeUser(): bool
     {
-        if (Settings::get('general.ga_exclude_loggedin', 'on') === 'on' && current_user_can('manage_options')) {
+        $googleOpts = get_option('laca_google_services', []);
+        $exclude = is_array($googleOpts) && isset($googleOpts['ga_exclude_loggedin'])
+            ? ($googleOpts['ga_exclude_loggedin'] === 'on')
+            : (class_exists(\App\Features\LacaSeo\Core\Settings::class) ? \App\Features\LacaSeo\Core\Settings::get('general.ga_exclude_loggedin', 'on') === 'on' : true);
+
+        if ($exclude && current_user_can('manage_options')) {
             return true;
         }
         return false;

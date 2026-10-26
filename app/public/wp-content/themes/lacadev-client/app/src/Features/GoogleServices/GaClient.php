@@ -1,8 +1,6 @@
 <?php
 
-namespace App\Features\LacaSeo\Modules\GoogleAnalytics;
-
-use App\Features\LacaSeo\Modules\SearchConsole\GscOAuth;
+namespace App\Features\GoogleServices;
 
 defined('ABSPATH') || exit;
 

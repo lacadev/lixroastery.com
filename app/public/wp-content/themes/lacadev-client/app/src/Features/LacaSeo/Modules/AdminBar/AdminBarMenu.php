@@ -76,12 +76,17 @@ class AdminBarMenu
             'meta'   => ['target' => '_blank'],
         ]);
 
-        $wpAdminBar->add_node([
-            'id'     => self::MENU_ID . '-gsc-inspect',
-            'parent' => self::MENU_ID,
-            'title'  => esc_html__('Kiểm tra Index trên Google', 'lacadev'),
-            'href'   => 'https://search.google.com/search-console/inspect?resource_id=' . rawurlencode(home_url('/')) . '&id=' . $encodedUrl,
-            'meta'   => ['target' => '_blank'],
-        ]);
+        if (class_exists('\App\Features\GoogleServices\GscOAuth') && \App\Features\GoogleServices\GscOAuth::isConnected()) {
+            $resourceId = class_exists('\App\Features\GoogleServices\GscClient')
+                ? \App\Features\GoogleServices\GscClient::getSiteUrl()
+                : home_url('/');
+            $wpAdminBar->add_node([
+                'id'     => self::MENU_ID . '-gsc-inspect',
+                'parent' => self::MENU_ID,
+                'title'  => esc_html__('Kiểm tra Index trên Google', 'lacadev'),
+                'href'   => 'https://search.google.com/search-console/inspect?resource_id=' . rawurlencode($resourceId) . '&id=' . $encodedUrl,
+                'meta'   => ['target' => '_blank'],
+            ]);
+        }
     }
 }

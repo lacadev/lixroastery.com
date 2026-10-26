@@ -39,11 +39,14 @@ class PostList
      */
      public function addRowActions(array $actions, \WP_Post $post): array
      {
-         if ($post->post_status === 'publish') {
+         if ($post->post_status === 'publish' && class_exists('\App\Features\GoogleServices\GscOAuth') && \App\Features\GoogleServices\GscOAuth::isConnected()) {
              $url = get_permalink($post);
+             $resourceId = class_exists('\App\Features\GoogleServices\GscClient')
+                 ? \App\Features\GoogleServices\GscClient::getSiteUrl()
+                 : home_url('/');
              $actions['laca_gsc_inspect'] = sprintf(
                  '<a href="%s" target="_blank" rel="noopener noreferrer">%s</a>',
-                 esc_url('https://search.google.com/search-console/inspect?resource_id=' . rawurlencode(home_url('/')) . '&id=' . rawurlencode($url)),
+                 esc_url('https://search.google.com/search-console/inspect?resource_id=' . rawurlencode($resourceId) . '&id=' . rawurlencode($url)),
                  esc_html__('Kiểm tra Index', 'lacadev')
              );
          }

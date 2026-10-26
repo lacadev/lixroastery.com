@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Features\LacaSeo\Modules\SearchConsole;
+namespace App\Features\GoogleServices;
 
 defined('ABSPATH') || exit;
 
@@ -158,6 +158,11 @@ class GscClient
      */
     public static function getSiteUrl(): string
     {
+        $googleOpts = get_option('laca_google_services', []);
+        if (is_array($googleOpts) && !empty($googleOpts['gsc_site_url'])) {
+            return (string) $googleOpts['gsc_site_url'];
+        }
+
         if (class_exists(\App\Features\LacaSeo\Core\Settings::class)) {
             $saved = (string) \App\Features\LacaSeo\Core\Settings::get('general.gsc_site_url', '');
             if ($saved !== '') {

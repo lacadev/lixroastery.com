@@ -22,7 +22,6 @@ class GeneralFields
             'breadcrumbs' => self::getBreadcrumbsFields(),
             'podcast' => self::getPodcastFields(),
             'webmaster' => self::getWebmasterFields(),
-            'analytics' => self::getAnalyticsFields(),
             'robots' => self::getRobotsTxtFields(),
             'htaccess' => self::getHtaccessFields(),
             'woocommerce' => self::getWooCommerceFields(),
@@ -503,83 +502,7 @@ class GeneralFields
         ];
     }
 
-    /**
-     * @return Field[]
-     */
-    private static function getAnalyticsFields(): array
-    {
-        return [
-            Field::make('ga4_measurement_id', 'text', 'Google Analytics 4 Measurement ID')
-                ->default('')
-                ->tab('analytics')
-                ->group('general')
-                ->note(
-                    'Mã đo lường GA4 (dạng G-XXXXXXXXXX) để theo dõi lưu lượng truy cập.',
-                    'Dán mã đo lường lấy từ Google Analytics › Luồng dữ liệu (Data Stream).',
-                    'Mã theo dõi gtag.js tự động chèn an toàn vào <head> frontend.'
-                ),
 
-            Field::make('gtm_container_id', 'text', 'Google Tag Manager Container ID')
-                ->default('')
-                ->tab('analytics')
-                ->group('general')
-                ->note(
-                    'Mã bộ chứa Google Tag Manager (dạng GTM-XXXXXXX).',
-                    'Dán mã GTM nếu bạn quản lý mã đo lường qua Tag Manager thay vì GA4 trực tiếp.',
-                    'Script GTM được chèn vào <head> và thẻ noscript chèn vào đầu <body>.'
-                ),
-
-            Field::make('ga_anonymize_ip', 'toggle', 'Ẩn danh hoá địa chỉ IP (Anonymize IP)')
-                ->default('on')
-                ->tab('analytics')
-                ->group('general')
-                ->note(
-                    'Ẩn danh địa chỉ IP của khách truy cập để tuân thủ quyền riêng tư (chuẩn GDPR/quốc tế).',
-                    'Bật tuỳ chọn để tăng tính bảo mật thông tin và tuân thủ luật bảo vệ dữ liệu.',
-                    'Gtag gửi thông số anonymize_ip: true tới máy chủ Google Analytics.'
-                ),
-
-            Field::make('ga_exclude_loggedin', 'toggle', 'Bỏ qua người dùng Quản trị đã đăng nhập')
-                ->default('on')
-                ->tab('analytics')
-                ->group('general')
-                ->note(
-                    'Không ghi nhận lượt truy cập của thành viên ban quản trị để số liệu thống kê không bị ảo.',
-                    'Bật để mọi thao tác duyệt web, kiểm tra giao diện của admin không bị tính vào view thật.',
-                    'Khi bạn đang đăng nhập quản trị viên, mã theo dõi Google Analytics sẽ không xuất hiện.'
-                ),
-
-            Field::make('ga4_property_id', 'text', 'Google Analytics 4 Property ID')
-                ->default('')
-                ->tab('analytics')
-                ->group('general')
-                ->note(
-                    'ID thuộc tính Google Analytics 4 (dãy số dạng 123456789).',
-                    'Được tự động phát hiện qua Google Analytics Admin API khi liên kết OAuth.',
-                    'Dùng để truy vấn dữ liệu báo cáo qua Google Analytics Data API.'
-                ),
-
-            Field::make('ga4_goal_events', 'textarea', 'Sự kiện mục tiêu chuyển đổi (Goal Events)')
-                ->default('')
-                ->tab('analytics')
-                ->group('general')
-                ->note(
-                    'Danh sách sự kiện GA4 quan trọng cần theo dõi chuyển đổi trên Bảng điều khiển (mỗi dòng một sự kiện theo cú pháp: event_name|Nhãn hiển thị).',
-                    'Ví dụ: add_to_cart|Bấm Mua / Thêm giỏ\ngenerate_lead|Gửi Form / Đặt lịch workshop\npurchase|Đơn hàng thành công',
-                    'Dữ liệu số lượt diễn ra và tỷ lệ tăng trưởng so với kỳ trước sẽ được truy vấn tự động từ GA4 Data API.'
-                ),
-
-            Field::make('gsc_site_url', 'text', 'Google Search Console Site Property')
-                ->default('')
-                ->tab('analytics')
-                ->group('general')
-                ->note(
-                    'Địa chỉ property của Search Console (vd: sc-domain:domain.com hoặc https://domain.com/).',
-                    'Được tự động chọn hoặc chọn từ danh sách Search Console Sites khi liên kết OAuth.',
-                    'Dùng để truy vấn dữ liệu báo cáo qua Search Console API.'
-                ),
-        ];
-    }
 
     /**
      * @return Field[]

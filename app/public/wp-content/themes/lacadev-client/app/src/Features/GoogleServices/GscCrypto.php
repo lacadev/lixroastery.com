@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Features\LacaSeo\Modules\SearchConsole;
+namespace App\Features\GoogleServices;
 
 defined('ABSPATH') || exit;
 

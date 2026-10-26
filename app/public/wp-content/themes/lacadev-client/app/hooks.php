@@ -69,11 +69,11 @@ add_action('init', function () {
 });
 
 /**
- * Google Services pages under Laca Admin (GA & GTM, Search Console).
+ * Google Services (GSC & GA4 standalone module + Laca Admin pages).
  */
 add_action('init', function () {
-    if (is_admin() && class_exists('\App\Settings\LacaAdmin\GoogleServicesPage')) {
-        (new \App\Settings\LacaAdmin\GoogleServicesPage())->register();
+    if (class_exists('\App\Features\GoogleServices\GoogleServices')) {
+        \App\Features\GoogleServices\GoogleServices::boot();
     }
 });
 
