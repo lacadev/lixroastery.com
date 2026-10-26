@@ -129,7 +129,7 @@ const report = (ok, check, w = '', detail = '') => {
       }
     }
 
-    // 2. Mở index.php không mock (khi local chưa kết nối)
+    // 2. Mở index.php không mock (khi local chưa kết nối Google xong)
     errors = [];
     try {
       await page.setViewport({ width: 1440, height: 900 });
@@ -138,29 +138,12 @@ const report = (ok, check, w = '', detail = '') => {
         timeout: 45000,
       });
 
-      await page.waitForSelector('#laca-google-report', { timeout: 10000 });
-
-      // Đợi AJAX phản hồi
-      await page.waitForFunction(() => {
-        const body = document.getElementById('laca-google-report');
-        if (!body) return false;
-        const text = body.innerText || '';
-        return text.includes('Thiết lập') || text.includes('Hiệu quả Tìm kiếm');
-      }, { timeout: 15000 });
-
-      const realState = await page.evaluate(() => {
-        const el = document.getElementById('laca-google-report');
-        const text = el ? (el.innerText || '') : '';
-        const hasMockBanner = text.includes('DỮ LIỆU MẪU');
-        // Không chứa số bịa như 186, 12.4%, 4.7%
-        const hasFabricatedNumbers = text.includes('186') || text.includes('12.4%') || text.includes('4.7%');
-        const hasSetupButton = text.includes('Thiết lập') || text.includes('Cài đặt');
-        return { hasMockBanner, hasFabricatedNumbers, hasSetupButton };
+      // Theo quy chuẩn Site Kit / Plan §0.2: Chưa setup xong -> không hiển thị gì trên index.php
+      const hasReport = await page.evaluate(() => {
+        return document.getElementById('laca-google-report') !== null;
       });
 
-      report(!realState.hasMockBanner, 'NonMockHasNoMockBanner', 1440);
-      report(!realState.hasFabricatedNumbers, 'NonMockHasNoFabricatedNumbers', 1440);
-      report(realState.hasSetupButton, 'NonMockHasSetupPrompt', 1440);
+      report(!hasReport, 'NonMockUnconfiguredHasNoReport', 1440);
       report(errors.length === 0, 'NonMockNoPageErrors', 1440, errors.join('; '));
 
       // Chụp ảnh non-mock

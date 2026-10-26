@@ -156,6 +156,172 @@ class GoogleServices
     }
 
     /**
+     * Get capability required to view Google Services reports.
+     * Filterable via 'laca/google/report_capability'. Default is 'manage_options'.
+     */
+    public static function getReportCapability(): string
+    {
+        return (string) apply_filters('laca/google/report_capability', 'manage_options');
+    }
+
+    /**
+     * Check if current user has capability to view Google Services reports.
+     */
+    public static function userCanViewReport(): bool
+    {
+        $cap = self::getReportCapability();
+        $hasCap = current_user_can($cap);
+        if (!$hasCap && class_exists('\App\Features\LacaSeo\Auth\CapabilityManager')) {
+            $hasCap = \App\Features\LacaSeo\Auth\CapabilityManager::hasCap('site_analysis');
+        }
+
+        return (bool) $hasCap;
+    }
+
+    /**
+     * Check setup state for Google Services (GSC & GA4) following Site Kit principles.
+     *
+     * @return array{
+     *     connected: bool,
+     *     email: string|null,
+     *     gsc: array{status: string, reason?: string, code?: int, property: string},
+     *     ga: array{status: string, reason?: string, code?: int, property_id: string, measurement_id: string},
+     *     data: array{gsc_available: bool, ga_available: bool, collecting: bool},
+     *     is_any_complete: bool,
+     *     is_all_complete: bool,
+     * }
+     */
+    public static function setupState(): array
+    {
+        $isConnected    = GscOAuth::isConnected();
+        $connectedEmail = $isConnected ? GscOAuth::getConnectedEmail() : null;
+        $opts           = self::getOption();
+        if (!is_array($opts)) {
+            $opts = [];
+        }
+
+        // 1. Google Search Console setup check
+        $gscProp    = (string) ($opts['gsc_property'] ?? ($opts['gsc_site_url'] ?? ''));
+        $gscLastErr = get_transient('laca_gsc_last_error_code');
+
+        if (!$isConnected || !GscOAuth::hasGscScope()) {
+            $gscState = [
+                'status'   => 'incomplete',
+                'reason'   => __('Chưa kết nối tài khoản Google hoặc thiếu quyền Search Console.', 'lacadev'),
+                'property' => $gscProp,
+            ];
+        } elseif (empty($gscProp)) {
+            $gscState = [
+                'status'   => 'incomplete',
+                'reason'   => __('Chưa chọn property Search Console.', 'lacadev'),
+                'property' => '',
+            ];
+        } elseif ($gscLastErr && in_array((int) $gscLastErr, [401, 403, 404], true)) {
+            $gscState = [
+                'status'   => 'error',
+                'code'     => (int) $gscLastErr,
+                'reason'   => sprintf(__('Lỗi API Search Console (%d)', 'lacadev'), (int) $gscLastErr),
+                'property' => $gscProp,
+            ];
+        } else {
+            $gscState = [
+                'status'   => 'complete',
+                'property' => $gscProp,
+            ];
+        }
+
+        // 2. Google Analytics 4 setup check
+        $gaPropId  = (string) ($opts['ga4_property_id'] ?? '');
+        $gaMsId    = (string) ($opts['ga4_measurement_id'] ?? '');
+        $gaLastErr = get_transient('laca_ga_last_error_code');
+
+        if (!$isConnected || !GscOAuth::hasAnalyticsScope()) {
+            $gaState = [
+                'status'         => 'incomplete',
+                'reason'         => __('Chưa kết nối tài khoản Google hoặc thiếu quyền Google Analytics.', 'lacadev'),
+                'property_id'    => $gaPropId,
+                'measurement_id' => $gaMsId,
+            ];
+        } elseif (empty($gaPropId)) {
+            $gaState = [
+                'status'         => 'incomplete',
+                'reason'         => __('Chưa chọn thuộc tính GA4.', 'lacadev'),
+                'property_id'    => '',
+                'measurement_id' => $gaMsId,
+            ];
+        } else {
+            // Check if measurement ID belongs to a web stream of the selected property
+            $streamMismatch = false;
+            if (!empty($gaPropId) && !empty($gaMsId)) {
+                $cachedStreams = get_transient('laca_ga_streams_' . $gaPropId);
+                if (is_array($cachedStreams) && !empty($cachedStreams)) {
+                    $matched = false;
+                    foreach ($cachedStreams as $str) {
+                        $sMid = $str['measurementId'] ?? ($str['webStreamData']['measurementId'] ?? '');
+                        if (!empty($sMid) && strcasecmp($sMid, $gaMsId) === 0) {
+                            $matched = true;
+                            break;
+                        }
+                    }
+                    if (!$matched) {
+                        $streamMismatch = true;
+                    }
+                }
+            }
+
+            if (empty($gaMsId)) {
+                $gaState = [
+                    'status'         => 'incomplete',
+                    'reason'         => __('Chưa cấu hình mã đo lường GA4.', 'lacadev'),
+                    'property_id'    => $gaPropId,
+                    'measurement_id' => '',
+                ];
+            } elseif ($streamMismatch) {
+                $gaState = [
+                    'status'         => 'incomplete',
+                    'reason'         => __('Mã đo lường không thuộc luồng web của thuộc tính GA4 đã chọn.', 'lacadev'),
+                    'property_id'    => $gaPropId,
+                    'measurement_id' => $gaMsId,
+                ];
+            } elseif ($gaLastErr && in_array((int) $gaLastErr, [401, 403, 404], true)) {
+                $gaState = [
+                    'status'         => 'error',
+                    'code'           => (int) $gaLastErr,
+                    'reason'         => sprintf(__('Lỗi API Google Analytics 4 (%d)', 'lacadev'), (int) $gaLastErr),
+                    'property_id'    => $gaPropId,
+                    'measurement_id' => $gaMsId,
+                ];
+            } else {
+                $gaState = [
+                    'status'         => 'complete',
+                    'property_id'    => $gaPropId,
+                    'measurement_id' => $gaMsId,
+                ];
+            }
+        }
+
+        $isAnyComplete = ($gscState['status'] === 'complete' || $gaState['status'] === 'complete');
+        $isAllComplete = ($gscState['status'] === 'complete' && $gaState['status'] === 'complete');
+
+        $gscAvailable = (bool) get_option('laca_google_data_available_gsc', false);
+        $gaAvailable  = (bool) get_option('laca_google_data_available_ga', false);
+
+        return [
+            'connected'       => $isConnected,
+            'email'           => $connectedEmail,
+            'gsc'             => $gscState,
+            'ga'              => $gaState,
+            'data'            => [
+                'gsc_available' => $gscAvailable,
+                'ga_available'  => $gaAvailable,
+                'collecting'    => (!$gscAvailable || !$gaAvailable),
+            ],
+            'is_any_complete' => $isAnyComplete,
+            'is_all_complete' => $isAllComplete,
+        ];
+    }
+
+    /**
      * Render full-width Google Report container at top of wp-admin/index.php.
      */
     public static function renderDashboardNotice(): void
@@ -165,17 +331,19 @@ class GoogleServices
             return;
         }
 
-        $hasCap = current_user_can('manage_options');
-        if (!$hasCap && class_exists('\App\Features\LacaSeo\Auth\CapabilityManager')) {
-            $hasCap = \App\Features\LacaSeo\Auth\CapabilityManager::hasCap('site_analysis');
-        }
-
-        if (!$hasCap) {
+        if (!self::userCanViewReport()) {
             return;
         }
 
         $isMock = !empty($_GET['laca_mock_google']) ? '1' : '0';
-        $nonce = wp_create_nonce('laca_google_report_nonce');
+        $state  = self::setupState();
+
+        // Chỉ hiển thị khối báo cáo khi ít nhất 1 dịch vụ complete (hoặc ở chế độ mock)
+        if ($isMock !== '1' && empty($state['is_any_complete'])) {
+            return;
+        }
+
+        $nonce   = wp_create_nonce('laca_google_report_nonce');
         $ajaxUrl = admin_url('admin-ajax.php');
         ?>
         <div id="laca-google-report" class="laca-google-report-wrap" data-ajax-url="<?php echo esc_url($ajaxUrl); ?>" data-nonce="<?php echo esc_attr($nonce); ?>" data-mock="<?php echo esc_attr($isMock); ?>" style="margin: 20px 0 24px 0; clear: both;">
@@ -219,12 +387,14 @@ class GoogleServices
             return;
         }
 
-        $hasCap = current_user_can('manage_options');
-        if (!$hasCap && class_exists('\App\Features\LacaSeo\Auth\CapabilityManager')) {
-            $hasCap = \App\Features\LacaSeo\Auth\CapabilityManager::hasCap('site_analysis');
+        if (!self::userCanViewReport()) {
+            return;
         }
 
-        if (!$hasCap) {
+        $isMock = !empty($_GET['laca_mock_google']) ? '1' : '0';
+        $state  = self::setupState();
+
+        if ($isMock !== '1' && empty($state['is_any_complete'])) {
             return;
         }
 
@@ -271,12 +441,7 @@ class GoogleServices
             wp_die('-1', 403);
         }
 
-        $hasCap = current_user_can('manage_options');
-        if (!$hasCap && class_exists('\App\Features\LacaSeo\Auth\CapabilityManager')) {
-            $hasCap = \App\Features\LacaSeo\Auth\CapabilityManager::hasCap('site_analysis');
-        }
-
-        if (!$hasCap) {
+        if (!self::userCanViewReport()) {
             wp_send_json_error(['message' => __('Bạn không có quyền thực hiện thao tác này.', 'lacadev')], 403);
         }
 
@@ -322,12 +487,7 @@ class GoogleServices
             wp_die('-1', 403);
         }
 
-        $hasCap = current_user_can('manage_options');
-        if (!$hasCap && class_exists('\App\Features\LacaSeo\Auth\CapabilityManager')) {
-            $hasCap = \App\Features\LacaSeo\Auth\CapabilityManager::hasCap('site_analysis');
-        }
-
-        if (!$hasCap) {
+        if (!self::userCanViewReport()) {
             wp_send_json_error(['message' => __('Bạn không có quyền thực hiện thao tác này.', 'lacadev')], 403);
         }
 

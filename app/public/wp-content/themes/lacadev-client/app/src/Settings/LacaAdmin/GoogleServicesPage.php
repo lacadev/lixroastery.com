@@ -479,6 +479,7 @@ class GoogleServicesPage
             <h1><?php echo esc_html__('Google Analytics & Tag Manager', 'lacadev'); ?></h1>
 
             <?php $this->renderNotices(); ?>
+            <?php $this->renderSetupStepper(self::PAGE_ANALYTICS); ?>
 
             <!-- Alert chống đếm trùng mã -->
             <?php if (!empty($manualIds)): ?>
@@ -772,6 +773,7 @@ class GoogleServicesPage
             <h1><?php echo esc_html__('Google Search Console', 'lacadev'); ?></h1>
 
             <?php $this->renderNotices(); ?>
+            <?php $this->renderSetupStepper(self::PAGE_SEARCH_CONSOLE); ?>
 
             <!-- Khối kết nối Google OAuth -->
             <div class="laca-seo-card" style="margin-bottom: 24px;">
@@ -922,5 +924,164 @@ class GoogleServicesPage
         if (!empty($_GET['error'])) {
             echo '<div class="notice notice-error is-dismissible"><p>' . esc_html(wp_unslash($_GET['error'])) . '</p></div>';
         }
+    }
+
+    /**
+     * Render 4-step setup status stepper for Google Services.
+     */
+    public function renderSetupStepper(string $activePage): void
+    {
+        $state = GoogleServices::setupState();
+
+        $step1Complete   = !empty($state['connected']);
+        $step2Complete   = (($state['gsc']['status'] ?? '') === 'complete');
+        $step3Complete   = (($state['ga']['status'] ?? '') === 'complete');
+        $step4Complete   = !empty($state['data']['gsc_available']) && !empty($state['data']['ga_available']);
+        $step4Collecting = ($step2Complete || $step3Complete) && !$step4Complete;
+
+        ?>
+        <div class="laca-seo-card laca-google-stepper-card" style="margin-bottom: 24px; padding: 20px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 1px solid var(--laca-border, #e4e4e7); padding-bottom: 12px; flex-wrap: wrap; gap: 8px;">
+                <div>
+                    <h3 style="margin: 0; font-size: 15px; font-weight: 600; color: var(--laca-fg, #18181b); display: flex; align-items: center; gap: 8px;">
+                        <span class="dashicons dashicons-forms" style="font-size: 18px; width: 18px; height: 18px; color: var(--laca-accent, #2563eb);"></span>
+                        <?php esc_html_e('Trạng thái thiết lập Dịch vụ Google', 'lacadev'); ?>
+                    </h3>
+                    <p style="margin: 2px 0 0 0; font-size: 12.5px; color: var(--laca-fg-muted, #71717a);">
+                        <?php esc_html_e('Hoàn tất 4 bước bên dưới để kích hoạt báo cáo Search Console và Google Analytics 4 trên Bảng điều khiển WordPress.', 'lacadev'); ?>
+                    </p>
+                </div>
+                <div>
+                    <?php if (!empty($state['is_all_complete'])): ?>
+                        <span class="laca-badge" style="background: #10b981; color: #fff; padding: 4px 10px; border-radius: 9999px; font-size: 12px; font-weight: 500;">
+                            ✓ <?php esc_html_e('Đã thiết lập đầy đủ', 'lacadev'); ?>
+                        </span>
+                    <?php elseif (!empty($state['is_any_complete'])): ?>
+                        <span class="laca-badge" style="background: #f59e0b; color: #fff; padding: 4px 10px; border-radius: 9999px; font-size: 12px; font-weight: 500;">
+                            ! <?php esc_html_e('Đã kết nối một phần', 'lacadev'); ?>
+                        </span>
+                    <?php else: ?>
+                        <span class="laca-badge" style="background: var(--laca-bg-subtle, #f4f4f5); color: var(--laca-fg-muted, #71717a); padding: 4px 10px; border-radius: 9999px; font-size: 12px; font-weight: 500; border: 1px solid var(--laca-border, #e4e4e7);">
+                            <?php esc_html_e('Chưa thiết lập', 'lacadev'); ?>
+                        </span>
+                    <?php endif; ?>
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px;">
+                <!-- Bước 1: Tài khoản Google -->
+                <div style="padding: 14px; border: 1px solid <?php echo $step1Complete ? '#bbf7d0' : '#fed7aa'; ?>; background: <?php echo $step1Complete ? '#f0fdf4' : '#fffbeb'; ?>; border-radius: 8px;">
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+                        <span style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: <?php echo $step1Complete ? '#166534' : '#9a3412'; ?>;">
+                            <?php esc_html_e('Bước 1', 'lacadev'); ?>
+                        </span>
+                        <span class="dashicons <?php echo $step1Complete ? 'dashicons-yes-alt' : 'dashicons-warning'; ?>" style="font-size: 16px; width: 16px; height: 16px; color: <?php echo $step1Complete ? '#10b981' : '#f59e0b'; ?>;"></span>
+                    </div>
+                    <strong style="display: block; font-size: 13.5px; color: #18181b; margin-bottom: 4px;">
+                        <?php esc_html_e('Kết nối Google (OAuth)', 'lacadev'); ?>
+                    </strong>
+                    <p style="margin: 0 0 10px 0; font-size: 12px; color: <?php echo $step1Complete ? '#15803d' : '#71717a'; ?>; min-height: 36px;">
+                        <?php if ($step1Complete): ?>
+                            <?php echo esc_html($state['email'] ? $state['email'] : __('Đã kết nối OAuth', 'lacadev')); ?>
+                        <?php else: ?>
+                            <?php esc_html_e('Chưa kết nối tài khoản Google Cloud OAuth.', 'lacadev'); ?>
+                        <?php endif; ?>
+                    </p>
+                    <?php if ($step1Complete): ?>
+                        <form method="post" style="margin: 0;">
+                            <?php wp_nonce_field('laca_google_switch_account_action'); ?>
+                            <input type="hidden" name="return_to" value="<?php echo esc_attr($activePage); ?>">
+                            <button type="submit" name="laca_google_switch_account" class="button button-small" style="font-size: 11.5px;">
+                                <?php esc_html_e('Đổi tài khoản', 'lacadev'); ?>
+                            </button>
+                        </form>
+                    <?php else: ?>
+                        <a href="<?php echo esc_url(admin_url('admin.php?page=' . self::PAGE_SEARCH_CONSOLE . '#laca-oauth-card')); ?>" class="button button-small button-primary" style="font-size: 11.5px;">
+                            <?php esc_html_e('Kết nối ngay', 'lacadev'); ?> &rarr;
+                        </a>
+                    <?php endif; ?>
+                </div>
+
+                <!-- Bước 2: Search Console -->
+                <div style="padding: 14px; border: 1px solid <?php echo $step2Complete ? '#bbf7d0' : (($state['gsc']['status'] ?? '') === 'error' ? '#fecaca' : '#e4e4e7'); ?>; background: <?php echo $step2Complete ? '#f0fdf4' : (($state['gsc']['status'] ?? '') === 'error' ? '#fef2f2' : '#fafafa'); ?>; border-radius: 8px;">
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+                        <span style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: <?php echo $step2Complete ? '#166534' : '#52525b'; ?>;">
+                            <?php esc_html_e('Bước 2', 'lacadev'); ?>
+                        </span>
+                        <span class="dashicons <?php echo $step2Complete ? 'dashicons-yes-alt' : (($state['gsc']['status'] ?? '') === 'error' ? 'dashicons-dismiss' : 'dashicons-marker'); ?>" style="font-size: 16px; width: 16px; height: 16px; color: <?php echo $step2Complete ? '#10b981' : (($state['gsc']['status'] ?? '') === 'error' ? '#ef4444' : '#a1a1aa'); ?>;"></span>
+                    </div>
+                    <strong style="display: block; font-size: 13.5px; color: #18181b; margin-bottom: 4px;">
+                        <?php esc_html_e('Search Console Property', 'lacadev'); ?>
+                    </strong>
+                    <p style="margin: 0 0 10px 0; font-size: 12px; color: <?php echo $step2Complete ? '#15803d' : '#71717a'; ?>; min-height: 36px; word-break: break-all;">
+                        <?php if ($step2Complete): ?>
+                            <code><?php echo esc_html($state['gsc']['property'] ?? ''); ?></code>
+                        <?php else: ?>
+                            <?php echo esc_html($state['gsc']['reason'] ?? __('Chưa chọn property Search Console.', 'lacadev')); ?>
+                        <?php endif; ?>
+                    </p>
+                    <a href="<?php echo esc_url(admin_url('admin.php?page=' . self::PAGE_SEARCH_CONSOLE)); ?>" class="button button-small <?php echo $step2Complete ? '' : 'button-primary'; ?>" style="font-size: 11.5px;">
+                        <?php echo $step2Complete ? esc_html__('Đổi property', 'lacadev') : esc_html__('Chọn property', 'lacadev') . ' &rarr;'; ?>
+                    </a>
+                </div>
+
+                <!-- Bước 3: GA4 & Mã đo lường -->
+                <div style="padding: 14px; border: 1px solid <?php echo $step3Complete ? '#bbf7d0' : (($state['ga']['status'] ?? '') === 'error' ? '#fecaca' : '#e4e4e7'); ?>; background: <?php echo $step3Complete ? '#f0fdf4' : (($state['ga']['status'] ?? '') === 'error' ? '#fef2f2' : '#fafafa'); ?>; border-radius: 8px;">
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+                        <span style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: <?php echo $step3Complete ? '#166534' : '#52525b'; ?>;">
+                            <?php esc_html_e('Bước 3', 'lacadev'); ?>
+                        </span>
+                        <span class="dashicons <?php echo $step3Complete ? 'dashicons-yes-alt' : (($state['ga']['status'] ?? '') === 'error' ? 'dashicons-dismiss' : 'dashicons-marker'); ?>" style="font-size: 16px; width: 16px; height: 16px; color: <?php echo $step3Complete ? '#10b981' : (($state['ga']['status'] ?? '') === 'error' ? '#ef4444' : '#a1a1aa'); ?>;"></span>
+                    </div>
+                    <strong style="display: block; font-size: 13.5px; color: #18181b; margin-bottom: 4px;">
+                        <?php esc_html_e('GA4 & Khớp mã đo lường', 'lacadev'); ?>
+                    </strong>
+                    <p style="margin: 0 0 10px 0; font-size: 12px; color: <?php echo $step3Complete ? '#15803d' : '#71717a'; ?>; min-height: 36px; word-break: break-all;">
+                        <?php if ($step3Complete): ?>
+                            ID: <code><?php echo esc_html($state['ga']['property_id'] ?? ''); ?></code><br>
+                            Luồng: <code><?php echo esc_html($state['ga']['measurement_id'] ?? ''); ?></code>
+                        <?php else: ?>
+                            <?php echo esc_html($state['ga']['reason'] ?? __('Chưa cấu hình thuộc tính GA4.', 'lacadev')); ?>
+                        <?php endif; ?>
+                    </p>
+                    <a href="<?php echo esc_url(admin_url('admin.php?page=' . self::PAGE_ANALYTICS)); ?>" class="button button-small <?php echo $step3Complete ? '' : 'button-primary'; ?>" style="font-size: 11.5px;">
+                        <?php echo $step3Complete ? esc_html__('Đổi thuộc tính', 'lacadev') : esc_html__('Cấu hình GA4', 'lacadev') . ' &rarr;'; ?>
+                    </a>
+                </div>
+
+                <!-- Bước 4: Trạng thái Dữ liệu -->
+                <div style="padding: 14px; border: 1px solid <?php echo $step4Complete ? '#bbf7d0' : ($step4Collecting ? '#bfdbfe' : '#e4e4e7'); ?>; background: <?php echo $step4Complete ? '#f0fdf4' : ($step4Collecting ? '#eff6ff' : '#fafafa'); ?>; border-radius: 8px;">
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+                        <span style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: <?php echo $step4Complete ? '#166534' : ($step4Collecting ? '#1e40af' : '#71717a'); ?>;">
+                            <?php esc_html_e('Bước 4', 'lacadev'); ?>
+                        </span>
+                        <span class="dashicons <?php echo $step4Complete ? 'dashicons-yes-alt' : ($step4Collecting ? 'dashicons-update' : 'dashicons-clock'); ?>" style="font-size: 16px; width: 16px; height: 16px; color: <?php echo $step4Complete ? '#10b981' : ($step4Collecting ? '#3b82f6' : '#a1a1aa'); ?>;"></span>
+                    </div>
+                    <strong style="display: block; font-size: 13.5px; color: #18181b; margin-bottom: 4px;">
+                        <?php esc_html_e('Dữ liệu báo cáo', 'lacadev'); ?>
+                    </strong>
+                    <p style="margin: 0 0 10px 0; font-size: 12px; color: <?php echo $step4Complete ? '#15803d' : ($step4Collecting ? '#1e40af' : '#71717a'); ?>; min-height: 36px;">
+                        <?php if ($step4Complete): ?>
+                            <?php esc_html_e('Đã có dữ liệu báo cáo từ Google.', 'lacadev'); ?>
+                        <?php elseif ($step4Collecting): ?>
+                            <?php esc_html_e('Đang thu thập dữ liệu (Google cần 24–48 giờ).', 'lacadev'); ?>
+                        <?php else: ?>
+                            <?php esc_html_e('Chờ hoàn tất cấu hình các bước trước.', 'lacadev'); ?>
+                        <?php endif; ?>
+                    </p>
+                    <?php if (!empty($state['is_any_complete'])): ?>
+                        <a href="<?php echo esc_url(admin_url('index.php#laca-google-report')); ?>" class="button button-small" style="font-size: 11.5px;">
+                            <span class="dashicons dashicons-chart-area" style="font-size: 14px; width: 14px; height: 14px; margin-top: 3px;"></span>
+                            <?php esc_html_e('Xem trên Dashboard', 'lacadev'); ?>
+                        </a>
+                    <?php else: ?>
+                        <button type="button" class="button button-small" disabled style="font-size: 11.5px;">
+                            <?php esc_html_e('Chưa sẵn sàng', 'lacadev'); ?>
+                        </button>
+                    <?php endif; ?>
+                </div>
+            </div>
+        </div>
+        <?php
     }
 }

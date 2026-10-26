@@ -17,6 +17,16 @@ $rangeLabels = $rangeLabels ?? [
     '28d' => __('28 ngày qua', 'lacadev'),
     '90d' => __('90 ngày qua', 'lacadev'),
 ];
+
+$isMock = !empty($gsc['isMock']) || !empty($ga['isMock']);
+$setupState = \App\Features\GoogleServices\GoogleServices::setupState();
+
+$gscComplete = $isMock || (($setupState['gsc']['status'] ?? '') === 'complete') || (!empty($gsc['connected']) && empty($gsc['needsSetup']));
+$gaComplete  = $isMock || (($setupState['ga']['status'] ?? '') === 'complete') || (!empty($ga['connected']) && empty($ga['needsSetup']));
+
+if (!$gscComplete && !$gaComplete) {
+    return;
+}
 ?>
 <div class="laca-google-report-body">
     <!-- Toolbar: Range selection & Refresh -->
@@ -73,9 +83,10 @@ $rangeLabels = $rangeLabels ?? [
         </div>
     <?php endif; ?>
 
-    <!-- ==================== BỐ CỤC 2 CỘT SONG SONG (PHƯƠNG ÁN B) ==================== -->
-    <div class="laca-google-dual-grid">
+    <!-- ==================== BỐ CỤC KHỐI BÁO CÁO (PHƯƠNG ÁN B) ==================== -->
+    <div class="<?php echo ($gscComplete && $gaComplete) ? 'laca-google-dual-grid' : 'laca-google-single-grid'; ?>" <?php echo (!$gscComplete || !$gaComplete) ? 'style="display: grid; grid-template-columns: 1fr; gap: 20px;"' : ''; ?>>
 
+        <?php if ($gscComplete): ?>
         <!-- CỘT TRÁI: GOOGLE SEARCH CONSOLE -->
         <div class="laca-seo-card laca-google-card" style="margin-bottom: 0;">
             <div class="laca-seo-card__header laca-seo-header-flex" style="padding: 16px 20px; border-bottom: 1px solid var(--laca-border, #e4e4e7);">
@@ -326,7 +337,9 @@ $rangeLabels = $rangeLabels ?? [
                 <?php endif; ?>
             <?php endif; ?>
         </div>
+        <?php endif; ?>
 
+        <?php if ($gaComplete): ?>
         <!-- CỘT PHẢI: GOOGLE ANALYTICS 4 -->
         <div class="laca-seo-card laca-google-card" style="margin-bottom: 0;">
             <div class="laca-seo-card__header laca-seo-header-flex" style="padding: 16px 20px; border-bottom: 1px solid var(--laca-border, #e4e4e7);">
@@ -632,5 +645,6 @@ $rangeLabels = $rangeLabels ?? [
                 </div>
             <?php endif; ?>
         </div>
+        <?php endif; ?>
     </div>
 </div>

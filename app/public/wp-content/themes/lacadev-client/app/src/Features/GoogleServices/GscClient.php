@@ -233,6 +233,9 @@ class GscClient
         $data = json_decode($body, true);
 
         if ($code < 200 || $code >= 300) {
+            if (in_array($code, [401, 403, 404], true)) {
+                set_transient('laca_gsc_last_error_code', $code, 12 * HOUR_IN_SECONDS);
+            }
             $rawMsg = is_array($data) && isset($data['error']['message']) ? $data['error']['message'] : '';
             if ($code === 403) {
                 $msg = __('Tài khoản chưa có quyền truy cập property này hoặc chưa bật Google Search Console API.', 'lacadev');
@@ -247,6 +250,8 @@ class GscClient
                 'data'   => $data,
             ]);
         }
+
+        delete_transient('laca_gsc_last_error_code');
 
         if (!is_array($data)) {
             return new \WP_Error('invalid_response', __('Phản hồi từ Google Search Console không hợp lệ.', 'lacadev'));

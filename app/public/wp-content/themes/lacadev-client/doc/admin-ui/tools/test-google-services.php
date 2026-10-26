@@ -2542,6 +2542,197 @@ runTest('GSC Totals (no dimensions, dataState=all), GA4 Realtime active users & 
     }
 }, $pass, $fail);
 
+// -------------------------------------------------------------
+// Test 30: G1 — Setup State, index.php visibility condition, single complete column, capability filter
+// -------------------------------------------------------------
+runTest('G1: setupState (4 states + error), index.php hidden when unconfigured, single column when 1 complete, capability filter', function () {
+    global $current_screen;
+    $origScreen = $current_screen;
+
+    $current_screen = \WP_Screen::get('dashboard');
+
+    $capFilter = function ($allcaps) {
+        $allcaps['manage_options'] = true;
+        return $allcaps;
+    };
+    add_filter('user_has_cap', $capFilter);
+
+    try {
+        // --- 1. Test setupState: Case A - Chưa OAuth ---
+        add_filter('pre_option_' . GscOAuth::OPTION_KEY, '__return_empty_string');
+        add_filter('pre_option_' . GscOAuth::LEGACY_OPTION_KEY, '__return_empty_string');
+        add_filter('pre_option_laca_google_services', '__return_empty_array');
+
+        $stateNoAuth = GoogleServices::setupState();
+        if ($stateNoAuth['connected'] !== false) {
+            return "Expected connected=false when no OAuth credentials, got true";
+        }
+        if ($stateNoAuth['gsc']['status'] !== 'incomplete') {
+            return "Expected GSC status=incomplete when no OAuth, got " . $stateNoAuth['gsc']['status'];
+        }
+        if ($stateNoAuth['ga']['status'] !== 'incomplete') {
+            return "Expected GA status=incomplete when no OAuth, got " . $stateNoAuth['ga']['status'];
+        }
+        if ($stateNoAuth['is_any_complete'] !== false) {
+            return "Expected is_any_complete=false when no OAuth";
+        }
+
+        // Test index.php: khi chưa setup -> renderDashboardNotice() KHÔNG in ra gì (không có #laca-google-report)
+        ob_start();
+        unset($_GET['laca_mock_google']);
+        GoogleServices::renderDashboardNotice();
+        $htmlNoSetup = ob_get_clean();
+        if (str_contains($htmlNoSetup, 'id="laca-google-report"')) {
+            return "Expected index.php to NOT contain #laca-google-report when unconfigured";
+        }
+
+        // --- 2. Test setupState: Case B - Có OAuth nhưng thiếu property ---
+        $mockOAuth = function () {
+            return GscCrypto::encrypt([
+                'access_token'  => 'mock-token',
+                'refresh_token' => 'mock-refresh',
+                'created_at'    => time(),
+                'expires_in'    => 3600,
+                'scopes'        => [GscOAuth::SCOPE_GSC, GscOAuth::SCOPE_GA],
+            ]);
+        };
+        remove_filter('pre_option_' . GscOAuth::OPTION_KEY, '__return_empty_string');
+        add_filter('pre_option_' . GscOAuth::OPTION_KEY, $mockOAuth);
+
+        $stateNoProps = GoogleServices::setupState();
+        if ($stateNoProps['connected'] !== true) {
+            return "Expected connected=true with mock OAuth";
+        }
+        if ($stateNoProps['gsc']['status'] !== 'incomplete' || !str_contains($stateNoProps['gsc']['reason'], 'property')) {
+            return "Expected GSC incomplete with reason mentioning property, got " . json_encode($stateNoProps['gsc']);
+        }
+        if ($stateNoProps['ga']['status'] !== 'incomplete' || !str_contains($stateNoProps['ga']['reason'], 'thuộc tính')) {
+            return "Expected GA incomplete with reason mentioning thuộc tính, got " . json_encode($stateNoProps['ga']);
+        }
+
+        // --- 3. Test setupState: Case C - Measurement ID không khớp stream của property ---
+        $mockServicesMismatch = function () {
+            return [
+                'gsc_property'       => 'https://lixroastery.com/',
+                'ga4_property_id'    => '123456',
+                'ga4_measurement_id' => 'G-WRONGID99',
+            ];
+        };
+        remove_filter('pre_option_laca_google_services', '__return_empty_array');
+        add_filter('pre_option_laca_google_services', $mockServicesMismatch);
+
+        // Cache streams for property 123456 with different measurementId
+        set_transient('laca_ga_streams_123456', [
+            ['displayName' => 'Web Stream', 'measurementId' => 'G-CORRECTID1'],
+        ], 3600);
+
+        $stateMismatch = GoogleServices::setupState();
+        if ($stateMismatch['gsc']['status'] !== 'complete') {
+            return "Expected GSC complete when property is set, got " . $stateMismatch['gsc']['status'];
+        }
+        if ($stateMismatch['ga']['status'] !== 'incomplete' || !str_contains($stateMismatch['ga']['reason'], 'không thuộc luồng web')) {
+            return "Expected GA incomplete with stream mismatch reason, got " . json_encode($stateMismatch['ga']);
+        }
+
+        // Test index.php khi CHỈ GSC COMPLETE:
+        ob_start();
+        $gsc = [
+            'connected'   => true,
+            'clicks'      => 10,
+            'impressions' => 100,
+            'ctr'         => 10.0,
+            'position'    => 5.0,
+            'queries'     => [],
+            'pages'       => [],
+        ];
+        $ga = [
+            'connected' => false,
+            'users'     => 0,
+        ];
+        $range = '28d';
+        include dirname(__DIR__, 3) . '/app/src/Features/GoogleServices/views/partials/google-report.php';
+        $htmlOnlyGsc = ob_get_clean();
+
+        if (!str_contains($htmlOnlyGsc, 'Google Search Console')) {
+            return "HTML missing Google Search Console when GSC is complete";
+        }
+        if (str_contains($htmlOnlyGsc, 'Google Analytics 4') || str_contains($htmlOnlyGsc, 'Thiết lập Google Analytics')) {
+            return "HTML should NOT contain Google Analytics 4 section when GA is incomplete";
+        }
+        if (!str_contains($htmlOnlyGsc, 'laca-google-single-grid')) {
+            return "HTML should use single grid layout when only 1 service is complete";
+        }
+
+        // --- 4. Test setupState: Case D - Đủ (cả 2 dịch vụ complete) ---
+        $mockServicesComplete = function () {
+            return [
+                'gsc_property'       => 'https://lixroastery.com/',
+                'ga4_property_id'    => '123456',
+                'ga4_measurement_id' => 'G-CORRECTID1',
+            ];
+        };
+        remove_filter('pre_option_laca_google_services', $mockServicesMismatch);
+        add_filter('pre_option_laca_google_services', $mockServicesComplete);
+
+        $stateComplete = GoogleServices::setupState();
+        if ($stateComplete['gsc']['status'] !== 'complete') {
+            return "Expected GSC complete, got " . $stateComplete['gsc']['status'];
+        }
+        if ($stateComplete['ga']['status'] !== 'complete') {
+            return "Expected GA complete when measurement matches stream, got " . json_encode($stateComplete['ga']);
+        }
+        if (!$stateComplete['is_all_complete']) {
+            return "Expected is_all_complete=true";
+        }
+
+        // --- 5. Test setupState: Case E - Error code 403 on API ---
+        set_transient('laca_gsc_last_error_code', 403, 3600);
+        $stateErr = GoogleServices::setupState();
+        if ($stateErr['gsc']['status'] !== 'error' || ($stateErr['gsc']['code'] ?? 0) !== 403) {
+            return "Expected GSC status=error with code=403, got " . json_encode($stateErr['gsc']);
+        }
+        delete_transient('laca_gsc_last_error_code');
+
+        // --- 6. Test Capability filter: laca/google/report_capability ---
+        $customCapFilter = function ($cap) {
+            return 'custom_view_analytics_cap';
+        };
+        add_filter('laca/google/report_capability', $customCapFilter);
+        if (GoogleServices::getReportCapability() !== 'custom_view_analytics_cap') {
+            return "Expected custom capability from filter, got " . GoogleServices::getReportCapability();
+        }
+        remove_filter('laca/google/report_capability', $customCapFilter);
+
+        // --- 7. Test Admin Page Stepper rendering ---
+        $page = new GoogleServicesPage();
+        ob_start();
+        $page->renderSetupStepper('laca-google-search-console');
+        $htmlStepper = ob_get_clean();
+
+        if (!str_contains($htmlStepper, 'Trạng thái thiết lập Dịch vụ Google')) {
+            return "Stepper HTML missing title";
+        }
+        if (!str_contains($htmlStepper, 'Bước 1') || !str_contains($htmlStepper, 'Bước 2') || !str_contains($htmlStepper, 'Bước 3') || !str_contains($htmlStepper, 'Bước 4')) {
+            return "Stepper HTML missing 4 steps";
+        }
+
+        return true;
+    } finally {
+        $current_screen = $origScreen;
+        remove_filter('user_has_cap', $capFilter);
+        if (isset($mockOAuth)) {
+            remove_filter('pre_option_' . GscOAuth::OPTION_KEY, $mockOAuth);
+        }
+        if (isset($mockServicesComplete)) {
+            remove_filter('pre_option_laca_google_services', $mockServicesComplete);
+        }
+        delete_transient('laca_ga_streams_123456');
+        delete_transient('laca_gsc_last_error_code');
+        delete_transient('laca_ga_last_error_code');
+        Settings::clearCache();
+    }
+}, $pass, $fail);
+
 echo "SUMMARY pass={$pass} fail={$fail}\n";
 exit($fail === 0 ? 0 : 1);
 
