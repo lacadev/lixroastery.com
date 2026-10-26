@@ -1763,8 +1763,281 @@ runTest('GA4 DateRange Naming: Requests omit forbidden date_range_* names while 
     }
 }, $pass, $fail);
 
+// -------------------------------------------------------------
+// Test 27: GA4 Raw API Response Pipeline: channels, top pages duration (300s/5 users = 1m 0s), no '1m 30s'
+// -------------------------------------------------------------
+runTest('GA4 Raw API Response Pipeline: channels, top pages duration (300s/5 users = 1m 0s), no 1m 30s', function () {
+    $mockServicesFilter27 = function () {
+        return [
+            'ga4_property_id' => '438291045',
+        ];
+    };
+    $mockOAuthFilter27 = function () {
+        return GscCrypto::encrypt([
+            'access_token'  => 'mock-token',
+            'refresh_token' => 'mock-refresh',
+            'created_at'    => time(),
+            'expires_in'    => 3600,
+            'client_id'     => 'mock-client',
+            'client_secret' => 'mock-secret',
+            'scopes'        => [GscOAuth::SCOPE_GA, GscOAuth::SCOPE_GSC],
+        ]);
+    };
+    add_filter('pre_option_laca_google_services', $mockServicesFilter27);
+    add_filter('pre_option_' . GscOAuth::OPTION_KEY, $mockOAuthFilter27);
+    Settings::clearCache();
+
+    $mockFilter = function ($preempt, $parsed_args, $url) {
+        if (str_contains($url, 'analyticsdata.googleapis.com') && str_contains($url, ':runReport')) {
+            $reqBody = json_decode($parsed_args['body'] ?? '{}', true);
+            $dimNames = array_column($reqBody['dimensions'] ?? [], 'name');
+
+            // 1. Top Pages sub-report: dimensions [pagePath, pageTitle]
+            if (in_array('pagePath', $dimNames, true)) {
+                return [
+                    'response' => ['code' => 200, 'message' => 'OK'],
+                    'body'     => json_encode([
+                        'dimensionHeaders' => [
+                            ['name' => 'pagePath'],
+                            ['name' => 'pageTitle'],
+                        ],
+                        'metricHeaders' => [
+                            ['name' => 'screenPageViews'],
+                            ['name' => 'userEngagementDuration'],
+                            ['name' => 'activeUsers'],
+                        ],
+                        'rows' => [
+                            [
+                                'dimensionValues' => [
+                                    ['value' => '/san-pham/ca-phe-lix/'],
+                                    ['value' => 'Cà phê Specialty LIX'],
+                                ],
+                                // 500 views, 300s total duration / 5 active users = 60s => '1m 0s'
+                                'metricValues' => [
+                                    ['value' => '500'],
+                                    ['value' => '300'],
+                                    ['value' => '5'],
+                                ],
+                            ],
+                            [
+                                'dimensionValues' => [
+                                    ['value' => '/ve-chung-toi/'],
+                                    ['value' => 'Về Chúng Tôi'],
+                                ],
+                                // 200 views, 130s total duration / 2 active users = 65s => '1m 05s'
+                                'metricValues' => [
+                                    ['value' => '200'],
+                                    ['value' => '130'],
+                                    ['value' => '2'],
+                                ],
+                            ],
+                        ],
+                    ]),
+                    'headers' => ['content-type' => 'application/json'],
+                ];
+            }
+
+            // 2. Channels sub-report: dimension [sessionDefaultChannelGroup]
+            if (in_array('sessionDefaultChannelGroup', $dimNames, true)) {
+                return [
+                    'response' => ['code' => 200, 'message' => 'OK'],
+                    'body'     => json_encode([
+                        'dimensionHeaders' => [
+                            ['name' => 'sessionDefaultChannelGroup'],
+                        ],
+                        'metricHeaders' => [
+                            ['name' => 'sessions'],
+                        ],
+                        'rows' => [
+                            [
+                                'dimensionValues' => [['value' => 'Organic Search']],
+                                'metricValues'    => [['value' => '150']],
+                            ],
+                            [
+                                'dimensionValues' => [['value' => 'Direct']],
+                                'metricValues'    => [['value' => '100']],
+                            ],
+                        ],
+                    ]),
+                    'headers' => ['content-type' => 'application/json'],
+                ];
+            }
+
+            // 3. Devices sub-report: dimension [deviceCategory]
+            if (in_array('deviceCategory', $dimNames, true)) {
+                return [
+                    'response' => ['code' => 200, 'message' => 'OK'],
+                    'body'     => json_encode([
+                        'dimensionHeaders' => [
+                            ['name' => 'deviceCategory'],
+                        ],
+                        'metricHeaders' => [
+                            ['name' => 'sessions'],
+                        ],
+                        'rows' => [
+                            [
+                                'dimensionValues' => [['value' => 'mobile']],
+                                'metricValues'    => [['value' => '200']],
+                            ],
+                        ],
+                    ]),
+                    'headers' => ['content-type' => 'application/json'],
+                ];
+            }
+
+            // 4. Main report: dimension [date] across 2 date ranges
+            return [
+                'response' => ['code' => 200, 'message' => 'OK'],
+                'body'     => json_encode([
+                    'dimensionHeaders' => [
+                        ['name' => 'date'],
+                    ],
+                    'metricHeaders' => [
+                        ['name' => 'activeUsers'],
+                        ['name' => 'newUsers'],
+                        ['name' => 'sessions'],
+                        ['name' => 'screenPageViews'],
+                        ['name' => 'averageSessionDuration'],
+                        ['name' => 'engagementRate'],
+                        ['name' => 'keyEvents'],
+                    ],
+                    'totals' => [
+                        [
+                            'dimensionValues' => [['value' => 'date_range_0']],
+                            'metricValues'    => [
+                                ['value' => '200'],
+                                ['value' => '150'],
+                                ['value' => '250'],
+                                ['value' => '800'],
+                                ['value' => '75'],
+                                ['value' => '0.75'],
+                                ['value' => '10'],
+                            ],
+                        ],
+                        [
+                            'dimensionValues' => [['value' => 'date_range_1']],
+                            'metricValues'    => [
+                                ['value' => '180'],
+                                ['value' => '120'],
+                                ['value' => '220'],
+                                ['value' => '700'],
+                                ['value' => '85'],
+                                ['value' => '0.70'],
+                                ['value' => '8'],
+                            ],
+                        ],
+                    ],
+                    'rows' => [
+                        [
+                            'dimensionValues' => [['value' => '20261025']],
+                            'metricValues'    => [
+                                ['value' => '20'],
+                                ['value' => '15'],
+                                ['value' => '25'],
+                                ['value' => '80'],
+                                ['value' => '90'],
+                                ['value' => '0.75'],
+                                ['value' => '1'],
+                            ],
+                        ],
+                    ],
+                ]),
+                'headers' => ['content-type' => 'application/json'],
+            ];
+        }
+
+        return $preempt;
+    };
+    add_filter('pre_http_request', $mockFilter, 10, 3);
+
+    try {
+        $gaData = GoogleDashboardService::getGa4Data('28d', true);
+
+        // Assert Channels: sessions and share are non-zero and accurately calculated
+        if (empty($gaData['channels']) || count($gaData['channels']) < 2) {
+            return "Expected 2 channels, got " . count($gaData['channels'] ?? []);
+        }
+        $c0 = $gaData['channels'][0];
+        $c1 = $gaData['channels'][1];
+        if ($c0['sessions'] !== 150 || $c0['share'] !== 60) {
+            return "Expected channel 0 (Organic Search) sessions=150 share=60%, got sessions={$c0['sessions']} share={$c0['share']}%";
+        }
+        if ($c1['sessions'] !== 100 || $c1['share'] !== 40) {
+            return "Expected channel 1 (Direct) sessions=100 share=40%, got sessions={$c1['sessions']} share={$c1['share']}%";
+        }
+
+        // Assert Top Pages: views non-zero and duration calculated correctly from 300s / 5 users = 60s ('1m 0s')
+        if (empty($gaData['topPages']) || count($gaData['topPages']) < 2) {
+            return "Expected 2 topPages, got " . count($gaData['topPages'] ?? []);
+        }
+        $p0 = $gaData['topPages'][0];
+        $p1 = $gaData['topPages'][1];
+        if ($p0['views'] !== 500) {
+            return "Expected page 0 views=500, got " . var_export($p0['views'], true);
+        }
+        if ($p0['duration'] !== '1m 0s') {
+            return "Expected page 0 duration '1m 0s' (300s/5users), got '" . ($p0['duration'] ?? 'null') . "'";
+        }
+        if ($p1['views'] !== 200) {
+            return "Expected page 1 views=200, got " . var_export($p1['views'], true);
+        }
+        if ($p1['duration'] !== '1m 05s') {
+            return "Expected page 1 duration '1m 05s' (130s/2users), got '" . ($p1['duration'] ?? 'null') . "'";
+        }
+
+        // Render partial with $gaData
+        $gsc = ['connected' => false];
+        $ga = $gaData;
+        $range = '28d';
+        ob_start();
+        include dirname(__DIR__, 3) . '/app/src/Features/GoogleServices/views/partials/google-report.php';
+        $html = ob_get_clean();
+
+        // Assert HTML: must NOT contain fake duration '1m 30s'
+        if (str_contains($html, '1m 30s')) {
+            return "HTML still contains fabricated duration '1m 30s'";
+        }
+
+        // Assert HTML contains computed duration and channel breakdown
+        if (!str_contains($html, '1m 0s')) {
+            return "HTML missing computed duration '1m 0s'";
+        }
+        if (!str_contains($html, 'Organic Search: 60%') || !str_contains($html, '(150)')) {
+            return "HTML missing channel Organic Search 60% (150)";
+        }
+        if (!str_contains($html, 'Direct: 40%') || !str_contains($html, '(100)')) {
+            return "HTML missing channel Direct 40% (100)";
+        }
+
+        // Test Edge Case: when totalChannelSessions = 0, hide allocation bar and show 'Chưa có dữ liệu kênh'
+        $gaZeroChannels = $gaData;
+        $gaZeroChannels['channels'] = [
+            ['name' => 'Direct', 'sessions' => 0, 'share' => 0, 'color' => '#18181b'],
+        ];
+        $ga = $gaZeroChannels;
+        ob_start();
+        include dirname(__DIR__, 3) . '/app/src/Features/GoogleServices/views/partials/google-report.php';
+        $htmlZero = ob_get_clean();
+
+        if (str_contains($htmlZero, 'title="Direct: 0%"')) {
+            return "HTML with 0 channel sessions should not render progress bar segment";
+        }
+        if (!str_contains($htmlZero, 'Chưa có dữ liệu kênh')) {
+            return "HTML with 0 channel sessions should display 'Chưa có dữ liệu kênh'";
+        }
+
+        return true;
+    } finally {
+        remove_filter('pre_http_request', $mockFilter, 10);
+        remove_filter('pre_option_laca_google_services', $mockServicesFilter27);
+        remove_filter('pre_option_' . GscOAuth::OPTION_KEY, $mockOAuthFilter27);
+        Settings::clearCache();
+    }
+}, $pass, $fail);
+
 echo "SUMMARY pass={$pass} fail={$fail}\n";
 exit($fail === 0 ? 0 : 1);
+
 
 
 

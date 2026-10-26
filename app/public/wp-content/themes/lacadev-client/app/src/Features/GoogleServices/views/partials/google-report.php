@@ -438,7 +438,7 @@ $rangeLabels = $rangeLabels ?? [
                             <span class="laca-seo-stat-card__label" style="font-size: 12px;"><?php esc_html_e('Thời gian tương tác TB', 'lacadev'); ?></span>
                             <div style="display: flex; align-items: baseline; gap: 8px; margin: 4px 0 2px 0;">
                                 <strong class="laca-seo-stat-card__value" style="font-size: 22px; line-height: 1.1;">
-                                    <?php echo esc_html($ga['avgEngagement'] ?? '0s'); ?>
+                                    <?php echo esc_html($ga['avgEngagement'] ?? '—'); ?>
                                 </strong>
                                 <?php
                                 $dDelta = (string) ($ga['avgEngagement_delta'] ?? '—');
@@ -499,19 +499,21 @@ $rangeLabels = $rangeLabels ?? [
                     <h4 style="margin: 0 0 10px 0; font-size: 13.5px; font-weight: 600; color: var(--laca-fg, #18181b);">
                         <?php esc_html_e('Kênh lưu lượng truy cập (Traffic Acquisition)', 'lacadev'); ?>
                     </h4>
-                    <div style="height: 10px; display: flex; border-radius: 9999px; overflow: hidden; background: var(--laca-bg-subtle, #f4f4f5); margin-bottom: 12px;">
-                        <?php if (!empty($ga['channels'])): ?>
+                    <?php
+                    $totalChannelSessions = 0;
+                    if (!empty($ga['channels'])) {
+                        foreach ($ga['channels'] as $ch) {
+                            $totalChannelSessions += (int) ($ch['sessions'] ?? 0);
+                        }
+                    }
+                    ?>
+                    <?php if ($totalChannelSessions > 0): ?>
+                        <div style="height: 10px; display: flex; border-radius: 9999px; overflow: hidden; background: var(--laca-bg-subtle, #f4f4f5); margin-bottom: 12px;">
                             <?php foreach ($ga['channels'] as $ch): ?>
                                 <div style="width: <?php echo esc_attr((string) $ch['share']); ?>%; background: <?php echo esc_attr($ch['color']); ?>;" title="<?php echo esc_attr($ch['name'] . ': ' . $ch['share'] . '%'); ?>"></div>
                             <?php endforeach; ?>
-                        <?php else: ?>
-                            <div style="width: 100%; background: var(--laca-border, #e4e4e7);"></div>
-                        <?php endif; ?>
-                    </div>
-                    <div style="display: flex; flex-wrap: wrap; gap: 12px 18px; font-size: 12px;">
-                        <?php if (empty($ga['channels'])): ?>
-                            <span style="color: var(--laca-fg-muted, #71717a);"><?php esc_html_e('Chưa có dữ liệu kênh.', 'lacadev'); ?></span>
-                        <?php else: ?>
+                        </div>
+                        <div style="display: flex; flex-wrap: wrap; gap: 12px 18px; font-size: 12px;">
                             <?php foreach ($ga['channels'] as $ch): ?>
                                 <div style="display: flex; align-items: center; gap: 6px;">
                                     <span style="width: 9px; height: 9px; border-radius: 2px; background: <?php echo esc_attr($ch['color']); ?>; display: inline-block;"></span>
@@ -519,8 +521,12 @@ $rangeLabels = $rangeLabels ?? [
                                     <span style="color: var(--laca-fg-muted, #71717a);">(<?php echo number_format_i18n((int) $ch['sessions']); ?>)</span>
                                 </div>
                             <?php endforeach; ?>
-                        <?php endif; ?>
-                    </div>
+                        </div>
+                    <?php else: ?>
+                        <div style="font-size: 12px; color: var(--laca-fg-muted, #71717a); padding: 4px 0;">
+                            <?php esc_html_e('Chưa có dữ liệu kênh.', 'lacadev'); ?>
+                        </div>
+                    <?php endif; ?>
                 </div>
 
                 <!-- Khối Hành động mục tiêu / Chuyển đổi (Business KPI / Key Events) -->
@@ -579,7 +585,7 @@ $rangeLabels = $rangeLabels ?? [
                                                 <?php echo number_format_i18n((int) ($tp['views'] ?? $tp['screenPageViews'] ?? 0)); ?>
                                             </td>
                                             <td style="text-align: right; color: <?php echo !empty($tp['highlight']) ? 'var(--laca-success, #10b981); font-weight: 600;' : 'var(--laca-fg-muted, #52525b);'; ?>">
-                                                <?php echo esc_html($tp['duration'] ?? '1m 30s'); ?>
+                                                <?php echo esc_html($tp['duration'] ?? '—'); ?>
                                             </td>
                                         </tr>
                                     <?php endforeach; ?>

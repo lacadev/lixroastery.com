@@ -179,12 +179,39 @@ class GoogleDashboardService
             $sessions = (int) ($c['sessions'] ?? 0);
             $share = $totalChannelSessions > 0 ? round(($sessions / $totalChannelSessions) * 100) : 0;
             $formattedChannels[] = [
-                'name'     => (string) ($c['sessionDefaultChannelGroup'] ?? 'Direct'),
+                'name'     => (string) ($c['sessionDefaultChannelGroup'] ?? $c['name'] ?? '—'),
                 'sessions' => $sessions,
                 'share'    => (int) $share,
                 'color'    => $palette[$idx % count($palette)],
             ];
             $idx++;
+        }
+
+        $formattedTopPages = [];
+        foreach ($topPages as $tp) {
+            $views = (int) ($tp['screenPageViews'] ?? $tp['views'] ?? 0);
+            $engagementSec = (float) ($tp['userEngagementDuration'] ?? 0);
+            $pageUsers = (int) ($tp['activeUsers'] ?? 0);
+
+            if (isset($tp['duration']) && $tp['duration'] !== '' && $tp['duration'] !== '1m 30s') {
+                $duration = $tp['duration'];
+            } elseif ($pageUsers > 0 && $engagementSec > 0) {
+                $avgPageSec = (int) round($engagementSec / $pageUsers);
+                $duration = self::formatDuration($avgPageSec);
+            } else {
+                $duration = '—';
+            }
+
+            $formattedTopPages[] = [
+                'title'                  => (string) ($tp['pageTitle'] ?? $tp['title'] ?? 'Trang'),
+                'path'                   => (string) ($tp['pagePath'] ?? $tp['path'] ?? '/'),
+                'views'                  => $views,
+                'screenPageViews'        => $views,
+                'userEngagementDuration' => $engagementSec,
+                'activeUsers'            => $pageUsers,
+                'duration'               => $duration,
+                'highlight'              => !empty($tp['highlight']),
+            ];
         }
 
         $users = (int) ($summary['activeUsers'] ?? $summary['users'] ?? 0);
@@ -256,13 +283,13 @@ class GoogleDashboardService
             'users_delta'          => $usersDelta,
             'sessions'             => $sessions,
             'sessions_delta'       => $sessionsDelta,
-            'avgEngagement'        => self::formatDuration($avgSec),
+            'avgEngagement'        => $avgSec > 0 ? self::formatDuration($avgSec) : '—',
             'avgEngagement_delta'  => $avgEngagementDelta,
             'conversionRate'       => $conversionRate,
             'conversionRate_delta' => $conversionRateDelta,
             'channels'             => $formattedChannels,
             'businessKpis'         => $businessKpis,
-            'topPages'             => array_slice($topPages, 0, 5),
+            'topPages'             => array_slice($formattedTopPages, 0, 5),
         ];
     }
 
@@ -357,13 +384,22 @@ class GoogleDashboardService
     /**
      * Format seconds into human readable duration, e.g. 1m 45s.
      */
-    public static function formatDuration(int $seconds): string
+    public static function formatDuration(int|float $seconds): string
     {
-        $minutes = floor($seconds / 60);
+        $seconds = (int) round($seconds);
+        if ($seconds <= 0) {
+            return '0s';
+        }
+
+        $minutes = (int) floor($seconds / 60);
         $remainingSeconds = $seconds % 60;
 
         if ($minutes <= 0) {
             return sprintf('%ds', $remainingSeconds);
+        }
+
+        if ($remainingSeconds === 0) {
+            return sprintf('%dm 0s', $minutes);
         }
 
         return sprintf('%dm %02ds', $minutes, $remainingSeconds);

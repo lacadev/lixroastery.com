@@ -311,8 +311,8 @@ class GaClient
         $parsed['propertyId'] = $propertyId;
         $parsed['range']      = $range;
 
-        // Fetch top pages in background or secondary query
-        $topPages = self::runDimensionReport($propertyId, $days, ['pagePath', 'pageTitle'], 'screenPageViews', 10);
+        // Fetch top pages in background or secondary query (3 metrics: views, engagement duration, active users)
+        $topPages = self::runDimensionReport($propertyId, $days, ['pagePath', 'pageTitle'], ['screenPageViews', 'userEngagementDuration', 'activeUsers'], 10);
         if (is_array($topPages)) {
             $parsed['topPages'] = $topPages;
         }
@@ -341,29 +341,31 @@ class GaClient
      * @param string $propertyId
      * @param int $days
      * @param string[] $dimensionNames
-     * @param string $metricName
+     * @param string|string[] $metricNames
      * @param int $limit
      * @return array<array<string,mixed>>|null
      */
-    private static function runDimensionReport(string $propertyId, int $days, array $dimensionNames, string $metricName, int $limit = 10): ?array
+    private static function runDimensionReport(string $propertyId, int $days, array $dimensionNames, string|array $metricNames, int $limit = 10): ?array
     {
         $token = GscOAuth::getValidAccessToken();
         if (!$token) {
             return null;
         }
 
-        $dimensions = array_map(static fn($d) => ['name' => $d], $dimensionNames);
+        $metricsList = is_array($metricNames) ? $metricNames : [$metricNames];
+        $dimensions  = array_map(static fn($d) => ['name' => $d], $dimensionNames);
+        $metrics     = array_map(static fn($m) => ['name' => $m], $metricsList);
+        $primaryMetric = $metricsList[0] ?? 'sessions';
+
         $body = [
             // Không đặt 'name': GA4 cấm tên bắt đầu 'date_range_' và tự trả date_range_0/1 (phần parse dựa vào đó).
             'dateRanges' => [
                 ['startDate' => "{$days}daysAgo", 'endDate' => 'yesterday'],
             ],
             'dimensions' => $dimensions,
-            'metrics'    => [
-                ['name' => $metricName],
-            ],
+            'metrics'    => $metrics,
             'orderBys' => [
-                ['metric' => ['metricName' => $metricName], 'desc' => true],
+                ['metric' => ['metricName' => $primaryMetric], 'desc' => true],
             ],
             'limit' => $limit,
         ];
@@ -387,17 +389,52 @@ class GaClient
             return [];
         }
 
+        // Map metric headers to index
+        $metricIndexes = [];
+        if (!empty($data['metricHeaders']) && is_array($data['metricHeaders'])) {
+            foreach ($data['metricHeaders'] as $idx => $hdr) {
+                $name = $hdr['name'] ?? '';
+                if ($name !== '') {
+                    $metricIndexes[$name] = $idx;
+                }
+            }
+        }
+
         $results = [];
         foreach ($data['rows'] as $row) {
             $dimValues = array_map(static fn($v) => (string) ($v['value'] ?? ''), $row['dimensionValues'] ?? []);
-            $metricVal = (int) ($row['metricValues'][0]['value'] ?? 0);
 
-            $item = [
-                'metric' => $metricVal,
-            ];
+            $item = [];
             foreach ($dimensionNames as $i => $name) {
                 $item[$name] = $dimValues[$i] ?? '';
             }
+
+            foreach ($metricsList as $j => $mName) {
+                $valIdx = $metricIndexes[$mName] ?? $j;
+                $val = (int) ($row['metricValues'][$valIdx]['value'] ?? 0);
+                $item[$mName] = $val;
+            }
+
+            // Also keep 'metric' as alias for the primary metric
+            $item['metric'] = $item[$primaryMetric] ?? 0;
+
+            // Also alias views if screenPageViews is present
+            if (isset($item['screenPageViews'])) {
+                $item['views'] = $item['screenPageViews'];
+            }
+
+            // Calculate duration if userEngagementDuration & activeUsers exist
+            if (in_array('userEngagementDuration', $metricsList, true) && in_array('activeUsers', $metricsList, true)) {
+                $engagementSec = (float) ($item['userEngagementDuration'] ?? 0);
+                $activeUsers   = (int) ($item['activeUsers'] ?? 0);
+                if ($activeUsers > 0 && $engagementSec > 0) {
+                    $avgSec = (int) round($engagementSec / $activeUsers);
+                    $item['duration'] = GoogleDashboardService::formatDuration($avgSec);
+                } else {
+                    $item['duration'] = '—';
+                }
+            }
+
             $results[] = $item;
         }
 
