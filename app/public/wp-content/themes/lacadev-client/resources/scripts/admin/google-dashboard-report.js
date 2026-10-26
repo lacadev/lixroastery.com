@@ -194,6 +194,113 @@
             }
         });
 
+        // 4. PageSpeed Insights AJAX Handler
+        function runPageSpeed(btn) {
+            if (!container || !ajaxUrl || !nonce) return;
+
+            const psiCard = container.querySelector('#laca-google-psi-card, .laca-google-psi');
+            const allPsiBtns = container.querySelectorAll('[data-laca-psi-run]');
+
+            const originalText = btn.innerHTML;
+            allPsiBtns.forEach(function (b) {
+                b.disabled = true;
+            });
+            btn.innerHTML = '<span class="dashicons dashicons-update laca-spin" aria-hidden="true"></span> Đang kiểm tra… (có thể mất ~30 giây)';
+
+            const controller = new AbortController();
+            const timeoutId = setTimeout(function () {
+                controller.abort();
+            }, 70000);
+
+            const formData = new FormData();
+            formData.append('action', 'laca_pagespeed_run');
+            formData.append('nonce', nonce);
+            formData.append('strategy', 'mobile');
+            formData.append('refresh', '1');
+            if (isMock) {
+                formData.append('laca_mock_google', '1');
+            }
+
+            fetch(ajaxUrl, {
+                method: 'POST',
+                body: formData,
+                credentials: 'same-origin',
+                signal: controller.signal,
+            })
+                .then(function (response) {
+                    clearTimeout(timeoutId);
+                    return response.json();
+                })
+                .then(function (res) {
+                    if (res && res.success && res.data && res.data.html) {
+                        if (psiCard) {
+                            psiCard.outerHTML = res.data.html;
+                        } else {
+                            container.insertAdjacentHTML('beforeend', res.data.html);
+                        }
+                        bindPsiEvents();
+                    } else {
+                        const errMsg = (res && res.data && res.data.message) ? res.data.message : 'Không thể hoàn thành kiểm tra PageSpeed.';
+                        const is429 = (res && res.data && (res.data.status === 429 || res.data.code === 'psi_error_429' || String(errMsg).includes('429')));
+                        renderPsiError(errMsg, is429);
+                    }
+                })
+                .catch(function (err) {
+                    clearTimeout(timeoutId);
+                    const isAbort = err && err.name === 'AbortError';
+                    const msg = isAbort ? 'Quá thời gian phản hồi (70 giây). Vui lòng thử lại sau.' : 'Lỗi kết nối khi gửi yêu cầu kiểm tra PageSpeed.';
+                    renderPsiError(msg, false);
+                });
+
+            function renderPsiError(message, is429) {
+                if (!psiCard) return;
+                let hint = '';
+                if (is429) {
+                    hint = '<div style="margin-top: 6px; font-size: 12px; color: var(--laca-fg-muted);">Hạn mức truy vấn API miễn phí đã đạt giới hạn. Bạn có thể cấu hình PageSpeed API Key trong trang Cài đặt Dịch vụ Google để tăng hạn mức.</div>';
+                }
+                const existingAlert = psiCard.querySelector('.laca-google-psi__alert');
+                if (existingAlert) {
+                    existingAlert.remove();
+                }
+                const alertHtml = `
+                    <div class="laca-google-psi__alert">
+                        <strong>Lỗi kiểm tra tốc độ:</strong>
+                        <span>${escapeHtml(message)}</span>
+                        ${hint}
+                        <div>
+                            <button type="button" class="button button-secondary button-small" data-laca-psi-run style="margin-top: 8px;">
+                                <span class="dashicons dashicons-update" aria-hidden="true"></span> Thử lại
+                            </button>
+                        </div>
+                    </div>
+                `;
+                const header = psiCard.querySelector('.laca-google-psi__header');
+                if (header) {
+                    header.insertAdjacentHTML('afterend', alertHtml);
+                } else {
+                    psiCard.insertAdjacentHTML('afterbegin', alertHtml);
+                }
+                allPsiBtns.forEach(function (b) {
+                    b.disabled = false;
+                });
+                btn.innerHTML = originalText;
+                bindPsiEvents();
+            }
+        }
+
+        function bindPsiEvents() {
+            if (!container) return;
+            container.querySelectorAll('[data-laca-psi-run]').forEach(function (b) {
+                b.replaceWith(b.cloneNode(true));
+            });
+            container.querySelectorAll('[data-laca-psi-run]').forEach(function (b) {
+                b.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    runPageSpeed(b);
+                });
+            });
+        }
+
         function bindReportEvents() {
             if (!container) return;
 
@@ -218,6 +325,9 @@
                     loadReport(currentRange, true);
                 });
             }
+
+            // PageSpeed run buttons
+            bindPsiEvents();
 
             // Start Realtime Polling if Realtime block is present
             startRealtimePolling();

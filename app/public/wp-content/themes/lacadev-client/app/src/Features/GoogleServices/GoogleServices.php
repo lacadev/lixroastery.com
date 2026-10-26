@@ -542,20 +542,46 @@ class GoogleServices
         }
 
         $strategy = sanitize_key(wp_unslash($_REQUEST['strategy'] ?? 'mobile'));
-        $targetUrl = esc_url_raw(wp_unslash($_REQUEST['url'] ?? home_url('/')));
-        $refresh = !empty($_REQUEST['refresh']);
+        $refresh  = !empty($_REQUEST['refresh']);
 
-        // Mock support on local
+        // Only accept URL with the same host as home_url()
+        $homeHost = (string) parse_url(home_url('/'), PHP_URL_HOST);
+        $rawUrl   = (string) wp_unslash($_REQUEST['url'] ?? home_url('/'));
+        $targetUrl = esc_url_raw($rawUrl);
+        $targetHost = (string) parse_url($targetUrl, PHP_URL_HOST);
+        if (empty($targetUrl) || strtolower($targetHost) !== strtolower($homeHost)) {
+            $targetUrl = home_url('/');
+        }
+
+        if (!empty($_REQUEST['laca_mock_google']) && function_exists('wp_get_environment_type') && wp_get_environment_type() === 'local' && current_user_can('manage_options')) {
+            $_GET['laca_mock_google'] = '1';
+        }
+
         if (GoogleDashboardService::isMockMode()) {
-            $mockData = PageSpeedClient::getMockData($targetUrl, $strategy);
-            wp_send_json_success($mockData);
+            $result = PageSpeedClient::getMockData($targetUrl, $strategy);
+        } else {
+            $result = PageSpeedClient::run($targetUrl, $strategy, $refresh);
         }
 
-        $result = PageSpeedClient::run($targetUrl, $strategy, $refresh);
         if (is_wp_error($result)) {
-            wp_send_json_error(['message' => $result->get_error_message()]);
+            $errData = $result->get_error_data();
+            $statusCode = is_array($errData) && isset($errData['status']) ? (int) $errData['status'] : 400;
+            wp_send_json_error([
+                'message' => $result->get_error_message(),
+                'code'    => $result->get_error_code(),
+                'status'  => $statusCode,
+            ], $statusCode >= 400 && $statusCode < 600 ? $statusCode : 400);
         }
 
-        wp_send_json_success($result);
+        $psiData = $result;
+        $siteUrl = $targetUrl;
+        ob_start();
+        include __DIR__ . '/views/partials/pagespeed-card.php';
+        $html = ob_get_clean();
+
+        wp_send_json_success([
+            'html' => $html,
+            'data' => $result,
+        ]);
     }
 }

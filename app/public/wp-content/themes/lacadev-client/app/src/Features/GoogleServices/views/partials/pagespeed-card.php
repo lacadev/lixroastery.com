@@ -1,0 +1,179 @@
+<?php
+/**
+ * PageSpeed Insights Card Partial.
+ * Renders Core Web Vitals (CrUX) and Lighthouse (Lab) performance metrics.
+ *
+ * @package LacaDevClient
+ *
+ * @var array<string, mixed>|null $psiData
+ * @var string|null $siteUrl
+ */
+
+defined('ABSPATH') || exit;
+
+$siteUrl = $siteUrl ?? home_url('/');
+$extReportUrl = 'https://pagespeed.web.dev/report?url=' . rawurlencode($siteUrl);
+
+$hasData = !empty($psiData) && (!empty($psiData['field']['hasData']) || !empty($psiData['lab']['score']));
+$hasField = !empty($psiData['field']['hasData']);
+$testedDate = (string) ($psiData['testedDate'] ?? '');
+$labScore = isset($psiData['lab']['score']) ? (int) $psiData['lab']['score'] : null;
+$labScoreCategory = (string) ($psiData['lab']['scoreCategory'] ?? '—');
+$labScoreClass = (string) ($psiData['lab']['scoreClass'] ?? 'average');
+?>
+<div class="laca-seo-card laca-google-psi" id="laca-google-psi-card">
+    <div class="laca-google-psi__header">
+        <div class="laca-google-psi__title-wrap">
+            <span class="dashicons dashicons-performance laca-google-psi__icon" aria-hidden="true"></span>
+            <h3 class="laca-google-psi__title">
+                <?php esc_html_e('Tốc độ Trang & Trải nghiệm Người dùng (PageSpeed Insights)', 'lacadev'); ?>
+            </h3>
+        </div>
+        <div class="laca-google-psi__actions">
+            <span class="laca-google-psi__url">
+                URL: <code><?php echo esc_html($siteUrl); ?></code>
+            </span>
+            <?php if ($hasData): ?>
+                <button type="button" class="button button-secondary button-small laca-google-psi__run-btn" data-laca-psi-run>
+                    <span class="dashicons dashicons-update" aria-hidden="true"></span>
+                    <?php esc_html_e('Kiểm tra lại', 'lacadev'); ?>
+                </button>
+            <?php endif; ?>
+            <a href="<?php echo esc_url($extReportUrl); ?>" target="_blank" rel="noopener noreferrer" class="button button-secondary button-small laca-google-psi__ext-link">
+                <span><?php esc_html_e('Chi tiết', 'lacadev'); ?></span>
+                <span class="dashicons dashicons-external" aria-hidden="true"></span>
+            </a>
+        </div>
+    </div>
+
+    <?php if (!$hasData): ?>
+        <div class="laca-google-psi__empty">
+            <p>
+                <?php esc_html_e('Chưa có dữ liệu kiểm tra tốc độ gần đây cho trang chủ. Bạn có thể kiểm tra hiệu năng Core Web Vitals ngay trong trang quản trị.', 'lacadev'); ?>
+            </p>
+            <button type="button" class="button button-secondary laca-google-psi__run-btn" data-laca-psi-run>
+                <span class="dashicons dashicons-update" aria-hidden="true"></span>
+                <?php esc_html_e('Kiểm tra PageSpeed', 'lacadev'); ?>
+            </button>
+        </div>
+    <?php elseif ($hasField): ?>
+        <?php
+        $fMetrics = $psiData['field']['metrics'] ?? [];
+        $lcp = $fMetrics['lcp'] ?? [];
+        $inp = $fMetrics['inp'] ?? [];
+        $cls = $fMetrics['cls'] ?? [];
+        ?>
+        <div class="laca-google-psi__grid">
+            <!-- LCP -->
+            <div class="laca-google-psi__metric <?php echo !empty($lcp['categoryClass']) ? esc_attr('laca-google-psi__metric--' . $lcp['categoryClass']) : ''; ?>">
+                <div class="laca-google-psi__metric-header">
+                    <span class="laca-google-psi__metric-label"><?php echo esc_html($lcp['label'] ?? __('LCP (Nội dung lớn nhất)', 'lacadev')); ?></span>
+                    <span class="laca-google-psi__badge"><?php echo esc_html($lcp['category'] ?? '—'); ?></span>
+                </div>
+                <div class="laca-google-psi__metric-value"><?php echo esc_html($lcp['value'] ?? '—'); ?></div>
+                <div class="laca-google-psi__metric-desc"><?php esc_html_e('Nội dung chính hiển thị trên màn hình', 'lacadev'); ?></div>
+            </div>
+
+            <!-- INP -->
+            <div class="laca-google-psi__metric <?php echo !empty($inp['categoryClass']) ? esc_attr('laca-google-psi__metric--' . $inp['categoryClass']) : ''; ?>">
+                <div class="laca-google-psi__metric-header">
+                    <span class="laca-google-psi__metric-label"><?php echo esc_html($inp['label'] ?? __('INP (Tương tác đến phản hồi)', 'lacadev')); ?></span>
+                    <span class="laca-google-psi__badge"><?php echo esc_html($inp['category'] ?? '—'); ?></span>
+                </div>
+                <div class="laca-google-psi__metric-value"><?php echo esc_html($inp['value'] ?? '—'); ?></div>
+                <div class="laca-google-psi__metric-desc"><?php esc_html_e('Phản hồi thao tác bấm/cuộn tức thì', 'lacadev'); ?></div>
+            </div>
+
+            <!-- CLS -->
+            <div class="laca-google-psi__metric <?php echo !empty($cls['categoryClass']) ? esc_attr('laca-google-psi__metric--' . $cls['categoryClass']) : ''; ?>">
+                <div class="laca-google-psi__metric-header">
+                    <span class="laca-google-psi__metric-label"><?php echo esc_html($cls['label'] ?? __('CLS (Dịch chuyển bố cục)', 'lacadev')); ?></span>
+                    <span class="laca-google-psi__badge"><?php echo esc_html($cls['category'] ?? '—'); ?></span>
+                </div>
+                <div class="laca-google-psi__metric-value"><?php echo esc_html($cls['value'] ?? '—'); ?></div>
+                <div class="laca-google-psi__metric-desc"><?php esc_html_e('Bố cục giao diện hiển thị ổn định', 'lacadev'); ?></div>
+            </div>
+
+            <!-- Lighthouse Score -->
+            <div class="laca-google-psi__metric <?php echo !empty($labScoreClass) ? esc_attr('laca-google-psi__metric--' . $labScoreClass) : ''; ?>">
+                <div class="laca-google-psi__metric-header">
+                    <span class="laca-google-psi__metric-label"><?php esc_html_e('Lighthouse Điểm hiệu năng', 'lacadev'); ?></span>
+                    <span class="laca-google-psi__badge"><?php echo esc_html($labScoreCategory); ?></span>
+                </div>
+                <div class="laca-google-psi__metric-value"><?php echo $labScore !== null ? esc_html($labScore . '/100') : '—'; ?></div>
+                <div class="laca-google-psi__metric-desc"><?php esc_html_e('Điểm hiệu năng tổng thể trên thiết bị di động', 'lacadev'); ?></div>
+            </div>
+        </div>
+
+        <div class="laca-google-psi__footer">
+            <span><?php printf(esc_html__('Đo lúc %s · Di động', 'lacadev'), esc_html($testedDate ?: date('d/m/Y H:i'))); ?></span>
+        </div>
+    <?php else: ?>
+        <div class="laca-google-psi__notice">
+            <?php esc_html_e('Chưa đủ dữ liệu người dùng thực (CrUX) cho URL này — hiển thị kết quả đo thử (Lighthouse)', 'lacadev'); ?>
+        </div>
+
+        <?php
+        $labMetrics = $psiData['lab']['metrics'] ?? [];
+        $labLcp = $labMetrics['lcp'] ?? [];
+        $labCls = $labMetrics['cls'] ?? [];
+        $labTbt = $labMetrics['tbt'] ?? [];
+        $labFcp = $labMetrics['fcp'] ?? [];
+        ?>
+        <div class="laca-google-psi__grid">
+            <!-- Lighthouse Score -->
+            <div class="laca-google-psi__metric <?php echo !empty($labScoreClass) ? esc_attr('laca-google-psi__metric--' . $labScoreClass) : ''; ?>">
+                <div class="laca-google-psi__metric-header">
+                    <span class="laca-google-psi__metric-label"><?php esc_html_e('Lighthouse Điểm hiệu năng', 'lacadev'); ?></span>
+                    <span class="laca-google-psi__badge"><?php echo esc_html($labScoreCategory); ?></span>
+                </div>
+                <div class="laca-google-psi__metric-value"><?php echo $labScore !== null ? esc_html($labScore . '/100') : '—'; ?></div>
+                <div class="laca-google-psi__metric-desc"><?php esc_html_e('Điểm hiệu năng phòng thí nghiệm', 'lacadev'); ?></div>
+            </div>
+
+            <!-- Lab LCP -->
+            <div class="laca-google-psi__metric">
+                <div class="laca-google-psi__metric-header">
+                    <span class="laca-google-psi__metric-label"><?php echo esc_html($labLcp['label'] ?? __('LCP (Nội dung lớn nhất)', 'lacadev')); ?></span>
+                    <span class="laca-google-psi__badge">Lab</span>
+                </div>
+                <div class="laca-google-psi__metric-value"><?php echo esc_html($labLcp['displayValue'] ?? '—'); ?></div>
+                <div class="laca-google-psi__metric-desc"><?php esc_html_e('Thời gian tải nội dung lớn nhất', 'lacadev'); ?></div>
+            </div>
+
+            <!-- Lab CLS -->
+            <div class="laca-google-psi__metric">
+                <div class="laca-google-psi__metric-header">
+                    <span class="laca-google-psi__metric-label"><?php echo esc_html($labCls['label'] ?? __('CLS (Dịch chuyển bố cục)', 'lacadev')); ?></span>
+                    <span class="laca-google-psi__badge">Lab</span>
+                </div>
+                <div class="laca-google-psi__metric-value"><?php echo esc_html($labCls['displayValue'] ?? '—'); ?></div>
+                <div class="laca-google-psi__metric-desc"><?php esc_html_e('Độ dịch chuyển bố cục trang', 'lacadev'); ?></div>
+            </div>
+
+            <!-- Lab TBT -->
+            <div class="laca-google-psi__metric">
+                <div class="laca-google-psi__metric-header">
+                    <span class="laca-google-psi__metric-label"><?php echo esc_html($labTbt['label'] ?? __('TBT (Thời gian chặn)', 'lacadev')); ?></span>
+                    <span class="laca-google-psi__badge">Lab</span>
+                </div>
+                <div class="laca-google-psi__metric-value"><?php echo esc_html($labTbt['displayValue'] ?? '—'); ?></div>
+                <div class="laca-google-psi__metric-desc"><?php esc_html_e('Tổng thời gian luồng chính bị chặn', 'lacadev'); ?></div>
+            </div>
+
+            <!-- Lab FCP -->
+            <div class="laca-google-psi__metric">
+                <div class="laca-google-psi__metric-header">
+                    <span class="laca-google-psi__metric-label"><?php echo esc_html($labFcp['label'] ?? __('FCP (Nội dung đầu tiên)', 'lacadev')); ?></span>
+                    <span class="laca-google-psi__badge">Lab</span>
+                </div>
+                <div class="laca-google-psi__metric-value"><?php echo esc_html($labFcp['displayValue'] ?? '—'); ?></div>
+                <div class="laca-google-psi__metric-desc"><?php esc_html_e('Thời gian xuất hiện phần tử đầu tiên', 'lacadev'); ?></div>
+            </div>
+        </div>
+
+        <div class="laca-google-psi__footer">
+            <span><?php printf(esc_html__('Đo lúc %s · Di động', 'lacadev'), esc_html($testedDate ?: date('d/m/Y H:i'))); ?></span>
+        </div>
+    <?php endif; ?>
+</div>

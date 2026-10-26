@@ -129,6 +129,57 @@ const report = (ok, check, w = '', detail = '') => {
       }
     }
 
+    // 1.1 Kiểm tra PageSpeed Insights AJAX trên index.php?laca_mock_google=1
+    errors = [];
+    try {
+      await page.setViewport({ width: 1440, height: 900 });
+      await page.goto('http://lixroastery.local/wp-admin/index.php?laca_mock_google=1', {
+        waitUntil: 'networkidle2',
+        timeout: 45000,
+      });
+
+      // Đợi báo cáo Google tải xong và có nút kiểm tra PageSpeed
+      await page.waitForSelector('#laca-google-report [data-laca-psi-run]', { timeout: 15000 });
+      const initialUrl = page.url();
+
+      // Click nút kiểm tra PageSpeed
+      await page.click('#laca-google-report [data-laca-psi-run]');
+
+      // Trong 15s khối PSI có số liệu
+      await page.waitForFunction(() => {
+        const psi = document.getElementById('laca-google-psi-card') || document.querySelector('.laca-google-psi');
+        if (!psi) return false;
+        const text = psi.innerText || '';
+        return text.includes('Nội dung lớn nhất') || text.includes('LCP') || text.includes('Lighthouse');
+      }, { timeout: 15000 });
+
+      const psiCheck = await page.evaluate(() => {
+        const psi = document.getElementById('laca-google-psi-card') || document.querySelector('.laca-google-psi');
+        const detailLink = psi ? psi.querySelector('.laca-google-psi__ext-link, a[href*="pagespeed.web.dev"]') : null;
+        const text = psi ? (psi.innerText || '') : '';
+        const hasMetrics = text.includes('LCP') || text.includes('Lighthouse');
+        const href = detailLink ? detailLink.getAttribute('href') : '';
+        return {
+          hasPsi: !!psi,
+          hasMetrics,
+          extHref: href,
+          startsWithPsi: href.startsWith('https://pagespeed.web.dev/'),
+        };
+      });
+
+      const currentUrl = page.url();
+      report(psiCheck.hasPsi && psiCheck.hasMetrics, 'PsiAjaxRunsAndRendersMetrics');
+      report(psiCheck.startsWithPsi, 'PsiDetailLinkPointsToPageSpeedWebDev', '', psiCheck.extHref);
+      report(currentUrl === initialUrl, 'PsiRunDoesNotNavigatePage');
+      report(errors.length === 0, 'PsiRunNoPageErrors', '', errors.join('; '));
+
+      const psiScreenshot = path.join(IMG_DIR, 'wp-dashboard-psi-run.png');
+      await page.screenshot({ path: psiScreenshot, fullPage: false });
+
+    } catch (err) {
+      report(false, 'PsiAjaxRunTestFailed', '', err.message);
+    }
+
     // 2. Mở index.php không mock (khi local chưa kết nối Google xong)
     errors = [];
     try {

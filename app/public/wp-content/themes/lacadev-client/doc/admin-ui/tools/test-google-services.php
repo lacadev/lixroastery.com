@@ -3406,8 +3406,346 @@ runTest('G6: Tag guard (?laca_tagverify=1), ga-disable injected for logged-in, d
     return true;
 }, $pass, $fail);
 
+// -------------------------------------------------------------
+// Test 35: G4 — PageSpeed AJAX: Nonce gate, real CrUX & Lab parsing, 429 quota handling, host sanitization, empty partial
+// -------------------------------------------------------------
+runTest('G4 PageSpeed AJAX: Nonce gate, real CrUX & Lab parsing, 429 quota handling, host sanitization, empty partial', function () {
+    add_filter('wp_doing_ajax', '__return_true');
+    $dieFilter = function () {
+        return function ($message, $title, $args) {
+            $code = $args['response'] ?? 403;
+            throw new \RuntimeException('DIE:' . $message . ':' . $code);
+        };
+    };
+    add_filter('wp_die_ajax_handler', $dieFilter);
+
+    $oldUser = wp_get_current_user();
+    $admins = get_users(['role' => 'administrator', 'number' => 1]);
+    $adminId = !empty($admins) ? $admins[0]->ID : 1;
+    wp_set_current_user($adminId);
+
+    $origGet = $_GET;
+    $origPost = $_POST;
+    $origRequest = $_REQUEST;
+
+    try {
+        // --- 1. Nonce gate: Call without nonce must terminate with -1 / 403 ---
+        $_POST = ['action' => 'laca_pagespeed_run'];
+        $_REQUEST = $_POST;
+        $_GET = [];
+
+        $caughtDie = null;
+        try {
+            ob_start();
+            GoogleServices::ajaxPageSpeedRun();
+            ob_end_clean();
+        } catch (\RuntimeException $e) {
+            $caughtDie = $e->getMessage();
+        }
+
+        if (!$caughtDie || (!str_contains($caughtDie, 'DIE:-1') && !str_contains($caughtDie, '403'))) {
+            return "Expected AJAX call without nonce to trigger die -1/403, got '{$caughtDie}'";
+        }
+
+        // --- 2. Real CrUX sample (with loadingExperience.metrics) ---
+        $mockCruxResponse = [
+            'loadingExperience' => [
+                'overall_category' => 'FAST',
+                'metrics'          => [
+                    'LARGEST_CONTENTFUL_PAINT_MS' => [
+                        'percentile' => 2100,
+                        'category'   => 'FAST',
+                    ],
+                    'INTERACTION_TO_NEXT_PAINT' => [
+                        'percentile' => 120,
+                        'category'   => 'FAST',
+                    ],
+                    'CUMULATIVE_LAYOUT_SHIFT_SCORE' => [
+                        'percentile' => 3,
+                        'category'   => 'FAST',
+                    ],
+                ],
+            ],
+            'lighthouseResult' => [
+                'categories' => [
+                    'performance' => [
+                        'score' => 0.91,
+                    ],
+                ],
+                'audits' => [
+                    'largest-contentful-paint' => [
+                        'score'        => 0.92,
+                        'displayValue' => '2.1 s',
+                    ],
+                    'cumulative-layout-shift' => [
+                        'score'        => 0.98,
+                        'displayValue' => '0.03',
+                    ],
+                    'total-blocking-time' => [
+                        'score'        => 0.88,
+                        'displayValue' => '140 ms',
+                    ],
+                    'first-contentful-paint' => [
+                        'score'        => 0.95,
+                        'displayValue' => '1.2 s',
+                    ],
+                ],
+            ],
+        ];
+
+        $mockHttpCrux = function ($preempt, $parsedArgs, $url) use ($mockCruxResponse) {
+            if (str_contains($url, 'pagespeedonline/v5/runPagespeed')) {
+                return [
+                    'response' => ['code' => 200, 'message' => 'OK'],
+                    'body'     => json_encode($mockCruxResponse),
+                    'headers'  => ['content-type' => 'application/json'],
+                ];
+            }
+            return $preempt;
+        };
+        add_filter('pre_http_request', $mockHttpCrux, 10, 3);
+
+        $_POST = [
+            'action'  => 'laca_pagespeed_run',
+            'nonce'   => wp_create_nonce('laca_google_report_nonce'),
+            'refresh' => '1',
+        ];
+        $_REQUEST = $_POST;
+        $_GET = []; // ensure mock mode is off
+
+        $jsonOutput = '';
+        try {
+            ob_start();
+            GoogleServices::ajaxPageSpeedRun();
+        } catch (\RuntimeException $e) {
+            $jsonOutput = ob_get_clean();
+        }
+        remove_filter('pre_http_request', $mockHttpCrux, 10);
+
+        $resCrux = json_decode($jsonOutput, true);
+        if (empty($resCrux['success'])) {
+            return "Expected CrUX AJAX success=true, got: " . substr($jsonOutput, 0, 300);
+        }
+        $cruxHtml = $resCrux['data']['html'] ?? '';
+        if (!str_contains($cruxHtml, '2.1s')) {
+            return "Expected CrUX HTML to contain LCP '2.1s'";
+        }
+        if (!str_contains($cruxHtml, '120ms')) {
+            return "Expected CrUX HTML to contain INP '120ms'";
+        }
+        if (!str_contains($cruxHtml, '0.03')) {
+            return "Expected CrUX HTML to contain CLS '0.03'";
+        }
+        if (!str_contains($cruxHtml, '91/100')) {
+            return "Expected CrUX HTML to contain Lighthouse '91/100'";
+        }
+        if (str_contains($cruxHtml, 'Chưa đủ dữ liệu người dùng thực')) {
+            return "CrUX HTML should NOT contain notice 'Chưa đủ dữ liệu người dùng thực' when CrUX hasData=true";
+        }
+        if (!str_contains($cruxHtml, 'https://pagespeed.web.dev/report?url=')) {
+            return "Expected external report link to pagespeed.web.dev";
+        }
+
+        // --- 3. Mock Lab-only sample (empty loadingExperience.metrics) ---
+        $mockLabResponse = [
+            'loadingExperience' => [
+                'overall_category' => 'NONE',
+            ],
+            'lighthouseResult' => [
+                'categories' => [
+                    'performance' => [
+                        'score' => 0.78,
+                    ],
+                ],
+                'audits' => [
+                    'largest-contentful-paint' => [
+                        'score'        => 0.75,
+                        'displayValue' => '3.5 s',
+                    ],
+                    'cumulative-layout-shift' => [
+                        'score'        => 0.90,
+                        'displayValue' => '0.08',
+                    ],
+                    'total-blocking-time' => [
+                        'score'        => 0.70,
+                        'displayValue' => '320 ms',
+                    ],
+                    'first-contentful-paint' => [
+                        'score'        => 0.85,
+                        'displayValue' => '1.9 s',
+                    ],
+                ],
+            ],
+        ];
+
+        $mockHttpLab = function ($preempt, $parsedArgs, $url) use ($mockLabResponse) {
+            if (str_contains($url, 'pagespeedonline/v5/runPagespeed')) {
+                return [
+                    'response' => ['code' => 200, 'message' => 'OK'],
+                    'body'     => json_encode($mockLabResponse),
+                    'headers'  => ['content-type' => 'application/json'],
+                ];
+            }
+            return $preempt;
+        };
+        add_filter('pre_http_request', $mockHttpLab, 10, 3);
+
+        $_POST = [
+            'action'  => 'laca_pagespeed_run',
+            'nonce'   => wp_create_nonce('laca_google_report_nonce'),
+            'refresh' => '1',
+        ];
+        $_REQUEST = $_POST;
+        $_GET = [];
+
+        $jsonLabOutput = '';
+        try {
+            ob_start();
+            GoogleServices::ajaxPageSpeedRun();
+        } catch (\RuntimeException $e) {
+            $jsonLabOutput = ob_get_clean();
+        }
+        remove_filter('pre_http_request', $mockHttpLab, 10);
+
+        $resLab = json_decode($jsonLabOutput, true);
+        if (empty($resLab['success'])) {
+            return "Expected Lab-only AJAX success=true, got: " . substr($jsonLabOutput, 0, 300);
+        }
+        $labHtml = $resLab['data']['html'] ?? '';
+        if (!str_contains($labHtml, 'Chưa đủ dữ liệu người dùng thực')) {
+            return "Expected Lab-only HTML to contain notice 'Chưa đủ dữ liệu người dùng thực'";
+        }
+        if (!str_contains($labHtml, '78/100')) {
+            return "Expected Lab-only HTML to contain Lighthouse score '78/100'";
+        }
+        if (!str_contains($labHtml, '3.5 s')) {
+            return "Expected Lab-only HTML to contain Lab LCP '3.5 s'";
+        }
+        if (!str_contains($labHtml, '0.08')) {
+            return "Expected Lab-only HTML to contain Lab CLS '0.08'";
+        }
+        if (!str_contains($labHtml, '320 ms')) {
+            return "Expected Lab-only HTML to contain Lab TBT '320 ms'";
+        }
+        if (!str_contains($labHtml, '1.9 s')) {
+            return "Expected Lab-only HTML to contain Lab FCP '1.9 s'";
+        }
+
+        // --- 4. Google 429 quota error response ---
+        $mockHttp429 = function ($preempt, $parsedArgs, $url) {
+            if (str_contains($url, 'pagespeedonline/v5/runPagespeed')) {
+                return [
+                    'response' => ['code' => 429, 'message' => 'Too Many Requests'],
+                    'body'     => json_encode([
+                        'error' => [
+                            'code'    => 429,
+                            'message' => 'Quota exceeded for quota metric PageSpeed Insights API',
+                            'status'  => 'RESOURCE_EXHAUSTED',
+                        ],
+                    ]),
+                    'headers'  => ['content-type' => 'application/json'],
+                ];
+            }
+            return $preempt;
+        };
+        add_filter('pre_http_request', $mockHttp429, 10, 3);
+
+        $_POST = [
+            'action'  => 'laca_pagespeed_run',
+            'nonce'   => wp_create_nonce('laca_google_report_nonce'),
+            'refresh' => '1',
+        ];
+        $_REQUEST = $_POST;
+        $_GET = [];
+
+        $json429Output = '';
+        try {
+            ob_start();
+            GoogleServices::ajaxPageSpeedRun();
+        } catch (\RuntimeException $e) {
+            $json429Output = ob_get_clean();
+        }
+        remove_filter('pre_http_request', $mockHttp429, 10);
+
+        $res429 = json_decode($json429Output, true);
+        if (!empty($res429['success'])) {
+            return "Expected 429 response to have success=false, got: " . substr($json429Output, 0, 300);
+        }
+        if (!str_contains($res429['data']['message'] ?? '', 'Quota exceeded')) {
+            return "Expected 429 error message to contain 'Quota exceeded', got: " . json_encode($res429);
+        }
+
+        // --- 5. Host sanitization (evil.example -> home_url('/')) ---
+        $capturedTargetUrl = null;
+        $mockHttpSanitize = function ($preempt, $parsedArgs, $url) use (&$capturedTargetUrl) {
+            if (str_contains($url, 'pagespeedonline/v5/runPagespeed')) {
+                $parts = parse_url($url);
+                parse_str($parts['query'] ?? '', $query);
+                $capturedTargetUrl = $query['url'] ?? '';
+                return [
+                    'response' => ['code' => 200, 'message' => 'OK'],
+                    'body'     => json_encode([
+                        'lighthouseResult' => [
+                            'categories' => ['performance' => ['score' => 0.8]],
+                            'audits' => [],
+                        ],
+                    ]),
+                    'headers'  => ['content-type' => 'application/json'],
+                ];
+            }
+            return $preempt;
+        };
+        add_filter('pre_http_request', $mockHttpSanitize, 10, 3);
+
+        $_POST = [
+            'action'  => 'laca_pagespeed_run',
+            'nonce'   => wp_create_nonce('laca_google_report_nonce'),
+            'refresh' => '1',
+            'url'     => 'https://evil.example/phishing-path',
+        ];
+        $_REQUEST = $_POST;
+        $_GET = [];
+
+        try {
+            ob_start();
+            GoogleServices::ajaxPageSpeedRun();
+        } catch (\RuntimeException $e) {
+            ob_end_clean();
+        }
+        remove_filter('pre_http_request', $mockHttpSanitize, 10);
+
+        $expectedHome = home_url('/');
+        if ($capturedTargetUrl !== $expectedHome) {
+            return "Expected evil URL to be sanitized to '{$expectedHome}', got '{$capturedTargetUrl}'";
+        }
+
+        // --- 6. Partial with empty data prints no numbers except '—' ---
+        $psiData = [];
+        $siteUrl = home_url('/');
+        ob_start();
+        include dirname(__DIR__, 3) . '/app/src/Features/GoogleServices/views/partials/pagespeed-card.php';
+        $emptyHtml = ob_get_clean();
+
+        if (!str_contains($emptyHtml, 'laca-google-psi__empty')) {
+            return "Expected empty partial to render laca-google-psi__empty state";
+        }
+        if (preg_match('/\b\d+(\.\d+)?(s|ms|\/100)\b/', $emptyHtml, $matches)) {
+            return "Empty partial contained unexpected metric number: " . $matches[0];
+        }
+
+        return true;
+    } finally {
+        $_GET = $origGet;
+        $_POST = $origPost;
+        $_REQUEST = $origRequest;
+        wp_set_current_user($oldUser instanceof \WP_User ? $oldUser->ID : (int) $oldUser);
+        remove_filter('wp_die_ajax_handler', $dieFilter);
+    }
+}, $pass, $fail);
+
 echo "SUMMARY pass={$pass} fail={$fail}\n";
 exit($fail === 0 ? 0 : 1);
+
 
 
 
