@@ -1,0 +1,95 @@
+<title>Manifesto - LIX Roasteryâ€™s Mission &amp; Vision</title>
+<!-- / SEO by Laca SEO - Professional Framework -->
+<meta name="description" content="With a mission to preserve the identity of Origin, LIX Roastery is committed to operating through transparent data systems and a sustainable supply chain."/>
+<meta name="robots" content="index, follow, max-snippet:-1, max-video-preview:-1, max-image-preview:large"/>
+<link rel="canonical" href="http://lixroastery.local/manifesto/" />
+<meta property="og:locale" content="en_US" />
+<meta property="og:locale:alternate" content="vi_VN" />
+<meta property="og:type" content="article" />
+<meta property="og:title" content="Manifesto - LIX Roasteryâ€™s Mission &amp; Vision" />
+<meta property="og:description" content="With a mission to preserve the identity of Origin, LIX Roastery is committed to operating through transparent data systems and a sustainable supply chain." />
+<meta property="og:url" content="http://lixroastery.local/manifesto/" />
+<meta property="og:site_name" content="lacadev" />
+<meta property="article:published_time" content="2026-10-07T17:29:39+07:00" />
+<meta property="article:modified_time" content="2026-10-07T18:16:33+07:00" />
+<meta property="og:updated_time" content="2026-10-07T18:16:33+07:00" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="Manifesto - LIX Roasteryâ€™s Mission &amp; Vision" />
+<meta name="twitter:description" content="With a mission to preserve the identity of Origin, LIX Roastery is committed to operating through transparent data systems and a sustainable supply chain." />
+<meta name="twitter:label1" content="Time to read" />
+<meta name="twitter:data1" content="Less than a minute" />
+<script type="application/ld+json" class="laca-seo-schema">
+{
+    "@context": "https://schema.org",
+    "@graph": [
+        {
+            "@type": [
+                "Organization",
+                "Person"
+            ],
+            "@id": "http://lixroastery.local/#person",
+            "name": "lacadev",
+            "url": "http://lixroastery.local"
+        },
+        {
+            "@type": "WebSite",
+            "@id": "http://lixroastery.local/#website",
+            "url": "http://lixroastery.local",
+            "name": "lacadev",
+            "publisher": {
+                "@id": "http://lixroastery.local/#person"
+            },
+            "inLanguage": "en-US"
+        },
+        {
+            "@type": "WebPage",
+            "@id": "http://lixroastery.local/manifesto/#webpage",
+            "url": "http://lixroastery.local/manifesto/",
+            "name": "Manifesto - LIX Roasteryâ€™s Mission &amp; Vision",
+            "datePublished": "2026-10-07T17:29:39+07:00",
+            "dateModified": "2026-10-07T18:16:33+07:00",
+            "isPartOf": {
+                "@id": "http://lixroastery.local/#website"
+            },
+            "inLanguage": "en-US"
+        },
+        {
+            "@type": "Person",
+            "@id": "http://lixroastery.local/author/thu_lix/",
+            "name": "thu_lix",
+            "url": "http://lixroastery.local/author/thu_lix/",
+            "image": {
+                "@type": "ImageObject",
+                "@id": "https://secure.gravatar.com/avatar/c09fc5c7f10692315a9f3caeb9826cec9b440aaffbab063efde53b3911ed37f9?s=96&amp;d=mm&amp;r=g",
+                "url": "https://secure.gravatar.com/avatar/c09fc5c7f10692315a9f3caeb9826cec9b440aaffbab063efde53b3911ed37f9?s=96&amp;d=mm&amp;r=g",
+                "caption": "thu_lix",
+                "inLanguage": "en-US"
+            }
+        },
+        {
+            "@type": "Article",
+            "headline": "Manifesto - LIX Roasteryâ€™s Mission &amp; Vision",
+            "datePublished": "2026-10-07T17:29:39+07:00",
+            "dateModified": "2026-10-07T18:16:33+07:00",
+            "author": {
+                "@id": "http://lixroastery.local/author/thu_lix/",
+                "name": "thu_lix"
+            },
+            "publisher": {
+                "@id": "http://lixroastery.local/#person"
+            },
+            "description": "With a mission to preserve the identity of Origin, LIX Roastery is committed to operating through transparent data systems and a sustainable supply chain.",
+            "name": "Manifesto - LIX Roasteryâ€™s Mission &amp; Vision",
+            "@id": "http://lixroastery.local/manifesto/#richSnippet",
+            "isPartOf": {
+                "@id": "http://lixroastery.local/manifesto/#webpage"
+            },
+            "inLanguage": "en-US",
+            "mainEntityOfPage": {
+                "@id": "http://lixroastery.local/manifesto/#webpage"
+            }
+        }
+    ]
+}
+</script>
+<!-- / Laca SEO -->

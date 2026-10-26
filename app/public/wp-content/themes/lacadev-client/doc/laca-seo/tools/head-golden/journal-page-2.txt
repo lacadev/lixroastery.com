@@ -1,0 +1,49 @@
+<title>Journal Archive - Page 2 of 2 - LIX ROASTERY</title>
+<!-- / SEO by Laca SEO - Professional Framework -->
+<meta name="description" content="Journal Archive - Page 2 of 2 - LIX ROASTERY"/>
+<meta name="robots" content="index, follow"/>
+<link rel="canonical" href="http://lixroastery.local/journal/page/2/" />
+<link rel="prev" href="http://lixroastery.local/journal/" />
+<meta property="og:locale" content="en_US" />
+<meta property="og:type" content="article" />
+<meta property="og:title" content="Journal Archive - Page 2 of 2 - LIX ROASTERY" />
+<meta property="og:description" content="Journal Archive - Page 2 of 2 - LIX ROASTERY" />
+<meta property="og:url" content="http://lixroastery.local/journal/page/2/" />
+<meta property="og:site_name" content="lacadev" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="Journal Archive - Page 2 of 2 - LIX ROASTERY" />
+<meta name="twitter:description" content="Journal Archive - Page 2 of 2 - LIX ROASTERY" />
+<script type="application/ld+json" class="laca-seo-schema">
+{
+    "@context": "https://schema.org",
+    "@graph": [
+        {
+            "@type": "Person",
+            "@id": "http://lixroastery.local/#person",
+            "name": "lacadev",
+            "url": "http://lixroastery.local"
+        },
+        {
+            "@type": "WebSite",
+            "@id": "http://lixroastery.local/#website",
+            "url": "http://lixroastery.local",
+            "name": "lacadev",
+            "publisher": {
+                "@id": "http://lixroastery.local/#person"
+            },
+            "inLanguage": "en-US"
+        },
+        {
+            "@type": "CollectionPage",
+            "@id": "http://lixroastery.local/journal/page/2/#webpage",
+            "url": "http://lixroastery.local/journal/page/2/",
+            "name": "Journal Archive - Page 2 of 2 - LIX ROASTERY",
+            "isPartOf": {
+                "@id": "http://lixroastery.local/#website"
+            },
+            "inLanguage": "en-US"
+        }
+    ]
+}
+</script>
+<!-- / Laca SEO -->

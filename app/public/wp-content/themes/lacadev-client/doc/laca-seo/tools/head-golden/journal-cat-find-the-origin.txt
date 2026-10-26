@@ -1,0 +1,44 @@
+<title>Find The Origin &#8211; LIX ROASTERY</title>
+<!-- / SEO by Laca SEO - Professional Framework -->
+<meta name="robots" content="index, follow, max-snippet:-1, max-video-preview:-1, max-image-preview:large"/>
+<link rel="canonical" href="http://lixroastery.local/journal-cat/find-the-origin/" />
+<meta property="og:locale" content="en_US" />
+<meta property="og:type" content="article" />
+<meta property="og:description" content="FIND THE ORIGIN khÃ¡m phÃ¡ nhá»¯ng yáº¿u tá»‘ hÃ¬nh thÃ nh nÃªn cÃ  phÃª nhÃ¢n xanh trÆ°á»›c khi bÆ°á»›c vÃ o quÃ¡ trÃ¬nh rang: tá»« di truyá»n, terroir, cáº¥u trÃºc vÃ¹ng sáº£n xuáº¥t vÃ  thu hoáº¡ch Ä‘áº¿n sÆ¡ cháº¿, há»‡ thá»‘ng nguá»“n cung vÃ  kháº£ nÄƒng truy xuáº¥t. ChuyÃªn má»¥c tiáº¿p cáº­n Origin nhÆ° má»™t há»‡ dá»¯ liá»‡u nhiá»u lá»›p, giÃºp phÃ¢n biá»‡t nhá»¯ng má»‘i quan há»‡ Ä‘Ã£ cÃ³ cÆ¡ sá»Ÿ nghiÃªn cá»©u hoáº·c quan sÃ¡t vá»›i nhá»¯ng cÃ¡ch diá»…n giáº£i Ä‘Æ¡n giáº£n hÃ³a thÆ°á»ng gáº·p vá» nguá»“n gá»‘c vÃ  Ä‘áº·c tÃ­nh cá»§a cÃ  phÃª." />
+<meta property="og:url" content="http://lixroastery.local/journal-cat/find-the-origin/" />
+<meta property="og:site_name" content="lacadev" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:description" content="FIND THE ORIGIN khÃ¡m phÃ¡ nhá»¯ng yáº¿u tá»‘ hÃ¬nh thÃ nh nÃªn cÃ  phÃª nhÃ¢n xanh trÆ°á»›c khi bÆ°á»›c vÃ o quÃ¡ trÃ¬nh rang: tá»« di truyá»n, terroir, cáº¥u trÃºc vÃ¹ng sáº£n xuáº¥t vÃ  thu hoáº¡ch Ä‘áº¿n sÆ¡ cháº¿, há»‡ thá»‘ng nguá»“n cung vÃ  kháº£ nÄƒng truy xuáº¥t. ChuyÃªn má»¥c tiáº¿p cáº­n Origin nhÆ° má»™t há»‡ dá»¯ liá»‡u nhiá»u lá»›p, giÃºp phÃ¢n biá»‡t nhá»¯ng má»‘i quan há»‡ Ä‘Ã£ cÃ³ cÆ¡ sá»Ÿ nghiÃªn cá»©u hoáº·c quan sÃ¡t vá»›i nhá»¯ng cÃ¡ch diá»…n giáº£i Ä‘Æ¡n giáº£n hÃ³a thÆ°á»ng gáº·p vá» nguá»“n gá»‘c vÃ  Ä‘áº·c tÃ­nh cá»§a cÃ  phÃª." />
+<script type="application/ld+json" class="laca-seo-schema">
+{
+    "@context": "https://schema.org",
+    "@graph": [
+        {
+            "@type": "Person",
+            "@id": "http://lixroastery.local/#person",
+            "name": "lacadev",
+            "url": "http://lixroastery.local"
+        },
+        {
+            "@type": "WebSite",
+            "@id": "http://lixroastery.local/#website",
+            "url": "http://lixroastery.local",
+            "name": "lacadev",
+            "publisher": {
+                "@id": "http://lixroastery.local/#person"
+            },
+            "inLanguage": "en-US"
+        },
+        {
+            "@type": "CollectionPage",
+            "@id": "http://lixroastery.local/journal-cat/find-the-origin/#webpage",
+            "url": "http://lixroastery.local/journal-cat/find-the-origin/",
+            "isPartOf": {
+                "@id": "http://lixroastery.local/#website"
+            },
+            "inLanguage": "en-US"
+        }
+    ]
+}
+</script>
+<!-- / Laca SEO -->

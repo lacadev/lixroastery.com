@@ -135,8 +135,10 @@ class GoogleDashboardService
         $isConnected = GscOAuth::isConnected();
         $hasGaScope  = GscOAuth::hasAnalyticsScope();
         $googleOpts  = get_option('laca_google_services', []);
-        $propertyId  = is_array($googleOpts) ? (string) ($googleOpts['ga4_property_id'] ?? '') : '';
-        if ($propertyId === '' && class_exists(\App\Features\LacaSeo\Core\Settings::class)) {
+        $propertyId  = '';
+        if (is_array($googleOpts) && array_key_exists('ga4_property_id', $googleOpts)) {
+            $propertyId = (string) $googleOpts['ga4_property_id'];
+        } elseif (class_exists(\App\Features\LacaSeo\Core\Settings::class)) {
             $propertyId = (string) \App\Features\LacaSeo\Core\Settings::get('general.ga4_property_id', '');
         }
 
@@ -212,8 +214,10 @@ class GoogleDashboardService
 
         // Business KPIs from configured ga4_goal_events
         $businessKpis = [];
-        $rawGoals = is_array($googleOpts) ? (string) ($googleOpts['ga4_goal_events'] ?? '') : '';
-        if ($rawGoals === '' && class_exists(\App\Features\LacaSeo\Core\Settings::class)) {
+        $rawGoals = '';
+        if (is_array($googleOpts) && array_key_exists('ga4_goal_events', $googleOpts)) {
+            $rawGoals = (string) $googleOpts['ga4_goal_events'];
+        } elseif (class_exists(\App\Features\LacaSeo\Core\Settings::class)) {
             $rawGoals = (string) \App\Features\LacaSeo\Core\Settings::get('general.ga4_goal_events', '');
         }
         if ($rawGoals !== '') {

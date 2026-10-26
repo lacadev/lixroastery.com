@@ -62,13 +62,14 @@ php -d memory_limit=512M doc/laca-seo/tools/compare-sitemap.php
 # 3. So sánh Breadcrumbs:
 php -d memory_limit=512M doc/laca-seo/tools/compare-breadcrumbs.php
 
-# 4. So sánh 19 Canonical URLs (<head> tags, robots, canonical, JSON-LD Graph):
-php -d memory_limit=512M doc/laca-seo/tools/compare-head-cli.php
+# 4. Kiểm tra hồi quy <head> SEO 19 URLs qua Golden Snapshot (từ nay dùng head-snapshot.php thay compare-head-full sau khi Rank Math đã gỡ khỏi đĩa):
+php -d memory_limit=512M doc/laca-seo/tools/head-snapshot.php
+# (Chụp lại baseline golden snapshot nếu có thay đổi cấu trúc SEO chủ động: php doc/laca-seo/tools/head-snapshot.php --save)
 
-# 5. Mô phỏng Cutover hoàn chỉnh (tắt Rank Math trong bộ nhớ, kiểm tra 5 URLs mẫu + endpoints):
+# 5. Mô phỏng Cutover hoàn chỉnh (kiểm tra 5 URLs mẫu + endpoints):
 php -d memory_limit=512M doc/laca-seo/tools/simulate-cutover.php
 ```
-*Yêu cầu bắt buộc:* Mọi script đều phải trả về kết quả **PASS / MATCH 100% (0 diffs)**.
+*Yêu cầu bắt buộc:* Mọi script đều phải trả về kết quả **PASS / MATCH 100% (0 diffs / fail=0)**.
 
 ---
 

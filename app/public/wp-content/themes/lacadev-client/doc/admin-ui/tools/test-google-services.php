@@ -92,27 +92,22 @@ runTest('GSC Error Handling: HTTP 403 returns WP_Error and does NOT cache transi
 
     add_filter('pre_http_request', $mockFilter, 10, 3);
 
-    $oldCreds = GscOAuth::getCredentials();
-    GscOAuth::saveCredentials([
-        'access_token'  => 'mock-token',
-        'refresh_token' => 'mock-refresh',
-        'created_at'    => time(),
-        'expires_in'    => 3600,
-        'client_id'     => 'mock-client',
-        'client_secret' => 'mock-secret',
-        'scopes'        => [GscOAuth::SCOPE_GSC],
-    ]);
+    $mockOAuthFilter = function () {
+        return GscCrypto::encrypt([
+            'access_token'  => 'mock-token',
+            'refresh_token' => 'mock-refresh',
+            'created_at'    => time(),
+            'expires_in'    => 3600,
+            'client_id'     => 'mock-client',
+            'client_secret' => 'mock-secret',
+            'scopes'        => [GscOAuth::SCOPE_GSC],
+        ]);
+    };
+    add_filter('pre_option_' . GscOAuth::OPTION_KEY, $mockOAuthFilter);
 
     try {
         $result = GscClient::getPerformanceSummary($testSite, 28, false);
         $cached = get_transient($transientKey);
-
-        remove_filter('pre_http_request', $mockFilter, 10);
-        if ($oldCreds) {
-            GscOAuth::saveCredentials($oldCreds);
-        } else {
-            GscOAuth::disconnect();
-        }
 
         if (!is_wp_error($result)) {
             return 'Expected WP_Error on HTTP 403, got: ' . print_r($result, true);
@@ -123,14 +118,9 @@ runTest('GSC Error Handling: HTTP 403 returns WP_Error and does NOT cache transi
         }
 
         return true;
-    } catch (\Throwable $e) {
+    } finally {
         remove_filter('pre_http_request', $mockFilter, 10);
-        if ($oldCreds) {
-            GscOAuth::saveCredentials($oldCreds);
-        } else {
-            GscOAuth::disconnect();
-        }
-        throw $e;
+        remove_filter('pre_option_' . GscOAuth::OPTION_KEY, $mockOAuthFilter);
     }
 }, $pass, $fail);
 
@@ -313,16 +303,18 @@ runTest('GA4 Property Auto-Discovery: Find property matching measurementId', fun
 
     add_filter('pre_http_request', $mockFilter, 10, 3);
 
-    $oldCreds = GscOAuth::getCredentials();
-    GscOAuth::saveCredentials([
-        'access_token'  => 'mock-token',
-        'refresh_token' => 'mock-refresh',
-        'created_at'    => time(),
-        'expires_in'    => 3600,
-        'client_id'     => 'mock-client',
-        'client_secret' => 'mock-secret',
-        'scopes'        => [GscOAuth::SCOPE_GA, GscOAuth::SCOPE_GSC],
-    ]);
+    $mockOAuthFilter = function () {
+        return GscCrypto::encrypt([
+            'access_token'  => 'mock-token',
+            'refresh_token' => 'mock-refresh',
+            'created_at'    => time(),
+            'expires_in'    => 3600,
+            'client_id'     => 'mock-client',
+            'client_secret' => 'mock-secret',
+            'scopes'        => [GscOAuth::SCOPE_GA, GscOAuth::SCOPE_GSC],
+        ]);
+    };
+    add_filter('pre_option_' . GscOAuth::OPTION_KEY, $mockOAuthFilter);
 
     delete_transient('laca_ga_properties');
     delete_transient('laca_ga_streams_111111');
@@ -330,13 +322,6 @@ runTest('GA4 Property Auto-Discovery: Find property matching measurementId', fun
 
     try {
         $found = GaClient::findPropertyByMeasurementId('G-TARGET123', true);
-
-        remove_filter('pre_http_request', $mockFilter, 10);
-        if ($oldCreds) {
-            GscOAuth::saveCredentials($oldCreds);
-        } else {
-            GscOAuth::disconnect();
-        }
 
         if (!$found) {
             return 'Expected to find property, got null';
@@ -346,10 +331,9 @@ runTest('GA4 Property Auto-Discovery: Find property matching measurementId', fun
         }
 
         return true;
-    } catch (\Throwable $e) {
+    } finally {
         remove_filter('pre_http_request', $mockFilter, 10);
-        update_option('laca_seo_gsc_credentials', $oldCreds, false);
-        throw $e;
+        remove_filter('pre_option_' . GscOAuth::OPTION_KEY, $mockOAuthFilter);
     }
 }, $pass, $fail);
 
@@ -360,21 +344,20 @@ runTest('Anti-Double Counting: Tracking omits script when ID is in header script
     $duplicateId = 'G-XSYBCQ8DZC';
     $mockHeaderScript = "<!-- Global site tag -->\n<script async src=\"https://www.googletagmanager.com/gtag/js?id={$duplicateId}\"></script>";
 
-    // Mock header script via Carbon option or direct option
-    update_option('_crb_header_script', $mockHeaderScript);
+    $mockHeaderFilter = function () use ($mockHeaderScript) {
+        return $mockHeaderScript;
+    };
+    $mockServicesFilter = function () use ($duplicateId) {
+        return [
+            'ga4_measurement_id'  => $duplicateId,
+            'ga_exclude_loggedin' => 'off',
+        ];
+    };
 
-    // Set duplicate ID in both laca_google_services and Settings
-    $origGoogle = get_option('laca_google_services', []);
-    update_option('laca_google_services', array_merge((array) $origGoogle, [
-        'ga4_measurement_id'  => $duplicateId,
-        'ga_exclude_loggedin' => 'off',
-    ]));
-
-    $origSettings = Settings::getGroup('general');
-    $testSettings = $origSettings;
-    $testSettings['ga4_measurement_id'] = $duplicateId;
-    $testSettings['ga_exclude_loggedin'] = 'off';
-    Settings::updateGroup('general', $testSettings);
+    $mockGeneralEmpty6 = function () { return []; };
+    add_filter('pre_option__crb_header_script', $mockHeaderFilter);
+    add_filter('pre_option_laca_google_services', $mockServicesFilter);
+    add_filter('pre_option_laca_seo_general', $mockGeneralEmpty6);
 
     try {
         $tracking = new Tracking();
@@ -393,9 +376,9 @@ runTest('Anti-Double Counting: Tracking omits script when ID is in header script
 
         return true;
     } finally {
-        delete_option('_crb_header_script');
-        update_option('laca_google_services', $origGoogle);
-        Settings::updateGroup('general', $origSettings);
+        remove_filter('pre_option__crb_header_script', $mockHeaderFilter);
+        remove_filter('pre_option_laca_google_services', $mockServicesFilter);
+        remove_filter('pre_option_laca_seo_general', $mockGeneralEmpty6);
     }
 }, $pass, $fail);
 
@@ -697,22 +680,28 @@ runTest('GA4 2 DateRanges Comparison: activeUsers +50%, sessions —, no convers
     }
 
     // Test through GoogleDashboardService with mock HTTP response
-    $savedOpt = get_option('laca_seo_general', []);
-    $testOpt = $savedOpt;
-    $testOpt['ga4_property_id'] = '123456789';
-    update_option('laca_seo_general', $testOpt);
+    $mockServicesFilter13 = function () {
+        return [
+            'ga4_property_id' => '123456789',
+            'ga4_goal_events' => '',
+        ];
+    };
+    $mockOAuthFilter13 = function () {
+        return GscCrypto::encrypt([
+            'access_token'  => 'mock-token',
+            'refresh_token' => 'mock-refresh',
+            'created_at'    => time(),
+            'expires_in'    => 3600,
+            'client_id'     => 'mock-client',
+            'client_secret' => 'mock-secret',
+            'scopes'        => [GscOAuth::SCOPE_GA, GscOAuth::SCOPE_GSC],
+        ]);
+    };
+    $mockGeneralEmpty13 = function () { return []; };
+    add_filter('pre_option_laca_google_services', $mockServicesFilter13);
+    add_filter('pre_option_laca_seo_general', $mockGeneralEmpty13);
+    add_filter('pre_option_' . GscOAuth::OPTION_KEY, $mockOAuthFilter13);
     Settings::clearCache();
-
-    $oldCreds = GscOAuth::getCredentials();
-    GscOAuth::saveCredentials([
-        'access_token'  => 'mock-token',
-        'refresh_token' => 'mock-refresh',
-        'created_at'    => time(),
-        'expires_in'    => 3600,
-        'client_id'     => 'mock-client',
-        'client_secret' => 'mock-secret',
-        'scopes'        => [GscOAuth::SCOPE_GA, GscOAuth::SCOPE_GSC],
-    ]);
 
     $mockFilter = function ($preempt, $parsed_args, $url) use ($mockReportData) {
         if (str_contains($url, 'analyticsdata.googleapis.com') && str_contains($url, ':runReport')) {
@@ -742,13 +731,10 @@ runTest('GA4 2 DateRanges Comparison: activeUsers +50%, sessions —, no convers
         return true;
     } finally {
         remove_filter('pre_http_request', $mockFilter, 10);
-        update_option('laca_seo_general', $savedOpt);
+        remove_filter('pre_option_laca_google_services', $mockServicesFilter13);
+        remove_filter('pre_option_laca_seo_general', $mockGeneralEmpty13);
+        remove_filter('pre_option_' . GscOAuth::OPTION_KEY, $mockOAuthFilter13);
         Settings::clearCache();
-        if ($oldCreds) {
-            GscOAuth::saveCredentials($oldCreds);
-        } else {
-            GscOAuth::disconnect();
-        }
     }
 }, $pass, $fail);
 
@@ -756,25 +742,29 @@ runTest('GA4 2 DateRanges Comparison: activeUsers +50%, sessions —, no convers
 // Test 14: ga4_goal_events: Không cấu hình => rỗng, cấu hình add_to_cart|Thêm giỏ => value 7, delta —
 // -------------------------------------------------------------
 runTest('GA4 Goal Events: Empty when unconfigured, parsed with real counts & delta — when prev=0', function () {
-    $savedOpt = get_option('laca_seo_general', []);
-
-    // 1. Without ga4_goal_events configured
-    $testOpt = $savedOpt;
-    $testOpt['ga4_property_id'] = '123456789';
-    $testOpt['ga4_goal_events'] = '';
-    update_option('laca_seo_general', $testOpt);
+    $testGoogleOpts = [
+        'ga4_property_id' => '123456789',
+        'ga4_goal_events' => '',
+    ];
+    $mockServicesFilter14 = function () use (&$testGoogleOpts) {
+        return $testGoogleOpts;
+    };
+    $mockOAuthFilter14 = function () {
+        return GscCrypto::encrypt([
+            'access_token'  => 'mock-token',
+            'refresh_token' => 'mock-refresh',
+            'created_at'    => time(),
+            'expires_in'    => 3600,
+            'client_id'     => 'mock-client',
+            'client_secret' => 'mock-secret',
+            'scopes'        => [GscOAuth::SCOPE_GA, GscOAuth::SCOPE_GSC],
+        ]);
+    };
+    $mockGeneralEmpty14 = function () { return []; };
+    add_filter('pre_option_laca_google_services', $mockServicesFilter14);
+    add_filter('pre_option_laca_seo_general', $mockGeneralEmpty14);
+    add_filter('pre_option_' . GscOAuth::OPTION_KEY, $mockOAuthFilter14);
     Settings::clearCache();
-
-    $oldCreds = GscOAuth::getCredentials();
-    GscOAuth::saveCredentials([
-        'access_token'  => 'mock-token',
-        'refresh_token' => 'mock-refresh',
-        'created_at'    => time(),
-        'expires_in'    => 3600,
-        'client_id'     => 'mock-client',
-        'client_secret' => 'mock-secret',
-        'scopes'        => [GscOAuth::SCOPE_GA, GscOAuth::SCOPE_GSC],
-    ]);
 
     $mockFilter = function ($preempt, $parsed_args, $url) {
         if (str_contains($url, 'analyticsdata.googleapis.com') && str_contains($url, ':runReport')) {
@@ -847,9 +837,10 @@ runTest('GA4 Goal Events: Empty when unconfigured, parsed with real counts & del
         }
 
         // Case 2: configured with 'add_to_cart|Thêm giỏ'
-        $testOpt['ga4_goal_events'] = "add_to_cart|Thêm giỏ";
-        update_option('laca_seo_general', $testOpt);
-        Settings::clearCache();
+        $testGoogleOpts['ga4_goal_events'] = "add_to_cart|Thêm giỏ";
+        delete_transient('laca_ga4_report_28d');
+        delete_transient('laca_ga4_prev_28d');
+        delete_transient('laca_ga4_kpis_28d');
 
         $gaDataConfigured = GoogleDashboardService::getGa4Data('28d', true);
         $kpis = $gaDataConfigured['businessKpis'] ?? [];
@@ -869,13 +860,10 @@ runTest('GA4 Goal Events: Empty when unconfigured, parsed with real counts & del
         return true;
     } finally {
         remove_filter('pre_http_request', $mockFilter, 10);
-        update_option('laca_seo_general', $savedOpt);
+        remove_filter('pre_option_laca_google_services', $mockServicesFilter14);
+        remove_filter('pre_option_laca_seo_general', $mockGeneralEmpty14);
+        remove_filter('pre_option_' . GscOAuth::OPTION_KEY, $mockOAuthFilter14);
         Settings::clearCache();
-        if ($oldCreds) {
-            GscOAuth::saveCredentials($oldCreds);
-        } else {
-            GscOAuth::disconnect();
-        }
     }
 }, $pass, $fail);
 
@@ -886,24 +874,29 @@ runTest('views/dashboard.php HTML: Never contains fabricated numbers (186, 12.4%
     unset($_GET['laca_mock_google']);
     unset($_GET['laca_preview_google']);
 
-    $savedOpt = get_option('laca_seo_general', []);
-    $testOpt = $savedOpt;
-    $testOpt['ga4_property_id'] = '123456789';
-    $testOpt['gsc_site_url']    = 'https://lixroastery.com/';
-    $testOpt['ga4_goal_events'] = '';
-    update_option('laca_seo_general', $testOpt);
+    $mockServicesFilter15 = function () {
+        return [
+            'ga4_property_id' => '123456789',
+            'gsc_site_url'    => 'https://lixroastery.com/',
+            'ga4_goal_events' => '',
+        ];
+    };
+    $mockOAuthFilter15 = function () {
+        return GscCrypto::encrypt([
+            'access_token'  => 'mock-token',
+            'refresh_token' => 'mock-refresh',
+            'created_at'    => time(),
+            'expires_in'    => 3600,
+            'client_id'     => 'mock-client',
+            'client_secret' => 'mock-secret',
+            'scopes'        => [GscOAuth::SCOPE_GA, GscOAuth::SCOPE_GSC],
+        ]);
+    };
+    $mockGeneralEmpty15 = function () { return []; };
+    add_filter('pre_option_laca_google_services', $mockServicesFilter15);
+    add_filter('pre_option_laca_seo_general', $mockGeneralEmpty15);
+    add_filter('pre_option_' . GscOAuth::OPTION_KEY, $mockOAuthFilter15);
     Settings::clearCache();
-
-    $oldCreds = GscOAuth::getCredentials();
-    GscOAuth::saveCredentials([
-        'access_token'  => 'mock-token',
-        'refresh_token' => 'mock-refresh',
-        'created_at'    => time(),
-        'expires_in'    => 3600,
-        'client_id'     => 'mock-client',
-        'client_secret' => 'mock-secret',
-        'scope'         => 'https://www.googleapis.com/auth/analytics.readonly https://www.googleapis.com/auth/webmasters.readonly',
-    ]);
 
     $mockFilter = function ($preempt, $parsed_args, $url) {
         if (str_contains($url, 'searchanalytics/query')) {
@@ -972,13 +965,10 @@ runTest('views/dashboard.php HTML: Never contains fabricated numbers (186, 12.4%
         return true;
     } finally {
         remove_filter('pre_http_request', $mockFilter, 10);
-        update_option('laca_seo_general', $savedOpt);
+        remove_filter('pre_option_laca_google_services', $mockServicesFilter15);
+        remove_filter('pre_option_laca_seo_general', $mockGeneralEmpty15);
+        remove_filter('pre_option_' . GscOAuth::OPTION_KEY, $mockOAuthFilter15);
         Settings::clearCache();
-        if ($oldCreds) {
-            GscOAuth::saveCredentials($oldCreds);
-        } else {
-            GscOAuth::disconnect();
-        }
         wp_set_current_user($oldUser instanceof \WP_User ? $oldUser->ID : (int) $oldUser);
     }
 }, $pass, $fail);
@@ -1035,21 +1025,26 @@ runTest('views/search-console.php: Gracefully renders on 404 and 403 without fat
     $adminId = !empty($admins) ? $admins[0]->ID : 1;
     wp_set_current_user($adminId);
 
-    $oldCreds = GscOAuth::getCredentials();
-    GscOAuth::saveCredentials([
-        'access_token'  => 'mock-token',
-        'refresh_token' => 'mock-refresh',
-        'created_at'    => time(),
-        'expires_in'    => 3600,
-        'client_id'     => 'mock-client',
-        'client_secret' => 'mock-secret',
-    ]);
-
-    $savedOpt = get_option('laca_seo_general');
-    update_option('laca_seo_general', array_merge((array) $savedOpt, [
-        'gsc_site_url' => 'https://lixroastery.com/',
-    ]));
-    Settings::clearCache();
+    $mockOAuthFilter17 = function () {
+        return GscCrypto::encrypt([
+            'access_token'  => 'mock-token',
+            'refresh_token' => 'mock-refresh',
+            'created_at'    => time(),
+            'expires_in'    => 3600,
+            'client_id'     => 'mock-client',
+            'client_secret' => 'mock-secret',
+            'scopes'        => [GscOAuth::SCOPE_GSC],
+        ]);
+    };
+    $mockServicesFilter17 = function () {
+        return [
+            'gsc_site_url' => 'https://lixroastery.com/',
+        ];
+    };
+    $mockGeneralEmpty17 = function () { return []; };
+    add_filter('pre_option_' . GscOAuth::OPTION_KEY, $mockOAuthFilter17);
+    add_filter('pre_option_laca_google_services', $mockServicesFilter17);
+    add_filter('pre_option_laca_seo_general', $mockGeneralEmpty17);
 
     // Case A: 404
     $mockFilter404 = function ($preempt, $parsed_args, $url) {
@@ -1132,13 +1127,9 @@ runTest('views/search-console.php: Gracefully renders on 404 and 403 without fat
     }
 
     // Teardown
-    update_option('laca_seo_general', $savedOpt);
-    Settings::clearCache();
-    if ($oldCreds) {
-        GscOAuth::saveCredentials($oldCreds);
-    } else {
-        GscOAuth::disconnect();
-    }
+    remove_filter('pre_option_' . GscOAuth::OPTION_KEY, $mockOAuthFilter17);
+    remove_filter('pre_option_laca_google_services', $mockServicesFilter17);
+    remove_filter('pre_option_laca_seo_general', $mockGeneralEmpty17);
     wp_set_current_user($oldUser instanceof \WP_User ? $oldUser->ID : (int) $oldUser);
 
     return true;
@@ -1154,22 +1145,24 @@ runTest('GoogleServicesPage: sites.list auto-selects sc-domain and disables unve
     $adminId = !empty($admins) ? $admins[0]->ID : 1;
     wp_set_current_user($adminId);
 
-    $oldCreds = GscOAuth::getCredentials();
-    GscOAuth::saveCredentials([
-        'access_token'  => 'mock-token',
-        'refresh_token' => 'mock-refresh',
-        'created_at'    => time(),
-        'expires_in'    => 3600,
-        'client_id'     => 'mock-client',
-        'client_secret' => 'mock-secret',
-    ]);
-
-    $savedOpt = get_option('laca_seo_general');
-    // Clear currently saved gsc_site_url so it tests auto-selection
-    $testOpt = (array) $savedOpt;
-    unset($testOpt['gsc_site_url']);
-    update_option('laca_seo_general', $testOpt);
-    Settings::clearCache();
+    $mockOAuthFilter18 = function () {
+        return GscCrypto::encrypt([
+            'access_token'  => 'mock-token',
+            'refresh_token' => 'mock-refresh',
+            'created_at'    => time(),
+            'expires_in'    => 3600,
+            'client_id'     => 'mock-client',
+            'client_secret' => 'mock-secret',
+            'scopes'        => [GscOAuth::SCOPE_GSC],
+        ]);
+    };
+    $mockServicesFilter18 = function () {
+        return [];
+    };
+    $mockGeneralEmpty18 = function () { return []; };
+    add_filter('pre_option_' . GscOAuth::OPTION_KEY, $mockOAuthFilter18);
+    add_filter('pre_option_laca_google_services', $mockServicesFilter18);
+    add_filter('pre_option_laca_seo_general', $mockGeneralEmpty18);
     delete_transient('laca_gsc_sites_list');
 
     $mockFilter = function ($preempt, $parsed_args, $url) {
@@ -1203,13 +1196,9 @@ runTest('GoogleServicesPage: sites.list auto-selects sc-domain and disables unve
     } finally {
         remove_filter('pre_http_request', $mockFilter, 10);
         delete_transient('laca_gsc_sites_list');
-        update_option('laca_seo_general', $savedOpt);
-        Settings::clearCache();
-        if ($oldCreds) {
-            GscOAuth::saveCredentials($oldCreds);
-        } else {
-            GscOAuth::disconnect();
-        }
+        remove_filter('pre_option_' . GscOAuth::OPTION_KEY, $mockOAuthFilter18);
+        remove_filter('pre_option_laca_google_services', $mockServicesFilter18);
+        remove_filter('pre_option_laca_seo_general', $mockGeneralEmpty18);
         wp_set_current_user($oldUser instanceof \WP_User ? $oldUser->ID : (int) $oldUser);
     }
 
@@ -1239,16 +1228,18 @@ runTest('GoogleServicesPage: Empty sites.list displays guidance to add property 
     $adminId = !empty($admins) ? $admins[0]->ID : 1;
     wp_set_current_user($adminId);
 
-    $oldCreds = GscOAuth::getCredentials();
-    GscOAuth::saveCredentials([
-        'access_token'  => 'mock-token',
-        'refresh_token' => 'mock-refresh',
-        'created_at'    => time(),
-        'expires_in'    => 3600,
-        'client_id'     => 'mock-client',
-        'client_secret' => 'mock-secret',
-    ]);
-
+    $mockOAuthFilter19 = function () {
+        return GscCrypto::encrypt([
+            'access_token'  => 'mock-token',
+            'refresh_token' => 'mock-refresh',
+            'created_at'    => time(),
+            'expires_in'    => 3600,
+            'client_id'     => 'mock-client',
+            'client_secret' => 'mock-secret',
+            'scopes'        => [GscOAuth::SCOPE_GSC],
+        ]);
+    };
+    add_filter('pre_option_' . GscOAuth::OPTION_KEY, $mockOAuthFilter19);
     delete_transient('laca_gsc_sites_list');
 
     $mockFilter = function ($preempt, $parsed_args, $url) {
@@ -1271,11 +1262,7 @@ runTest('GoogleServicesPage: Empty sites.list displays guidance to add property 
     } finally {
         remove_filter('pre_http_request', $mockFilter, 10);
         delete_transient('laca_gsc_sites_list');
-        if ($oldCreds) {
-            GscOAuth::saveCredentials($oldCreds);
-        } else {
-            GscOAuth::disconnect();
-        }
+        remove_filter('pre_option_' . GscOAuth::OPTION_KEY, $mockOAuthFilter19);
         wp_set_current_user($oldUser instanceof \WP_User ? $oldUser->ID : (int) $oldUser);
     }
 
@@ -1375,15 +1362,18 @@ runTest('DashboardWidget::ajaxGoogleReport: Rejects without nonce and returns 2-
 // Mock trả 404 cho mọi URL khác những URL đúng này.
 // -------------------------------------------------------------
 runTest('GSC Client: Calls exact canonical endpoints (Webmasters v3 vs SearchConsole v1) with rawurlencode', function () {
-    $oldCreds = GscOAuth::getCredentials();
-    GscOAuth::saveCredentials([
-        'access_token'  => 'mock-token',
-        'refresh_token' => 'mock-refresh',
-        'created_at'    => time(),
-        'expires_in'    => 3600,
-        'client_id'     => 'mock-client',
-        'client_secret' => 'mock-secret',
-    ]);
+    $mockOAuthFilter21 = function () {
+        return GscCrypto::encrypt([
+            'access_token'  => 'mock-token',
+            'refresh_token' => 'mock-refresh',
+            'created_at'    => time(),
+            'expires_in'    => 3600,
+            'client_id'     => 'mock-client',
+            'client_secret' => 'mock-secret',
+            'scopes'        => [GscOAuth::SCOPE_GSC],
+        ]);
+    };
+    add_filter('pre_option_' . GscOAuth::OPTION_KEY, $mockOAuthFilter21);
 
     $calledUrls = [];
 
@@ -1456,11 +1446,7 @@ runTest('GSC Client: Calls exact canonical endpoints (Webmasters v3 vs SearchCon
         }
     } finally {
         remove_filter('pre_http_request', $mockFilter, 10);
-        if ($oldCreds) {
-            GscOAuth::saveCredentials($oldCreds);
-        } else {
-            GscOAuth::disconnect();
-        }
+        remove_filter('pre_option_' . GscOAuth::OPTION_KEY, $mockOAuthFilter21);
     }
 
     if (!in_array($expectedAnalytics, $calledUrls, true)) {
@@ -1499,31 +1485,47 @@ runTest('GscOAuth::extractEmailFromIdToken: Decodes email from JWT payload witho
 // Test 23: Changing client_id purges old tokens
 // -------------------------------------------------------------
 runTest('GscOAuth::setPendingCredentials: Changing client_id purges old tokens', function () {
-    GscOAuth::saveCredentials([
-        'client_id'     => 'initial-client-id.apps.googleusercontent.com',
-        'client_secret' => 'old-secret',
-        'access_token'  => 'tok-123',
-        'refresh_token' => 'ref-123',
-    ]);
+    $origCreds = GscOAuth::getCredentials();
 
-    if (!GscOAuth::isConnected()) {
-        return 'Precondition failed: should be connected';
+    try {
+        GscOAuth::saveCredentials([
+            'client_id'     => 'initial-client-id.apps.googleusercontent.com',
+            'client_secret' => 'old-secret',
+            'access_token'  => 'tok-123',
+            'refresh_token' => 'ref-123',
+        ]);
+
+        if (!GscOAuth::isConnected()) {
+            return 'Precondition failed: should be connected';
+        }
+
+        // Set pending with different client_id
+        GscOAuth::setPendingCredentials('new-client-id.apps.googleusercontent.com', 'new-secret');
+
+        if (GscOAuth::isConnected()) {
+            return 'Expected old tokens to be deleted when client_id changes';
+        }
+
+        return true;
+    } finally {
+        if ($origCreds) {
+            GscOAuth::saveCredentials($origCreds);
+        } else {
+            GscOAuth::disconnect();
+        }
+        delete_option('laca_google_pending');
+        delete_option('laca_seo_gsc_pending');
     }
-
-    // Set pending with different client_id
-    GscOAuth::setPendingCredentials('new-client-id.apps.googleusercontent.com', 'new-secret');
-
-    if (GscOAuth::isConnected()) {
-        return 'Expected old tokens to be deleted when client_id changes';
-    }
-
-    return true;
 }, $pass, $fail);
 
 // -------------------------------------------------------------
 // Test 24: Migration copies options without deleting legacy options
 // -------------------------------------------------------------
 runTest('GoogleServices::migrate: Copies 7 settings keys without deleting legacy options', function () {
+    $origMigrated = get_option('laca_google_services_migrated', false);
+    $origGoogle   = get_option('laca_google_services', false);
+    $origLegacy   = get_option('laca_seo_general', false);
+
     delete_option('laca_google_services_migrated');
     delete_option('laca_google_services');
 
@@ -1538,35 +1540,55 @@ runTest('GoogleServices::migrate: Copies 7 settings keys without deleting legacy
         'other_seo_key'       => 'preserve_me',
     ]);
 
-    GoogleServices::migrate();
+    try {
+        GoogleServices::migrate();
 
-    $migrated = get_option('laca_google_services');
-    if (!is_array($migrated) || ($migrated['ga4_measurement_id'] ?? '') !== 'G-MIGRATE123') {
-        return "Migration failed to copy ga4_measurement_id: " . json_encode($migrated);
-    }
-    if (($migrated['gsc_site_url'] ?? '') !== 'https://migratedsite.com/') {
-        return "Migration failed to copy gsc_site_url";
-    }
+        $migrated = get_option('laca_google_services');
+        if (!is_array($migrated) || ($migrated['ga4_measurement_id'] ?? '') !== 'G-MIGRATE123') {
+            return "Migration failed to copy ga4_measurement_id: " . json_encode($migrated);
+        }
+        if (($migrated['gsc_site_url'] ?? '') !== 'https://migratedsite.com/') {
+            return "Migration failed to copy gsc_site_url";
+        }
 
-    $legacy = get_option('laca_seo_general');
-    if (!is_array($legacy) || ($legacy['other_seo_key'] ?? '') !== 'preserve_me') {
-        return "Legacy option laca_seo_general was corrupted or deleted during migration";
-    }
+        $legacy = get_option('laca_seo_general');
+        if (!is_array($legacy) || ($legacy['other_seo_key'] ?? '') !== 'preserve_me') {
+            return "Legacy option laca_seo_general was corrupted or deleted during migration";
+        }
 
-    return true;
+        return true;
+    } finally {
+        if ($origMigrated !== false) {
+            update_option('laca_google_services_migrated', $origMigrated);
+        } else {
+            delete_option('laca_google_services_migrated');
+        }
+        if ($origGoogle !== false) {
+            update_option('laca_google_services', $origGoogle);
+        } else {
+            delete_option('laca_google_services');
+        }
+        if ($origLegacy !== false) {
+            update_option('laca_seo_general', $origLegacy);
+        } else {
+            delete_option('laca_seo_general');
+        }
+    }
 }, $pass, $fail);
 
 // -------------------------------------------------------------
 // Test 25: Tracking runs independent of LacaSeo and outputs GA4/GTM scripts
 // -------------------------------------------------------------
 runTest('Tracking: Independent from LacaSeo and outputs GA4/GTM scripts', function () {
-    $origGoogle = get_option('laca_google_services', []);
-    update_option('laca_google_services', [
-        'ga4_measurement_id'  => 'G-STANDALONE',
-        'gtm_container_id'    => 'GTM-STANDALONE',
-        'ga_anonymize_ip'     => 'on',
-        'ga_exclude_loggedin' => 'off',
-    ]);
+    $mockServicesFilter25 = function () {
+        return [
+            'ga4_measurement_id'  => 'G-STANDALONE',
+            'gtm_container_id'    => 'GTM-STANDALONE',
+            'ga_anonymize_ip'     => 'on',
+            'ga_exclude_loggedin' => 'off',
+        ];
+    };
+    add_filter('pre_option_laca_google_services', $mockServicesFilter25);
 
     try {
         ob_start();
@@ -1587,7 +1609,7 @@ runTest('Tracking: Independent from LacaSeo and outputs GA4/GTM scripts', functi
 
         return true;
     } finally {
-        update_option('laca_google_services', $origGoogle);
+        remove_filter('pre_option_laca_google_services', $mockServicesFilter25);
     }
 }, $pass, $fail);
 

@@ -1,0 +1,44 @@
+<title>Uncategorized - LIX ROASTERY</title>
+<!-- / SEO by Laca SEO - Professional Framework -->
+<meta name="robots" content="noindex, follow"/>
+<meta property="og:locale" content="en_US" />
+<meta property="og:type" content="article" />
+<meta property="og:title" content="Uncategorized - LIX ROASTERY" />
+<meta property="og:url" content="http://lixroastery.local/category/uncategorized/" />
+<meta property="og:site_name" content="lacadev" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="Uncategorized - LIX ROASTERY" />
+<script type="application/ld+json" class="laca-seo-schema">
+{
+    "@context": "https://schema.org",
+    "@graph": [
+        {
+            "@type": "Person",
+            "@id": "http://lixroastery.local/#person",
+            "name": "lacadev",
+            "url": "http://lixroastery.local"
+        },
+        {
+            "@type": "WebSite",
+            "@id": "http://lixroastery.local/#website",
+            "url": "http://lixroastery.local",
+            "name": "lacadev",
+            "publisher": {
+                "@id": "http://lixroastery.local/#person"
+            },
+            "inLanguage": "en-US"
+        },
+        {
+            "@type": "CollectionPage",
+            "@id": "http://lixroastery.local/category/uncategorized/#webpage",
+            "url": "http://lixroastery.local/category/uncategorized/",
+            "name": "Uncategorized - LIX ROASTERY",
+            "isPartOf": {
+                "@id": "http://lixroastery.local/#website"
+            },
+            "inLanguage": "en-US"
+        }
+    ]
+}
+</script>
+<!-- / Laca SEO -->

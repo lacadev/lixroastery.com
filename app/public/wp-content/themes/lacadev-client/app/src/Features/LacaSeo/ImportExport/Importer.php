@@ -26,6 +26,7 @@ class Importer
             'sitemap'          => get_option('laca_seo_sitemap', []),
             'instant_indexing' => get_option('laca_seo_instant_indexing', []),
             'modules'          => Modules::getActive(),
+            'google_services'  => get_option('laca_google_services', []),
         ];
 
         $backups = get_option(self::BACKUPS_OPTION, []);
@@ -76,6 +77,9 @@ class Importer
                 if (isset($data['modules'])) {
                     Modules::setActive($data['modules']);
                 }
+                if (isset($data['google_services']) && is_array($data['google_services'])) {
+                    update_option('laca_google_services', $data['google_services']);
+                }
 
                 Settings::clearCache();
                 return true;
@@ -112,17 +116,24 @@ class Importer
 
         // Preserve credentials if requested
         $preserved = [];
+        $preservedGoogle = [];
         if ($preserveSiteCredentials) {
             $currentGeneral = Settings::getGroup('general');
             $preserved = [
-                'google_verify'       => $currentGeneral['google_verify'] ?? '',
-                'bing_verify'         => $currentGeneral['bing_verify'] ?? '',
-                'baidu_verify'        => $currentGeneral['baidu_verify'] ?? '',
-                'yandex_verify'       => $currentGeneral['yandex_verify'] ?? '',
-                'pinterest_verify'    => $currentGeneral['pinterest_verify'] ?? '',
-                'norton_verify'       => $currentGeneral['norton_verify'] ?? '',
-                'ga4_measurement_id'  => $currentGeneral['ga4_measurement_id'] ?? '',
-                'gtm_container_id'    => $currentGeneral['gtm_container_id'] ?? '',
+                'google_verify'    => $currentGeneral['google_verify'] ?? '',
+                'bing_verify'      => $currentGeneral['bing_verify'] ?? '',
+                'baidu_verify'     => $currentGeneral['baidu_verify'] ?? '',
+                'yandex_verify'    => $currentGeneral['yandex_verify'] ?? '',
+                'pinterest_verify' => $currentGeneral['pinterest_verify'] ?? '',
+                'norton_verify'    => $currentGeneral['norton_verify'] ?? '',
+            ];
+            $currentGoogle = get_option('laca_google_services', []);
+            if (!is_array($currentGoogle)) {
+                $currentGoogle = [];
+            }
+            $preservedGoogle = [
+                'ga4_measurement_id' => $currentGoogle['ga4_measurement_id'] ?? '',
+                'gtm_container_id'   => $currentGoogle['gtm_container_id'] ?? '',
             ];
         }
 
@@ -133,10 +144,31 @@ class Importer
 
         $registryMap = Settings::getRegistryMap();
 
+        $googleKeys = [
+            'ga4_measurement_id',
+            'gtm_container_id',
+            'ga_anonymize_ip',
+            'ga_exclude_loggedin',
+            'ga4_property_id',
+            'ga4_goal_events',
+            'gsc_site_url',
+        ];
+
+        $googleData = [];
+        if (!empty($data['google_services']) && is_array($data['google_services'])) {
+            $googleData = $data['google_services'];
+        }
+
         // Import General
         if (!empty($data['general']) && is_array($data['general'])) {
             $cleanGeneral = Settings::getGroup('general');
             foreach ($data['general'] as $k => $v) {
+                if (in_array($k, $googleKeys, true)) {
+                    if (!isset($googleData[$k])) {
+                        $googleData[$k] = $v;
+                    }
+                    continue; // Chuyển sang lưu ở laca_google_services
+                }
                 if (isset($registryMap['general'][$k])) {
                     $cleanGeneral[$k] = $registryMap['general'][$k]->sanitize($v);
                 } else {
@@ -151,6 +183,27 @@ class Importer
                 }
             }
             Settings::updateGroup('general', $cleanGeneral);
+        }
+
+        // Import Google Services into laca_google_services
+        if (!empty($googleData) || $preserveSiteCredentials) {
+            $cleanGoogle = get_option('laca_google_services', []);
+            if (!is_array($cleanGoogle)) {
+                $cleanGoogle = [];
+            }
+            foreach ($googleData as $gk => $gv) {
+                if (in_array($gk, $googleKeys, true)) {
+                    $cleanGoogle[$gk] = is_string($gv) ? sanitize_text_field($gv) : $gv;
+                }
+            }
+            if ($preserveSiteCredentials) {
+                foreach ($preservedGoogle as $pk => $pv) {
+                    if ($pv !== '') {
+                        $cleanGoogle[$pk] = $pv;
+                    }
+                }
+            }
+            update_option('laca_google_services', $cleanGoogle);
         }
 
         // Import Titles

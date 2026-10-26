@@ -1,0 +1,48 @@
+<title>Buy high-quality roasted coffee</title>
+<!-- / SEO by Laca SEO - Professional Framework -->
+<meta name="description" content="Explore the collection of original roasted coffees at LIX Roastery. Experience refined flavors from renowned growing regions in Vietnam and around the world."/>
+<meta name="robots" content="index, follow, max-snippet:-1, max-video-preview:-1, max-image-preview:large"/>
+<link rel="canonical" href="http://lixroastery.local/shop/" />
+<meta property="og:locale" content="en_US" />
+<meta property="og:type" content="article" />
+<meta property="og:title" content="Buy high-quality roasted coffee" />
+<meta property="og:description" content="Explore the collection of original roasted coffees at LIX Roastery. Experience refined flavors from renowned growing regions in Vietnam and around the world." />
+<meta property="og:url" content="http://lixroastery.local/shop/" />
+<meta property="og:site_name" content="lacadev" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="Buy high-quality roasted coffee" />
+<meta name="twitter:description" content="Explore the collection of original roasted coffees at LIX Roastery. Experience refined flavors from renowned growing regions in Vietnam and around the world." />
+<script type="application/ld+json" class="laca-seo-schema">
+{
+    "@context": "https://schema.org",
+    "@graph": [
+        {
+            "@type": "Person",
+            "@id": "http://lixroastery.local/#person",
+            "name": "lacadev",
+            "url": "http://lixroastery.local"
+        },
+        {
+            "@type": "WebSite",
+            "@id": "http://lixroastery.local/#website",
+            "url": "http://lixroastery.local",
+            "name": "lacadev",
+            "publisher": {
+                "@id": "http://lixroastery.local/#person"
+            },
+            "inLanguage": "en-US"
+        },
+        {
+            "@type": "CollectionPage",
+            "@id": "http://lixroastery.local/shop/#webpage",
+            "url": "http://lixroastery.local/shop/",
+            "name": "Buy high-quality roasted coffee",
+            "isPartOf": {
+                "@id": "http://lixroastery.local/#website"
+            },
+            "inLanguage": "en-US"
+        }
+    ]
+}
+</script>
+<!-- / Laca SEO -->

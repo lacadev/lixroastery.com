@@ -7,6 +7,7 @@ $paths = ['/','/en/','/manifesto/','/product/aconchego-1-masterpieces-auction-20
 if (!empty($argv[1])) $paths = explode(',', $argv[1]);
 function run($p, $m) { global $PHP, $SOCK; return shell_exec(escapeshellarg($PHP) . ' -d memory_limit=1024M -d error_reporting=0 -d display_errors=0 -d mysqli.default_socket=' . escapeshellarg($SOCK) . ' ' . escapeshellarg(__DIR__ . '/render-head.php') . ' ' . escapeshellarg($p) . ' ' . $m . ' 2>/dev/null'); }
 function tags($h) {
+  if (!is_string($h) || $h === '') return [[], []];
   $t = [];
   if (preg_match('~<title>(.*?)</title>~s', $h, $m)) $t['title'] = trim($m[1]);
   preg_match_all('~<meta\s+(?:name|property)="([^"]+)"\s+content="([^"]*)"~', $h, $mm, PREG_SET_ORDER);

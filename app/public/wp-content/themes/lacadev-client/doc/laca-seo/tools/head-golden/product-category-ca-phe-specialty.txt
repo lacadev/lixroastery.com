@@ -1,0 +1,44 @@
+<title>CÃ  phÃª Specialty - LIX ROASTERY</title>
+<!-- / SEO by Laca SEO - Professional Framework -->
+<meta name="robots" content="index, follow, max-snippet:-1, max-video-preview:-1, max-image-preview:large"/>
+<link rel="canonical" href="http://lixroastery.local/product-category/ca-phe-specialty/" />
+<meta property="og:locale" content="en_US" />
+<meta property="og:type" content="article" />
+<meta property="og:title" content="CÃ  phÃª Specialty - LIX ROASTERY" />
+<meta property="og:url" content="http://lixroastery.local/product-category/ca-phe-specialty/" />
+<meta property="og:site_name" content="lacadev" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="CÃ  phÃª Specialty - LIX ROASTERY" />
+<script type="application/ld+json" class="laca-seo-schema">
+{
+    "@context": "https://schema.org",
+    "@graph": [
+        {
+            "@type": "Person",
+            "@id": "http://lixroastery.local/#person",
+            "name": "lacadev"
+        },
+        {
+            "@type": "WebSite",
+            "@id": "http://lixroastery.local/#website",
+            "url": "http://lixroastery.local",
+            "name": "lacadev",
+            "publisher": {
+                "@id": "http://lixroastery.local/#person"
+            },
+            "inLanguage": "en-US"
+        },
+        {
+            "@type": "CollectionPage",
+            "@id": "http://lixroastery.local/product-category/ca-phe-specialty/#webpage",
+            "url": "http://lixroastery.local/product-category/ca-phe-specialty/",
+            "name": "CÃ  phÃª Specialty - LIX ROASTERY",
+            "isPartOf": {
+                "@id": "http://lixroastery.local/#website"
+            },
+            "inLanguage": "en-US"
+        }
+    ]
+}
+</script>
+<!-- / Laca SEO -->
