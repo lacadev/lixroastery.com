@@ -704,6 +704,16 @@ runTest('GA4 2 DateRanges Comparison: activeUsers +50%, sessions —, no convers
     Settings::clearCache();
 
     $mockFilter = function ($preempt, $parsed_args, $url) use ($mockReportData) {
+        if (str_contains($url, 'analyticsdata.googleapis.com')) {
+            $reqData = json_decode($parsed_args['body'] ?? '{}', true);
+            if (!empty($reqData['dateRanges']) && is_array($reqData['dateRanges'])) {
+                foreach ($reqData['dateRanges'] as $dr) {
+                    if (isset($dr['name']) && str_starts_with((string) $dr['name'], 'date_range_')) {
+                        throw new \RuntimeException("DateRange name '{$dr['name']}' is not allowed. Names cannot begin with date_range_");
+                    }
+                }
+            }
+        }
         if (str_contains($url, 'analyticsdata.googleapis.com') && str_contains($url, ':runReport')) {
             return [
                 'response' => ['code' => 200, 'message' => 'OK'],
@@ -767,6 +777,16 @@ runTest('GA4 Goal Events: Empty when unconfigured, parsed with real counts & del
     Settings::clearCache();
 
     $mockFilter = function ($preempt, $parsed_args, $url) {
+        if (str_contains($url, 'analyticsdata.googleapis.com')) {
+            $reqData = json_decode($parsed_args['body'] ?? '{}', true);
+            if (!empty($reqData['dateRanges']) && is_array($reqData['dateRanges'])) {
+                foreach ($reqData['dateRanges'] as $dr) {
+                    if (isset($dr['name']) && str_starts_with((string) $dr['name'], 'date_range_')) {
+                        throw new \RuntimeException("DateRange name '{$dr['name']}' is not allowed. Names cannot begin with date_range_");
+                    }
+                }
+            }
+        }
         if (str_contains($url, 'analyticsdata.googleapis.com') && str_contains($url, ':runReport')) {
             $body = json_decode($parsed_args['body'] ?? '{}', true);
             $dimNames = array_column($body['dimensions'] ?? [], 'name');
@@ -909,6 +929,16 @@ runTest('views/dashboard.php HTML: Never contains fabricated numbers (186, 12.4%
                 ]),
                 'headers'  => ['content-type' => 'application/json'],
             ];
+        }
+        if (str_contains($url, 'analyticsdata.googleapis.com')) {
+            $reqData = json_decode($parsed_args['body'] ?? '{}', true);
+            if (!empty($reqData['dateRanges']) && is_array($reqData['dateRanges'])) {
+                foreach ($reqData['dateRanges'] as $dr) {
+                    if (isset($dr['name']) && str_starts_with((string) $dr['name'], 'date_range_')) {
+                        throw new \RuntimeException("DateRange name '{$dr['name']}' is not allowed. Names cannot begin with date_range_");
+                    }
+                }
+            }
         }
         if (str_contains($url, 'analyticsdata.googleapis.com') && str_contains($url, ':runReport')) {
             return [
@@ -1613,7 +1643,128 @@ runTest('Tracking: Independent from LacaSeo and outputs GA4/GTM scripts', functi
     }
 }, $pass, $fail);
 
+// -------------------------------------------------------------
+// Test 26: GA4 DateRange Naming: Requests omit forbidden date_range_* names while response parsing handles date_range_0/1
+// -------------------------------------------------------------
+runTest('GA4 DateRange Naming: Requests omit forbidden date_range_* names while response parsing handles date_range_0/1', function () {
+    $mockOAuthFilter26 = function () {
+        return GscCrypto::encrypt([
+            'access_token'  => 'mock-token',
+            'refresh_token' => 'mock-refresh',
+            'created_at'    => time(),
+            'expires_in'    => 3600,
+            'client_id'     => 'mock-client',
+            'client_secret' => 'mock-secret',
+            'scopes'        => [GscOAuth::SCOPE_GA, GscOAuth::SCOPE_GSC],
+        ]);
+    };
+    add_filter('pre_option_' . GscOAuth::OPTION_KEY, $mockOAuthFilter26);
+
+    $capturedRequests = [];
+    $mockFilter = function ($preempt, $parsed_args, $url) use (&$capturedRequests) {
+        if (str_contains($url, 'analyticsdata.googleapis.com')) {
+            $reqBody = json_decode($parsed_args['body'] ?? '{}', true);
+            $capturedRequests[] = [
+                'url'  => $url,
+                'body' => $reqBody,
+            ];
+
+            // Verify rule: GA4 API forbids names starting with date_range_
+            if (!empty($reqBody['dateRanges']) && is_array($reqBody['dateRanges'])) {
+                foreach ($reqBody['dateRanges'] as $dr) {
+                    if (isset($dr['name']) && str_starts_with((string) $dr['name'], 'date_range_')) {
+                        throw new \RuntimeException("DateRange name '{$dr['name']}' is not allowed. Names cannot begin with date_range_");
+                    }
+                }
+            }
+
+            // Return mock GA response with default date_range_0 / date_range_1
+            return [
+                'response' => ['code' => 200, 'message' => 'OK'],
+                'body'     => json_encode([
+                    'dimensionHeaders' => [
+                        ['name' => 'dateRange'],
+                        ['name' => 'date'],
+                    ],
+                    'metricHeaders' => [
+                        ['name' => 'activeUsers'],
+                        ['name' => 'newUsers'],
+                        ['name' => 'sessions'],
+                        ['name' => 'screenPageViews'],
+                        ['name' => 'averageSessionDuration'],
+                        ['name' => 'engagementRate'],
+                        ['name' => 'keyEvents'],
+                        ['name' => 'eventCount'],
+                    ],
+                    'totals' => [
+                        [
+                            'dimensionValues' => [['value' => 'date_range_0']],
+                            'metricValues'    => [['value' => '150'], ['value' => '100'], ['value' => '200'], ['value' => '400'], ['value' => '80'], ['value' => '0.7'], ['value' => '15']],
+                        ],
+                        [
+                            'dimensionValues' => [['value' => 'date_range_1']],
+                            'metricValues'    => [['value' => '100'], ['value' => '70'], ['value' => '150'], ['value' => '300'], ['value' => '75'], ['value' => '0.6'], ['value' => '10']],
+                        ],
+                    ],
+                    'rows' => [
+                        [
+                            'dimensionValues' => [['value' => 'date_range_0'], ['value' => 'purchase']],
+                            'metricValues'    => [['value' => '5']],
+                        ],
+                        [
+                            'dimensionValues' => [['value' => 'date_range_1'], ['value' => 'purchase']],
+                            'metricValues'    => [['value' => '3']],
+                        ],
+                    ],
+                ]),
+                'headers'  => ['content-type' => 'application/json'],
+            ];
+        }
+        return $preempt;
+    };
+    add_filter('pre_http_request', $mockFilter, 10, 3);
+
+    try {
+        $rep = GaClient::runReport('987654321', '28d', true);
+        if (is_wp_error($rep)) {
+            return "GaClient::runReport failed: " . $rep->get_error_message();
+        }
+        if (($rep['users'] ?? 0) !== 150) {
+            return "Expected users=150, got " . ($rep['users'] ?? 'null');
+        }
+
+        $goals = GaClient::runGoalEventsReport('987654321', 28, ['purchase' => 'Đơn hàng'], true);
+        if (is_wp_error($goals)) {
+            return "GaClient::runGoalEventsReport failed: " . $goals->get_error_message();
+        }
+        if (empty($goals) || ($goals[0]['value'] ?? 0) !== 5) {
+            return "Expected goals purchase value=5, got " . var_export($goals, true);
+        }
+
+        if (count($capturedRequests) < 2) {
+            return "Expected at least 2 requests to analyticsdata, got " . count($capturedRequests);
+        }
+
+        // Explicitly assert every captured request has dateRanges without name starting with date_range_
+        foreach ($capturedRequests as $req) {
+            if (!empty($req['body']['dateRanges'])) {
+                foreach ($req['body']['dateRanges'] as $dr) {
+                    if (isset($dr['name']) && str_starts_with((string) $dr['name'], 'date_range_')) {
+                        return "Forbidden dateRange name found in request: " . json_encode($dr);
+                    }
+                }
+            }
+        }
+
+        return true;
+    } finally {
+        remove_filter('pre_http_request', $mockFilter, 10);
+        remove_filter('pre_option_' . GscOAuth::OPTION_KEY, $mockOAuthFilter26);
+    }
+}, $pass, $fail);
+
 echo "SUMMARY pass={$pass} fail={$fail}\n";
 exit($fail === 0 ? 0 : 1);
+
 
 

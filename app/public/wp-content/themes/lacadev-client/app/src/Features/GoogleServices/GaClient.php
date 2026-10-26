@@ -246,9 +246,10 @@ class GaClient
 
         // Query metrics with date dimension across 2 date ranges for real comparison
         $requestBody = [
+            // Không đặt 'name': GA4 cấm tên bắt đầu 'date_range_' và tự trả date_range_0/1 (phần parse dựa vào đó).
             'dateRanges' => [
-                ['name' => 'date_range_0', 'startDate' => "{$days}daysAgo", 'endDate' => 'yesterday'],
-                ['name' => 'date_range_1', 'startDate' => "{$prevDays}daysAgo", 'endDate' => "{$prevEndDays}daysAgo"],
+                ['startDate' => "{$days}daysAgo", 'endDate' => 'yesterday'],
+                ['startDate' => "{$prevDays}daysAgo", 'endDate' => "{$prevEndDays}daysAgo"],
             ],
             'dimensions' => [
                 ['name' => 'date'],
@@ -353,6 +354,7 @@ class GaClient
 
         $dimensions = array_map(static fn($d) => ['name' => $d], $dimensionNames);
         $body = [
+            // Không đặt 'name': GA4 cấm tên bắt đầu 'date_range_' và tự trả date_range_0/1 (phần parse dựa vào đó).
             'dateRanges' => [
                 ['startDate' => "{$days}daysAgo", 'endDate' => 'yesterday'],
             ],
@@ -676,9 +678,10 @@ class GaClient
         $prevEndDays = $days + 1;
 
         $requestBody = [
+            // Không đặt 'name': GA4 cấm tên bắt đầu 'date_range_' và tự trả date_range_0/1 (phần parse dựa vào đó).
             'dateRanges' => [
-                ['name' => 'date_range_0', 'startDate' => "{$days}daysAgo", 'endDate' => 'yesterday'],
-                ['name' => 'date_range_1', 'startDate' => "{$prevDays}daysAgo", 'endDate' => "{$prevEndDays}daysAgo"],
+                ['startDate' => "{$days}daysAgo", 'endDate' => 'yesterday'],
+                ['startDate' => "{$prevDays}daysAgo", 'endDate' => "{$prevEndDays}daysAgo"],
             ],
             'dimensions' => [
                 ['name' => 'eventName'],
