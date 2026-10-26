@@ -9,91 +9,6 @@ $creds = GscOAuth::getCredentials();
 $isConnected = !empty($creds['access_token']);
 $redirectUri = GscOAuth::getRedirectUri();
 
-// Handle disconnect action
-if (isset($_POST['laca_gsc_disconnect'])) {
-    check_admin_referer('laca_gsc_disconnect_action');
-    if (current_user_can('manage_options')) {
-        GscOAuth::disconnect();
-        wp_safe_redirect(admin_url('admin.php?page=laca-seo&view=search-console&disconnected=1'));
-        exit;
-    }
-}
-
-// Handle save credentials & initiate OAuth
-$connectError = '';
-if (isset($_POST['laca_gsc_connect_init'])) {
-    check_admin_referer('laca_gsc_connect_action');
-    $clientId = sanitize_text_field(wp_unslash($_POST['client_id'] ?? ''));
-    $clientSecret = sanitize_text_field(wp_unslash($_POST['client_secret'] ?? ''));
-
-    if ($clientId === '' || $clientSecret === '') {
-        $connectError = __('Vui lòng nhập đầy đủ Client ID và Client Secret.', 'lacadev');
-    } else {
-        update_option('laca_seo_gsc_pending', [
-            'client_id'     => $clientId,
-            'client_secret' => $clientSecret,
-        ], false);
-
-        $authUrl = GscOAuth::buildAuthUrl($clientId);
-        wp_redirect($authUrl);
-        exit;
-    }
-}
-
-// Handle OAuth callback
-if (isset($_GET['laca_gsc_oauth'])) {
-    $state = sanitize_text_field(wp_unslash($_GET['state'] ?? ''));
-    $returnTo = GscOAuth::getStateReturnTo($state);
-
-    if (isset($_GET['error'])) {
-        if (!GscOAuth::verifyState($state)) {
-            $connectError = __('Mã trạng thái bảo mật (State Nonce) không hợp lệ.', 'lacadev');
-        } else {
-            delete_option('laca_seo_gsc_pending');
-            $errorCode = sanitize_text_field(wp_unslash($_GET['error']));
-            $errorDesc = sanitize_text_field(wp_unslash($_GET['error_description'] ?? ''));
-
-            if ($errorCode === 'access_denied') {
-                $connectError = __('Google từ chối quyền truy cập. Nếu ứng dụng OAuth đang ở chế độ Testing, hãy thêm email của bạn vào Test users (Google Cloud → Google Auth Platform → Audience) hoặc bấm Publish app, rồi thử lại.', 'lacadev');
-            } else {
-                $connectError = sprintf(
-                    __('Lỗi kết nối từ Google (%s)%s.', 'lacadev'),
-                    esc_html($errorCode),
-                    $errorDesc !== '' ? ': ' . esc_html($errorDesc) : ''
-                );
-            }
-        }
-        wp_safe_redirect(add_query_arg(['error' => urlencode($connectError)], admin_url($returnTo)));
-        exit;
-    } elseif (isset($_GET['code'])) {
-        $code = sanitize_text_field(wp_unslash($_GET['code']));
-        if (!GscOAuth::verifyState($state)) {
-            $connectError = __('Mã trạng thái bảo mật (State Nonce) không hợp lệ.', 'lacadev');
-            wp_safe_redirect(add_query_arg(['error' => urlencode($connectError)], admin_url($returnTo)));
-            exit;
-        } else {
-            $pending = get_option('laca_seo_gsc_pending', []);
-            delete_option('laca_seo_gsc_pending');
-
-            if (!empty($pending['client_id']) && !empty($pending['client_secret'])) {
-                $exchange = GscOAuth::handleCallback($code, $pending['client_id'], $pending['client_secret']);
-                if ($exchange['success']) {
-                    wp_safe_redirect(add_query_arg(['connected' => '1'], admin_url($returnTo)));
-                    exit;
-                } else {
-                    $connectError = $exchange['error'] ?? __('Lỗi xác thực OAuth từ Google.', 'lacadev');
-                    wp_safe_redirect(add_query_arg(['error' => urlencode($connectError)], admin_url($returnTo)));
-                    exit;
-                }
-            } else {
-                $connectError = __('Không tìm thấy Client ID hoặc Client Secret đang chờ xác thực.', 'lacadev');
-                wp_safe_redirect(add_query_arg(['error' => urlencode($connectError)], admin_url($returnTo)));
-                exit;
-            }
-        }
-    }
-}
-
 $siteUrl = GscClient::getSiteUrl();
 $perf = $isConnected ? GscClient::getPerformanceSummary($siteUrl) : null;
 $sitemaps = $isConnected ? GscClient::getSitemaps($siteUrl) : null;
@@ -106,8 +21,8 @@ $sitemaps = $isConnected ? GscClient::getSitemaps($siteUrl) : null;
     <?php if (isset($_GET['disconnected'])): ?>
         <div class="notice notice-info is-dismissible"><p><?php esc_html_e('Đã ngắt kết nối Google Search Console.', 'lacadev'); ?></p></div>
     <?php endif; ?>
-    <?php if ($connectError): ?>
-        <div class="notice notice-error is-dismissible"><p><?php echo esc_html($connectError); ?></p></div>
+    <?php if (!empty($_GET['error'])): ?>
+        <div class="notice notice-error is-dismissible"><p><?php echo esc_html(urldecode((string) $_GET['error'])); ?></p></div>
     <?php endif; ?>
 
     <?php if (!$isConnected): ?>

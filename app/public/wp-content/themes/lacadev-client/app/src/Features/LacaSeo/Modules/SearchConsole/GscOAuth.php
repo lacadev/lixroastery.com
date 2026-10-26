@@ -118,11 +118,12 @@ class GscOAuth
      */
     public static function getStateReturnTo(string $state): string
     {
+        // State do client gửi lại → chỉ nhận đúng trang cho phép; nơi gọi truyền slug trần hoặc "admin.php?page=slug".
+        $allowed = ['laca-google-search-console', 'laca-google-analytics'];
         $decoded = json_decode(base64_decode($state), true);
-        if (is_array($decoded) && !empty($decoded['return_to'])) {
-            return (string) $decoded['return_to'];
-        }
-        return 'admin.php?page=laca-google-search-console';
+        $slug = is_array($decoded) ? preg_replace('/^admin\.php\?page=/', '', (string) ($decoded['return_to'] ?? '')) : '';
+
+        return 'admin.php?page=' . (in_array($slug, $allowed, true) ? $slug : 'laca-google-search-console');
     }
 
     /**

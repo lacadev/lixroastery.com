@@ -17,9 +17,11 @@ if (file_exists($wp_load)) {
 
 use App\Features\LacaSeo\Modules\SearchConsole\GscClient;
 use App\Features\LacaSeo\Modules\SearchConsole\GscOAuth;
+use App\Features\LacaSeo\Modules\SearchConsole\GscCrypto;
 use App\Features\LacaSeo\Modules\GoogleAnalytics\GaClient;
 use App\Features\LacaSeo\Frontend\Tracking;
 use App\Features\LacaSeo\Core\Settings;
+use App\Settings\LacaAdmin\GoogleServicesPage;
 
 $pass = 0;
 $fail = 0;
@@ -405,6 +407,202 @@ runTest('OAuth Redirect URI: Exactly matches canonical URI', function () {
     }
 
     return true;
+}, $pass, $fail);
+
+// -------------------------------------------------------------
+// Test 8: handleActions() connect_init tạo URL OAuth với 2 scopes và redirect_uri cũ
+// -------------------------------------------------------------
+runTest('GoogleServicesPage::handleActions: Initiates OAuth with 2 scopes and canonical redirect URI', function () {
+    $oldUser = get_current_user_id();
+    $adminUsers = get_users(['role' => 'administrator', 'number' => 1]);
+    $adminId = !empty($adminUsers) ? $adminUsers[0]->ID : 1;
+    wp_set_current_user($adminId);
+
+    $testClientId = 'test-client-123.apps.googleusercontent.com';
+    $testSecret   = 'test-secret-abc';
+
+    $_POST = [
+        'laca_google_connect_init' => '1',
+        '_wpnonce'                 => wp_create_nonce('laca_google_connect_action'),
+        'client_id'                => $testClientId,
+        'client_secret'            => $testSecret,
+        'return_to'                => GoogleServicesPage::PAGE_SEARCH_CONSOLE,
+    ];
+    $_REQUEST = array_merge($_REQUEST, $_POST);
+
+    $redirectFilter = function ($url) {
+        throw new \RuntimeException('REDIRECT_URL:' . $url);
+    };
+    add_filter('wp_redirect', $redirectFilter);
+
+    try {
+        $page = new GoogleServicesPage();
+        $page->handleActions();
+        return 'Expected wp_redirect to be called, but execution continued';
+    } catch (\RuntimeException $e) {
+        if (!str_starts_with($e->getMessage(), 'REDIRECT_URL:')) {
+            throw $e;
+        }
+
+        $url = substr($e->getMessage(), strlen('REDIRECT_URL:'));
+
+        if (!str_contains($url, 'https://accounts.google.com/o/oauth2/v2/auth')) {
+            return "Expected Google OAuth auth endpoint, got: {$url}";
+        }
+
+        $parts = parse_url($url);
+        parse_str($parts['query'] ?? '', $queryParams);
+
+        if (($queryParams['client_id'] ?? '') !== $testClientId) {
+            return "Expected client_id = '{$testClientId}', got '" . ($queryParams['client_id'] ?? '') . "'";
+        }
+
+        $expectedRedirectUri = GscOAuth::getRedirectUri();
+        if (($queryParams['redirect_uri'] ?? '') !== $expectedRedirectUri) {
+            return "Expected redirect_uri = '{$expectedRedirectUri}', got '" . ($queryParams['redirect_uri'] ?? '') . "'";
+        }
+
+        $scope = $queryParams['scope'] ?? '';
+        if (!str_contains($scope, GscOAuth::SCOPE_GSC) || !str_contains($scope, GscOAuth::SCOPE_GA)) {
+            return "Expected scope to contain both GSC and GA scopes, got: '{$scope}'";
+        }
+
+        return true;
+    } finally {
+        remove_filter('wp_redirect', $redirectFilter);
+        wp_set_current_user($oldUser);
+        $_POST = [];
+    }
+}, $pass, $fail);
+
+// -------------------------------------------------------------
+// Test 9: Client secret trống thì dùng secret đã lưu trong option
+// -------------------------------------------------------------
+runTest('GoogleServicesPage::handleActions: Empty secret uses saved secret from credentials', function () {
+    $oldUser = get_current_user_id();
+    $adminUsers = get_users(['role' => 'administrator', 'number' => 1]);
+    $adminId = !empty($adminUsers) ? $adminUsers[0]->ID : 1;
+    wp_set_current_user($adminId);
+
+    $savedSecret   = 'SAVED_SECRET_FROM_PRE_OPTION_xyz';
+    $savedClientId = 'saved-client-id.apps.googleusercontent.com';
+
+    $mockFilter = function ($preempt) use ($savedClientId, $savedSecret) {
+        return GscCrypto::encrypt([
+            'client_id'     => $savedClientId,
+            'client_secret' => $savedSecret,
+            'access_token'  => 'mock-token',
+            'refresh_token' => 'mock-refresh',
+        ]);
+    };
+    add_filter('pre_option_' . GscOAuth::OPTION_KEY, $mockFilter);
+
+    $_POST = [
+        'laca_google_connect_init' => '1',
+        '_wpnonce'                 => wp_create_nonce('laca_google_connect_action'),
+        'client_id'                => $savedClientId,
+        'client_secret'            => '', // Trống -> dùng secret đã lưu
+        'return_to'                => GoogleServicesPage::PAGE_SEARCH_CONSOLE,
+    ];
+    $_REQUEST = array_merge($_REQUEST, $_POST);
+
+    $redirectFilter = function ($url) {
+        throw new \RuntimeException('REDIRECT_URL:' . $url);
+    };
+    add_filter('wp_redirect', $redirectFilter);
+
+    try {
+        $page = new GoogleServicesPage();
+        $page->handleActions();
+        return 'Expected wp_redirect, got none';
+    } catch (\RuntimeException $e) {
+        if (!str_starts_with($e->getMessage(), 'REDIRECT_URL:')) {
+            throw $e;
+        }
+
+        $pending = get_option('laca_seo_gsc_pending', []);
+
+        if (($pending['client_secret'] ?? '') !== $savedSecret) {
+            return "Expected pending secret to match saved secret '{$savedSecret}', got: '" . ($pending['client_secret'] ?? '') . "'";
+        }
+
+        return true;
+    } finally {
+        remove_filter('pre_option_' . GscOAuth::OPTION_KEY, $mockFilter);
+        remove_filter('wp_redirect', $redirectFilter);
+        wp_set_current_user($oldUser);
+        $_POST = [];
+        delete_option('laca_seo_gsc_pending');
+    }
+}, $pass, $fail);
+
+// -------------------------------------------------------------
+// Test 10: getStateReturnTo chống open redirect & chỉ cho phép 2 slug an toàn
+// -------------------------------------------------------------
+runTest('GscOAuth::getStateReturnTo: Sanitizes return_to against open redirect / evil URLs', function () {
+    // 1. Evil URL
+    $evilState = base64_encode(json_encode(['return_to' => 'https://evil.com/phishing']));
+    $target1 = GscOAuth::getStateReturnTo($evilState);
+    if ($target1 !== 'admin.php?page=laca-google-search-console') {
+        return "Expected fallback 'admin.php?page=laca-google-search-console', got: '{$target1}'";
+    }
+
+    // 2. Allowed: laca-google-analytics
+    $gaState = base64_encode(json_encode(['return_to' => 'laca-google-analytics']));
+    $target2 = GscOAuth::getStateReturnTo($gaState);
+    if ($target2 !== 'admin.php?page=laca-google-analytics') {
+        return "Expected 'admin.php?page=laca-google-analytics', got: '{$target2}'";
+    }
+
+    // 3. Allowed with admin.php?page= prefix
+    $gscState = base64_encode(json_encode(['return_to' => 'admin.php?page=laca-google-search-console']));
+    $target3 = GscOAuth::getStateReturnTo($gscState);
+    if ($target3 !== 'admin.php?page=laca-google-search-console') {
+        return "Expected 'admin.php?page=laca-google-search-console', got: '{$target3}'";
+    }
+
+    // 4. Malformed/garbage state
+    $badState = 'not-valid-base64-json!@#$';
+    $target4 = GscOAuth::getStateReturnTo($badState);
+    if ($target4 !== 'admin.php?page=laca-google-search-console') {
+        return "Expected fallback for bad state, got: '{$target4}'";
+    }
+
+    return true;
+}, $pass, $fail);
+
+// -------------------------------------------------------------
+// Test 11: HTML trang GSC KHÔNG in Client Secret đã giải mã
+// -------------------------------------------------------------
+runTest('GoogleServicesPage HTML: Client Secret is NEVER printed in rendered HTML', function () {
+    $canarySecret = 'CANARY_NEVER_PRINT_GOCSPX_SECRET_888999';
+
+    $mockFilter = function ($preempt) use ($canarySecret) {
+        return GscCrypto::encrypt([
+            'client_id'     => 'test-client-id.apps.googleusercontent.com',
+            'client_secret' => $canarySecret,
+        ]);
+    };
+    add_filter('pre_option_' . GscOAuth::OPTION_KEY, $mockFilter);
+
+    try {
+        $page = new GoogleServicesPage();
+        ob_start();
+        $page->renderSearchConsolePage();
+        $html = ob_get_clean();
+
+        if (str_contains($html, $canarySecret)) {
+            return "Security violation: Decrypted client_secret was printed into HTML output!";
+        }
+
+        if (!str_contains($html, 'placeholder="Đã lưu — để trống để giữ nguyên"')) {
+            return "Expected placeholder 'Đã lưu — để trống để giữ nguyên' when secret is present, got output:\n" . substr($html, 0, 500);
+        }
+
+        return true;
+    } finally {
+        remove_filter('pre_option_' . GscOAuth::OPTION_KEY, $mockFilter);
+    }
 }, $pass, $fail);
 
 echo "SUMMARY pass={$pass} fail={$fail}\n";

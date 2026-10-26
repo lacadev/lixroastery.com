@@ -28,6 +28,7 @@ class GoogleServicesPage
     {
         add_action('admin_menu', [$this, 'registerPages']);
         add_action('admin_init', [$this, 'handleActions']);
+        add_action('admin_init', [$this, 'handleOAuthCallback']);
         add_action('admin_enqueue_scripts', [$this, 'enqueueAssets']);
     }
 
@@ -115,6 +116,10 @@ class GoogleServicesPage
             $clientSecret = sanitize_text_field(wp_unslash($_POST['client_secret'] ?? ''));
             $returnTo     = sanitize_text_field(wp_unslash($_POST['return_to'] ?? self::PAGE_SEARCH_CONSOLE));
 
+            if ($clientSecret === '') {
+                $clientSecret = (string) (GscOAuth::getCredentials()['client_secret'] ?? '');
+            }
+
             if ($clientId === '' || $clientSecret === '') {
                 wp_safe_redirect(add_query_arg(['error' => urlencode(__('Vui lòng nhập đầy đủ Client ID và Client Secret.', 'laca'))], admin_url('admin.php?page=' . $returnTo)));
                 exit;
@@ -125,7 +130,7 @@ class GoogleServicesPage
                 'client_secret' => $clientSecret,
             ], false);
 
-            $authUrl = GscOAuth::buildAuthUrl($clientId, GscOAuth::SCOPES, $returnTo);
+            $authUrl = GscOAuth::buildAuthUrl($clientId, null, $returnTo, GscOAuth::SCOPES);
             wp_redirect($authUrl);
             exit;
         }
@@ -149,7 +154,7 @@ class GoogleServicesPage
                 'client_secret' => $clientSecret,
             ], false);
 
-            $authUrl = GscOAuth::buildAuthUrl($clientId, GscOAuth::SCOPES, $returnTo);
+            $authUrl = GscOAuth::buildAuthUrl($clientId, null, $returnTo, GscOAuth::SCOPES);
             wp_redirect($authUrl);
             exit;
         }
@@ -196,6 +201,111 @@ class GoogleServicesPage
 
             wp_safe_redirect(add_query_arg(['updated' => '1'], admin_url('admin.php?page=' . self::PAGE_ANALYTICS)));
             exit;
+        }
+    }
+
+    /**
+     * Handle OAuth callback from Google and legacy POST actions from Laca SEO Search Console view.
+     * Runs early on admin_init before any HTML or headers are printed.
+     */
+    public function handleOAuthCallback(): void
+    {
+        $page = sanitize_key(wp_unslash($_GET['page'] ?? ''));
+        $view = sanitize_key(wp_unslash($_GET['view'] ?? ''));
+
+        if ($page !== 'laca-seo' || $view !== 'search-console') {
+            return;
+        }
+
+        // 1. Legacy POST disconnect
+        if (isset($_POST['laca_gsc_disconnect'])) {
+            check_admin_referer('laca_gsc_disconnect_action');
+            if (current_user_can('manage_options')) {
+                GscOAuth::disconnect();
+                wp_safe_redirect(admin_url('admin.php?page=' . self::PAGE_SEARCH_CONSOLE . '&disconnected=1'));
+                exit;
+            }
+        }
+
+        // 2. Legacy POST connect_init
+        if (isset($_POST['laca_gsc_connect_init'])) {
+            check_admin_referer('laca_gsc_connect_action');
+            if (current_user_can('manage_options')) {
+                $clientId     = sanitize_text_field(wp_unslash($_POST['client_id'] ?? ''));
+                $clientSecret = sanitize_text_field(wp_unslash($_POST['client_secret'] ?? ''));
+
+                if ($clientSecret === '') {
+                    $clientSecret = (string) (GscOAuth::getCredentials()['client_secret'] ?? '');
+                }
+
+                if ($clientId === '' || $clientSecret === '') {
+                    wp_safe_redirect(add_query_arg(['error' => urlencode(__('Vui lòng nhập đầy đủ Client ID và Client Secret.', 'laca'))], admin_url('admin.php?page=' . self::PAGE_SEARCH_CONSOLE)));
+                    exit;
+                }
+
+                update_option('laca_seo_gsc_pending', [
+                    'client_id'     => $clientId,
+                    'client_secret' => $clientSecret,
+                ], false);
+
+                $authUrl = GscOAuth::buildAuthUrl($clientId, null, self::PAGE_SEARCH_CONSOLE, GscOAuth::SCOPES);
+                wp_redirect($authUrl);
+                exit;
+            }
+        }
+
+        // 3. OAuth callback from Google (redirect_uri points to admin.php?page=laca-seo&view=search-console&laca_gsc_oauth=1)
+        if (isset($_GET['laca_gsc_oauth'])) {
+            $state = sanitize_text_field(wp_unslash($_GET['state'] ?? ''));
+            $returnTo = GscOAuth::getStateReturnTo($state);
+
+            if (isset($_GET['error'])) {
+                if (!GscOAuth::verifyState($state)) {
+                    $connectError = __('Mã trạng thái bảo mật (State Nonce) không hợp lệ.', 'laca');
+                } else {
+                    delete_option('laca_seo_gsc_pending');
+                    $errorCode = sanitize_text_field(wp_unslash($_GET['error']));
+                    $errorDesc = sanitize_text_field(wp_unslash($_GET['error_description'] ?? ''));
+
+                    if ($errorCode === 'access_denied') {
+                        $connectError = __('Google từ chối quyền truy cập. Nếu ứng dụng OAuth đang ở chế độ Testing, hãy thêm email của bạn vào Test users (Google Cloud → Google Auth Platform → Audience) hoặc bấm Publish app, rồi thử lại.', 'laca');
+                    } else {
+                        $connectError = sprintf(
+                            __('Lỗi kết nối từ Google (%s)%s.', 'laca'),
+                            esc_html($errorCode),
+                            $errorDesc !== '' ? ': ' . esc_html($errorDesc) : ''
+                        );
+                    }
+                }
+                wp_safe_redirect(add_query_arg(['error' => urlencode($connectError)], admin_url($returnTo)));
+                exit;
+            } elseif (isset($_GET['code'])) {
+                $code = sanitize_text_field(wp_unslash($_GET['code']));
+                if (!GscOAuth::verifyState($state)) {
+                    $connectError = __('Mã trạng thái bảo mật (State Nonce) không hợp lệ.', 'laca');
+                    wp_safe_redirect(add_query_arg(['error' => urlencode($connectError)], admin_url($returnTo)));
+                    exit;
+                }
+
+                $pending = get_option('laca_seo_gsc_pending', []);
+                delete_option('laca_seo_gsc_pending');
+
+                if (!empty($pending['client_id']) && !empty($pending['client_secret'])) {
+                    $exchange = GscOAuth::handleCallback($code, $pending['client_id'], $pending['client_secret']);
+                    if ($exchange['success']) {
+                        wp_safe_redirect(add_query_arg(['connected' => '1'], admin_url($returnTo)));
+                        exit;
+                    }
+
+                    $connectError = $exchange['error'] ?? __('Lỗi xác thực OAuth từ Google.', 'laca');
+                    wp_safe_redirect(add_query_arg(['error' => urlencode($connectError)], admin_url($returnTo)));
+                    exit;
+                }
+
+                $connectError = __('Không tìm thấy Client ID hoặc Client Secret đang chờ xác thực.', 'laca');
+                wp_safe_redirect(add_query_arg(['error' => urlencode($connectError)], admin_url($returnTo)));
+                exit;
+            }
         }
     }
 
@@ -423,7 +533,8 @@ class GoogleServicesPage
 
                             <div class="laca-seo-field-group" style="margin-bottom: 20px;">
                                 <label for="laca_google_client_secret"><strong><?php esc_html_e('Google Client Secret', 'laca'); ?></strong></label>
-                                <input type="password" name="client_secret" id="laca_google_client_secret" class="large-text" required placeholder="GOCSPX-xxxx" value="<?php echo esc_attr($creds['client_secret'] ?? ''); ?>" style="max-width: 560px;">
+                                <?php // Không in secret ra HTML; để trống = giữ secret đã lưu. ?>
+                                <input type="password" name="client_secret" id="laca_google_client_secret" class="large-text" autocomplete="new-password" <?php echo empty($creds['client_secret']) ? 'required placeholder="GOCSPX-xxxx"' : 'placeholder="' . esc_attr__('Đã lưu — để trống để giữ nguyên', 'laca') . '"'; ?> style="max-width: 560px;">
                             </div>
 
                             <button type="submit" name="laca_google_connect_init" class="button button-primary button-large">
