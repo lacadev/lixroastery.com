@@ -471,27 +471,49 @@
 }
 
 .laca-seo-search-bar {
-    background: var(--laca-bg);
-    border: 1px solid var(--laca-border);
-    border-radius: var(--laca-radius-l2);
-    padding: 8px 16px;
+    position: relative;
     display: flex;
     align-items: center;
-    gap: 10px;
+    width: 100%;
+    margin-bottom: 16px;
 
     .dashicons {
+        position: absolute;
+        left: 12px;
         color: var(--laca-fg-subtle);
+        pointer-events: none;
+        font-size: 16px;
+        width: 16px;
+        height: 16px;
+        line-height: 16px;
+        z-index: 1;
     }
 
     .laca-seo-search-input {
-        border: none !important;
+        background: var(--laca-bg);
+        border: 1px solid var(--laca-border-emphasized) !important;
+        border-radius: var(--laca-radius-l2);
         box-shadow: none !important;
         font-size: 14px;
         width: 100%;
+        height: var(--laca-height-sm);
         outline: none;
-        padding: 4px 0;
-        background: transparent;
+        padding: 0 12px 0 36px !important;
         color: var(--laca-fg);
+        transition: var(--laca-transition);
+        box-sizing: border-box;
+
+        &:hover:not(:disabled) {
+            border-color: var(--laca-input-border) !important;
+        }
+
+        &:focus,
+        &:focus-visible {
+            border-color: var(--laca-accent) !important;
+            outline: 2px solid var(--laca-focus-ring) !important;
+            outline-offset: 2px !important;
+            box-shadow: none !important;
+        }
     }
 }
 
@@ -658,12 +680,34 @@
         input[type="email"],
         select,
         textarea {
-            max-width: 100% !important;
+            max-width: 560px !important;
             box-sizing: border-box;
+            background-color: var(--laca-bg);
+            border: 1px solid var(--laca-border-emphasized) !important;
+            border-radius: var(--laca-radius-l2);
+            box-shadow: none !important;
+
+            &:hover:not(:disabled) {
+                border-color: var(--laca-input-border) !important;
+            }
+
+            &:focus,
+            &:focus-visible {
+                border-color: var(--laca-accent) !important;
+                outline: 2px solid var(--laca-focus-ring) !important;
+                outline-offset: 2px !important;
+                box-shadow: none !important;
+            }
+
+            &:disabled {
+                background-color: var(--laca-bg-muted) !important;
+                color: var(--laca-fg-subtle);
+                cursor: not-allowed;
+            }
         }
 
         .regular-text {
-            max-width: 100% !important;
+            max-width: 560px !important;
             width: 100%;
         }
     }
@@ -1366,6 +1410,49 @@ input[type="file"] {
 
 .laca-seo-form-limit {
     max-width: 600px;
+
+    .laca-seo-field-group {
+        margin-bottom: 16px;
+
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-size: 14px;
+            color: var(--laca-fg);
+        }
+
+        input[type="text"],
+        input[type="password"] {
+            width: 100%;
+            max-width: 560px;
+            height: var(--laca-height-sm);
+            padding: 0 var(--laca-space-3);
+            background-color: var(--laca-bg);
+            border: 1px solid var(--laca-border-emphasized) !important;
+            border-radius: var(--laca-radius-l2);
+            color: var(--laca-fg);
+            box-shadow: none !important;
+            box-sizing: border-box;
+
+            &:hover:not(:disabled) {
+                border-color: var(--laca-input-border) !important;
+            }
+
+            &:focus,
+            &:focus-visible {
+                border-color: var(--laca-accent) !important;
+                outline: 2px solid var(--laca-focus-ring) !important;
+                outline-offset: 2px !important;
+                box-shadow: none !important;
+            }
+
+            &:disabled {
+                background-color: var(--laca-bg-muted) !important;
+                color: var(--laca-fg-subtle);
+                cursor: not-allowed;
+            }
+        }
+    }
 }
 
 .laca-seo-header-flex {

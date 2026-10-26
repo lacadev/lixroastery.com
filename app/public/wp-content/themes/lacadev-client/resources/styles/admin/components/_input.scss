@@ -10,13 +10,13 @@
   font-size: var(--laca-font-size-sm);
   color: var(--laca-fg);
   background-color: var(--laca-bg);
-  border: 1px solid var(--laca-border);
+  border: 1px solid var(--laca-border-emphasized);
   border-radius: var(--laca-radius-l2);
   transition: var(--laca-transition);
   box-sizing: border-box;
 
   &:hover:not(:disabled) {
-    border-color: var(--laca-border-emphasized);
+    border-color: var(--laca-input-border);
   }
 
   &:focus,

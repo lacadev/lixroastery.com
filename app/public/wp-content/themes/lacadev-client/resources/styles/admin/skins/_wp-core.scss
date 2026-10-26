@@ -175,14 +175,14 @@ body.wp-admin {
     font-size: var(--laca-font-size-sm);
     color: var(--laca-fg);
     background-color: var(--laca-bg);
-    border: 1px solid var(--laca-border);
+    border: 1px solid var(--laca-border-emphasized);
     border-radius: var(--laca-radius-l2);
     box-shadow: none;
     transition: var(--laca-transition);
     box-sizing: border-box;
 
     &:hover:not(:disabled) {
-      border-color: var(--laca-border-emphasized);
+      border-color: var(--laca-input-border);
     }
 
     &:focus,
@@ -228,18 +228,29 @@ body.wp-admin {
     font-size: var(--laca-font-size-sm);
     color: var(--laca-fg);
     background-color: var(--laca-bg);
-    border: 1px solid var(--laca-border);
+    border: 1px solid var(--laca-border-emphasized);
     border-radius: var(--laca-radius-l2);
     box-shadow: none;
     padding: var(--laca-space-2) var(--laca-space-3);
     box-sizing: border-box;
     transition: var(--laca-transition);
 
-    &:focus {
+    &:hover:not(:disabled) {
+      border-color: var(--laca-input-border);
+    }
+
+    &:focus,
+    &:focus-visible {
       border-color: var(--laca-accent);
       outline: 2px solid var(--laca-focus-ring);
       outline-offset: 2px;
       box-shadow: none;
+    }
+
+    &:disabled {
+      background-color: var(--laca-bg-muted);
+      color: var(--laca-fg-subtle);
+      cursor: not-allowed;
     }
   }
 }
