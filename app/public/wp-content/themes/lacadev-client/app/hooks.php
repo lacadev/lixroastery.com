@@ -86,14 +86,7 @@ add_action('init', function () {
     }
 });
 
-/**
- * Preview trang bố cục Dashboard GSC + GA4.
- */
-add_action('init', function () {
-    if (is_admin() && class_exists('\App\Settings\LacaAdmin\DashboardPreviewPage')) {
-        (new \App\Settings\LacaAdmin\DashboardPreviewPage())->register();
-    }
-});
+
 
 
 
