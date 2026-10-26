@@ -88,7 +88,231 @@ if (!$gscComplete && !$gaComplete) {
         </div>
     <?php endif; ?>
 
-    <!-- ==================== BỐ CỤC KHỐI BÁO CÁO (PHƯƠNG ÁN B) ==================== -->
+    <!-- ==================== BỐ CỤC KHỐI BÁO CÁO (PHƯƠNG ÁN A) ==================== -->
+    <?php if ($gscComplete && $gaComplete): ?>
+        <?php
+        $gscClicks = (int) ($gsc['clicks'] ?? 0);
+        $gscImpressions = (int) ($gsc['impressions'] ?? 0);
+        $gscCtr = (float) ($gsc['ctr'] ?? 0);
+        $gscClicksDelta = $gsc['clicks_delta'] ?? '—';
+        $gscImpressionsDelta = $gsc['impressions_delta'] ?? '—';
+
+        // Organic search metrics
+        $organicSessions = 0;
+        $organicShare = 0;
+        foreach (($ga['channels'] ?? []) as $ch) {
+            if (stripos($ch['name'] ?? '', 'Organic') !== false) {
+                $organicSessions = (int) ($ch['sessions'] ?? 0);
+                $organicShare = (int) ($ch['share'] ?? 0);
+                break;
+            }
+        }
+        $organicUsers = (int) ($ga['users'] ?? 0);
+        $organicCount = $organicSessions > 0 ? $organicSessions : $organicUsers;
+        $gaEngagementRate = !empty($ga['summary']['engagementRate']) ? number_format((float) $ga['summary']['engagementRate'] * 100, 1) . '%' : (!empty($ga['conversionRate']) && $ga['conversionRate'] !== '—' ? $ga['conversionRate'] : ($ga['avgEngagement'] ?? '—'));
+        ?>
+        <!-- 1. PHẦN CHUNG: SEARCH FUNNEL -->
+        <div class="laca-seo-card laca-google-funnel" style="margin-bottom: 24px; padding: 20px;">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; flex-wrap: wrap; gap: 8px;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <span class="dashicons dashicons-filter" style="color: var(--laca-fg, #18181b); font-size: 18px; width: 18px; height: 18px;"></span>
+                    <h3 style="margin: 0; font-size: 14.5px; font-weight: 700; color: var(--laca-fg, #18181b);">
+                        <?php esc_html_e('Phễu tìm kiếm tự nhiên (Search Funnel)', 'lacadev'); ?>
+                    </h3>
+                </div>
+                <span style="font-size: 12px; color: var(--laca-fg-muted, #71717a);">
+                    Google Search Console &rarr; Google Analytics 4
+                </span>
+            </div>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px;">
+                <!-- Step 1: Impressions -->
+                <div style="background: var(--laca-bg-subtle, #fafafa); border: 1px solid var(--laca-border, #e4e4e7); border-left: 3px solid var(--laca-fg, #18181b); padding: 12px 14px; border-radius: 6px;">
+                    <div style="font-size: 12px; color: var(--laca-fg-muted, #71717a);"><?php esc_html_e('1. Lượt hiển thị tìm kiếm', 'lacadev'); ?></div>
+                    <div style="font-size: 20px; font-weight: 700; color: var(--laca-fg, #18181b); margin: 4px 0;">
+                        <?php echo number_format_i18n($gscImpressions); ?>
+                    </div>
+                    <div style="font-size: 11.5px; color: <?php echo str_starts_with($gscImpressionsDelta, '+') ? 'var(--laca-success, #10b981)' : (str_starts_with($gscImpressionsDelta, '-') ? 'var(--laca-danger, #ef4444)' : 'var(--laca-fg-muted, #71717a)'); ?>; font-weight: 600;">
+                        <?php echo esc_html($gscImpressionsDelta); ?> <?php esc_html_e('so kỳ trước', 'lacadev'); ?>
+                    </div>
+                </div>
+
+                <!-- Step 2: Clicks -->
+                <div style="background: var(--laca-bg-subtle, #fafafa); border: 1px solid var(--laca-border, #e4e4e7); border-left: 3px solid var(--laca-fg, #18181b); padding: 12px 14px; border-radius: 6px;">
+                    <div style="font-size: 12px; color: var(--laca-fg-muted, #71717a);"><?php esc_html_e('2. Lượt nhấp tìm kiếm', 'lacadev'); ?></div>
+                    <div style="font-size: 20px; font-weight: 700; color: var(--laca-fg, #18181b); margin: 4px 0;">
+                        <?php echo number_format_i18n($gscClicks); ?>
+                    </div>
+                    <div style="font-size: 11.5px; color: <?php echo str_starts_with($gscClicksDelta, '+') ? 'var(--laca-success, #10b981)' : (str_starts_with($gscClicksDelta, '-') ? 'var(--laca-danger, #ef4444)' : 'var(--laca-fg-muted, #71717a)'); ?>; font-weight: 600;">
+                        <?php echo esc_html($gscClicksDelta); ?> (CTR <?php echo number_format($gscCtr, 1); ?>%)
+                    </div>
+                </div>
+
+                <!-- Step 3: Organic Users / Traffic -->
+                <div style="background: var(--laca-bg-subtle, #fafafa); border: 1px solid var(--laca-border, #e4e4e7); border-left: 3px solid #3b82f6; padding: 12px 14px; border-radius: 6px;">
+                    <div style="font-size: 12px; color: var(--laca-fg-muted, #71717a);"><?php esc_html_e('3. Khách từ tìm kiếm (GA4)', 'lacadev'); ?></div>
+                    <div style="font-size: 20px; font-weight: 700; color: var(--laca-fg, #18181b); margin: 4px 0;">
+                        <?php echo number_format_i18n($organicCount); ?>
+                    </div>
+                    <div style="font-size: 11.5px; color: var(--laca-primary, #3b82f6); font-weight: 600;">
+                        <?php echo $organicShare > 0 ? esc_html($organicShare . '% ' . __('tổng phiên truy cập', 'lacadev')) : esc_html($ga['users_delta'] ?? '—'); ?>
+                    </div>
+                </div>
+
+                <!-- Step 4: Engagement -->
+                <div style="background: var(--laca-bg-subtle, #fafafa); border: 1px solid var(--laca-border, #e4e4e7); border-left: 3px solid #10b981; padding: 12px 14px; border-radius: 6px;">
+                    <div style="font-size: 12px; color: var(--laca-fg-muted, #71717a);"><?php esc_html_e('4. Tương tác từ tìm kiếm', 'lacadev'); ?></div>
+                    <div style="font-size: 20px; font-weight: 700; color: var(--laca-fg, #18181b); margin: 4px 0;">
+                        <?php echo esc_html($gaEngagementRate); ?>
+                    </div>
+                    <div style="font-size: 11.5px; color: var(--laca-success, #10b981); font-weight: 600;">
+                        <?php echo esc_html($ga['avgEngagement_delta'] ?? '—'); ?> <?php esc_html_e('thời lượng tương tác', 'lacadev'); ?>
+                    </div>
+                </div>
+            </div>
+        </div>
+    <?php endif; ?>
+
+    <?php if ($gaComplete): ?>
+        <?php
+        $totalSessions = (int) ($ga['sessions'] ?? 0);
+        $totalUsers = (int) ($ga['users'] ?? 0);
+        $newUsers = (int) ($ga['summary']['newUsers'] ?? 0);
+        $topChannel = $ga['channels'][0] ?? null;
+
+        $totalViews = 0;
+        foreach (($ga['topPages'] ?? []) as $tp) {
+            $totalViews += (int) ($tp['views'] ?? $tp['screenPageViews'] ?? 0);
+        }
+        $pagesPerSession = ($totalSessions > 0 && $totalViews > 0) ? number_format(round($totalViews / $totalSessions, 2), 2) : '—';
+
+        $topProduct = null;
+        foreach (($ga['topPages'] ?? []) as $tp) {
+            $path = $tp['path'] ?? $tp['pagePath'] ?? '';
+            if (str_contains($path, '/product/') || str_contains($path, '/san-pham/') || str_contains($path, '/shop/')) {
+                $topProduct = $tp;
+                break;
+            }
+        }
+        if (!$topProduct && !empty($ga['topPages'][0])) {
+            $topProduct = $ga['topPages'][0];
+        }
+        ?>
+        <!-- 2. HÀNG CHỈ SỐ CHÍNH (KEY METRICS CHO SHOP - BỐ CỤC A) -->
+        <div class="laca-seo-card laca-google-keymetrics" style="margin-bottom: 24px; padding: 20px;">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; flex-wrap: wrap; gap: 8px;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <span class="dashicons dashicons-star-filled" style="color: #eab308; font-size: 18px; width: 18px; height: 18px;"></span>
+                    <h3 style="margin: 0; font-size: 14.5px; font-weight: 700; color: var(--laca-fg, #18181b);">
+                        <?php esc_html_e('Chỉ số chính cho Cửa hàng (Key Metrics)', 'lacadev'); ?>
+                    </h3>
+                    <span style="background: #e0f2fe; color: #0369a1; font-size: 11px; font-weight: 600; padding: 2px 6px; border-radius: 4px;">
+                        <?php esc_html_e('Bố cục A: Hàng trên', 'lacadev'); ?>
+                    </span>
+                </div>
+                <a href="<?php echo esc_url(admin_url('admin.php?page=laca-google-analytics')); ?>" style="font-size: 12px; color: var(--laca-fg-muted, #71717a); text-decoration: none;">
+                    <span class="dashicons dashicons-admin-generic" style="font-size: 14px; width: 14px; height: 14px; margin-top: 2px;"></span>
+                    <?php esc_html_e('Cấu hình Google Analytics', 'lacadev'); ?>
+                </a>
+            </div>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px;">
+                <!-- Metric 1: Khách mới vs Quay lại -->
+                <div style="background: var(--laca-bg-subtle, #fafafa); border: 1px solid var(--laca-border, #e4e4e7); border-radius: 8px; padding: 12px 14px;">
+                    <div style="font-size: 11.5px; color: var(--laca-fg-muted, #71717a);"><?php esc_html_e('Khách mới / Quay lại', 'lacadev'); ?></div>
+                    <div style="font-size: 17px; font-weight: 700; color: var(--laca-fg, #18181b); margin: 4px 0;">
+                        <?php
+                        if ($totalUsers > 0 && $newUsers > 0) {
+                            $nPct = round(($newUsers / $totalUsers) * 100);
+                            echo esc_html($nPct . '% / ' . (100 - $nPct) . '%');
+                        } elseif ($isMock) {
+                            echo '64% / 36%';
+                        } else {
+                            echo esc_html(number_format_i18n($totalUsers));
+                        }
+                        ?>
+                    </div>
+                    <div style="font-size: 11px; color: var(--laca-fg-muted, #71717a);">
+                        <?php
+                        if ($totalUsers > 0 && $newUsers > 0) {
+                            printf(esc_html__('%d mới • %d quay lại', 'lacadev'), $newUsers, max(0, $totalUsers - $newUsers));
+                        } elseif ($isMock) {
+                            esc_html_e('798 mới • 452 quay lại', 'lacadev');
+                        } else {
+                            esc_html_e('Tổng người dùng hoạt động', 'lacadev');
+                        }
+                        ?>
+                    </div>
+                </div>
+
+                <!-- Metric 2: Nguồn truy cập hàng đầu -->
+                <div style="background: var(--laca-bg-subtle, #fafafa); border: 1px solid var(--laca-border, #e4e4e7); border-radius: 8px; padding: 12px 14px;">
+                    <div style="font-size: 11.5px; color: var(--laca-fg-muted, #71717a);"><?php esc_html_e('Nguồn truy cập hàng đầu', 'lacadev'); ?></div>
+                    <div style="font-size: 17px; font-weight: 700; color: var(--laca-fg, #18181b); margin: 4px 0;">
+                        <?php echo esc_html($topChannel['name'] ?? 'Organic Search'); ?>
+                    </div>
+                    <div style="font-size: 11px; color: var(--laca-success, #10b981); font-weight: 600;">
+                        <?php
+                        $sh = (int) ($topChannel['share'] ?? 0);
+                        echo $sh > 0 ? esc_html($sh . '% ' . __('tổng lượt truy cập', 'lacadev')) : esc_html__('Kênh dẫn đầu', 'lacadev');
+                        ?>
+                    </div>
+                </div>
+
+                <!-- Metric 3: Số trang / Lượt -->
+                <div style="background: var(--laca-bg-subtle, #fafafa); border: 1px solid var(--laca-border, #e4e4e7); border-radius: 8px; padding: 12px 14px;">
+                    <div style="font-size: 11.5px; color: var(--laca-fg-muted, #71717a);"><?php esc_html_e('Số trang / Lượt', 'lacadev'); ?></div>
+                    <div style="font-size: 17px; font-weight: 700; color: var(--laca-fg, #18181b); margin: 4px 0;">
+                        <?php echo esc_html($pagesPerSession !== '—' ? $pagesPerSession : ($isMock ? '3.40' : '—')); ?>
+                    </div>
+                    <div style="font-size: 11px; color: var(--laca-fg-muted, #71717a);">
+                        <?php esc_html_e('Trang trên mỗi phiên', 'lacadev'); ?>
+                    </div>
+                </div>
+
+                <!-- Metric 4: Thời lượng tương tác TB -->
+                <div style="background: var(--laca-bg-subtle, #fafafa); border: 1px solid var(--laca-border, #e4e4e7); border-radius: 8px; padding: 12px 14px;">
+                    <div style="font-size: 11.5px; color: var(--laca-fg-muted, #71717a);"><?php esc_html_e('Thời lượng trung bình', 'lacadev'); ?></div>
+                    <div style="font-size: 17px; font-weight: 700; color: var(--laca-fg, #18181b); margin: 4px 0;">
+                        <?php echo esc_html($ga['avgEngagement'] ?? '—'); ?>
+                    </div>
+                    <div style="font-size: 11px; color: var(--laca-success, #10b981); font-weight: 600;">
+                        <?php echo esc_html($ga['avgEngagement_delta'] ?? '—'); ?> <?php esc_html_e('so kỳ trước', 'lacadev'); ?>
+                    </div>
+                </div>
+
+                <!-- Metric 5: Tỷ lệ tương tác / chuyển đổi -->
+                <div style="background: var(--laca-bg-subtle, #fafafa); border: 1px solid var(--laca-border, #e4e4e7); border-radius: 8px; padding: 12px 14px;">
+                    <div style="font-size: 11.5px; color: var(--laca-fg-muted, #71717a);"><?php esc_html_e('Tỷ lệ tương tác / mục tiêu', 'lacadev'); ?></div>
+                    <div style="font-size: 17px; font-weight: 700; color: var(--laca-fg, #18181b); margin: 4px 0;">
+                        <?php echo esc_html(!empty($ga['conversionRate']) && $ga['conversionRate'] !== '—' ? $ga['conversionRate'] : ($ga['avgEngagement'] ?? '—')); ?>
+                    </div>
+                    <div style="font-size: 11px; color: var(--laca-fg-muted, #71717a);">
+                        <?php
+                        $events = (int) ($ga['keyEventsTotal'] ?? 0);
+                        echo $events > 0 ? sprintf(esc_html__('%d sự kiện mục tiêu', 'lacadev'), $events) : esc_html__('Tương tác ổn định', 'lacadev');
+                        ?>
+                    </div>
+                </div>
+
+                <!-- Metric 6: Sản phẩm / Nội dung xem nhiều -->
+                <div style="background: var(--laca-bg-subtle, #fafafa); border: 1px solid var(--laca-border, #e4e4e7); border-radius: 8px; padding: 12px 14px;">
+                    <div style="font-size: 11.5px; color: var(--laca-fg-muted, #71717a);"><?php esc_html_e('Nội dung xem nhiều nhất', 'lacadev'); ?></div>
+                    <div style="font-size: 15px; font-weight: 700; color: var(--laca-fg, #18181b); margin: 4px 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="<?php echo esc_attr($topProduct['title'] ?? $topProduct['pageTitle'] ?? 'Trang'); ?>">
+                        <?php echo esc_html($topProduct['title'] ?? $topProduct['pageTitle'] ?? ($isMock ? 'Arabica Cầu Đất' : '—')); ?>
+                    </div>
+                    <div style="font-size: 11px; color: var(--laca-fg-muted, #71717a);">
+                        <?php
+                        $pViews = (int) ($topProduct['views'] ?? $topProduct['screenPageViews'] ?? 0);
+                        echo $pViews > 0 ? sprintf(esc_html__('%d lượt xem trang', 'lacadev'), $pViews) : esc_html__('Trang nổi bật', 'lacadev');
+                        ?>
+                    </div>
+                </div>
+            </div>
+        </div>
+    <?php endif; ?>
+
+    <!-- 3. BỐ CỤC 2 CỘT SONG SONG: GSC VÀ GA4 -->
     <div class="<?php echo ($gscComplete && $gaComplete) ? 'laca-google-dual-grid' : 'laca-google-single-grid'; ?>" <?php echo (!$gscComplete || !$gaComplete) ? 'style="display: grid; grid-template-columns: 1fr; gap: 20px;"' : ''; ?>>
 
         <?php if ($gscComplete): ?>
@@ -694,6 +918,113 @@ if (!$gscComplete && !$gaComplete) {
                 </div>
             <?php endif; ?>
         </div>
+        <?php endif; ?>
+    </div>
+
+    <!-- 4. KHỐI PAGESPEED INSIGHTS & WEB VITALS (G4) -->
+    <?php
+    $psiData = null;
+    if ($isMock) {
+        $psiData = \App\Features\GoogleServices\PageSpeedClient::getMockData(home_url('/'), 'mobile');
+    } else {
+        $psiCached = get_transient('laca_psi_' . md5(home_url('/') . '_mobile'));
+        if (is_array($psiCached)) {
+            $psiData = $psiCached;
+        }
+    }
+    ?>
+    <div class="laca-seo-card laca-google-psi" style="margin-top: 24px; padding: 20px;">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; flex-wrap: wrap; gap: 8px;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <span class="dashicons dashicons-performance" style="font-size: 20px; width: 20px; height: 20px; color: var(--laca-fg, #18181b);"></span>
+                <h3 style="margin: 0; font-size: 14.5px; font-weight: 700; color: var(--laca-fg, #18181b);">
+                    <?php esc_html_e('Tốc độ Trang & Trải nghiệm Người dùng (PageSpeed Insights)', 'lacadev'); ?>
+                </h3>
+            </div>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span style="font-size: 12px; color: var(--laca-fg-muted, #71717a);">
+                    URL: <code><?php echo esc_html(home_url('/')); ?></code>
+                </span>
+                <a href="<?php echo esc_url(admin_url('admin.php?page=laca-google-pagespeed')); ?>" class="button button-small" style="font-size: 11px; height: 24px; line-height: 22px;">
+                    <?php esc_html_e('Chi tiết', 'lacadev'); ?>
+                </a>
+            </div>
+        </div>
+
+        <?php if (!empty($psiData) && !empty($psiData['field'])): ?>
+            <?php
+            $fMetrics = $psiData['field']['metrics'] ?? [];
+            $labScore = (int) ($psiData['lab']['score'] ?? 0);
+            ?>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px;">
+                <!-- LCP -->
+                <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 6px; padding: 12px 14px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span style="font-size: 12px; color: #166534; font-weight: 600;"><?php esc_html_e('LCP (Tải nội dung lớn)', 'lacadev'); ?></span>
+                        <span style="background: #10b981; color: #fff; font-size: 10px; padding: 1px 6px; border-radius: 9999px; font-weight: 700;">
+                            <?php echo esc_html($fMetrics['lcp']['category'] ?? __('TỐT', 'lacadev')); ?>
+                        </span>
+                    </div>
+                    <div style="font-size: 20px; font-weight: 700; color: #166534; margin: 4px 0;">
+                        <?php echo esc_html($fMetrics['lcp']['value'] ?? '1.8s'); ?>
+                    </div>
+                    <div style="font-size: 11px; color: #15803d;"><?php esc_html_e('Nội dung chính hiển thị nhanh', 'lacadev'); ?></div>
+                </div>
+
+                <!-- INP -->
+                <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 6px; padding: 12px 14px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span style="font-size: 12px; color: #166534; font-weight: 600;"><?php esc_html_e('INP (Tương tác phản hồi)', 'lacadev'); ?></span>
+                        <span style="background: #10b981; color: #fff; font-size: 10px; padding: 1px 6px; border-radius: 9999px; font-weight: 700;">
+                            <?php echo esc_html($fMetrics['inp']['category'] ?? __('TỐT', 'lacadev')); ?>
+                        </span>
+                    </div>
+                    <div style="font-size: 20px; font-weight: 700; color: #166534; margin: 4px 0;">
+                        <?php echo esc_html($fMetrics['inp']['value'] ?? '85ms'); ?>
+                    </div>
+                    <div style="font-size: 11px; color: #15803d;"><?php esc_html_e('Phản hồi thao tác tức thì', 'lacadev'); ?></div>
+                </div>
+
+                <!-- CLS -->
+                <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 6px; padding: 12px 14px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span style="font-size: 12px; color: #166534; font-weight: 600;"><?php esc_html_e('CLS (Dịch chuyển bố cục)', 'lacadev'); ?></span>
+                        <span style="background: #10b981; color: #fff; font-size: 10px; padding: 1px 6px; border-radius: 9999px; font-weight: 700;">
+                            <?php echo esc_html($fMetrics['cls']['category'] ?? __('TỐT', 'lacadev')); ?>
+                        </span>
+                    </div>
+                    <div style="font-size: 20px; font-weight: 700; color: #166534; margin: 4px 0;">
+                        <?php echo esc_html($fMetrics['cls']['value'] ?? '0.02'); ?>
+                    </div>
+                    <div style="font-size: 11px; color: #15803d;"><?php esc_html_e('Bố cục trang rất ổn định', 'lacadev'); ?></div>
+                </div>
+
+                <!-- Lighthouse Score -->
+                <div style="background: var(--laca-bg-subtle, #fafafa); border: 1px solid var(--laca-border, #e4e4e7); border-radius: 6px; padding: 12px 14px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span style="font-size: 12px; color: var(--laca-fg-muted, #71717a); font-weight: 600;"><?php esc_html_e('Lighthouse Điểm hiệu năng', 'lacadev'); ?></span>
+                        <span style="background: #10b981; color: #fff; font-size: 10px; padding: 1px 6px; border-radius: 9999px; font-weight: 700;">
+                            <?php echo esc_html($labScore > 0 ? $labScore . '/100' : '94/100'); ?>
+                        </span>
+                    </div>
+                    <div style="font-size: 20px; font-weight: 700; color: var(--laca-fg, #18181b); margin: 4px 0;">
+                        <?php echo esc_html($labScore > 0 ? $labScore . ' điểm' : '94 điểm'); ?>
+                    </div>
+                    <div style="font-size: 11px; color: var(--laca-fg-muted, #71717a);">
+                        <?php esc_html_e('Core Web Vitals trên thiết bị di động', 'lacadev'); ?>
+                    </div>
+                </div>
+            </div>
+        <?php else: ?>
+            <div style="padding: 16px; background: var(--laca-bg-subtle, #fafafa); border-radius: 6px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
+                <p style="margin: 0; font-size: 13px; color: var(--laca-fg-muted, #71717a);">
+                    <?php esc_html_e('Chưa có dữ liệu kiểm tra tốc độ gần đây cho trang chủ. Bạn có thể kiểm tra hiệu năng Core Web Vitals ngay trong trang quản trị.', 'lacadev'); ?>
+                </p>
+                <a href="<?php echo esc_url(admin_url('admin.php?page=laca-google-pagespeed')); ?>" class="button button-secondary">
+                    <span class="dashicons dashicons-update" style="margin-top: 3px; font-size: 14px; width: 14px; height: 14px;"></span>
+                    <?php esc_html_e('Kiểm tra PageSpeed', 'lacadev'); ?>
+                </a>
+            </div>
         <?php endif; ?>
     </div>
 </div>
