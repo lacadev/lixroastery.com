@@ -23,7 +23,6 @@ class GoogleServicesPage
 {
     public const PAGE_ANALYTICS = 'laca-google-analytics';
     public const PAGE_SEARCH_CONSOLE = 'laca-google-search-console';
-    public const PAGE_PREVIEW = 'laca-google-report-preview';
 
     public function register(): void
     {
@@ -52,21 +51,12 @@ class GoogleServicesPage
             self::PAGE_SEARCH_CONSOLE,
             [$this, 'renderSearchConsolePage']
         );
-
-        add_submenu_page(
-            null,
-            __('Xem trước Bố cục Báo cáo Google (Site Kit)', 'lacadev'),
-            __('Xem trước Báo cáo', 'lacadev'),
-            'manage_options',
-            self::PAGE_PREVIEW,
-            [$this, 'renderPreviewPage']
-        );
     }
 
     public function enqueueAssets(): void
     {
         $currentPage = sanitize_key(wp_unslash($_GET['page'] ?? ''));
-        if ($currentPage !== self::PAGE_ANALYTICS && $currentPage !== self::PAGE_SEARCH_CONSOLE && $currentPage !== self::PAGE_PREVIEW) {
+        if ($currentPage !== self::PAGE_ANALYTICS && $currentPage !== self::PAGE_SEARCH_CONSOLE) {
             return;
         }
 
@@ -1290,13 +1280,5 @@ class GoogleServicesPage
             </div>
         </div>
         <?php
-    }
-
-    public function renderPreviewPage(): void
-    {
-        $previewFile = dirname(__DIR__, 2) . '/Features/GoogleServices/views/report-preview.php';
-        if (file_exists($previewFile)) {
-            require $previewFile;
-        }
     }
 }

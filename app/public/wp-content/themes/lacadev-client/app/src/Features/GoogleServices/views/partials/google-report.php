@@ -88,7 +88,7 @@ if (!$gscComplete && !$gaComplete) {
         </div>
     <?php endif; ?>
 
-    <!-- ==================== BỐ CỤC KHỐI BÁO CÁO (PHƯƠNG ÁN A) ==================== -->
+    <!-- ==================== BỐ CỤC BÁO CÁO GOOGLE SERVICES ==================== -->
     <?php if ($gscComplete && $gaComplete): ?>
         <?php
         $gscClicks = (int) ($gsc['clicks'] ?? 0);
@@ -198,7 +198,7 @@ if (!$gscComplete && !$gaComplete) {
             $topProduct = $ga['topPages'][0];
         }
         ?>
-        <!-- 2. HÀNG CHỈ SỐ CHÍNH (KEY METRICS CHO SHOP - BỐ CỤC A) -->
+        <!-- 2. HÀNG CHỈ SỐ CHÍNH (KEY METRICS CHO CỬA HÀNG) -->
         <div class="laca-seo-card laca-google-keymetrics" style="margin-bottom: 24px; padding: 20px;">
             <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; flex-wrap: wrap; gap: 8px;">
                 <div style="display: flex; align-items: center; gap: 8px;">
@@ -206,9 +206,6 @@ if (!$gscComplete && !$gaComplete) {
                     <h3 style="margin: 0; font-size: 14.5px; font-weight: 700; color: var(--laca-fg, #18181b);">
                         <?php esc_html_e('Chỉ số chính cho Cửa hàng (Key Metrics)', 'lacadev'); ?>
                     </h3>
-                    <span style="background: #e0f2fe; color: #0369a1; font-size: 11px; font-weight: 600; padding: 2px 6px; border-radius: 4px;">
-                        <?php esc_html_e('Bố cục A: Hàng trên', 'lacadev'); ?>
-                    </span>
                 </div>
                 <a href="<?php echo esc_url(admin_url('admin.php?page=laca-google-analytics')); ?>" style="font-size: 12px; color: var(--laca-fg-muted, #71717a); text-decoration: none;">
                     <span class="dashicons dashicons-admin-generic" style="font-size: 14px; width: 14px; height: 14px; margin-top: 2px;"></span>
