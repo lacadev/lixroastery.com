@@ -279,6 +279,9 @@ class GoogleServicesPage
             $gtmId         = sanitize_text_field(wp_unslash($_POST['gtm_container_id'] ?? ''));
             $anonymize     = !empty($_POST['ga_anonymize_ip']) ? 'on' : 'off';
             $excludeAdmin  = !empty($_POST['ga_exclude_loggedin']) ? 'on' : 'off';
+            $excludeRole   = sanitize_key(wp_unslash($_POST['ga_exclude_role'] ?? 'admin'));
+            $omit404       = !empty($_POST['ga_omit_on_404']) ? 'on' : 'off';
+            $ecommerce     = !empty($_POST['ga_ecommerce_events']) ? 'on' : 'off';
             $goalEvents    = sanitize_textarea_field(wp_unslash($_POST['ga4_goal_events'] ?? ''));
 
             GoogleServices::updateSettings([
@@ -286,10 +289,27 @@ class GoogleServicesPage
                 'gtm_container_id'    => $gtmId,
                 'ga_anonymize_ip'     => $anonymize,
                 'ga_exclude_loggedin' => $excludeAdmin,
+                'ga_exclude_role'     => $excludeRole,
+                'ga_omit_on_404'      => $omit404,
+                'ga_ecommerce_events' => $ecommerce,
                 'ga4_goal_events'     => $goalEvents,
             ]);
 
             wp_safe_redirect(add_query_arg(['updated' => '1'], admin_url('admin.php?page=' . self::PAGE_ANALYTICS)));
+            exit;
+        }
+
+        // 6b. Check duplicate tags on website
+        if (isset($_POST['laca_check_duplicate_tags'])) {
+            check_admin_referer('laca_check_duplicate_tags_action');
+            if (!current_user_can('manage_options')) {
+                wp_die(__('Bạn không có quyền thực hiện thao tác này.', 'lacadev'));
+            }
+
+            $res = Tracking::checkDuplicateTags();
+            set_transient('laca_tag_check_result', $res, 600);
+
+            wp_safe_redirect(add_query_arg(['tag_checked' => '1'], admin_url('admin.php?page=' . self::PAGE_ANALYTICS)));
             exit;
         }
 
@@ -451,6 +471,10 @@ class GoogleServicesPage
         $gtmId          = (string) ($options['gtm_container_id'] ?? '');
         $anonymize      = ($options['ga_anonymize_ip'] ?? 'on') === 'on';
         $excludeAdmin   = ($options['ga_exclude_loggedin'] ?? 'on') === 'on';
+        $excludeRole    = (string) ($options['ga_exclude_role'] ?? 'admin');
+        $omit404        = ($options['ga_omit_on_404'] ?? 'on') === 'on';
+        $ecommerce      = ($options['ga_ecommerce_events'] ?? 'off') === 'on';
+        $tagCheck       = get_transient('laca_tag_check_result');
         $goalEvents     = (string) ($options['ga4_goal_events'] ?? '');
 
         // Auto-discover property and load stream info if connected with GA scope
@@ -540,6 +564,49 @@ class GoogleServicesPage
                     </p>
                 </div>
             <?php endif; ?>
+
+            <!-- Card: Phát hiện tag trùng và mã ngoại lai -->
+            <div class="laca-seo-card" style="margin-bottom: 24px;">
+                <div class="laca-seo-card__header laca-seo-header-flex">
+                    <div>
+                        <h2 class="laca-seo-card__title"><?php esc_html_e('Kiểm tra mã Google trên website (Tag Scanner)', 'lacadev'); ?></h2>
+                        <p class="laca-seo-card__subtitle"><?php esc_html_e('Quét toàn bộ mã nguồn trang chủ để phát hiện mã trùng lặp, mã ngoại lai từ plugin khác hoặc mã sót trong theme.', 'lacadev'); ?></p>
+                    </div>
+                    <form method="post" style="margin: 0;">
+                        <?php wp_nonce_field('laca_check_duplicate_tags_action'); ?>
+                        <button type="submit" name="laca_check_duplicate_tags" class="button button-secondary">
+                            <span class="dashicons dashicons-search" style="margin-top: 3px;"></span> <?php esc_html_e('Kiểm tra mã trên website', 'lacadev'); ?>
+                        </button>
+                    </form>
+                </div>
+                <?php if (!empty($tagCheck) && is_array($tagCheck)): ?>
+                    <div style="padding: 16px 20px; border-top: 1px solid var(--laca-border, #e4e4e7); background: <?php echo !empty($tagCheck['hasWarnings']) ? 'var(--laca-warning-bg, #fffbeb)' : 'var(--laca-success-bg, #f0fdf4)'; ?>;">
+                        <div style="font-weight: 600; margin-bottom: 6px; color: <?php echo !empty($tagCheck['hasWarnings']) ? '#92400e' : '#166534'; ?>;">
+                            <?php echo !empty($tagCheck['hasWarnings']) ? '⚠️ ' . esc_html($tagCheck['message']) : '✓ ' . esc_html($tagCheck['message']); ?>
+                        </div>
+                        <div style="font-size: 13px; color: var(--laca-fg, #18181b);">
+                            <strong><?php esc_html_e('Các mã tìm thấy:', 'lacadev'); ?></strong>
+                            <?php if (!empty($tagCheck['foundIds'])): ?>
+                                <code><?php echo esc_html(implode(', ', $tagCheck['foundIds'])); ?></code>
+                            <?php else: ?>
+                                <em><?php esc_html_e('Không tìm thấy mã nào.', 'lacadev'); ?></em>
+                            <?php endif; ?>
+                            <?php if (!empty($tagCheck['externalIds'])): ?>
+                                <div style="margin-top: 6px; color: #dc2626;">
+                                    <strong><?php esc_html_e('Mã ngoại lai (chưa khai báo trong cấu hình):', 'lacadev'); ?></strong>
+                                    <code><?php echo esc_html(implode(', ', $tagCheck['externalIds'])); ?></code>
+                                </div>
+                            <?php endif; ?>
+                            <?php if (!empty($tagCheck['duplicateIds'])): ?>
+                                <div style="margin-top: 6px; color: #dc2626;">
+                                    <strong><?php esc_html_e('Mã bị chèn lặp lại:', 'lacadev'); ?></strong>
+                                    <code><?php echo esc_html(implode(', ', $tagCheck['duplicateIds'])); ?></code>
+                                </div>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                <?php endif; ?>
+            </div>
 
             <!-- Hướng dẫn Google Analytics 4 (Google Cloud & GA) -->
             <?php GuideContent::renderForAnalytics(home_url()); ?>
@@ -729,11 +796,11 @@ class GoogleServicesPage
                             </div>
                         </div>
 
-                        <!-- Row 4: Exclude Logged-in Admins -->
+                        <!-- Row 4: Exclude Logged-in Users -->
                         <div class="laca-seo-field-row">
                             <div class="laca-seo-field-row__label-col">
                                 <label for="ga_exclude_loggedin" style="font-weight: 600; color: var(--laca-fg);">
-                                    <?php esc_html_e('Bỏ qua quản trị viên đăng nhập', 'lacadev'); ?>
+                                    <?php esc_html_e('Bỏ qua người dùng đăng nhập', 'lacadev'); ?>
                                 </label>
                             </div>
                             <div class="laca-seo-field-row__control-col">
@@ -742,13 +809,61 @@ class GoogleServicesPage
                                     <input type="checkbox" role="switch" name="ga_exclude_loggedin" id="ga_exclude_loggedin" value="on" <?php checked($excludeAdmin); ?>>
                                     <span class="laca-seo-switch__slider"></span>
                                 </label>
+                                <div style="margin-top: 10px; display: flex; gap: 16px;">
+                                    <label style="display: inline-flex; align-items: center; gap: 6px; font-size: 13px;">
+                                        <input type="radio" name="ga_exclude_role" value="admin" <?php checked($excludeRole, 'admin'); ?>>
+                                        <?php esc_html_e('Chỉ Quản trị viên (Administrator, mặc định)', 'lacadev'); ?>
+                                    </label>
+                                    <label style="display: inline-flex; align-items: center; gap: 6px; font-size: 13px;">
+                                        <input type="radio" name="ga_exclude_role" value="all" <?php checked($excludeRole, 'all'); ?>>
+                                        <?php esc_html_e('Mọi người dùng đã đăng nhập', 'lacadev'); ?>
+                                    </label>
+                                </div>
                                 <p class="description laca-seo-field-desc">
-                                    <?php esc_html_e('Không theo dõi và không gửi dữ liệu khi người dùng có quyền quản trị (Administrator) đang đăng nhập website.', 'lacadev'); ?>
+                                    <?php esc_html_e('Chuẩn Site Kit: Tự động gắn window[\'ga-disable-<ID>\'] = true để không ghi nhận truy cập mà vẫn giữ nguyên thẻ script cho các công cụ xác minh.', 'lacadev'); ?>
                                 </p>
                             </div>
                         </div>
 
-                        <!-- Row 5: Key Events / Goal Events -->
+                        <!-- Row 5: Tag guard 404 -->
+                        <div class="laca-seo-field-row">
+                            <div class="laca-seo-field-row__label-col">
+                                <label for="ga_omit_on_404" style="font-weight: 600; color: var(--laca-fg);">
+                                    <?php esc_html_e('Bảo vệ trang 404 (Tag Guard)', 'lacadev'); ?>
+                                </label>
+                            </div>
+                            <div class="laca-seo-field-row__control-col">
+                                <input type="hidden" name="ga_omit_on_404" value="off">
+                                <label class="laca-seo-switch">
+                                    <input type="checkbox" role="switch" name="ga_omit_on_404" id="ga_omit_on_404" value="on" <?php checked($omit404); ?>>
+                                    <span class="laca-seo-switch__slider"></span>
+                                </label>
+                                <p class="description laca-seo-field-desc">
+                                    <?php esc_html_e('Không xuất mã đo lường ở các trang lỗi 404 để tránh làm loãng dữ liệu phiên truy cập và giảm thiểu request vô ích.', 'lacadev'); ?>
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Row 6: WooCommerce Ecommerce Events -->
+                        <div class="laca-seo-field-row">
+                            <div class="laca-seo-field-row__label-col">
+                                <label for="ga_ecommerce_events" style="font-weight: 600; color: var(--laca-fg);">
+                                    <?php esc_html_e('Sự kiện WooCommerce', 'lacadev'); ?>
+                                </label>
+                            </div>
+                            <div class="laca-seo-field-row__control-col">
+                                <input type="hidden" name="ga_ecommerce_events" value="off">
+                                <label class="laca-seo-switch">
+                                    <input type="checkbox" role="switch" name="ga_ecommerce_events" id="ga_ecommerce_events" value="on" <?php checked($ecommerce); ?>>
+                                    <span class="laca-seo-switch__slider"></span>
+                                </label>
+                                <p class="description laca-seo-field-desc">
+                                    <?php esc_html_e('Tự động gửi sự kiện thêm vào giỏ hàng (add_to_cart) và mua hàng thành công (purchase) với cơ chế chống gửi lặp khi tải lại trang cảm ơn.', 'lacadev'); ?>
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Row 7: Key Events / Goal Events -->
                         <div class="laca-seo-field-row">
                             <div class="laca-seo-field-row__label-col">
                                 <label for="ga4_goal_events" style="font-weight: 600; color: var(--laca-fg);">
@@ -1009,6 +1124,9 @@ class GoogleServicesPage
         }
         if (isset($_GET['refreshed_ga_props'])) {
             echo '<div class="notice notice-success is-dismissible"><p>' . esc_html__('Đã làm mới danh sách thuộc tính.', 'lacadev') . '</p></div>';
+        }
+        if (isset($_GET['tag_checked'])) {
+            echo '<div class="notice notice-info is-dismissible"><p>' . esc_html__('Đã hoàn thành kiểm tra mã Google trên website.', 'lacadev') . '</p></div>';
         }
         if (!empty($_GET['error'])) {
             echo '<div class="notice notice-error is-dismissible"><p>' . esc_html(wp_unslash($_GET['error'])) . '</p></div>';

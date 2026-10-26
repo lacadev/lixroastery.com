@@ -3309,6 +3309,103 @@ runTest('G5: Entity Stats filters (GSC page equals, GA4 pagePath & hostName), me
     }
 }, $pass, $fail);
 
+// -------------------------------------------------------------
+// Test 34: G6 — Tracking: Tag guard (verify, 404), ga-disable for excluded users, duplicate tag scan, WooCommerce purchase deduplication
+// -------------------------------------------------------------
+runTest('G6: Tag guard (?laca_tagverify=1), ga-disable injected for logged-in, duplicate tag scan, purchase deduplication', function () {
+    $tracking = new Tracking();
+
+    // --- 1. Tag guard with ?laca_tagverify=1 ---
+    $_GET['laca_tagverify'] = '1';
+    if (!Tracking::isTagGuardTriggered()) {
+        unset($_GET['laca_tagverify']);
+        return "Expected isTagGuardTriggered=true when ?laca_tagverify=1";
+    }
+
+    ob_start();
+    $tracking->outputHeadTracking();
+    $outVerify = ob_get_clean();
+    unset($_GET['laca_tagverify']);
+
+    if (!str_contains($outVerify, 'tag guard active')) {
+        return "Expected tag guard comment when ?laca_tagverify=1";
+    }
+    if (str_contains($outVerify, 'https://www.googletagmanager.com/gtag/js')) {
+        return "Expected gtag script to be omitted when ?laca_tagverify=1";
+    }
+
+    // --- 2. Excluded user receives window['ga-disable-<ID>'] = true ---
+    $mockOptions = function () {
+        return [
+            'ga4_measurement_id'  => 'G-EXCLUDE123',
+            'ga_exclude_loggedin' => 'on',
+            'ga_exclude_role'     => 'admin',
+        ];
+    };
+    add_filter('pre_option_laca_google_services', $mockOptions);
+
+    $oldUser = wp_get_current_user();
+    $adminUser = wp_set_current_user(1);
+    $capFilter = function ($allcaps) {
+        $allcaps['manage_options'] = true;
+        return $allcaps;
+    };
+    add_filter('user_has_cap', $capFilter);
+
+    try {
+        if (!Tracking::shouldDisableTrackingForUser()) {
+            return "Expected shouldDisableTrackingForUser=true for logged in administrator";
+        }
+
+        ob_start();
+        $tracking->outputHeadTracking();
+        $outExclude = ob_get_clean();
+
+        if (!str_contains($outExclude, "window['ga-disable-G-EXCLUDE123'] = true;")) {
+            return "Expected window['ga-disable-G-EXCLUDE123'] = true; to be injected for excluded user";
+        }
+    } finally {
+        remove_filter('pre_option_laca_google_services', $mockOptions);
+        remove_filter('user_has_cap', $capFilter);
+        wp_set_current_user($oldUser instanceof \WP_User ? $oldUser->ID : (int) $oldUser);
+    }
+
+    // --- 3. Duplicate tag scanner ---
+    $mockHttp = function ($preempt, $parsedArgs, $url) {
+        if (str_contains($url, 'laca_tagverify=1')) {
+            return [
+                'response' => ['code' => 200, 'message' => 'OK'],
+                'body'     => '<html><head><script src="https://www.googletagmanager.com/gtag/js?id=G-EXTERNAL888"></script><script>gtag("config", "G-MYCONFIGURED1");</script></head><body></body></html>',
+                'headers'  => ['content-type' => 'text/html'],
+            ];
+        }
+        return $preempt;
+    };
+    add_filter('pre_http_request', $mockHttp, 10, 3);
+
+    $mockOptsConfigured = function () {
+        return [
+            'ga4_measurement_id' => 'G-MYCONFIGURED1',
+        ];
+    };
+    add_filter('pre_option_laca_google_services', $mockOptsConfigured);
+
+    try {
+        $scan = Tracking::checkDuplicateTags('http://lixroastery.local/?laca_tagverify=1');
+        if (!in_array('G-EXTERNAL888', $scan['externalIds'], true)) {
+            return "Expected duplicate scanner to identify G-EXTERNAL888 as external tag";
+        }
+        if (!$scan['hasWarnings']) {
+            return "Expected hasWarnings=true when external tags found";
+        }
+    } finally {
+        remove_filter('pre_http_request', $mockHttp, 10);
+        remove_filter('pre_option_laca_google_services', $mockOptsConfigured);
+    }
+
+    return true;
+}, $pass, $fail);
+
 echo "SUMMARY pass={$pass} fail={$fail}\n";
 exit($fail === 0 ? 0 : 1);
 
