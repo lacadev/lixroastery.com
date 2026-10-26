@@ -56,13 +56,10 @@ class DashboardWidget
             $linksCount = (int) $wpdb->get_var("SELECT COUNT(*) FROM {$lkTable}");
         }
 
-        // 4. Google Search Console 28-day metrics if connected
-        $gscCreds = \App\Features\LacaSeo\Modules\SearchConsole\GscOAuth::getCredentials();
-        $gscPerf = null;
-        if (!empty($gscCreds['access_token'])) {
-            $gscPerf = \App\Features\LacaSeo\Modules\SearchConsole\GscClient::getPerformanceSummary(home_url('/'));
-        }
-
+        // 4. Google Services 28-day metrics
+        $googleReport = \App\Features\LacaSeo\Admin\GoogleDashboardService::getDashboardReport('28d');
+        $gsc = $googleReport['gsc'] ?? [];
+        $ga  = $googleReport['ga4'] ?? [];
         ?>
         <div class="laca-seo-dashboard-widget-content" style="padding: 10px 0;">
             <p><strong><?php esc_html_e('Chỉ số SEO cốt lõi của website:', 'lacadev'); ?></strong></p>
@@ -70,25 +67,35 @@ class DashboardWidget
                 <li>
                     <span class="dashicons dashicons-randomize" style="color: var(--laca-accent, #18181b);"></span>
                     <?php esc_html_e('Chuyển hướng hoạt động (301/302):', 'lacadev'); ?>
-                    <strong><?php echo esc_html($redirectionsCount); ?></strong>
+                    <strong><?php echo esc_html((string) $redirectionsCount); ?></strong>
                 </li>
                 <li>
                     <span class="dashicons dashicons-warning" style="color: #d63638;"></span>
                     <?php esc_html_e('Lỗi 404 đã ghi nhận:', 'lacadev'); ?>
-                    <strong><?php echo esc_html($notfoundCount); ?></strong>
+                    <strong><?php echo esc_html((string) $notfoundCount); ?></strong>
                 </li>
                 <li>
                     <span class="dashicons dashicons-admin-links" style="color: #008a20;"></span>
                     <?php esc_html_e('Liên kết nội bộ đã phân tích:', 'lacadev'); ?>
-                    <strong><?php echo esc_html($linksCount); ?></strong>
+                    <strong><?php echo esc_html((string) $linksCount); ?></strong>
                 </li>
-                <?php if ($gscPerf): ?>
-                <li>
-                    <span class="dashicons dashicons-google" style="color: #ea4335;"></span>
-                    <?php esc_html_e('Google Search (28 ngày):', 'lacadev'); ?>
-                    <strong><?php echo esc_html(number_format_i18n($gscPerf['totalClicks'] ?? 0)); ?> clicks</strong>
-                    <span style="color:#64748b;">(<?php echo esc_html(number_format_i18n($gscPerf['totalImpressions'] ?? 0)); ?> hiển thị)</span>
-                </li>
+
+                <?php if (!empty($gsc['connected']) && empty($gsc['error'])): ?>
+                    <li style="border-top: 1px dashed #e4e4e7; margin-top: 8px; padding-top: 8px;">
+                        <span class="dashicons dashicons-search" style="color: #18181b;"></span>
+                        <strong>Google Search (28 ngày):</strong>
+                        <span><?php echo number_format_i18n((int) ($gsc['clicks'] ?? 0)); ?> clicks</span>
+                        <span style="color:#71717a;">· <?php echo number_format_i18n((int) ($gsc['impressions'] ?? 0)); ?> hiển thị · CTR <?php echo esc_html((string) ($gsc['ctr'] ?? 0)); ?>% · Vị trí #<?php echo esc_html((string) ($gsc['position'] ?? 0)); ?></span>
+                    </li>
+                <?php endif; ?>
+
+                <?php if (!empty($ga['connected']) && empty($ga['error'])): ?>
+                    <li style="border-top: 1px dashed #e4e4e7; margin-top: 8px; padding-top: 8px;">
+                        <span class="dashicons dashicons-chart-area" style="color: #18181b;"></span>
+                        <strong>Google Analytics (28 ngày):</strong>
+                        <span><?php echo number_format_i18n((int) ($ga['users'] ?? 0)); ?> người dùng</span>
+                        <span style="color:#71717a;">· <?php echo number_format_i18n((int) ($ga['sessions'] ?? 0)); ?> phiên · Tương tác <?php echo esc_html($ga['avgEngagement'] ?? '0s'); ?> · Chuyển đổi <?php echo esc_html($ga['conversionRate'] ?? '0%'); ?></span>
+                    </li>
                 <?php endif; ?>
             </ul>
             <div style="border-top: 1px solid #eee; padding-top: 10px; margin-top: 10px;">

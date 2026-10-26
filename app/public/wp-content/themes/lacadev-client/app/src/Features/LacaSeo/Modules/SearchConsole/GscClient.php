@@ -227,10 +227,105 @@ class GscClient
         $parsed['endDate']   = $endDate;
         $parsed['siteUrl']   = $siteUrl;
 
+        // Optionally fetch top landing pages
+        $pages = self::getTopLandingPages($siteUrl, $range, $forceRefresh);
+        if (is_array($pages)) {
+            $parsed['pages'] = $pages;
+        }
+
         // Cache 1 hour
         set_transient($cacheKey, $parsed, HOUR_IN_SECONDS);
 
         return $parsed;
+    }
+
+    /**
+     * Get top organic landing pages from Google Search Console.
+     *
+     * @param string $siteUrl
+     * @param string $range
+     * @param bool $forceRefresh
+     * @return array<array{url: string, fullUrl: string, clicks: int, impressions: int, ctr: float, position: float}>|\WP_Error
+     */
+    public static function getTopLandingPages(string $siteUrl, string $range = '28d', bool $forceRefresh = false): array|\WP_Error
+    {
+        $cacheKey = 'laca_gsc_pages_' . md5($siteUrl . '_' . $range);
+        if (!$forceRefresh) {
+            $cached = get_transient($cacheKey);
+            if (is_array($cached)) {
+                return $cached;
+            }
+        }
+
+        $token = GscOAuth::getValidAccessToken();
+        if (!$token) {
+            return new \WP_Error('no_token', __('Chưa kết nối tài khoản Google Search Console.', 'lacadev'));
+        }
+
+        $days = match ($range) {
+            '7d', '7'   => 7,
+            '90d', '90' => 90,
+            default     => 28,
+        };
+
+        $endDate   = date('Y-m-d', strtotime('-3 days'));
+        $startDate = date('Y-m-d', strtotime('-' . ($days + 2) . ' days'));
+
+        $requestBody = [
+            'startDate'  => $startDate,
+            'endDate'    => $endDate,
+            'dimensions' => ['page'],
+            'rowLimit'   => 15,
+        ];
+
+        $url = self::API_BASE . '/sites/' . urlencode($siteUrl) . '/searchAnalytics/query';
+        $response = wp_remote_post($url, [
+            'timeout' => 15,
+            'headers' => [
+                'Authorization' => 'Bearer ' . $token,
+                'Content-Type'  => 'application/json',
+            ],
+            'body'    => json_encode($requestBody),
+        ]);
+
+        if (is_wp_error($response)) {
+            return $response;
+        }
+
+        $code = (int) wp_remote_retrieve_response_code($response);
+        $body = wp_remote_retrieve_body($response);
+        $data = json_decode($body, true);
+
+        if ($code < 200 || $code >= 300) {
+            $rawMsg = is_array($data) && isset($data['error']['message']) ? $data['error']['message'] : '';
+            return new \WP_Error('http_' . $code, sprintf(__('Lỗi GSC Pages (%d): %s', 'lacadev'), $code, $rawMsg));
+        }
+
+        $pages = [];
+        $rows = $data['rows'] ?? [];
+        if (is_array($rows)) {
+            foreach ($rows as $row) {
+                $rawUrl = (string) ($row['keys'][0] ?? '');
+                $displayPath = $rawUrl;
+                if (str_contains($rawUrl, '://')) {
+                    $parsed = wp_parse_url($rawUrl, PHP_URL_PATH);
+                    if ($parsed) {
+                        $displayPath = $parsed;
+                    }
+                }
+                $pages[] = [
+                    'url'         => $displayPath,
+                    'fullUrl'     => $rawUrl,
+                    'clicks'      => (int) ($row['clicks'] ?? 0),
+                    'impressions' => (int) ($row['impressions'] ?? 0),
+                    'ctr'         => round(((float) ($row['ctr'] ?? 0)) * 100, 2),
+                    'position'    => round((float) ($row['position'] ?? 0), 1),
+                ];
+            }
+        }
+
+        set_transient($cacheKey, $pages, HOUR_IN_SECONDS);
+        return $pages;
     }
 
     /**

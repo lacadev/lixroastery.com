@@ -25,6 +25,7 @@ class AdminPage
         add_action('current_screen', [$this, 'suppressForeignNotices']);
         add_action('wp_ajax_laca_seo_toggle_module', [$this, 'ajaxToggleModule']);
         add_action('wp_ajax_laca_seo_preview_vars', [$this, 'ajaxPreviewVars']);
+        add_action('wp_ajax_laca_google_report', [$this, 'ajaxGoogleReport']);
     }
 
     /**
@@ -443,5 +444,26 @@ class AdminPage
 
         // Homepage, misc, breadcrumbs, image format…: biến cấp site, không cần object.
         return null;
+    }
+
+    /**
+     * AJAX endpoint to fetch / refresh GSC and GA4 report data.
+     */
+    public function ajaxGoogleReport(): void
+    {
+        check_ajax_referer('laca_seo_admin_nonce');
+        if (!current_user_can('manage_options')) {
+            wp_send_json_error(['message' => __('Bạn không có quyền thực hiện thao tác này.', 'lacadev')], 403);
+        }
+
+        $range = sanitize_key(wp_unslash($_REQUEST['range'] ?? '28d'));
+        if (!in_array($range, ['7d', '28d', '90d'], true)) {
+            $range = '28d';
+        }
+
+        $refresh = !empty($_REQUEST['refresh']);
+
+        $data = GoogleDashboardService::getDashboardReport($range, $refresh);
+        wp_send_json_success($data);
     }
 }
