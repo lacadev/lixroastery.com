@@ -206,7 +206,13 @@ class GoogleServicesPage
 
         // 4b. Refresh GSC sites list
         if (isset($_POST['laca_refresh_gsc_sites'])) {
-            check_admin_referer('laca_refresh_gsc_sites_action');
+            $nonce = sanitize_text_field(wp_unslash($_POST['_wpnonce'] ?? ($_REQUEST['_wpnonce'] ?? '')));
+            if (!wp_verify_nonce($nonce, 'laca_refresh_gsc_sites_action') && !wp_verify_nonce($nonce, 'laca_save_gsc_site_url_action')) {
+                check_admin_referer('laca_refresh_gsc_sites_action');
+            }
+            if (!current_user_can('manage_options')) {
+                wp_die(__('Bạn không có quyền thực hiện thao tác này.', 'lacadev'));
+            }
             delete_transient('laca_gsc_sites_list');
             wp_safe_redirect(add_query_arg(['refreshed' => '1'], admin_url('admin.php?page=' . self::PAGE_SEARCH_CONSOLE)));
             exit;
@@ -225,6 +231,32 @@ class GoogleServicesPage
             GoogleServices::updateSettings($updates);
 
             wp_safe_redirect(add_query_arg(['updated' => '1'], admin_url('admin.php?page=' . self::PAGE_ANALYTICS)));
+            exit;
+        }
+
+        // 5b. Refresh GA4 properties list
+        if (isset($_POST['laca_refresh_ga_properties'])) {
+            $nonce = sanitize_text_field(wp_unslash($_POST['_wpnonce'] ?? ($_REQUEST['_wpnonce'] ?? '')));
+            if (!wp_verify_nonce($nonce, 'laca_refresh_ga_properties_action') && !wp_verify_nonce($nonce, 'laca_save_ga4_property_action')) {
+                check_admin_referer('laca_refresh_ga_properties_action');
+            }
+
+            if (!current_user_can('manage_options')) {
+                wp_die(__('Bạn không có quyền thực hiện thao tác này.', 'lacadev'));
+            }
+
+            GaClient::clearPropertiesCache();
+            $freshProps = GaClient::listProperties(true);
+            if (is_array($freshProps)) {
+                foreach ($freshProps as $prop) {
+                    $numericId = $prop['id'] ?? $prop['propertyId'] ?? '';
+                    if ($numericId !== '') {
+                        delete_transient('laca_ga_streams_' . $numericId);
+                    }
+                }
+            }
+
+            wp_safe_redirect(add_query_arg(['refreshed_ga_props' => '1'], admin_url('admin.php?page=' . self::PAGE_ANALYTICS)));
             exit;
         }
 
@@ -376,16 +408,68 @@ class GoogleServicesPage
         $excludeAdmin   = ($options['ga_exclude_loggedin'] ?? 'on') === 'on';
         $goalEvents     = (string) ($options['ga4_goal_events'] ?? '');
 
-        // Auto-discover property if connected with GA scope and property ID is missing
+        // Auto-discover property and load stream info if connected with GA scope
         $gaProperties = [];
+        $propStreamsMap = [];
+        $matchedProp = null;
+        $hostMismatchWarning = null;
+
         if ($isConnected && $hasGaScope) {
             $gaPropertiesResult = GaClient::listProperties();
             $gaProperties = is_wp_error($gaPropertiesResult) ? [] : $gaPropertiesResult;
-            if (empty($currentPropId) && !empty($currentMsId)) {
-                $foundProp = GaClient::findPropertyByMeasurementId($currentMsId);
-                if ($foundProp && !empty($foundProp['propertyId'])) {
-                    $currentPropId = $foundProp['propertyId'];
+
+            if (!empty($gaProperties)) {
+                foreach ($gaProperties as $prop) {
+                    $pid = (string) ($prop['propertyId'] ?? $prop['id'] ?? '');
+                    if ($pid === '') {
+                        continue;
+                    }
+                    $streams = GaClient::getDataStreams($pid);
+                    $propStreamsMap[$pid] = is_array($streams) ? $streams : [];
+
+                    if (!empty($currentMsId)) {
+                        foreach ($propStreamsMap[$pid] as $stream) {
+                            $mId = (string) ($stream['measurementId'] ?? '');
+                            if ($mId !== '' && strcasecmp($mId, $currentMsId) === 0) {
+                                $matchedProp = $prop;
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (empty($currentPropId) && !empty($currentMsId) && $matchedProp) {
+                $currentPropId = (string) ($matchedProp['propertyId'] ?? $matchedProp['id'] ?? '');
+                if ($currentPropId !== '') {
                     GoogleServices::updateSettings(['ga4_property_id' => $currentPropId]);
+                }
+            }
+
+            // Warning if Measurement ID belongs to a property whose displayName does not contain the site host
+            if ($matchedProp) {
+                $siteHost = (string) wp_parse_url(home_url(), PHP_URL_HOST);
+                $cleanHost = preg_replace('/^www\./i', '', strtolower($siteHost));
+                $domainName = explode('.', $cleanHost)[0] ?? '';
+
+                $propDisplayName = (string) ($matchedProp['displayName'] ?? '');
+                $propNorm = preg_replace('/[^a-z0-9]/', '', strtolower($propDisplayName));
+                $hostNorm = preg_replace('/[^a-z0-9]/', '', strtolower($cleanHost));
+                $domainNorm = preg_replace('/[^a-z0-9]/', '', strtolower($domainName));
+
+                $containsHost = false;
+                if ($cleanHost !== '' && stripos($propDisplayName, $cleanHost) !== false) {
+                    $containsHost = true;
+                } elseif ($hostNorm !== '' && str_contains($propNorm, $hostNorm)) {
+                    $containsHost = true;
+                } elseif ($domainNorm !== '' && strlen($domainNorm) >= 3 && str_contains($propNorm, $domainNorm)) {
+                    $containsHost = true;
+                }
+
+                if (!$containsHost) {
+                    $hostMismatchWarning = sprintf(
+                        __("Mã đo lường đang nằm trong property '%s', kiểm tra lại có đúng website này không.", 'lacadev'),
+                        $propDisplayName
+                    );
                 }
             }
         }
@@ -471,6 +555,15 @@ class GoogleServicesPage
                         </div>
                     <?php else: ?>
                         <!-- Đã kết nối & có quyền GA: Chọn thuộc tính GA4 -->
+                        <?php if (!empty($hostMismatchWarning)): ?>
+                            <div class="notice notice-warning inline" style="margin: 0 0 16px 0; padding: 10px 14px; border-left-color: #f59e0b; background: #fffbeb;">
+                                <p style="margin: 0; font-size: 13.5px; color: #92400e; line-height: 1.5;">
+                                    <span class="dashicons dashicons-warning" style="color: #f59e0b; margin-top: 1px;"></span>
+                                    <?php echo esc_html($hostMismatchWarning); ?>
+                                </p>
+                            </div>
+                        <?php endif; ?>
+
                         <form method="post" style="display: flex; gap: 12px; align-items: flex-end; flex-wrap: wrap;">
                             <?php wp_nonce_field('laca_save_ga4_property_action'); ?>
                             <div style="flex: 1; min-width: 320px;">
@@ -484,8 +577,35 @@ class GoogleServicesPage
                                     <select name="ga4_property_id" id="ga4_property_select" style="width: 100%; max-width: 560px;">
                                         <option value=""><?php esc_html_e('-- Chọn thuộc tính GA4 --', 'lacadev'); ?></option>
                                         <?php foreach ($gaProperties as $prop): ?>
-                                            <option value="<?php echo esc_attr($prop['propertyId']); ?>" <?php selected($currentPropId, $prop['propertyId']); ?>>
-                                                <?php echo esc_html($prop['displayName'] . ' (ID: ' . $prop['propertyId'] . ')'); ?>
+                                            <?php
+                                            $pid = (string) ($prop['propertyId'] ?? $prop['id'] ?? '');
+                                            $streams = $propStreamsMap[$pid] ?? [];
+                                            $streamLabels = [];
+                                            $hasMatch = false;
+
+                                            foreach ($streams as $str) {
+                                                $strName = trim((string) ($str['displayName'] ?? ''));
+                                                $strMid  = trim((string) ($str['measurementId'] ?? ''));
+
+                                                if ($strName !== '' && $strMid !== '') {
+                                                    $streamLabels[] = $strName . ' ' . $strMid;
+                                                } elseif ($strMid !== '') {
+                                                    $streamLabels[] = $strMid;
+                                                } elseif ($strName !== '') {
+                                                    $streamLabels[] = $strName;
+                                                }
+
+                                                if (!empty($currentMsId) && !empty($strMid) && strcasecmp($strMid, $currentMsId) === 0) {
+                                                    $hasMatch = true;
+                                                }
+                                            }
+
+                                            $streamSuffix = !empty($streamLabels) ? ' — luồng: ' . implode(', ', $streamLabels) : '';
+                                            $matchSuffix  = $hasMatch ? ' (✓ khớp mã đo lường)' : '';
+                                            $optionLabel  = $prop['displayName'] . ' (' . $pid . ')' . $streamSuffix . $matchSuffix;
+                                            ?>
+                                            <option value="<?php echo esc_attr($pid); ?>" <?php selected($currentPropId, $pid); ?>>
+                                                <?php echo esc_html($optionLabel); ?>
                                             </option>
                                         <?php endforeach; ?>
                                     </select>
@@ -493,6 +613,9 @@ class GoogleServicesPage
                             </div>
                             <button type="submit" name="laca_save_ga4_property" class="button button-secondary">
                                 <?php esc_html_e('Lưu thuộc tính GA4', 'lacadev'); ?>
+                            </button>
+                            <button type="submit" name="laca_refresh_ga_properties" class="button button-secondary" title="<?php esc_attr_e('Tải lại danh sách thuộc tính từ Google Analytics', 'lacadev'); ?>">
+                                <span class="dashicons dashicons-update" style="margin-top: 3px;"></span> <?php esc_html_e('Tải lại danh sách', 'lacadev'); ?>
                             </button>
                         </form>
                     <?php endif; ?>
@@ -792,6 +915,9 @@ class GoogleServicesPage
         }
         if (isset($_GET['refreshed'])) {
             echo '<div class="notice notice-success is-dismissible"><p>' . esc_html__('Đã làm mới danh sách property từ Google Search Console.', 'lacadev') . '</p></div>';
+        }
+        if (isset($_GET['refreshed_ga_props'])) {
+            echo '<div class="notice notice-success is-dismissible"><p>' . esc_html__('Đã làm mới danh sách thuộc tính.', 'lacadev') . '</p></div>';
         }
         if (!empty($_GET['error'])) {
             echo '<div class="notice notice-error is-dismissible"><p>' . esc_html(wp_unslash($_GET['error'])) . '</p></div>';

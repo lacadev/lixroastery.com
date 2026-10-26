@@ -92,8 +92,25 @@ class GaClient
             }
         }
 
-        set_transient($cacheKey, $properties, 12 * HOUR_IN_SECONDS);
+        set_transient($cacheKey, $properties, HOUR_IN_SECONDS);
         return $properties;
+    }
+
+    /**
+     * Clear cached properties list and all cached data streams for known properties.
+     */
+    public static function clearPropertiesCache(): void
+    {
+        $cached = get_transient('laca_ga_props_list');
+        if (is_array($cached)) {
+            foreach ($cached as $prop) {
+                $numericId = $prop['id'] ?? $prop['propertyId'] ?? '';
+                if ($numericId !== '') {
+                    delete_transient('laca_ga_streams_' . $numericId);
+                }
+            }
+        }
+        delete_transient('laca_ga_props_list');
     }
 
     /**
@@ -164,7 +181,7 @@ class GaClient
             }
         }
 
-        set_transient($cacheKey, $streams, 12 * HOUR_IN_SECONDS);
+        set_transient($cacheKey, $streams, HOUR_IN_SECONDS);
         return $streams;
     }
 

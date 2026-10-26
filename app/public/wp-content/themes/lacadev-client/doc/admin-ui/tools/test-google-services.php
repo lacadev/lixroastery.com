@@ -2035,6 +2035,229 @@ runTest('GA4 Raw API Response Pipeline: channels, top pages duration (300s/5 use
     }
 }, $pass, $fail);
 
+// -------------------------------------------------------------
+// Test 28: GA4 Refresh button bypasses cache, displays web streams, match badge, and host mismatch warning
+// -------------------------------------------------------------
+runTest('GA4 Admin: Refresh button bypasses cache, options display web stream & match badge, host mismatch warning', function () {
+    $requestCounts = [
+        'accountSummaries' => 0,
+        'streams_100001'   => 0,
+        'streams_100002'   => 0,
+    ];
+
+    $mockFilter = function ($preempt, $parsed_args, $url) use (&$requestCounts) {
+        if (str_contains($url, 'accountSummaries')) {
+            $requestCounts['accountSummaries']++;
+            return [
+                'response' => ['code' => 200, 'message' => 'OK'],
+                'body'     => json_encode([
+                    'accountSummaries' => [
+                        [
+                            'name'              => 'accountSummaries/55555',
+                            'account'           => 'accounts/55555',
+                            'displayName'       => 'LIX Roastery Google Account',
+                            'propertySummaries' => [
+                                [
+                                    'property'     => 'properties/100001',
+                                    'displayName'  => '43 Factory',
+                                    'propertyType' => 'PROPERTY_TYPE_ORDINARY',
+                                ],
+                                [
+                                    'property'     => 'properties/100002',
+                                    'displayName'  => 'LIX Roastery Website',
+                                    'propertyType' => 'PROPERTY_TYPE_ORDINARY',
+                                ],
+                            ],
+                        ],
+                    ],
+                ]),
+                'headers'  => ['content-type' => 'application/json'],
+            ];
+        }
+
+        if (str_contains($url, 'properties/100001/dataStreams')) {
+            $requestCounts['streams_100001']++;
+            return [
+                'response' => ['code' => 200, 'message' => 'OK'],
+                'body'     => json_encode([
+                    'dataStreams' => [
+                        [
+                            'name'          => 'properties/100001/dataStreams/888',
+                            'type'          => 'WEB_DATA_STREAM',
+                            'displayName'   => '43 Factory Web',
+                            'webStreamData' => [
+                                'measurementId' => 'G-43FACTORY1',
+                                'defaultUri'    => 'https://43factory.coffee',
+                            ],
+                        ],
+                    ],
+                ]),
+                'headers'  => ['content-type' => 'application/json'],
+            ];
+        }
+
+        if (str_contains($url, 'properties/100002/dataStreams')) {
+            $requestCounts['streams_100002']++;
+            return [
+                'response' => ['code' => 200, 'message' => 'OK'],
+                'body'     => json_encode([
+                    'dataStreams' => [
+                        [
+                            'name'          => 'properties/100002/dataStreams/999',
+                            'type'          => 'WEB_DATA_STREAM',
+                            'displayName'   => 'LIX Web Stream',
+                            'webStreamData' => [
+                                'measurementId' => 'G-LIXROAST01',
+                                'defaultUri'    => 'https://lixroastery.com',
+                            ],
+                        ],
+                    ],
+                ]),
+                'headers'  => ['content-type' => 'application/json'],
+            ];
+        }
+
+        return $preempt;
+    };
+    add_filter('pre_http_request', $mockFilter, 10, 3);
+
+    $mockOAuthFilter = function () {
+        return GscCrypto::encrypt([
+            'access_token'  => 'mock-token',
+            'refresh_token' => 'mock-refresh',
+            'created_at'    => time(),
+            'expires_in'    => 3600,
+            'client_id'     => 'mock-client',
+            'client_secret' => 'mock-secret',
+            'scopes'        => [GscOAuth::SCOPE_GA, GscOAuth::SCOPE_GSC],
+        ]);
+    };
+    add_filter('pre_option_' . GscOAuth::OPTION_KEY, $mockOAuthFilter);
+
+    // Initial clean transients
+    GaClient::clearPropertiesCache();
+    delete_transient('laca_ga_streams_100001');
+    delete_transient('laca_ga_streams_100002');
+
+    $currentMsId = 'G-LIXROAST01';
+    $mockServicesFilter = function () use (&$currentMsId) {
+        return [
+            'ga4_property_id'    => '',
+            'ga4_measurement_id' => $currentMsId,
+        ];
+    };
+    add_filter('pre_option_laca_google_services', $mockServicesFilter);
+
+    // Cap filter for manage_options
+    $capFilter = function ($allcaps) {
+        $allcaps['manage_options'] = true;
+        return $allcaps;
+    };
+    add_filter('user_has_cap', $capFilter);
+
+    try {
+        // 1. First fetch - must hit API
+        $props = GaClient::listProperties(false);
+        if (count($props) !== 2) {
+            return "Expected 2 properties, got " . count($props);
+        }
+        if ($requestCounts['accountSummaries'] !== 1) {
+            return "Expected 1 accountSummaries request, got {$requestCounts['accountSummaries']}";
+        }
+
+        // 2. Second fetch without force - must use cache (0 additional HTTP requests)
+        $cachedProps = GaClient::listProperties(false);
+        if ($requestCounts['accountSummaries'] !== 1) {
+            return "Expected cache hit (1 request), got {$requestCounts['accountSummaries']}";
+        }
+
+        // 3. Force refresh - must bypass cache and hit API again
+        $refreshedProps = GaClient::listProperties(true);
+        if ($requestCounts['accountSummaries'] !== 2) {
+            return "Expected 2 accountSummaries requests after forceRefresh, got {$requestCounts['accountSummaries']}";
+        }
+
+        // 4. Render Analytics Page with matching Measurement ID (G-LIXROAST01 matching LIX Roastery Website)
+        $page = new GoogleServicesPage();
+        ob_start();
+        $page->renderAnalyticsPage();
+        $htmlMatching = ob_get_clean();
+
+        // Assert refresh button exists with correct name and title
+        if (!str_contains($htmlMatching, 'name="laca_refresh_ga_properties"')) {
+            return "Analytics page missing refresh button 'laca_refresh_ga_properties'";
+        }
+        if (!str_contains($htmlMatching, 'Tải lại danh sách')) {
+            return "Analytics page missing button text 'Tải lại danh sách'";
+        }
+
+        // Assert option has web stream label
+        if (!str_contains($htmlMatching, 'luồng: LIX Web Stream G-LIXROAST01')) {
+            return "Option missing stream label 'luồng: LIX Web Stream G-LIXROAST01'";
+        }
+
+        // Assert option has match badge for G-LIXROAST01
+        if (!str_contains($htmlMatching, '✓ khớp mã đo lường')) {
+            return "Option missing match badge '✓ khớp mã đo lường'";
+        }
+
+        // Assert NO host mismatch warning because LIX Roastery Website contains host/domain
+        if (str_contains($htmlMatching, "kiểm tra lại có đúng website này không")) {
+            return "Should NOT show host mismatch warning when property name matches host/domain";
+        }
+
+        // 5. Change Measurement ID to G-43FACTORY1 (belongs to '43 Factory', which does NOT contain host 'lixroastery.com')
+        $currentMsId = 'G-43FACTORY1';
+        Settings::clearCache();
+
+        ob_start();
+        $page->renderAnalyticsPage();
+        $htmlMismatch = ob_get_clean();
+
+        // Assert gentle warning appears for 43 Factory
+        $expectedWarning = "Mã đo lường đang nằm trong property '43 Factory', kiểm tra lại có đúng website này không.";
+        $decodedHtml = html_entity_decode($htmlMismatch, ENT_QUOTES, 'UTF-8');
+        if (!str_contains($decodedHtml, $expectedWarning)) {
+            return "Missing expected warning: '{$expectedWarning}' in HTML";
+        }
+
+        // 6. Test handleActions refresh action
+        $_POST['laca_refresh_ga_properties'] = '1';
+        $_POST['_wpnonce'] = wp_create_nonce('laca_refresh_ga_properties_action');
+
+        $redirectUrl = null;
+        $redirectFilter = function ($location) use (&$redirectUrl) {
+            $redirectUrl = $location;
+            throw new \Exception("REDIRECTED: " . $location);
+        };
+        add_filter('wp_redirect', $redirectFilter);
+
+        try {
+            $page->handleActions();
+        } catch (\Exception $e) {
+            // Expected redirect
+        } finally {
+            remove_filter('wp_redirect', $redirectFilter);
+            unset($_POST['laca_refresh_ga_properties'], $_POST['_wpnonce']);
+        }
+
+        if (!$redirectUrl || !str_contains($redirectUrl, 'refreshed_ga_props=1')) {
+            return "Expected redirect containing 'refreshed_ga_props=1', got '" . ($redirectUrl ?? 'null') . "'";
+        }
+
+        return true;
+    } finally {
+        remove_filter('pre_http_request', $mockFilter, 10);
+        remove_filter('pre_option_' . GscOAuth::OPTION_KEY, $mockOAuthFilter);
+        remove_filter('pre_option_laca_google_services', $mockServicesFilter);
+        remove_filter('user_has_cap', $capFilter);
+        GaClient::clearPropertiesCache();
+        delete_transient('laca_ga_streams_100001');
+        delete_transient('laca_ga_streams_100002');
+        Settings::clearCache();
+    }
+}, $pass, $fail);
+
 echo "SUMMARY pass={$pass} fail={$fail}\n";
 exit($fail === 0 ? 0 : 1);
 
