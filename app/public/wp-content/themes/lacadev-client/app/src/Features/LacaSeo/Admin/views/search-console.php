@@ -43,6 +43,7 @@ if (isset($_POST['laca_gsc_connect_init'])) {
 // Handle OAuth callback
 if (isset($_GET['laca_gsc_oauth'])) {
     $state = sanitize_text_field(wp_unslash($_GET['state'] ?? ''));
+    $returnTo = GscOAuth::getStateReturnTo($state);
 
     if (isset($_GET['error'])) {
         if (!GscOAuth::verifyState($state)) {
@@ -62,10 +63,14 @@ if (isset($_GET['laca_gsc_oauth'])) {
                 );
             }
         }
+        wp_safe_redirect(add_query_arg(['error' => urlencode($connectError)], admin_url($returnTo)));
+        exit;
     } elseif (isset($_GET['code'])) {
         $code = sanitize_text_field(wp_unslash($_GET['code']));
         if (!GscOAuth::verifyState($state)) {
             $connectError = __('Mã trạng thái bảo mật (State Nonce) không hợp lệ.', 'lacadev');
+            wp_safe_redirect(add_query_arg(['error' => urlencode($connectError)], admin_url($returnTo)));
+            exit;
         } else {
             $pending = get_option('laca_seo_gsc_pending', []);
             delete_option('laca_seo_gsc_pending');
@@ -73,19 +78,23 @@ if (isset($_GET['laca_gsc_oauth'])) {
             if (!empty($pending['client_id']) && !empty($pending['client_secret'])) {
                 $exchange = GscOAuth::handleCallback($code, $pending['client_id'], $pending['client_secret']);
                 if ($exchange['success']) {
-                    wp_safe_redirect(admin_url('admin.php?page=laca-seo&view=search-console&connected=1'));
+                    wp_safe_redirect(add_query_arg(['connected' => '1'], admin_url($returnTo)));
                     exit;
                 } else {
                     $connectError = $exchange['error'] ?? __('Lỗi xác thực OAuth từ Google.', 'lacadev');
+                    wp_safe_redirect(add_query_arg(['error' => urlencode($connectError)], admin_url($returnTo)));
+                    exit;
                 }
             } else {
                 $connectError = __('Không tìm thấy Client ID hoặc Client Secret đang chờ xác thực.', 'lacadev');
+                wp_safe_redirect(add_query_arg(['error' => urlencode($connectError)], admin_url($returnTo)));
+                exit;
             }
         }
     }
 }
 
-$siteUrl = home_url('/');
+$siteUrl = GscClient::getSiteUrl();
 $perf = $isConnected ? GscClient::getPerformanceSummary($siteUrl) : null;
 $sitemaps = $isConnected ? GscClient::getSitemaps($siteUrl) : null;
 
@@ -102,61 +111,21 @@ $sitemaps = $isConnected ? GscClient::getSitemaps($siteUrl) : null;
     <?php endif; ?>
 
     <?php if (!$isConnected): ?>
-        <!-- Not Connected: Setup & Connect Form -->
+        <!-- Not Connected: Setup Prompt -->
         <div class="laca-seo-card">
             <div class="laca-seo-card__header">
-                <h2 class="laca-seo-card__title"><?php esc_html_e('Kết nối Google Search Console (OAuth 2.0)', 'lacadev'); ?></h2>
-                <p class="laca-seo-card__subtitle"><?php esc_html_e('Đồng bộ dữ liệu thứ hạng từ khóa, lượt click, lỗi sitemap và kiểm tra trạng thái index trực tiếp từ Google.', 'lacadev'); ?></p>
+                <h2 class="laca-seo-card__title"><?php esc_html_e('Google Search Console (OAuth 2.0)', 'lacadev'); ?></h2>
+                <p class="laca-seo-card__subtitle"><?php esc_html_e('Chưa kết nối tài khoản Google Search Console để xem báo cáo hiệu suất tìm kiếm.', 'lacadev'); ?></p>
             </div>
-
-            <details class="laca-seo-prep-details" open>
-                <summary class="laca-seo-prep-details__summary">
-                    <span class="dashicons dashicons-info"></span>
-                    <strong><?php esc_html_e('Chuẩn bị Google Cloud (4 bước bắt buộc)', 'lacadev'); ?></strong>
-                </summary>
-                <div class="laca-seo-prep-details__content">
-                    <ol class="laca-seo-prep-details__list">
-                        <li>
-                            <strong><?php esc_html_e('Bật Google Search Console API:', 'lacadev'); ?></strong>
-                            <?php esc_html_e('Vào Google Cloud Console › APIs & Services › Library, tìm kiếm và bật "Google Search Console API".', 'lacadev'); ?>
-                        </li>
-                        <li>
-                            <strong><?php esc_html_e('OAuth Consent / Audience (Tránh lỗi 403 access_denied):', 'lacadev'); ?></strong>
-                            <?php esc_html_e('Nếu ứng dụng OAuth đang ở chế độ Testing, hãy thêm email của bạn vào danh sách Test users (Google Cloud → Google Auth Platform → Audience) hoặc bấm Publish app để chuyển sang Production, rồi thử lại.', 'lacadev'); ?>
-                        </li>
-                        <li>
-                            <strong><?php esc_html_e('Tạo OAuth Client ID:', 'lacadev'); ?></strong>
-                            <?php esc_html_e('Tại mục Credentials, tạo Client ID loại Web application. Thêm địa chỉ sau vào mục Authorized redirect URIs:', 'lacadev'); ?>
-                            <div class="laca-seo-prep-details__uri-row">
-                                <code class="laca-seo-code-badge" id="laca-gsc-redirect-uri"><?php echo esc_html($redirectUri); ?></code>
-                                <button type="button" class="button button-small laca-seo-copy-btn" onclick="navigator.clipboard.writeText('<?php echo esc_js($redirectUri); ?>'); alert(lacaSeoData.i18n.copied);">
-                                    <span class="dashicons dashicons-admin-page"></span> <?php esc_html_e('Sao chép URI', 'lacadev'); ?>
-                                </button>
-                            </div>
-                        </li>
-                        <li>
-                            <strong><?php esc_html_e('Scope (Phạm vi truy cập):', 'lacadev'); ?></strong>
-                            <?php esc_html_e('Đảm bảo đã cho phép phạm vi đọc dữ liệu tìm kiếm:', 'lacadev'); ?>
-                            <code class="laca-seo-code-badge">webmasters.readonly</code>
-                        </li>
-                    </ol>
-                </div>
-            </details>
-
-            <form method="post" action="<?php echo esc_url(admin_url('admin.php?page=laca-seo&view=search-console')); ?>" class="laca-seo-form-limit">
-                <?php wp_nonce_field('laca_gsc_connect_action'); ?>
-                <div class="laca-seo-field-group">
-                    <label for="laca_gsc_client_id"><strong><?php esc_html_e('Google Client ID', 'lacadev'); ?></strong></label>
-                    <input type="text" name="client_id" id="laca_gsc_client_id" class="large-text" required placeholder="xxxx.apps.googleusercontent.com">
-                </div>
-                <div class="laca-seo-field-group">
-                    <label for="laca_gsc_client_secret"><strong><?php esc_html_e('Google Client Secret', 'lacadev'); ?></strong></label>
-                    <input type="password" name="client_secret" id="laca_gsc_client_secret" class="large-text" required placeholder="GOCSPX-xxxx">
-                </div>
-                <button type="submit" name="laca_gsc_connect_init" class="button button-primary button-large">
-                    <span class="dashicons dashicons-google" aria-hidden="true"></span> <?php esc_html_e('Đăng nhập & Cấp quyền với Google', 'lacadev'); ?>
-                </button>
-            </form>
+            <div class="laca-seo-fields-container" style="padding: 24px;">
+                <p style="font-size: 14px; color: var(--laca-fg-muted, #71717a); margin-bottom: 16px;">
+                    <?php esc_html_e('Cấu hình kết nối Google OAuth và chọn property Search Console đã được chuyển sang trang quản lý tập trung:', 'lacadev'); ?>
+                </p>
+                <a href="<?php echo esc_url(admin_url('admin.php?page=laca-google-search-console')); ?>" class="button button-primary button-large">
+                    <span class="dashicons dashicons-admin-generic" style="margin-top: 3px;" aria-hidden="true"></span>
+                    <?php esc_html_e('Cài đặt kết nối Search Console', 'lacadev'); ?>
+                </a>
+            </div>
         </div>
     <?php else: ?>
         <!-- Connected: Dashboard -->
@@ -166,12 +135,18 @@ $sitemaps = $isConnected ? GscClient::getSitemaps($siteUrl) : null;
                     <h2 class="laca-seo-card__title"><?php esc_html_e('Hiệu suất tìm kiếm (28 ngày qua)', 'lacadev'); ?></h2>
                     <p class="laca-seo-card__subtitle"><?php printf(esc_html__('Dữ liệu từ tài khoản Google Search Console cho trang web %s', 'lacadev'), esc_html($siteUrl)); ?></p>
                 </div>
-                <form method="post" class="laca-seo-form-inline">
-                    <?php wp_nonce_field('laca_gsc_disconnect_action'); ?>
-                    <button type="submit" name="laca_gsc_disconnect" class="button button-secondary" onclick="return confirm('Bạn có chắc muốn ngắt kết nối Google Search Console không?');">
-                        <?php esc_html_e('Ngắt kết nối', 'lacadev'); ?>
-                    </button>
-                </form>
+                <div class="laca-seo-header-actions" style="display: flex; gap: 8px; align-items: center;">
+                    <a href="<?php echo esc_url(admin_url('admin.php?page=laca-google-search-console')); ?>" class="button button-secondary">
+                        <span class="dashicons dashicons-admin-generic" style="margin-top: 3px;" aria-hidden="true"></span>
+                        <?php esc_html_e('Cài đặt kết nối & Property', 'lacadev'); ?>
+                    </a>
+                    <form method="post" class="laca-seo-form-inline">
+                        <?php wp_nonce_field('laca_gsc_disconnect_action'); ?>
+                        <button type="submit" name="laca_gsc_disconnect" class="button button-secondary" onclick="return confirm('Bạn có chắc muốn ngắt kết nối Google Search Console không?');">
+                            <?php esc_html_e('Ngắt kết nối', 'lacadev'); ?>
+                        </button>
+                    </form>
+                </div>
             </div>
 
             <!-- Stats Grid -->

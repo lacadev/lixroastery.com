@@ -107,11 +107,18 @@ class SaveHandler
 
         // Redirect back with success flag
         $redirectUrl = add_query_arg([
-            'page'    => 'laca-seo',
+            'page'    => sanitize_key($_POST['page'] ?? 'laca-seo'),
             'view'    => $view,
             'tab'     => $tab,
             'updated' => '1',
         ], admin_url('admin.php'));
+
+        if (!empty($_POST['redirect_to'])) {
+            $customRedirect = esc_url_raw(wp_unslash($_POST['redirect_to']));
+            if (wp_validate_redirect($customRedirect)) {
+                $redirectUrl = add_query_arg(['updated' => '1'], $customRedirect);
+            }
+        }
 
         wp_safe_redirect($redirectUrl);
         exit;

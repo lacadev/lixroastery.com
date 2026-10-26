@@ -63,52 +63,69 @@ $current_options = Settings::getGroup('general');
 
         <!-- Form Content Card -->
         <section class="laca-seo-tabs-content">
-            <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" class="laca-seo-form">
-                <?php wp_nonce_field('laca_seo_save_action', 'laca_seo_nonce'); ?>
-                <input type="hidden" name="action" value="laca_seo_save">
-                <input type="hidden" name="option_group" value="general">
-                <input type="hidden" name="tab" value="<?php echo esc_attr($active_tab); ?>">
-                <input type="hidden" name="view" value="general">
-
+            <?php if ($active_tab === 'analytics'): ?>
                 <div class="laca-seo-card">
                     <div class="laca-seo-card__header">
                         <h2 class="laca-seo-card__title"><?php echo esc_html($tabs[$active_tab]); ?></h2>
                     </div>
-
-                    <div class="laca-seo-fields-container">
-                        <?php if (empty($tab_fields)): ?>
-                            <p>Không có trường cài đặt nào trong mục này.</p>
-                        <?php else: ?>
-                            <?php foreach ($tab_fields as $field): ?>
-                                <?php
-                                $val = $current_options[$field->getId()] ?? $field->getDefault();
-                                Renderer::renderFieldRow($field, $val);
-                                ?>
-                            <?php endforeach; ?>
-                        <?php endif; ?>
+                    <div class="laca-seo-fields-container" style="padding: 24px;">
+                        <p style="font-size: 14px; color: var(--laca-fg-muted, #71717a); margin-bottom: 16px;">
+                            <?php esc_html_e('Đã chuyển sang Laca Admin → Dịch vụ Google để quản lý tập trung và tích hợp kết nối Google OAuth.', 'lacadev'); ?>
+                        </p>
+                        <a href="<?php echo esc_url(admin_url('admin.php?page=laca-google-analytics')); ?>" class="button button-primary">
+                            <span class="dashicons dashicons-arrow-right-alt" style="margin-top: 3px;" aria-hidden="true"></span>
+                            <?php esc_html_e('Chuyển sang trang Cấu hình Google Analytics & GTM', 'lacadev'); ?>
+                        </a>
                     </div>
                 </div>
+            <?php else: ?>
+                <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" class="laca-seo-form">
+                    <?php wp_nonce_field('laca_seo_save_action', 'laca_seo_nonce'); ?>
+                    <input type="hidden" name="action" value="laca_seo_save">
+                    <input type="hidden" name="option_group" value="general">
+                    <input type="hidden" name="tab" value="<?php echo esc_attr($active_tab); ?>">
+                    <input type="hidden" name="view" value="general">
 
-                <!-- Sticky bottom actions -->
-                <div class="laca-seo-sticky-footer">
-                    <div class="laca-seo-sticky-footer__inner">
-                        <button type="submit" class="button button-primary button-hero laca-seo-save-btn">
-                            <span class="dashicons dashicons-saved"></span> Lưu thay đổi
-                        </button>
+                    <div class="laca-seo-card">
+                        <div class="laca-seo-card__header">
+                            <h2 class="laca-seo-card__title"><?php echo esc_html($tabs[$active_tab]); ?></h2>
+                        </div>
 
-                        <button
-                            type="submit"
-                            formaction="<?php echo esc_url(admin_url('admin-post.php')); ?>"
-                            class="button button-secondary laca-seo-reset-btn"
-                            onclick="return confirm(lacaSeoData.i18n.confirmReset);"
-                            name="action"
-                            value="laca_seo_reset_tab"
-                        >
-                            Khôi phục mặc định tab này
-                        </button>
+                        <div class="laca-seo-fields-container">
+                            <?php if (empty($tab_fields)): ?>
+                                <p>Không có trường cài đặt nào trong mục này.</p>
+                            <?php else: ?>
+                                <?php foreach ($tab_fields as $field): ?>
+                                    <?php
+                                    $val = $current_options[$field->getId()] ?? $field->getDefault();
+                                    Renderer::renderFieldRow($field, $val);
+                                    ?>
+                                <?php endforeach; ?>
+                            <?php endif; ?>
+                        </div>
                     </div>
-                </div>
-            </form>
+
+                    <!-- Sticky bottom actions -->
+                    <div class="laca-seo-sticky-footer">
+                        <div class="laca-seo-sticky-footer__inner">
+                            <button type="submit" class="button button-primary button-hero laca-seo-save-btn">
+                                <span class="dashicons dashicons-saved"></span> Lưu thay đổi
+                            </button>
+
+                            <button
+                                type="submit"
+                                formaction="<?php echo esc_url(admin_url('admin-post.php')); ?>"
+                                class="button button-secondary laca-seo-reset-btn"
+                                onclick="return confirm(lacaSeoData.i18n.confirmReset);"
+                                name="action"
+                                value="laca_seo_reset_tab"
+                            >
+                                Khôi phục mặc định tab này
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            <?php endif; ?>
         </section>
     </div>
 </div>

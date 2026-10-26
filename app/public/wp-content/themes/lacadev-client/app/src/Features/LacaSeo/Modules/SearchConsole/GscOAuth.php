@@ -12,7 +12,13 @@ defined('ABSPATH') || exit;
 class GscOAuth
 {
     public const OPTION_KEY = 'laca_seo_gsc';
-    public const SCOPE      = 'https://www.googleapis.com/auth/webmasters.readonly';
+    public const SCOPE_GSC  = 'https://www.googleapis.com/auth/webmasters.readonly';
+    public const SCOPE_GA   = 'https://www.googleapis.com/auth/analytics.readonly';
+    public const SCOPES     = [
+        self::SCOPE_GSC,
+        self::SCOPE_GA,
+    ];
+    public const SCOPE      = 'https://www.googleapis.com/auth/webmasters.readonly https://www.googleapis.com/auth/analytics.readonly';
     public const AUTH_URI   = 'https://accounts.google.com/o/oauth2/v2/auth';
     public const TOKEN_URI  = 'https://oauth2.googleapis.com/token';
     public const REVOKE_URI = 'https://oauth2.googleapis.com/revoke';
@@ -46,34 +52,40 @@ class GscOAuth
      *
      * @param string $clientId
      * @param int|null $userId
+     * @param string|null $returnTo
+     * @param array|null $scopes
      * @return string
      */
-    public static function buildAuthUrl(string $clientId, ?int $userId = null): string
+    public static function buildAuthUrl(string $clientId, ?int $userId = null, ?string $returnTo = null, ?array $scopes = null): string
     {
         $uid = $userId ?: get_current_user_id();
         $pkce = self::generatePkce();
 
         // State nonce bound to user and PKCE verifier
         $stateData = [
-            'uid'   => $uid,
-            'nonce' => wp_create_nonce('laca_gsc_oauth_' . $uid),
-            'time'  => time(),
+            'uid'       => $uid,
+            'nonce'     => wp_create_nonce('laca_gsc_oauth_' . $uid),
+            'time'      => time(),
+            'return_to' => $returnTo ?: 'admin.php?page=laca-google-search-console',
         ];
         $state = base64_encode(json_encode($stateData));
 
         // Save PKCE verifier in transient for 15 minutes
         set_transient('laca_gsc_pkce_' . $uid, $pkce['verifier'], 15 * MINUTE_IN_SECONDS);
 
+        $scopeList = $scopes ?: self::SCOPES;
+
         $params = [
-            'client_id'             => $clientId,
-            'redirect_uri'          => self::getRedirectUri(),
-            'response_type'         => 'code',
-            'scope'                 => self::SCOPE,
-            'access_type'           => 'offline',
-            'prompt'                => 'consent',
-            'state'                 => $state,
-            'code_challenge'        => $pkce['challenge'],
-            'code_challenge_method' => 'S256',
+            'client_id'              => $clientId,
+            'redirect_uri'           => self::getRedirectUri(),
+            'response_type'          => 'code',
+            'scope'                  => implode(' ', $scopeList),
+            'access_type'            => 'offline',
+            'include_granted_scopes' => 'true',
+            'prompt'                 => 'consent',
+            'state'                  => $state,
+            'code_challenge'         => $pkce['challenge'],
+            'code_challenge_method'  => 'S256',
         ];
 
         return self::AUTH_URI . '?' . http_build_query($params);
@@ -99,6 +111,18 @@ class GscOAuth
         }
 
         return (bool) wp_verify_nonce($decoded['nonce'], 'laca_gsc_oauth_' . $uid);
+    }
+
+    /**
+     * Get return URL stored in state parameter.
+     */
+    public static function getStateReturnTo(string $state): string
+    {
+        $decoded = json_decode(base64_decode($state), true);
+        if (is_array($decoded) && !empty($decoded['return_to'])) {
+            return (string) $decoded['return_to'];
+        }
+        return 'admin.php?page=laca-google-search-console';
     }
 
     /**
@@ -141,16 +165,70 @@ class GscOAuth
             return ['success' => false, 'error' => $data['error_description'] ?? 'Không lấy được access_token'];
         }
 
+        $existing = self::getCredentials();
+        $scopes = [];
+        if (!empty($data['scope'])) {
+            $scopes = array_values(array_filter(explode(' ', (string) $data['scope'])));
+        } elseif (!empty($existing['scopes'])) {
+            $scopes = $existing['scopes'];
+        }
+
         self::saveCredentials([
             'client_id'     => $clientId,
             'client_secret' => $clientSecret,
             'access_token'  => $data['access_token'],
-            'refresh_token' => $data['refresh_token'] ?? '',
+            'refresh_token' => $data['refresh_token'] ?? ($existing['refresh_token'] ?? ''),
             'expires_in'    => $data['expires_in'] ?? 3600,
             'created_at'    => time(),
+            'scopes'        => $scopes,
         ]);
 
         return ['success' => true];
+    }
+
+    /**
+     * Check if a specific OAuth scope has been granted.
+     */
+    public static function hasScope(string $scope): bool
+    {
+        $creds = self::getCredentials();
+        if (!$creds) {
+            return false;
+        }
+        $granted = $creds['scopes'] ?? [];
+        if (empty($granted)) {
+            // Legacy token had only GSC scope
+            return $scope === self::SCOPE_GSC;
+        }
+        if (is_string($granted)) {
+            $granted = explode(' ', $granted);
+        }
+        return in_array($scope, $granted, true);
+    }
+
+    /**
+     * Check if Google Analytics 4 scope is granted.
+     */
+    public static function hasAnalyticsScope(): bool
+    {
+        return self::hasScope(self::SCOPE_GA);
+    }
+
+    /**
+     * Check if Search Console scope is granted.
+     */
+    public static function hasGscScope(): bool
+    {
+        return self::hasScope(self::SCOPE_GSC);
+    }
+
+    /**
+     * Check if Google account is currently connected.
+     */
+    public static function isConnected(): bool
+    {
+        $creds = self::getCredentials();
+        return !empty($creds['access_token']) || !empty($creds['refresh_token']);
     }
 
     /**
@@ -233,6 +311,9 @@ class GscOAuth
         $creds['created_at']   = time();
         if (!empty($data['refresh_token'])) {
             $creds['refresh_token'] = $data['refresh_token'];
+        }
+        if (!empty($data['scope'])) {
+            $creds['scopes'] = array_values(array_filter(explode(' ', (string) $data['scope'])));
         }
 
         self::saveCredentials($creds);

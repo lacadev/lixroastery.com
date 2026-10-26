@@ -32,7 +32,7 @@ class LacaAdminTabBar
         ],
         'google' => [
             'title' => 'Dịch vụ Google',
-            'pages' => ['laca-recaptcha', 'laca-login-socials'],
+            'pages' => ['laca-recaptcha', 'laca-login-socials', 'laca-google-analytics', 'laca-google-search-console'],
             'tabs'  => [
                 'laca-recaptcha' => [
                     'label' => 'Google reCAPTCHA',
@@ -42,13 +42,13 @@ class LacaAdminTabBar
                     'label' => 'Đăng nhập Google & MXH',
                     'url'   => 'admin.php?page=laca-login-socials',
                 ],
-                'google-analytics' => [
+                'laca-google-analytics' => [
                     'label' => 'Google Analytics & GTM',
-                    'url'   => 'admin.php?page=laca-seo&view=general&tab=analytics',
+                    'url'   => 'admin.php?page=laca-google-analytics',
                 ],
-                'google-search-console' => [
+                'laca-google-search-console' => [
                     'label' => 'Google Search Console',
-                    'url'   => 'admin.php?page=laca-seo&view=search-console',
+                    'url'   => 'admin.php?page=laca-google-search-console',
                 ],
             ],
         ],

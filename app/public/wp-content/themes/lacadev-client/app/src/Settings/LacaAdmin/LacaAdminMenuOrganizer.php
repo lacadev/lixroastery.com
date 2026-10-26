@@ -304,13 +304,15 @@ class LacaAdminMenuOrganizer
         $page = sanitize_key(wp_unslash($_GET['page'] ?? ''));
 
         $map = [
-            'laca-db-cleaner'          => 'laca-tools',
-            'laca-email-log'           => 'laca-tools',
-            'laca-login-socials'       => 'laca-recaptcha',
-            'lacadev-block-categories' => 'laca-block-sync',
-            'laca-tracker'             => 'laca-block-sync',
-            'laca-discord-hub'         => 'laca-project-notifications',
-            'laca-chatbot'             => 'laca-exit-popup',
+            'laca-db-cleaner'            => 'laca-tools',
+            'laca-email-log'             => 'laca-tools',
+            'laca-login-socials'         => 'laca-recaptcha',
+            'laca-google-analytics'      => 'laca-recaptcha',
+            'laca-google-search-console' => 'laca-recaptcha',
+            'lacadev-block-categories'   => 'laca-block-sync',
+            'laca-tracker'               => 'laca-block-sync',
+            'laca-discord-hub'           => 'laca-project-notifications',
+            'laca-chatbot'               => 'laca-exit-popup',
         ];
 
         return $map[$page] ?? $page;

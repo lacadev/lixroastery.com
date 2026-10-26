@@ -548,6 +548,26 @@ class GeneralFields
                     'Bật để mọi thao tác duyệt web, kiểm tra giao diện của admin không bị tính vào view thật.',
                     'Khi bạn đang đăng nhập quản trị viên, mã theo dõi Google Analytics sẽ không xuất hiện.'
                 ),
+
+            Field::make('ga4_property_id', 'text', 'Google Analytics 4 Property ID')
+                ->default('')
+                ->tab('analytics')
+                ->group('general')
+                ->note(
+                    'ID thuộc tính Google Analytics 4 (dãy số dạng 123456789).',
+                    'Được tự động phát hiện qua Google Analytics Admin API khi liên kết OAuth.',
+                    'Dùng để truy vấn dữ liệu báo cáo qua Google Analytics Data API.'
+                ),
+
+            Field::make('gsc_site_url', 'text', 'Google Search Console Site Property')
+                ->default('')
+                ->tab('analytics')
+                ->group('general')
+                ->note(
+                    'Địa chỉ property của Search Console (vd: sc-domain:domain.com hoặc https://domain.com/).',
+                    'Được tự động chọn hoặc chọn từ danh sách Search Console Sites khi liên kết OAuth.',
+                    'Dùng để truy vấn dữ liệu báo cáo qua Search Console API.'
+                ),
         ];
     }
 

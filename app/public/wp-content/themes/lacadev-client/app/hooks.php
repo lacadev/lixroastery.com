@@ -69,6 +69,15 @@ add_action('init', function () {
 });
 
 /**
+ * Google Services pages under Laca Admin (GA & GTM, Search Console).
+ */
+add_action('init', function () {
+    if (is_admin() && class_exists('\App\Settings\LacaAdmin\GoogleServicesPage')) {
+        (new \App\Settings\LacaAdmin\GoogleServicesPage())->register();
+    }
+});
+
+/**
  * UI Kit trang mẫu (style guide sống) để review.
  */
 add_action('init', function () {
