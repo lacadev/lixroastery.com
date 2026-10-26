@@ -66,13 +66,16 @@ class GscClient
         if (!empty($data['siteEntry']) && is_array($data['siteEntry'])) {
             foreach ($data['siteEntry'] as $entry) {
                 if (!empty($entry['siteUrl'])) {
-                    $sites[] = (string) $entry['siteUrl'];
+                    $sites[] = [
+                        'siteUrl'         => (string) $entry['siteUrl'],
+                        'permissionLevel' => (string) ($entry['permissionLevel'] ?? 'siteOwner'),
+                    ];
                 }
             }
         }
 
-        // Cache 12 hours
-        set_transient($cacheKey, $sites, 12 * HOUR_IN_SECONDS);
+        // Cache 1 hour
+        set_transient($cacheKey, $sites, HOUR_IN_SECONDS);
         return $sites;
     }
 
@@ -113,20 +116,41 @@ class GscClient
             'https://www.' . $cleanHost,
         ];
 
+        $siteMap = [];
+        foreach ($sites as $item) {
+            if (is_array($item) && !empty($item['siteUrl'])) {
+                $siteMap[(string) $item['siteUrl']] = (string) ($item['permissionLevel'] ?? 'siteOwner');
+            } elseif (is_string($item)) {
+                $siteMap[$item] = 'siteOwner';
+            }
+        }
+
+        if (empty($siteMap)) {
+            return null;
+        }
+
+        // 1. Match candidates that are verified (not siteUnverifiedUser)
         foreach ($candidates as $cand) {
-            if (in_array($cand, $sites, true)) {
+            if (isset($siteMap[$cand]) && $siteMap[$cand] !== 'siteUnverifiedUser') {
                 return $cand;
             }
         }
 
-        // Fallback: search case-insensitively or return first
-        foreach ($sites as $site) {
-            if (stripos($site, $cleanHost) !== false) {
-                return $site;
+        // 2. Match candidates even if unverified
+        foreach ($candidates as $cand) {
+            if (isset($siteMap[$cand])) {
+                return $cand;
             }
         }
 
-        return $sites[0] ?? null;
+        // 3. First verified site in list
+        foreach ($siteMap as $url => $perm) {
+            if ($perm !== 'siteUnverifiedUser') {
+                return $url;
+            }
+        }
+
+        return array_key_first($siteMap);
     }
 
     /**
@@ -184,7 +208,7 @@ class GscClient
             'rowLimit'   => 50,
         ];
 
-        $url = self::API_BASE . '/sites/' . urlencode($siteUrl) . '/searchAnalytics/query';
+        $url = self::WEBMASTERS_API_BASE . '/sites/' . rawurlencode($siteUrl) . '/searchAnalytics/query';
         $response = wp_remote_post($url, [
             'timeout' => 15,
             'headers' => [
@@ -341,7 +365,7 @@ class GscClient
             'rowLimit'   => 15,
         ];
 
-        $url = self::API_BASE . '/sites/' . urlencode($siteUrl) . '/searchAnalytics/query';
+        $url = self::WEBMASTERS_API_BASE . '/sites/' . rawurlencode($siteUrl) . '/searchAnalytics/query';
         $response = wp_remote_post($url, [
             'timeout' => 15,
             'headers' => [
@@ -445,9 +469,9 @@ class GscClient
      *
      * @param string $siteUrl
      * @param bool $forceRefresh
-     * @return array|null
+     * @return array|\WP_Error
      */
-    public static function getSitemaps(string $siteUrl, bool $forceRefresh = false): ?array
+    public static function getSitemaps(string $siteUrl, bool $forceRefresh = false): array|\WP_Error
     {
         $cacheKey = 'laca_gsc_sm_' . md5($siteUrl);
         if (!$forceRefresh) {
@@ -459,29 +483,35 @@ class GscClient
 
         $token = GscOAuth::getValidAccessToken();
         if (!$token) {
-            return null;
+            return new \WP_Error('no_token', __('Chưa kết nối tài khoản Google Search Console.', 'lacadev'));
         }
 
-        $url = self::API_BASE . '/sites/' . urlencode($siteUrl) . '/sitemaps';
+        $url = self::WEBMASTERS_API_BASE . '/sites/' . rawurlencode($siteUrl) . '/sitemaps';
         $response = wp_remote_get($url, [
             'timeout' => 15,
             'headers' => [
                 'Authorization' => 'Bearer ' . $token,
+                'Accept'        => 'application/json',
             ],
         ]);
 
         if (is_wp_error($response)) {
-            return null;
+            return $response;
         }
 
         $code = (int) wp_remote_retrieve_response_code($response);
         if ($code < 200 || $code >= 300) {
-            return null;
+            $rawBody = wp_remote_retrieve_body($response);
+            $errData = json_decode($rawBody, true);
+            $msg = is_array($errData) && isset($errData['error']['message']) ? $errData['error']['message'] : '';
+            return new \WP_Error('http_' . $code, sprintf(__('Lỗi kết nối sitemaps Google (%d)%s', 'lacadev'), $code, $msg ? ': ' . $msg : ''), [
+                'status' => $code,
+            ]);
         }
 
         $data = json_decode(wp_remote_retrieve_body($response), true);
         if (!is_array($data)) {
-            return null;
+            return new \WP_Error('invalid_response', __('Phản hồi sitemaps không hợp lệ.', 'lacadev'));
         }
 
         $parsed = self::parseSitemapsResponse($data);

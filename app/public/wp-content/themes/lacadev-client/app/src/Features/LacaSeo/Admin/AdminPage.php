@@ -7,6 +7,7 @@ use App\Features\LacaSeo\Core\Modules;
 use App\Features\LacaSeo\Core\Settings;
 use App\Features\LacaSeo\Fields\GeneralFields;
 use App\Features\LacaSeo\Fields\TitlesFields;
+use App\Features\LacaSeo\Modules\RoleManager\CapabilityManager;
 
 defined('ABSPATH') || exit;
 
@@ -447,12 +448,17 @@ class AdminPage
     }
 
     /**
-     * AJAX endpoint to fetch / refresh GSC and GA4 report data.
+     * AJAX endpoint to fetch / refresh GSC and GA4 report data and return HTML partial.
      */
     public function ajaxGoogleReport(): void
     {
-        check_ajax_referer('laca_seo_admin_nonce');
-        if (!current_user_can('manage_options')) {
+        $nonce = $_REQUEST['nonce'] ?? $_REQUEST['_ajax_nonce'] ?? '';
+        $valid = wp_verify_nonce($nonce, 'laca_google_report_nonce') || wp_verify_nonce($nonce, 'laca_seo_admin_nonce');
+        if (!$valid) {
+            wp_die('-1', 403);
+        }
+
+        if (!CapabilityManager::hasCap('site_analysis') && !current_user_can('manage_options')) {
             wp_send_json_error(['message' => __('Bạn không có quyền thực hiện thao tác này.', 'lacadev')], 403);
         }
 
@@ -463,7 +469,27 @@ class AdminPage
 
         $refresh = !empty($_REQUEST['refresh']);
 
-        $data = GoogleDashboardService::getDashboardReport($range, $refresh);
-        wp_send_json_success($data);
+        if (!empty($_REQUEST['laca_mock_google'])) {
+            $_GET['laca_mock_google'] = '1';
+        }
+
+        $report = GoogleDashboardService::getDashboardReport($range, $refresh);
+        $gsc = $report['gsc'];
+        $ga  = $report['ga4'];
+
+        $rangeLabels = [
+            '7d'  => __('7 ngày qua', 'lacadev'),
+            '28d' => __('28 ngày qua', 'lacadev'),
+            '90d' => __('90 ngày qua', 'lacadev'),
+        ];
+
+        ob_start();
+        include __DIR__ . '/views/partials/google-report.php';
+        $html = ob_get_clean();
+
+        wp_send_json_success([
+            'html'  => $html,
+            'range' => $range,
+        ]);
     }
 }

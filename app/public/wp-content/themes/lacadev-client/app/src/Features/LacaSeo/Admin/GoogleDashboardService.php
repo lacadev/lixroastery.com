@@ -66,10 +66,24 @@ class GoogleDashboardService
 
         $result = GscClient::getPerformanceSummary($siteUrl, $range, $forceRefresh);
         if (is_wp_error($result)) {
+            $status = (int) ($result->get_error_data()['status'] ?? 0);
+            $msg = $result->get_error_message();
+            if ($status === 404) {
+                $msg = sprintf(
+                    __('Không tìm thấy property "%s" trong Google Search Console. Hãy kiểm tra lại hoặc chọn property khác.', 'lacadev'),
+                    $siteUrl
+                );
+            } elseif ($status === 403) {
+                $msg = sprintf(
+                    __('Tài khoản chưa có quyền truy cập property "%s". Hãy kiểm tra lại quyền hoặc chọn property khác.', 'lacadev'),
+                    $siteUrl
+                );
+            }
             return [
                 'connected' => true,
-                'error'     => $result->get_error_message(),
-                'status'    => (int) ($result->get_error_data()['status'] ?? 0),
+                'error'     => $msg,
+                'status'    => $status,
+                'siteUrl'   => $siteUrl,
                 'setup_url' => admin_url('admin.php?page=laca-google-search-console'),
             ];
         }

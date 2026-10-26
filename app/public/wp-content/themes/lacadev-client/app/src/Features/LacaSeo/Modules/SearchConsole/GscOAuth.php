@@ -233,6 +233,48 @@ class GscOAuth
     }
 
     /**
+     * Get the email of the connected Google account (from credentials, ID token, or tokeninfo).
+     */
+    public static function getConnectedEmail(): ?string
+    {
+        $creds = self::getCredentials();
+        if (!$creds) {
+            return null;
+        }
+
+        if (!empty($creds['email'])) {
+            return (string) $creds['email'];
+        }
+
+        $token = self::getValidAccessToken();
+        if (!$token) {
+            return null;
+        }
+
+        $cacheKey = 'laca_gsc_email_' . md5($token);
+        $cached = get_transient($cacheKey);
+        if (is_string($cached) && $cached !== '') {
+            return $cached;
+        }
+
+        $response = wp_remote_get('https://www.googleapis.com/oauth2/v3/tokeninfo?access_token=' . urlencode($token), [
+            'timeout' => 5,
+        ]);
+
+        if (is_wp_error($response) || (int) wp_remote_retrieve_response_code($response) !== 200) {
+            return null;
+        }
+
+        $data = json_decode(wp_remote_retrieve_body($response), true);
+        if (!empty($data['email']) && is_string($data['email'])) {
+            set_transient($cacheKey, $data['email'], 12 * HOUR_IN_SECONDS);
+            return $data['email'];
+        }
+
+        return null;
+    }
+
+    /**
      * Get stored credentials and decrypted tokens.
      *
      * @return array|null

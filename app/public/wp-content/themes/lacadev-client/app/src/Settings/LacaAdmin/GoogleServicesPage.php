@@ -186,6 +186,14 @@ class GoogleServicesPage
             exit;
         }
 
+        // 4b. Refresh GSC sites list
+        if (isset($_POST['laca_refresh_gsc_sites'])) {
+            check_admin_referer('laca_refresh_gsc_sites_action');
+            delete_transient('laca_gsc_sites_list');
+            wp_safe_redirect(add_query_arg(['refreshed' => '1'], admin_url('admin.php?page=' . self::PAGE_SEARCH_CONSOLE)));
+            exit;
+        }
+
         // 5. Save GA4 Property ID selection
         if (isset($_POST['laca_save_ga4_property'])) {
             check_admin_referer('laca_save_ga4_property_action');
@@ -328,7 +336,8 @@ class GoogleServicesPage
         // Auto-discover property if connected with GA scope and property ID is missing
         $gaProperties = [];
         if ($isConnected && $hasGaScope) {
-            $gaProperties = GaClient::listProperties();
+            $gaPropertiesResult = GaClient::listProperties();
+            $gaProperties = is_wp_error($gaPropertiesResult) ? [] : $gaPropertiesResult;
             if (empty($currentPropId) && !empty($currentMsId)) {
                 $foundProp = GaClient::findPropertyByMeasurementId($currentMsId);
                 if ($foundProp && !empty($foundProp['propertyId'])) {
@@ -474,19 +483,35 @@ class GoogleServicesPage
      */
     public function renderSearchConsolePage(): void
     {
-        $isConnected = GscOAuth::isConnected();
-        $creds       = GscOAuth::getCredentials();
-        $redirectUri = GscOAuth::getRedirectUri();
-        $siteUrl     = GscClient::getSiteUrl();
+        $isConnected    = GscOAuth::isConnected();
+        $creds          = GscOAuth::getCredentials();
+        $redirectUri    = GscOAuth::getRedirectUri();
+        $savedSiteUrl   = (string) \App\Features\LacaSeo\Core\Settings::get('general.gsc_site_url', '');
+        $connectedEmail = $isConnected ? GscOAuth::getConnectedEmail() : null;
 
-        $sites = $isConnected ? GscClient::listSites() : [];
-        if ($isConnected && empty($siteUrl) && !empty($sites)) {
+        $sitesResult = $isConnected ? GscClient::listSites() : [];
+        $sites = is_wp_error($sitesResult) ? [] : $sitesResult;
+
+        $hasSavedInSites = false;
+        foreach ($sites as $item) {
+            $url = is_array($item) ? ($item['siteUrl'] ?? '') : (string) $item;
+            if ($url === $savedSiteUrl) {
+                $hasSavedInSites = true;
+                break;
+            }
+        }
+
+        if ($isConnected && (!$hasSavedInSites || empty($savedSiteUrl)) && !empty($sites)) {
             $siteUrl = GscClient::selectBestSiteUrl($sites);
             if (!empty($siteUrl)) {
                 $currentOpts = Settings::getGroup('general');
                 $currentOpts['gsc_site_url'] = $siteUrl;
                 Settings::updateGroup('general', $currentOpts);
+            } else {
+                $siteUrl = GscClient::getSiteUrl();
             }
+        } else {
+            $siteUrl = !empty($savedSiteUrl) ? $savedSiteUrl : GscClient::getSiteUrl();
         }
 
         ?>
@@ -519,6 +544,13 @@ class GoogleServicesPage
                 </div>
 
                 <div class="laca-seo-fields-container" style="padding: 20px;">
+                    <?php if ($isConnected && !empty($connectedEmail)): ?>
+                        <div style="font-size: 13px; color: var(--laca-fg-muted, #71717a); margin-bottom: 14px; display: flex; align-items: center; gap: 6px;">
+                            <span class="dashicons dashicons-admin-users" style="font-size: 16px; width: 16px; height: 16px;"></span>
+                            <span><?php printf(esc_html__('Đang kết nối bằng tài khoản: %s', 'laca'), '<strong>' . esc_html($connectedEmail) . '</strong>'); ?></span>
+                        </div>
+                    <?php endif; ?>
+
                     <?php $this->renderGoogleCloudPrepDetails($redirectUri); ?>
 
                     <?php if (!$isConnected): ?>
@@ -544,29 +576,57 @@ class GoogleServicesPage
                     <?php else: ?>
                         <!-- Đã kết nối: Hiển thị Property Selector -->
                         <div style="margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--laca-border, #e4e4e7);">
-                            <form method="post" style="display: flex; gap: 12px; align-items: flex-end; flex-wrap: wrap;">
-                                <?php wp_nonce_field('laca_save_gsc_site_url_action'); ?>
-                                <div style="flex: 1; min-width: 320px;">
-                                    <label for="gsc_site_url_select" style="display: block; font-weight: 600; margin-bottom: 6px;">
-                                        <?php esc_html_e('Trang web / Property Search Console được chọn:', 'laca'); ?>
-                                    </label>
-                                    <?php if (empty($sites)): ?>
-                                        <input type="text" name="gsc_site_url" id="gsc_site_url_select" class="regular-text" value="<?php echo esc_attr($siteUrl); ?>" placeholder="sc-domain:example.com hoặc https://example.com/" style="max-width: 560px;">
-                                        <p class="description"><?php esc_html_e('Nhập địa chỉ property (sc-domain:domain.com hoặc https://domain.com/).', 'laca'); ?></p>
-                                    <?php else: ?>
+                            <?php if (empty($sites)): ?>
+                                <div class="laca-alert laca-alert--warning" role="alert" style="margin-bottom: 16px;">
+                                    <span class="dashicons dashicons-warning laca-alert__icon" aria-hidden="true"></span>
+                                    <div class="laca-alert__content">
+                                        <p style="margin: 0 0 10px 0;">
+                                            <?php
+                                            $accText = !empty($connectedEmail) ? ' ' . esc_html($connectedEmail) : '';
+                                            printf(
+                                                esc_html__('Tài khoản Google%s chưa có property nào trong Search Console — thêm site tại %s rồi bấm Tải lại.', 'laca'),
+                                                $accText,
+                                                '<a href="https://search.google.com/search-console" target="_blank" rel="noopener">search.google.com/search-console</a>'
+                                            );
+                                            ?>
+                                        </p>
+                                        <form method="post" style="margin: 0; display: inline-block;">
+                                            <?php wp_nonce_field('laca_refresh_gsc_sites_action'); ?>
+                                            <button type="submit" name="laca_refresh_gsc_sites" class="button button-secondary button-small">
+                                                <span class="dashicons dashicons-update" style="margin-top: 2px;"></span> <?php esc_html_e('Tải lại danh sách', 'laca'); ?>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            <?php else: ?>
+                                <form method="post" style="display: flex; gap: 12px; align-items: flex-end; flex-wrap: wrap;">
+                                    <?php wp_nonce_field('laca_save_gsc_site_url_action'); ?>
+                                    <div style="flex: 1; min-width: 320px;">
+                                        <label for="gsc_site_url_select" style="display: block; font-weight: 600; margin-bottom: 6px;">
+                                            <?php esc_html_e('Trang web / Property Search Console được chọn:', 'laca'); ?>
+                                        </label>
                                         <select name="gsc_site_url" id="gsc_site_url_select" style="width: 100%; max-width: 560px;">
-                                            <?php foreach ($sites as $site): ?>
-                                                <option value="<?php echo esc_attr($site); ?>" <?php selected($siteUrl, $site); ?>>
-                                                    <?php echo esc_html($site); ?>
+                                            <?php foreach ($sites as $siteEntry): ?>
+                                                <?php
+                                                $optUrl = is_array($siteEntry) ? ($siteEntry['siteUrl'] ?? '') : (string) $siteEntry;
+                                                $perm   = is_array($siteEntry) ? ($siteEntry['permissionLevel'] ?? 'siteOwner') : 'siteOwner';
+                                                $isUnverified = ($perm === 'siteUnverifiedUser');
+                                                $label  = $optUrl . ($isUnverified ? ' (' . __('chưa xác minh', 'laca') . ')' : '');
+                                                ?>
+                                                <option value="<?php echo esc_attr($optUrl); ?>" <?php selected($siteUrl, $optUrl); ?> <?php disabled($isUnverified); ?>>
+                                                    <?php echo esc_html($label); ?>
                                                 </option>
                                             <?php endforeach; ?>
                                         </select>
-                                    <?php endif; ?>
-                                </div>
-                                <button type="submit" name="laca_save_gsc_site_url" class="button button-secondary">
-                                    <?php esc_html_e('Lưu Property', 'laca'); ?>
-                                </button>
-                            </form>
+                                    </div>
+                                    <button type="submit" name="laca_save_gsc_site_url" class="button button-secondary">
+                                        <?php esc_html_e('Lưu Property', 'laca'); ?>
+                                    </button>
+                                    <button type="submit" name="laca_refresh_gsc_sites" class="button button-secondary" title="<?php esc_attr_e('Tải lại danh sách property từ Google', 'laca'); ?>">
+                                        <span class="dashicons dashicons-update" style="margin-top: 3px;"></span> <?php esc_html_e('Tải lại danh sách', 'laca'); ?>
+                                    </button>
+                                </form>
+                            <?php endif; ?>
                         </div>
 
                         <!-- Link sang báo cáo chi tiết -->
@@ -639,6 +699,9 @@ class GoogleServicesPage
         }
         if (isset($_GET['updated'])) {
             echo '<div class="notice notice-success is-dismissible"><p>' . esc_html__('Đã lưu cài đặt thành công.', 'laca') . '</p></div>';
+        }
+        if (isset($_GET['refreshed'])) {
+            echo '<div class="notice notice-success is-dismissible"><p>' . esc_html__('Đã làm mới danh sách property từ Google Search Console.', 'laca') . '</p></div>';
         }
         if (!empty($_GET['error'])) {
             echo '<div class="notice notice-error is-dismissible"><p>' . esc_html(wp_unslash($_GET['error'])) . '</p></div>';

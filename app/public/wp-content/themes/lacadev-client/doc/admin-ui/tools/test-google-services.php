@@ -1006,5 +1006,458 @@ runTest('GoogleDashboardService::isMockMode: Strictly false without ?laca_mock_g
     }
 }, $pass, $fail);
 
+// -------------------------------------------------------------
+// Test 17: Render views/search-console.php khi searchAnalytics trả 404 và khi trả 403
+// Không exception/fatal, có thông báo tiếng Việt + link chọn property; không "Tổng lượt click" với số 0
+// -------------------------------------------------------------
+runTest('views/search-console.php: Gracefully renders on 404 and 403 without fatal', function () {
+    $oldUser = wp_get_current_user();
+    $admins = get_users(['role' => 'administrator', 'number' => 1]);
+    $adminId = !empty($admins) ? $admins[0]->ID : 1;
+    wp_set_current_user($adminId);
+
+    $oldCreds = GscOAuth::getCredentials();
+    GscOAuth::saveCredentials([
+        'access_token'  => 'mock-token',
+        'refresh_token' => 'mock-refresh',
+        'created_at'    => time(),
+        'expires_in'    => 3600,
+        'client_id'     => 'mock-client',
+        'client_secret' => 'mock-secret',
+    ]);
+
+    $savedOpt = get_option('laca_seo_general');
+    update_option('laca_seo_general', array_merge((array) $savedOpt, [
+        'gsc_site_url' => 'https://lixroastery.com/',
+    ]));
+    Settings::clearCache();
+
+    // Case A: 404
+    $mockFilter404 = function ($preempt, $parsed_args, $url) {
+        if (stripos($url, 'searchanalytics/query') !== false || stripos($url, 'sitemaps') !== false) {
+            return [
+                'response' => ['code' => 404, 'message' => 'Not Found'],
+                'body'     => json_encode([
+                    'error' => [
+                        'code'    => 404,
+                        'message' => 'Requested entity was not found.',
+                        'status'  => 'NOT_FOUND',
+                    ],
+                ]),
+                'headers'  => ['content-type' => 'application/json'],
+            ];
+        }
+        return $preempt;
+    };
+
+    add_filter('pre_http_request', $mockFilter404, 10, 3);
+    try {
+        ob_start();
+        include dirname(__DIR__, 3) . '/app/src/Features/LacaSeo/Admin/views/search-console.php';
+        $html404 = ob_get_clean();
+    } catch (\Throwable $e) {
+        ob_end_clean();
+        remove_filter('pre_http_request', $mockFilter404, 10);
+        return "404 caused fatal/exception: " . $e->getMessage();
+    }
+    remove_filter('pre_http_request', $mockFilter404, 10);
+
+    if (!str_contains($html404, '404') && !str_contains($html404, 'Không tìm thấy property')) {
+        return "404 HTML missing Vietnamese 404 error explanation";
+    }
+    if (!str_contains($html404, 'Chọn property khác') && !str_contains($html404, 'page=laca-google-search-console')) {
+        return "404 HTML missing link to choose another property";
+    }
+    if (str_contains($html404, 'Tổng lượt click') && str_contains($html404, '>0<')) {
+        return "404 HTML unexpectedly shows 'Tổng lượt click' with 0";
+    }
+
+    // Case B: 403
+    $mockFilter403 = function ($preempt, $parsed_args, $url) {
+        if (stripos($url, 'searchanalytics/query') !== false || stripos($url, 'sitemaps') !== false) {
+            return [
+                'response' => ['code' => 403, 'message' => 'Forbidden'],
+                'body'     => json_encode([
+                    'error' => [
+                        'code'    => 403,
+                        'message' => 'User does not have sufficient permission for site.',
+                        'status'  => 'PERMISSION_DENIED',
+                    ],
+                ]),
+                'headers'  => ['content-type' => 'application/json'],
+            ];
+        }
+        return $preempt;
+    };
+
+    add_filter('pre_http_request', $mockFilter403, 10, 3);
+    try {
+        ob_start();
+        include dirname(__DIR__, 3) . '/app/src/Features/LacaSeo/Admin/views/search-console.php';
+        $html403 = ob_get_clean();
+    } catch (\Throwable $e) {
+        ob_end_clean();
+        remove_filter('pre_http_request', $mockFilter403, 10);
+        return "403 caused fatal/exception: " . $e->getMessage();
+    }
+    remove_filter('pre_http_request', $mockFilter403, 10);
+
+    if (!str_contains($html403, '403') && !str_contains($html403, 'quyền truy cập')) {
+        return "403 HTML missing 403 error explanation";
+    }
+    if (!str_contains($html403, 'Chọn property khác') && !str_contains($html403, 'page=laca-google-search-console')) {
+        return "403 HTML missing link to choose another property";
+    }
+    if (str_contains($html403, 'Tổng lượt click') && str_contains($html403, '>0<')) {
+        return "403 HTML unexpectedly shows 'Tổng lượt click' with 0";
+    }
+
+    // Teardown
+    update_option('laca_seo_general', $savedOpt);
+    Settings::clearCache();
+    if ($oldCreds) {
+        GscOAuth::saveCredentials($oldCreds);
+    } else {
+        GscOAuth::disconnect();
+    }
+    wp_set_current_user($oldUser instanceof \WP_User ? $oldUser->ID : (int) $oldUser);
+
+    return true;
+}, $pass, $fail);
+
+// -------------------------------------------------------------
+// Test 18: sites.list trả [sc-domain:lixroastery.com (siteOwner), https://lixroastery.com/ (siteUnverifiedUser)]
+// Select chọn sẵn sc-domain:lixroastery.com, option chưa xác minh disabled
+// -------------------------------------------------------------
+runTest('GoogleServicesPage: sites.list auto-selects sc-domain and disables unverified option', function () {
+    $oldUser = wp_get_current_user();
+    $admins = get_users(['role' => 'administrator', 'number' => 1]);
+    $adminId = !empty($admins) ? $admins[0]->ID : 1;
+    wp_set_current_user($adminId);
+
+    $oldCreds = GscOAuth::getCredentials();
+    GscOAuth::saveCredentials([
+        'access_token'  => 'mock-token',
+        'refresh_token' => 'mock-refresh',
+        'created_at'    => time(),
+        'expires_in'    => 3600,
+        'client_id'     => 'mock-client',
+        'client_secret' => 'mock-secret',
+    ]);
+
+    $savedOpt = get_option('laca_seo_general');
+    // Clear currently saved gsc_site_url so it tests auto-selection
+    $testOpt = (array) $savedOpt;
+    unset($testOpt['gsc_site_url']);
+    update_option('laca_seo_general', $testOpt);
+    Settings::clearCache();
+    delete_transient('laca_gsc_sites_list');
+
+    $mockFilter = function ($preempt, $parsed_args, $url) {
+        if (str_contains($url, 'webmasters/v3/sites')) {
+            return [
+                'response' => ['code' => 200, 'message' => 'OK'],
+                'body'     => json_encode([
+                    'siteEntry' => [
+                        [
+                            'siteUrl'         => 'sc-domain:lixroastery.com',
+                            'permissionLevel' => 'siteOwner',
+                        ],
+                        [
+                            'siteUrl'         => 'https://lixroastery.com/',
+                            'permissionLevel' => 'siteUnverifiedUser',
+                        ],
+                    ],
+                ]),
+                'headers'  => ['content-type' => 'application/json'],
+            ];
+        }
+        return $preempt;
+    };
+
+    add_filter('pre_http_request', $mockFilter, 10, 3);
+    try {
+        ob_start();
+        $page = new GoogleServicesPage();
+        $page->renderSearchConsolePage();
+        $html = ob_get_clean();
+    } finally {
+        remove_filter('pre_http_request', $mockFilter, 10);
+        delete_transient('laca_gsc_sites_list');
+        update_option('laca_seo_general', $savedOpt);
+        Settings::clearCache();
+        if ($oldCreds) {
+            GscOAuth::saveCredentials($oldCreds);
+        } else {
+            GscOAuth::disconnect();
+        }
+        wp_set_current_user($oldUser instanceof \WP_User ? $oldUser->ID : (int) $oldUser);
+    }
+
+    if (!str_contains($html, '<select name="gsc_site_url"')) {
+        return "Expected <select name=\"gsc_site_url\"> not found in rendered HTML";
+    }
+
+    // Option sc-domain:lixroastery.com should be selected
+    if (!preg_match('/<option\s+value="sc-domain:lixroastery\.com"[^>]*selected/i', $html)) {
+        return "Expected sc-domain:lixroastery.com option to be selected";
+    }
+
+    // Option https://lixroastery.com/ should be disabled
+    if (!preg_match('/<option\s+value="https:\/\/lixroastery\.com\/"[^>]*disabled/i', $html)) {
+        return "Expected unverified site option to be disabled";
+    }
+
+    return true;
+}, $pass, $fail);
+
+// -------------------------------------------------------------
+// Test 19: sites.list rỗng → HTML có hướng dẫn thêm property
+// -------------------------------------------------------------
+runTest('GoogleServicesPage: Empty sites.list displays guidance to add property in GSC', function () {
+    $oldUser = wp_get_current_user();
+    $admins = get_users(['role' => 'administrator', 'number' => 1]);
+    $adminId = !empty($admins) ? $admins[0]->ID : 1;
+    wp_set_current_user($adminId);
+
+    $oldCreds = GscOAuth::getCredentials();
+    GscOAuth::saveCredentials([
+        'access_token'  => 'mock-token',
+        'refresh_token' => 'mock-refresh',
+        'created_at'    => time(),
+        'expires_in'    => 3600,
+        'client_id'     => 'mock-client',
+        'client_secret' => 'mock-secret',
+    ]);
+
+    delete_transient('laca_gsc_sites_list');
+
+    $mockFilter = function ($preempt, $parsed_args, $url) {
+        if (str_contains($url, 'webmasters/v3/sites')) {
+            return [
+                'response' => ['code' => 200, 'message' => 'OK'],
+                'body'     => json_encode(['siteEntry' => []]),
+                'headers'  => ['content-type' => 'application/json'],
+            ];
+        }
+        return $preempt;
+    };
+
+    add_filter('pre_http_request', $mockFilter, 10, 3);
+    try {
+        ob_start();
+        $page = new GoogleServicesPage();
+        $page->renderSearchConsolePage();
+        $html = ob_get_clean();
+    } finally {
+        remove_filter('pre_http_request', $mockFilter, 10);
+        delete_transient('laca_gsc_sites_list');
+        if ($oldCreds) {
+            GscOAuth::saveCredentials($oldCreds);
+        } else {
+            GscOAuth::disconnect();
+        }
+        wp_set_current_user($oldUser instanceof \WP_User ? $oldUser->ID : (int) $oldUser);
+    }
+
+    if (!str_contains($html, 'search.google.com/search-console') && !str_contains($html, 'chưa có property nào')) {
+        return "Empty siteEntry HTML missing guidance to add property via search.google.com/search-console";
+    }
+
+    return true;
+}, $pass, $fail);
+
+// -------------------------------------------------------------
+// Test 20: AJAX laca_google_report không nonce → 403/-1; có nonce + mock dữ liệu → trả HTML partial có 2 cột
+// -------------------------------------------------------------
+runTest('DashboardWidget::ajaxGoogleReport: Rejects without nonce and returns 2-col partial with nonce + mock', function () {
+    $widget = new \App\Features\LacaSeo\Modules\DashboardWidget\DashboardWidget();
+
+    add_filter('wp_doing_ajax', '__return_true');
+    $dieFilter = function () {
+        return function ($message, $title, $args) {
+            $code = $args['response'] ?? 403;
+            throw new \RuntimeException('DIE:' . $message . ':' . $code);
+        };
+    };
+    add_filter('wp_die_ajax_handler', $dieFilter);
+
+    $oldUser = wp_get_current_user();
+    $admins = get_users(['role' => 'administrator', 'number' => 1]);
+    $adminId = !empty($admins) ? $admins[0]->ID : 1;
+    wp_set_current_user($adminId);
+
+    try {
+        // Case A: No nonce => check_ajax_referer terminates with -1 / 403
+        $_POST = ['action' => 'laca_google_report'];
+        $_REQUEST = $_POST;
+
+        $caughtDie = null;
+        try {
+            ob_start();
+            $widget->ajaxGoogleReport();
+            ob_end_clean();
+        } catch (\RuntimeException $e) {
+            $caughtDie = $e->getMessage();
+        }
+
+        if (!$caughtDie || (!str_contains($caughtDie, 'DIE:-1') && !str_contains($caughtDie, '403'))) {
+            return "Expected AJAX call without nonce to trigger die -1/403, got '{$caughtDie}'";
+        }
+
+        // Case B: With valid nonce and mock data
+        $_POST = [
+            'action'            => 'laca_google_report',
+            'nonce'             => wp_create_nonce('laca_google_report_nonce'),
+            'range'             => '28d',
+            'laca_mock_google'  => '1',
+        ];
+        $_REQUEST = $_POST;
+        $_GET['laca_mock_google'] = '1';
+
+        $jsonOutput = '';
+        try {
+            ob_start();
+            $widget->ajaxGoogleReport();
+        } catch (\RuntimeException $e) {
+            $jsonOutput = ob_get_clean();
+        }
+
+        $res = json_decode($jsonOutput, true);
+        if (empty($res['success'])) {
+            return "Expected AJAX response success=true, got output: " . substr($jsonOutput, 0, 200);
+        }
+
+        $html = $res['data']['html'] ?? '';
+        if (!str_contains($html, 'Google Search Console') || !str_contains($html, 'Google Analytics 4')) {
+            return "Expected partial to contain both Google Search Console and Google Analytics 4 columns";
+        }
+
+        if (!str_contains($html, 'laca-google-dual-grid')) {
+            return "Expected partial to contain 2-column dual grid layout";
+        }
+
+        return true;
+    } finally {
+        remove_filter('wp_doing_ajax', '__return_true');
+        remove_filter('wp_die_ajax_handler', $dieFilter);
+        unset($_GET['laca_mock_google']);
+        $_POST = [];
+        $_REQUEST = [];
+        wp_set_current_user($oldUser instanceof \WP_User ? $oldUser->ID : (int) $oldUser);
+    }
+}, $pass, $fail);
+
+// -------------------------------------------------------------
+// Test 21: GSC Endpoints use correct Webmasters v3 and SearchConsole v1 URLs with rawurlencode
+// searchAnalytics -> https://www.googleapis.com/webmasters/v3/sites/https%3A%2F%2Flixroastery.com%2F/searchAnalytics/query
+// sitemaps -> https://www.googleapis.com/webmasters/v3/sites/https%3A%2F%2Flixroastery.com%2F/sitemaps
+// urlInspection -> https://searchconsole.googleapis.com/v1/urlInspection/index:inspect
+// Mock trả 404 cho mọi URL khác những URL đúng này.
+// -------------------------------------------------------------
+runTest('GSC Client: Calls exact canonical endpoints (Webmasters v3 vs SearchConsole v1) with rawurlencode', function () {
+    $oldCreds = GscOAuth::getCredentials();
+    GscOAuth::saveCredentials([
+        'access_token'  => 'mock-token',
+        'refresh_token' => 'mock-refresh',
+        'created_at'    => time(),
+        'expires_in'    => 3600,
+        'client_id'     => 'mock-client',
+        'client_secret' => 'mock-secret',
+    ]);
+
+    $calledUrls = [];
+
+    $expectedAnalytics = 'https://www.googleapis.com/webmasters/v3/sites/https%3A%2F%2Flixroastery.com%2F/searchAnalytics/query';
+    $expectedSitemaps  = 'https://www.googleapis.com/webmasters/v3/sites/https%3A%2F%2Flixroastery.com%2F/sitemaps';
+    $expectedInspect   = 'https://searchconsole.googleapis.com/v1/urlInspection/index:inspect';
+
+    $mockFilter = function ($preempt, $parsed_args, $url) use (&$calledUrls, $expectedAnalytics, $expectedSitemaps, $expectedInspect) {
+        $calledUrls[] = $url;
+
+        if ($url === $expectedAnalytics) {
+            return [
+                'response' => ['code' => 200, 'message' => 'OK'],
+                'body'     => json_encode([
+                    'rows' => [
+                        ['clicks' => 1, 'impressions' => 10, 'ctr' => 0.1, 'position' => 1.5],
+                    ],
+                ]),
+                'headers'  => ['content-type' => 'application/json'],
+            ];
+        }
+
+        if ($url === $expectedSitemaps) {
+            return [
+                'response' => ['code' => 200, 'message' => 'OK'],
+                'body'     => json_encode([
+                    'sitemap' => [
+                        ['path' => 'https://lixroastery.com/sitemap_index.xml', 'lastSubmitted' => '2026-10-25T00:00:00Z'],
+                    ],
+                ]),
+                'headers'  => ['content-type' => 'application/json'],
+            ];
+        }
+
+        if ($url === $expectedInspect) {
+            return [
+                'response' => ['code' => 200, 'message' => 'OK'],
+                'body'     => json_encode([
+                    'inspectionResult' => [
+                        'indexStatusResult' => ['verdict' => 'PASS'],
+                    ],
+                ]),
+                'headers'  => ['content-type' => 'application/json'],
+            ];
+        }
+
+        // Mock returns 404 for ANY other URL
+        return [
+            'response' => ['code' => 404, 'message' => 'Not Found'],
+            'body'     => json_encode(['error' => ['code' => 404, 'message' => 'Not Found']]),
+            'headers'  => ['content-type' => 'application/json'],
+        ];
+    };
+
+    add_filter('pre_http_request', $mockFilter, 10, 3);
+    try {
+        $perf = GscClient::getPerformanceSummary('https://lixroastery.com/', 28, true);
+        if (is_wp_error($perf)) {
+            return "searchAnalytics failed with error: " . $perf->get_error_message() . " (called: " . implode(', ', $calledUrls) . ")";
+        }
+
+        $sitemaps = GscClient::getSitemaps('https://lixroastery.com/', true);
+        if (is_wp_error($sitemaps)) {
+            return "sitemaps failed with error: " . $sitemaps->get_error_message() . " (called: " . implode(', ', $calledUrls) . ")";
+        }
+
+        $inspect = GscClient::inspectUrl('https://lixroastery.com/', 'https://lixroastery.com/about', true);
+        if (is_wp_error($inspect)) {
+            return "inspectUrl failed with error: " . $inspect->get_error_message() . " (called: " . implode(', ', $calledUrls) . ")";
+        }
+    } finally {
+        remove_filter('pre_http_request', $mockFilter, 10);
+        if ($oldCreds) {
+            GscOAuth::saveCredentials($oldCreds);
+        } else {
+            GscOAuth::disconnect();
+        }
+    }
+
+    if (!in_array($expectedAnalytics, $calledUrls, true)) {
+        return "searchAnalytics URL mismatch: expected '{$expectedAnalytics}', called: " . json_encode($calledUrls);
+    }
+    if (!in_array($expectedSitemaps, $calledUrls, true)) {
+        return "sitemaps URL mismatch: expected '{$expectedSitemaps}', called: " . json_encode($calledUrls);
+    }
+    if (!in_array($expectedInspect, $calledUrls, true)) {
+        return "inspectUrl URL mismatch: expected '{$expectedInspect}', called: " . json_encode($calledUrls);
+    }
+
+    return true;
+}, $pass, $fail);
+
 echo "SUMMARY pass={$pass} fail={$fail}\n";
 exit($fail === 0 ? 0 : 1);
+
+

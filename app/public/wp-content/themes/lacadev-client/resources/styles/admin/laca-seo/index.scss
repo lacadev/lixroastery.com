@@ -1495,3 +1495,127 @@ input[type="file"] {
 }
 .laca-seo-handbook-item__action { margin-top: 12px; }
 
+// ============================================================
+// Google Services Report (GSC + GA4) Dashboard Styles
+// ============================================================
+#laca-google-report {
+    margin: 16px 20px 24px 2px;
+    max-width: calc(100% - 20px);
+    font-family: var(--laca-font);
+    color: var(--laca-fg);
+    box-sizing: border-box;
+
+    @media (max-width: 782px) {
+        margin: 12px 10px 20px 0;
+        max-width: calc(100% - 10px);
+    }
+
+    * {
+        box-sizing: border-box;
+    }
+}
+
+.laca-google-report-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 12px;
+
+    &__title {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+
+        .dashicons {
+            font-size: 20px;
+            width: 20px;
+            height: 20px;
+            color: var(--laca-fg);
+        }
+
+        h2 {
+            font-size: 16px;
+            font-weight: 600;
+            margin: 0;
+            color: var(--laca-fg);
+        }
+    }
+
+    &__actions {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+}
+
+.laca-google-report-container {
+    transition: opacity 0.2s ease-in-out;
+
+    &.is-collapsed {
+        display: none;
+    }
+}
+
+.laca-google-dual-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    align-items: start;
+    margin-bottom: 24px;
+
+    @media (max-width: 1024px) {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+
+    @media (max-width: 480px) {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+}
+
+.laca-google-card {
+    min-width: 0;
+    max-width: 100%;
+}
+
+.laca-google-report-skeleton {
+    width: 100%;
+
+    .laca-skeleton-bar {
+        height: 48px;
+        border-radius: var(--laca-radius);
+        margin-bottom: 16px;
+        background: var(--laca-bg-subtle);
+        border: 1px solid var(--laca-border);
+        animation: lacaSkeletonPulse 1.5s infinite ease-in-out;
+    }
+
+    .laca-skeleton-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 24px;
+
+        @media (max-width: 1024px) {
+            grid-template-columns: 1fr;
+        }
+
+        .laca-skeleton-card {
+            height: 380px;
+            border-radius: var(--laca-radius);
+            background: var(--laca-bg-subtle);
+            border: 1px solid var(--laca-border);
+            animation: lacaSkeletonPulse 1.5s infinite ease-in-out;
+        }
+    }
+}
+
+@keyframes lacaSkeletonPulse {
+    0% { opacity: 0.6; }
+    50% { opacity: 1; }
+    100% { opacity: 0.6; }
+}
+
+
