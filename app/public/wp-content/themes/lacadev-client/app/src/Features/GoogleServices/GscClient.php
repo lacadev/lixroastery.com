@@ -202,25 +202,26 @@ class GscClient
             default     => 28,
         };
 
-        // GSC data has a 2-3 day lag
-        $endDate   = date('Y-m-d', strtotime('-3 days'));
-        $startDate = date('Y-m-d', strtotime('-' . ($days + 2) . ' days'));
-
-        $requestBody = [
-            'startDate'  => $startDate,
-            'endDate'    => $endDate,
-            'dimensions' => ['query'],
-            'rowLimit'   => 50,
-        ];
+        // GSC dataState => all includes fresh data (up to yesterday)
+        $endDate   = date('Y-m-d', strtotime('-1 day'));
+        $startDate = date('Y-m-d', strtotime('-' . $days . ' days'));
 
         $url = self::WEBMASTERS_API_BASE . '/sites/' . rawurlencode($siteUrl) . '/searchAnalytics/query';
+
+        // 1. Fetch aggregate totals for current period (NO dimensions => 1 weighted summary row)
+        $totalsRequestBody = [
+            'startDate' => $startDate,
+            'endDate'   => $endDate,
+            'dataState' => 'all',
+        ];
+
         $response = wp_remote_post($url, [
             'timeout' => 15,
             'headers' => [
                 'Authorization' => 'Bearer ' . $token,
                 'Content-Type'  => 'application/json',
             ],
-            'body'    => json_encode($requestBody),
+            'body'    => json_encode($totalsRequestBody),
         ]);
 
         if (is_wp_error($response)) {
@@ -251,18 +252,66 @@ class GscClient
             return new \WP_Error('invalid_response', __('Phản hồi từ Google Search Console không hợp lệ.', 'lacadev'));
         }
 
-        $parsed = self::parsePerformanceResponse($data);
-        $parsed['startDate'] = $startDate;
-        $parsed['endDate']   = $endDate;
-        $parsed['siteUrl']   = $siteUrl;
+        // Parse totals
+        $totRows = $data['rows'] ?? [];
+        $totalClicks = 0;
+        $totalImpressions = 0;
+        $avgCtr = 0.0;
+        $avgPosition = 0.0;
 
-        // Query prior period without dimensions for aggregate comparison totals
-        $prevEndDate   = date('Y-m-d', strtotime('-' . ($days + 3) . ' days'));
-        $prevStartDate = date('Y-m-d', strtotime('-' . (2 * $days + 2) . ' days'));
+        if (!empty($totRows) && is_array($totRows)) {
+            if (count($totRows) === 1 && empty($totRows[0]['keys'])) {
+                $row0 = $totRows[0];
+                $totalClicks      = (int) ($row0['clicks'] ?? 0);
+                $totalImpressions = (int) ($row0['impressions'] ?? 0);
+                $avgCtr           = round(((float) ($row0['ctr'] ?? 0)) * 100, 2);
+                $avgPosition      = round((float) ($row0['position'] ?? 0), 1);
+            } else {
+                $fallback = self::parsePerformanceResponse($data);
+                $totalClicks      = (int) ($fallback['totalClicks'] ?? 0);
+                $totalImpressions = (int) ($fallback['totalImpressions'] ?? 0);
+                $avgCtr           = (float) ($fallback['avgCtr'] ?? 0);
+                $avgPosition      = (float) ($fallback['avgPosition'] ?? 0);
+            }
+        }
+
+        // 2. Fetch top queries for current period (with dimension 'query')
+        $queriesRequestBody = [
+            'startDate'  => $startDate,
+            'endDate'    => $endDate,
+            'dimensions' => ['query'],
+            'dataState'  => 'all',
+            'rowLimit'   => 50,
+        ];
+
+        $queryResponse = wp_remote_post($url, [
+            'timeout' => 15,
+            'headers' => [
+                'Authorization' => 'Bearer ' . $token,
+                'Content-Type'  => 'application/json',
+            ],
+            'body'    => json_encode($queriesRequestBody),
+        ]);
+
+        $queries = [];
+        $queryRows = [];
+        if (!is_wp_error($queryResponse) && wp_remote_retrieve_response_code($queryResponse) === 200) {
+            $queryData = json_decode(wp_remote_retrieve_body($queryResponse), true);
+            if (is_array($queryData)) {
+                $parsedQ = self::parsePerformanceResponse($queryData);
+                $queries = $parsedQ['queries'] ?? [];
+                $queryRows = $queryData['rows'] ?? [];
+            }
+        }
+
+        // 3. Query prior period without dimensions for aggregate comparison totals
+        $prevEndDate   = date('Y-m-d', strtotime('-' . ($days + 1) . ' days'));
+        $prevStartDate = date('Y-m-d', strtotime('-' . (2 * $days) . ' days'));
 
         $prevRequestBody = [
             'startDate' => $prevStartDate,
             'endDate'   => $prevEndDate,
+            'dataState' => 'all',
         ];
 
         $prevResponse = wp_remote_post($url, [
@@ -311,19 +360,29 @@ class GscClient
             }
         }
 
-        $parsed['prevStartDate']   = $prevStartDate;
-        $parsed['prevEndDate']     = $prevEndDate;
-        $parsed['prevClicks']      = $prevClicks;
-        $parsed['prevImpressions'] = $prevImpressions;
-        $parsed['prevCtr']         = $prevCtr;
-        $parsed['prevPosition']    = $prevPosition;
-        $parsed['hasPrevData']     = $hasPrevData;
-
-        // Optionally fetch top landing pages
+        // 4. Optionally fetch top landing pages
         $pages = self::getTopLandingPages($siteUrl, $range, $forceRefresh);
-        if (is_array($pages)) {
-            $parsed['pages'] = $pages;
-        }
+
+        $parsed = [
+            'totalClicks'      => $totalClicks,
+            'totalImpressions' => $totalImpressions,
+            'avgCtr'           => $avgCtr,
+            'avgPosition'      => $avgPosition,
+            'queries'          => $queries,
+            'rows'             => $queryRows,
+            'pages'            => is_array($pages) ? $pages : [],
+            'startDate'        => $startDate,
+            'endDate'          => $endDate,
+            'dataDate'         => date('d/m', strtotime($endDate)),
+            'siteUrl'          => $siteUrl,
+            'prevStartDate'    => $prevStartDate,
+            'prevEndDate'      => $prevEndDate,
+            'prevClicks'       => $prevClicks,
+            'prevImpressions'  => $prevImpressions,
+            'prevCtr'          => $prevCtr,
+            'prevPosition'     => $prevPosition,
+            'hasPrevData'      => $hasPrevData,
+        ];
 
         // Cache 1 hour
         set_transient($cacheKey, $parsed, HOUR_IN_SECONDS);
@@ -360,13 +419,14 @@ class GscClient
             default     => 28,
         };
 
-        $endDate   = date('Y-m-d', strtotime('-3 days'));
-        $startDate = date('Y-m-d', strtotime('-' . ($days + 2) . ' days'));
+        $endDate   = date('Y-m-d', strtotime('-1 day'));
+        $startDate = date('Y-m-d', strtotime('-' . $days . ' days'));
 
         $requestBody = [
             'startDate'  => $startDate,
             'endDate'    => $endDate,
             'dimensions' => ['page'],
+            'dataState'  => 'all',
             'rowLimit'   => 15,
         ];
 
@@ -429,6 +489,25 @@ class GscClient
     public static function parsePerformanceResponse(array $data): array
     {
         $rows = $data['rows'] ?? [];
+
+        // Standard GSC totals response (no dimensions) has 1 aggregate row without 'keys'
+        if (count($rows) === 1 && empty($rows[0]['keys'])) {
+            $row0 = $rows[0];
+            $totalClicks      = (int) ($row0['clicks'] ?? 0);
+            $totalImpressions = (int) ($row0['impressions'] ?? 0);
+            $avgCtr           = round(((float) ($row0['ctr'] ?? 0)) * 100, 2);
+            $avgPosition      = round((float) ($row0['position'] ?? 0), 1);
+
+            return [
+                'totalClicks'      => $totalClicks,
+                'totalImpressions' => $totalImpressions,
+                'avgCtr'           => $avgCtr,
+                'avgPosition'      => $avgPosition,
+                'rows'             => $rows,
+                'queries'          => [],
+            ];
+        }
+
         $totalClicks = 0;
         $totalImpressions = 0;
         $totalCtr = 0;

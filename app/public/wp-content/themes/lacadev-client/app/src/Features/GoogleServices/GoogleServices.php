@@ -48,8 +48,9 @@ class GoogleServices
             add_action('admin_enqueue_scripts', [self::class, 'enqueueDashboardAssets']);
         }
 
-        // AJAX handler for dashboard report
+        // AJAX handlers for dashboard report
         add_action('wp_ajax_laca_google_report', [self::class, 'ajaxGoogleReport']);
+        add_action('wp_ajax_laca_ga4_realtime', [self::class, 'ajaxGa4Realtime']);
     }
 
     /**
@@ -308,5 +309,52 @@ class GoogleServices
             'html'  => $html,
             'range' => $range,
         ]);
+    }
+
+    /**
+     * AJAX endpoint to fetch latest GA4 Realtime active users (cached 60s).
+     */
+    public static function ajaxGa4Realtime(): void
+    {
+        $nonce = $_REQUEST['nonce'] ?? $_REQUEST['_ajax_nonce'] ?? '';
+        $valid = wp_verify_nonce($nonce, 'laca_google_report_nonce') || wp_verify_nonce($nonce, 'laca_seo_admin_nonce');
+        if (!$valid) {
+            wp_die('-1', 403);
+        }
+
+        $hasCap = current_user_can('manage_options');
+        if (!$hasCap && class_exists('\App\Features\LacaSeo\Auth\CapabilityManager')) {
+            $hasCap = \App\Features\LacaSeo\Auth\CapabilityManager::hasCap('site_analysis');
+        }
+
+        if (!$hasCap) {
+            wp_send_json_error(['message' => __('Bạn không có quyền thực hiện thao tác này.', 'lacadev')], 403);
+        }
+
+        if (!empty($_REQUEST['laca_mock_google'])) {
+            $_GET['laca_mock_google'] = '1';
+        }
+
+        if (GoogleDashboardService::isMockMode()) {
+            wp_send_json_success(['activeUsers' => 3]);
+        }
+
+        $opts = get_option(self::OPTION_KEY, []);
+        $propertyId = (string) ($opts['ga4_property_id'] ?? '');
+        if (empty($propertyId) && class_exists('\App\Features\LacaSeo\Core\Settings')) {
+            $propertyId = (string) \App\Features\LacaSeo\Core\Settings::get('general.ga4_property_id', '');
+        }
+
+        if (empty($propertyId)) {
+            wp_send_json_success(['activeUsers' => 0]);
+        }
+
+        $result = GaClient::runRealtimeReport($propertyId, false);
+        if (is_wp_error($result)) {
+            wp_send_json_error(['message' => $result->get_error_message()]);
+        }
+
+        $activeUsers = (int) ($result['activeUsers'] ?? 0);
+        wp_send_json_success(['activeUsers' => $activeUsers]);
     }
 }

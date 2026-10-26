@@ -129,6 +129,71 @@
             }
         }
 
+        // 3. Realtime GA4 Auto-update (every 60s while tab is visible)
+        let realtimeTimer = null;
+
+        function updateRealtime() {
+            if (!container || !ajaxUrl || !nonce) return;
+            const countEl = container.querySelector('#laca-ga4-realtime-count, .laca-ga4-realtime-count');
+            if (!countEl) return;
+
+            const formData = new FormData();
+            formData.append('action', 'laca_ga4_realtime');
+            formData.append('nonce', nonce);
+            if (isMock) {
+                formData.append('laca_mock_google', '1');
+            }
+
+            fetch(ajaxUrl, {
+                method: 'POST',
+                body: formData,
+                credentials: 'same-origin',
+            })
+                .then(function (response) {
+                    return response.json();
+                })
+                .then(function (data) {
+                    if (data && data.success && data.data && typeof data.data.activeUsers !== 'undefined') {
+                        countEl.textContent = new Intl.NumberFormat().format(data.data.activeUsers);
+                    }
+                })
+                .catch(function () {
+                    // Fail silently for background polling
+                });
+        }
+
+        function startRealtimePolling() {
+            stopRealtimePolling();
+            if (document.hidden) return;
+            const countEl = container && container.querySelector('#laca-ga4-realtime-count, .laca-ga4-realtime-count');
+            if (!countEl) return;
+
+            realtimeTimer = setInterval(function () {
+                if (!document.hidden) {
+                    updateRealtime();
+                }
+            }, 60000);
+        }
+
+        function stopRealtimePolling() {
+            if (realtimeTimer) {
+                clearInterval(realtimeTimer);
+                realtimeTimer = null;
+            }
+        }
+
+        document.addEventListener('visibilitychange', function () {
+            if (document.hidden) {
+                stopRealtimePolling();
+            } else {
+                const countEl = container && container.querySelector('#laca-ga4-realtime-count, .laca-ga4-realtime-count');
+                if (countEl) {
+                    updateRealtime();
+                    startRealtimePolling();
+                }
+            }
+        });
+
         function bindReportEvents() {
             if (!container) return;
 
@@ -138,6 +203,7 @@
                     e.preventDefault();
                     const newRange = btn.dataset.range || '28d';
                     if (newRange !== currentRange) {
+                        stopRealtimePolling();
                         loadReport(newRange, false);
                     }
                 });
@@ -148,9 +214,13 @@
             if (refreshBtn) {
                 refreshBtn.addEventListener('click', function (e) {
                     e.preventDefault();
+                    stopRealtimePolling();
                     loadReport(currentRange, true);
                 });
             }
+
+            // Start Realtime Polling if Realtime block is present
+            startRealtimePolling();
         }
 
         function escapeHtml(str) {
@@ -163,3 +233,4 @@
         loadReport('28d', false);
     }
 })();
+

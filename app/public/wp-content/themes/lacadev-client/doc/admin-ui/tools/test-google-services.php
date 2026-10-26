@@ -2258,8 +2258,293 @@ runTest('GA4 Admin: Refresh button bypasses cache, options display web stream & 
     }
 }, $pass, $fail);
 
+// -------------------------------------------------------------
+// Test 29: GSC totals without dimensions & dataState=all, GA4 Realtime active users & 24-48h notice
+// -------------------------------------------------------------
+runTest('GSC Totals (no dimensions, dataState=all), GA4 Realtime active users & 24-48h notice', function () {
+    $totalsRequestBodies = [];
+    $dimensionRequests = [];
+
+    $mockFilter = function ($preempt, $parsed_args, $url) use (&$totalsRequestBodies, &$dimensionRequests) {
+        // GSC searchAnalytics/query
+        if (str_contains($url, 'searchAnalytics/query')) {
+            $body = !empty($parsed_args['body']) ? json_decode($parsed_args['body'], true) : [];
+            if (empty($body['dimensions'])) {
+                $totalsRequestBodies[] = $body;
+                // Return 1 click / 29 impressions / 19.89655 position
+                return [
+                    'response' => ['code' => 200, 'message' => 'OK'],
+                    'body'     => json_encode([
+                        'rows' => [
+                            [
+                                'clicks'      => 1,
+                                'impressions' => 29,
+                                'ctr'         => 0.03448,
+                                'position'    => 19.89655,
+                            ],
+                        ],
+                    ]),
+                    'headers'  => ['content-type' => 'application/json'],
+                ];
+            }
+
+            $dimensionRequests[] = $body;
+            if ($body['dimensions'] === ['query']) {
+                // Mock query rows total 0 click (simulating Google anonymizing queries)
+                return [
+                    'response' => ['code' => 200, 'message' => 'OK'],
+                    'body'     => json_encode([
+                        'rows' => [
+                            [
+                                'keys'        => ['lix roastery la ai'],
+                                'clicks'      => 0,
+                                'impressions' => 15,
+                                'ctr'         => 0,
+                                'position'    => 20.0,
+                            ],
+                        ],
+                    ]),
+                    'headers'  => ['content-type' => 'application/json'],
+                ];
+            }
+
+            if ($body['dimensions'] === ['page']) {
+                return [
+                    'response' => ['code' => 200, 'message' => 'OK'],
+                    'body'     => json_encode([
+                        'rows' => [
+                            [
+                                'keys'        => ['https://lixroastery.com/journal/lix-roastery-la-ai/'],
+                                'clicks'      => 1,
+                                'impressions' => 29,
+                                'ctr'         => 0.03448,
+                                'position'    => 19.9,
+                            ],
+                        ],
+                    ]),
+                    'headers'  => ['content-type' => 'application/json'],
+                ];
+            }
+        }
+
+        // GA4 Realtime
+        if (str_contains($url, ':runRealtimeReport')) {
+            return [
+                'response' => ['code' => 200, 'message' => 'OK'],
+                'body'     => json_encode([
+                    'rows' => [
+                        [
+                            'metricValues' => [
+                                ['value' => '3'],
+                            ],
+                        ],
+                    ],
+                    'rowCount' => 1,
+                ]),
+                'headers'  => ['content-type' => 'application/json'],
+            ];
+        }
+
+        // GA4 Standard Report
+        if (str_contains($url, ':runReport')) {
+            return [
+                'response' => ['code' => 200, 'message' => 'OK'],
+                'body'     => json_encode([
+                    'rows' => [
+                        [
+                            'metricValues' => [
+                                ['value' => '0'],
+                                ['value' => '0'],
+                                ['value' => '0'],
+                                ['value' => '0'],
+                            ],
+                        ],
+                    ],
+                ]),
+                'headers'  => ['content-type' => 'application/json'],
+            ];
+        }
+
+        return $preempt;
+    };
+    add_filter('pre_http_request', $mockFilter, 10, 3);
+
+    $mockOAuthFilter = function () {
+        return GscCrypto::encrypt([
+            'access_token'  => 'mock-token',
+            'refresh_token' => 'mock-refresh',
+            'created_at'    => time(),
+            'expires_in'    => 3600,
+            'client_id'     => 'mock-client',
+            'client_secret' => 'mock-secret',
+            'scopes'        => [GscOAuth::SCOPE_GSC, GscOAuth::SCOPE_GA],
+        ]);
+    };
+    add_filter('pre_option_' . GscOAuth::OPTION_KEY, $mockOAuthFilter);
+
+    $mockServicesFilter = function () {
+        return [
+            'gsc_property'       => 'https://lixroastery.com/',
+            'ga4_property_id'    => '999888777',
+            'ga4_measurement_id' => 'G-LIXTEST01',
+        ];
+    };
+    add_filter('pre_option_laca_google_services', $mockServicesFilter);
+
+    $capFilter = function ($allcaps) {
+        $allcaps['manage_options'] = true;
+        return $allcaps;
+    };
+    add_filter('user_has_cap', $capFilter);
+
+    try {
+        // Clear transients
+        delete_transient('laca_gsc_perf_https_lixroastery_com_28d');
+        delete_transient('laca_gsc_pages_https_lixroastery_com_28d');
+        delete_transient('laca_ga_overview_999888777_28d');
+        delete_transient('laca_ga_realtime_999888777');
+
+        // 1. Fetch GSC Data
+        $gsc = GoogleDashboardService::getGscData('28d', true);
+
+        // Verify request bodies
+        if (empty($totalsRequestBodies)) {
+            return "Expected at least 1 GSC request without dimensions for totals";
+        }
+        $totalsReq = $totalsRequestBodies[0];
+        if (isset($totalsReq['dimensions'])) {
+            return "Expected totals request to NOT have 'dimensions', got: " . json_encode($totalsReq['dimensions']);
+        }
+        if (($totalsReq['dataState'] ?? '') !== 'all') {
+            return "Expected totals request to have 'dataState' => 'all', got: " . ($totalsReq['dataState'] ?? 'none');
+        }
+        $expectedYesterday = date('Y-m-d', strtotime('-1 day'));
+        if (($totalsReq['endDate'] ?? '') !== $expectedYesterday) {
+            return "Expected totals request endDate to be yesterday ({$expectedYesterday}), got: " . ($totalsReq['endDate'] ?? 'none');
+        }
+
+        // Verify GSC totals extracted from aggregate request rather than query rows
+        if (($gsc['clicks'] ?? 0) !== 1) {
+            return "Expected GSC clicks to be 1, got " . ($gsc['clicks'] ?? 0);
+        }
+        if (($gsc['impressions'] ?? 0) !== 29) {
+            return "Expected GSC impressions to be 29, got " . ($gsc['impressions'] ?? 0);
+        }
+        if (round((float) ($gsc['position'] ?? 0), 1) !== 19.9) {
+            return "Expected GSC position to be 19.9, got " . ($gsc['position'] ?? 0);
+        }
+
+        // 2. Fetch GA4 Data
+        $ga = GoogleDashboardService::getGa4Data('28d', true);
+
+        if (($ga['users'] ?? -1) !== 0) {
+            return "Expected GA4 standard report users to be 0, got " . ($ga['users'] ?? -1);
+        }
+        if (($ga['realtimeUsers'] ?? 0) !== 3) {
+            return "Expected GA4 realtime users to be 3, got " . ($ga['realtimeUsers'] ?? 0);
+        }
+
+        // 3. Render HTML partial with users=0 and realtime=3 (Case A)
+        ob_start();
+        $isMock = false;
+        $range = '28d';
+        include dirname(__DIR__, 3) . '/app/src/Features/GoogleServices/views/partials/google-report.php';
+        $htmlCaseA = ob_get_clean();
+
+        // GSC KPI values in HTML
+        if (!preg_match('/>\s*1\s*<\/strong>/', $htmlCaseA) || !preg_match('/>\s*29\s*<\/strong>/', $htmlCaseA) || !str_contains($htmlCaseA, '#19.9')) {
+            return "HTML missing GSC totals (1, 29, #19.9)";
+        }
+        if (!str_contains($htmlCaseA, 'Dữ liệu đến ngày')) {
+            return "HTML missing 'Dữ liệu đến ngày'";
+        }
+
+        // Realtime card in HTML
+        if (!str_contains($htmlCaseA, 'Đang hoạt động (30 phút qua)')) {
+            return "HTML missing 'Đang hoạt động (30 phút qua)'";
+        }
+        if (!preg_match('/id="laca-ga4-realtime-count"[^>]*>\s*3\s*<\/strong>/', $htmlCaseA)) {
+            return "HTML missing realtime count 3";
+        }
+
+        // 24-48h notice in HTML (should be PRESENT when users=0 and realtimeUsers=3)
+        $expectedNotice = 'GA4 cần 24–48 giờ để xử lý báo cáo; số đang hoạt động là dữ liệu trực tiếp';
+        if (!str_contains($htmlCaseA, $expectedNotice)) {
+            return "HTML should contain 24-48h notice when report=0 and realtime>0";
+        }
+
+        // 4. Render HTML partial with users=50 and realtime=3 (Case B)
+        $gaCaseB = $ga;
+        $gaCaseB['users'] = 50;
+        $ga = $gaCaseB;
+        ob_start();
+        include dirname(__DIR__, 3) . '/app/src/Features/GoogleServices/views/partials/google-report.php';
+        $htmlCaseB = ob_get_clean();
+
+        if (str_contains($htmlCaseB, $expectedNotice)) {
+            return "HTML should NOT contain 24-48h notice when standard report has users > 0";
+        }
+        if (!str_contains($htmlCaseB, 'Đang hoạt động (30 phút qua)')) {
+            return "HTML Case B should still contain 'Đang hoạt động (30 phút qua)'";
+        }
+
+        // 5. Test AJAX action laca_ga4_realtime
+        $dieFilter = function () {
+            return function ($message = '', $title = '', $args = []) {
+                throw new \RuntimeException('DIE:' . (is_scalar($message) ? $message : json_encode($message)));
+            };
+        };
+        add_filter('wp_die_ajax_handler', $dieFilter);
+        add_filter('wp_doing_ajax', '__return_true');
+
+        $oldUser = wp_get_current_user();
+        wp_set_current_user(1);
+
+        $_POST = [
+            'action' => 'laca_ga4_realtime',
+            'nonce'  => wp_create_nonce('laca_google_report_nonce'),
+        ];
+        $_REQUEST = $_POST;
+
+        $ajaxOutput = '';
+        try {
+            ob_start();
+            GoogleServices::ajaxGa4Realtime();
+        } catch (\RuntimeException $e) {
+            $ajaxOutput = ob_get_clean();
+        }
+
+        $res = json_decode($ajaxOutput, true);
+        if (empty($res['success']) || ($res['data']['activeUsers'] ?? null) !== 3) {
+            return "Expected AJAX realtime success with activeUsers=3, got: " . substr($ajaxOutput, 0, 200);
+        }
+
+        return true;
+    } finally {
+        remove_filter('pre_http_request', $mockFilter, 10);
+        remove_filter('pre_option_' . GscOAuth::OPTION_KEY, $mockOAuthFilter);
+        remove_filter('pre_option_laca_google_services', $mockServicesFilter);
+        remove_filter('user_has_cap', $capFilter);
+        remove_filter('wp_doing_ajax', '__return_true');
+        if (isset($dieFilter)) {
+            remove_filter('wp_die_ajax_handler', $dieFilter);
+        }
+        $_POST = [];
+        $_REQUEST = [];
+        if (isset($oldUser)) {
+            wp_set_current_user($oldUser instanceof \WP_User ? $oldUser->ID : (int) $oldUser);
+        }
+        delete_transient('laca_gsc_perf_https_lixroastery_com_28d');
+        delete_transient('laca_gsc_pages_https_lixroastery_com_28d');
+        delete_transient('laca_ga_overview_999888777_28d');
+        delete_transient('laca_ga_realtime_999888777');
+        Settings::clearCache();
+    }
+}, $pass, $fail);
+
 echo "SUMMARY pass={$pass} fail={$fail}\n";
 exit($fail === 0 ? 0 : 1);
+
 
 
 

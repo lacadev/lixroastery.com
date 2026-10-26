@@ -119,7 +119,8 @@ class GoogleDashboardService
             'position_delta'    => $positionDelta,
             'queries'           => $queries,
             'pages'             => $pages,
-            'lagNotice'         => __('Dữ liệu đến 3 ngày trước (Google Search Console có độ trễ 2–3 ngày)', 'lacadev'),
+            'dataDate'          => (string) ($result['dataDate'] ?? date('d/m', strtotime($result['endDate'] ?? '-1 day'))),
+            'lagNotice'         => sprintf(__('Dữ liệu đến ngày %s', 'lacadev'), (string) ($result['dataDate'] ?? date('d/m', strtotime($result['endDate'] ?? '-1 day')))),
         ];
     }
 
@@ -155,12 +156,24 @@ class GoogleDashboardService
 
         $result = GaClient::runReport($propertyId, $range, $forceRefresh);
         if (is_wp_error($result)) {
+            $realtimeUsers = 0;
+            $rt = GaClient::runRealtimeReport($propertyId, $forceRefresh);
+            if (!is_wp_error($rt) && isset($rt['activeUsers'])) {
+                $realtimeUsers = (int) $rt['activeUsers'];
+            }
             return [
-                'connected' => true,
-                'error'     => $result->get_error_message(),
-                'status'    => (int) ($result->get_error_data()['status'] ?? 0),
-                'setup_url' => admin_url('admin.php?page=laca-google-analytics'),
+                'connected'     => true,
+                'error'         => $result->get_error_message(),
+                'status'        => (int) ($result->get_error_data()['status'] ?? 0),
+                'setup_url'     => admin_url('admin.php?page=laca-google-analytics'),
+                'realtimeUsers' => $realtimeUsers,
             ];
+        }
+
+        $realtimeUsers = 0;
+        $realtimeResult = GaClient::runRealtimeReport($propertyId, $forceRefresh);
+        if (!is_wp_error($realtimeResult) && isset($realtimeResult['activeUsers'])) {
+            $realtimeUsers = (int) $realtimeResult['activeUsers'];
         }
 
         $summary = $result['summary'] ?? $result;
@@ -290,6 +303,7 @@ class GoogleDashboardService
             'channels'             => $formattedChannels,
             'businessKpis'         => $businessKpis,
             'topPages'             => array_slice($formattedTopPages, 0, 5),
+            'realtimeUsers'        => $realtimeUsers,
         ];
     }
 
@@ -447,7 +461,8 @@ class GoogleDashboardService
                 ['url' => '/ve-chung-toi/', 'clicks' => (int) round(195 * $multipliers), 'impressions' => (int) round(2400 * $multipliers), 'ctr' => 8.13],
                 ['url' => '/workshop/', 'clicks' => (int) round(120 * $multipliers), 'impressions' => (int) round(1900 * $multipliers), 'ctr' => 6.32],
             ],
-            'lagNotice'         => __('Dữ liệu đến 3 ngày trước (Google Search Console có độ trễ 2–3 ngày)', 'lacadev'),
+            'dataDate'          => date('d/m', strtotime('-1 day')),
+            'lagNotice'         => sprintf(__('Dữ liệu đến ngày %s', 'lacadev'), date('d/m', strtotime('-1 day'))),
         ];
     }
 
@@ -472,6 +487,7 @@ class GoogleDashboardService
             'connected'            => true,
             'isMock'               => true,
             'propertyId'           => '438291045',
+            'realtimeUsers'        => 3,
             'users'                => $users,
             'users_delta'          => '+14.1%',
             'sessions'             => $sessions,

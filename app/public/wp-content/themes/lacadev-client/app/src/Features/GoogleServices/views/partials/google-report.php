@@ -137,6 +137,12 @@ $rangeLabels = $rangeLabels ?? [
                     </div>
                 </div>
             <?php else: ?>
+                <!-- Dòng dữ liệu đến ngày -->
+                <div style="padding: 12px 20px 0 20px; font-size: 12px; color: var(--laca-fg-muted, #71717a); display: flex; align-items: center; gap: 6px;">
+                    <span class="dashicons dashicons-calendar-alt" style="font-size: 14px; width: 14px; height: 14px; color: var(--laca-fg-subtle, #a1a1aa);"></span>
+                    <span><?php printf(esc_html__('Dữ liệu đến ngày %s', 'lacadev'), esc_html($gsc['dataDate'] ?? date('d/m', strtotime('-1 day')))); ?></span>
+                </div>
+
                 <!-- 4 KPI Blocks GSC -->
                 <div class="laca-seo-stats-grid" style="padding: 16px 20px 20px 20px; margin: 0; grid-template-columns: repeat(2, 1fr); gap: 12px;">
                     <!-- Clicks -->
@@ -382,6 +388,36 @@ $rangeLabels = $rangeLabels ?? [
                     </div>
                 </div>
             <?php else: ?>
+                <!-- Ô Realtime Active Users (30 phút qua) -->
+                <div class="laca-ga-realtime-card" style="margin: 16px 20px 0 20px; padding: 12px 16px; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; display: flex; align-items: center; justify-content: space-between; gap: 12px;">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <span class="laca-pulse-dot" style="display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: #10b981;"></span>
+                        <div>
+                            <div style="font-size: 13px; font-weight: 600; color: #166534;">
+                                <?php esc_html_e('Đang hoạt động (30 phút qua)', 'lacadev'); ?>
+                            </div>
+                            <div style="font-size: 11.5px; color: #15803d;">
+                                <?php esc_html_e('Người dùng trực tiếp trên website theo GA4 Realtime', 'lacadev'); ?>
+                            </div>
+                        </div>
+                    </div>
+                    <div style="display: flex; align-items: baseline; gap: 4px;">
+                        <strong id="laca-ga4-realtime-count" class="laca-ga4-realtime-count" style="font-size: 26px; font-weight: 700; color: #166534; line-height: 1;">
+                            <?php echo number_format_i18n((int) ($ga['realtimeUsers'] ?? 0)); ?>
+                        </strong>
+                        <span style="font-size: 12px; color: #15803d; font-weight: 500;"><?php esc_html_e('người', 'lacadev'); ?></span>
+                    </div>
+                </div>
+
+                <?php if (($ga['users'] ?? 0) === 0 && ($ga['realtimeUsers'] ?? 0) > 0): ?>
+                    <div class="notice notice-info inline laca-ga-realtime-notice" style="margin: 12px 20px 0 20px; padding: 8px 12px; border-left-color: #3b82f6; background: #eff6ff; font-size: 12.5px; color: #1e40af;">
+                        <p style="margin: 0; display: flex; align-items: center; gap: 6px;">
+                            <span class="dashicons dashicons-info" style="color: #3b82f6; font-size: 16px; width: 16px; height: 16px;"></span>
+                            <span><?php esc_html_e('GA4 cần 24–48 giờ để xử lý báo cáo; số đang hoạt động là dữ liệu trực tiếp', 'lacadev'); ?></span>
+                        </p>
+                    </div>
+                <?php endif; ?>
+
                 <!-- 4 KPI Blocks GA4 -->
                 <div class="laca-seo-stats-grid" style="padding: 16px 20px 20px 20px; margin: 0; grid-template-columns: repeat(2, 1fr); gap: 12px;">
                     <!-- Active Users -->
