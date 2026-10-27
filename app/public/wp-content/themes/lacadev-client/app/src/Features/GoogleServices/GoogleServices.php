@@ -170,14 +170,14 @@ class GoogleServices
     }
 
     public const KEY_METRICS_MAP = [
-        'newVsReturning'        => ['new_vs_returning', 'newvsreturning'],
-        'topSource'             => ['top_traffic_source', 'topsource', 'top_source'],
-        'topCities'             => ['top_cities', 'topcities'],
-        'pagesPerSession'       => ['pages_per_session', 'pagespersession'],
-        'sessionDuration'       => ['session_duration', 'sessionduration'],
-        'topProduct'            => ['top_products', 'topproduct', 'topproducts', 'top_product'],
-        'bestConversionSource'  => ['best_conversion_source', 'bestconversionsource'],
-        'cartAndPurchaseSource' => ['cart_or_purchase_source', 'cartandpurchasesource', 'cart_and_purchase_source'],
+        'newVsReturning'       => ['new_vs_returning', 'newvsreturning'],
+        'topTrafficSource'     => ['topSource', 'top_traffic_source', 'topsource', 'top_source'],
+        'topCities'            => ['top_cities', 'topcities'],
+        'pagesPerSession'      => ['pages_per_session', 'pagespersession'],
+        'sessionDuration'      => ['session_duration', 'sessionduration'],
+        'topProducts'          => ['topProduct', 'top_products', 'topproduct', 'topproducts', 'top_product'],
+        'bestConversionSource' => ['best_conversion_source', 'bestconversionsource'],
+        'addToCartSource'      => ['cartAndPurchaseSource', 'cart_or_purchase_source', 'cartandpurchasesource', 'cart_and_purchase_source', 'add_to_cart_source'],
     ];
 
     /**
@@ -189,11 +189,11 @@ class GoogleServices
     {
         return [
             'newVsReturning', 'new_vs_returning',
-            'topSource', 'top_traffic_source',
+            'topTrafficSource', 'topSource', 'top_traffic_source',
             'topCities', 'top_cities',
             'pagesPerSession', 'pages_per_session',
             'sessionDuration', 'session_duration',
-            'topProduct', 'top_products',
+            'topProducts', 'topProduct', 'top_products',
         ];
     }
 
@@ -633,9 +633,11 @@ class GoogleServices
         if (GoogleDashboardService::isMockMode()) {
             if (!empty($_REQUEST['laca_mock_psi_error'])) {
                 $keyUrl = admin_url('admin.php?page=laca-google-search-console#laca-psi-key');
-                $result = new \WP_Error('psi_error_429', __('Đã hết hạn mức miễn phí của Google cho hôm nay. Thêm PageSpeed API key để có hạn mức riêng.', 'lacadev') . ' <a href="' . esc_url($keyUrl) . '">' . __('Thêm API key', 'lacadev') . '</a>', [
-                    'status' => 429,
-                    'link'   => $keyUrl,
+                $result = new \WP_Error('psi_error_429', __('Đã hết hạn mức miễn phí của Google cho hôm nay. Thêm PageSpeed API key để có hạn mức riêng.', 'lacadev'), [
+                    'status'      => 429,
+                    'actionUrl'   => $keyUrl,
+                    'actionLabel' => __('Thêm API key', 'lacadev'),
+                    'link'        => $keyUrl,
                 ]);
             } else {
                 $result = PageSpeedClient::getMockData($targetUrl, $strategy);
@@ -648,10 +650,12 @@ class GoogleServices
             $errData = $result->get_error_data();
             $statusCode = is_array($errData) && isset($errData['status']) ? (int) $errData['status'] : 400;
             wp_send_json_error([
-                'message' => $result->get_error_message(),
-                'code'    => $result->get_error_code(),
-                'status'  => $statusCode,
-                'link'    => is_array($errData) ? ($errData['link'] ?? null) : null,
+                'message'     => $result->get_error_message(),
+                'code'        => $result->get_error_code(),
+                'status'      => $statusCode,
+                'actionUrl'   => is_array($errData) ? ($errData['actionUrl'] ?? $errData['link'] ?? null) : null,
+                'actionLabel' => is_array($errData) ? ($errData['actionLabel'] ?? null) : null,
+                'link'        => is_array($errData) ? ($errData['link'] ?? null) : null,
             ], $statusCode >= 400 && $statusCode < 600 ? $statusCode : 400);
         }
 

@@ -348,10 +348,15 @@ class GoogleDashboardService
             }
         }
 
+        // Key metrics batch (2nd batch)
+        $kmResult = GaClient::getKeyMetrics($propertyId, $range, $forceRefresh, $totalSessions);
+        $keyMetrics = (!is_wp_error($kmResult) && is_array($kmResult)) ? $kmResult : GaClient::getDefaultKeyMetricsFallback();
+
         return [
             'connected'            => true,
             'isMock'               => false,
             'propertyId'           => $propertyId,
+            'keyMetrics'           => $keyMetrics,
             'users'                => $users,
             'users_delta'          => $usersDelta,
             'sessions'             => $sessions,
@@ -372,6 +377,7 @@ class GoogleDashboardService
             'chartSeries'          => $chartSeries,
             'organicSearch'        => [
                 'hasData'             => $hasOrganic,
+                'hasOrganic'          => $hasOrganic,
                 'users'               => $organicUsers,
                 'share'               => $organicShare,
                 'engagementRate'      => $organicEngagementRate,
@@ -692,6 +698,7 @@ class GoogleDashboardService
             ],
             'organicSearch'        => [
                 'hasData'             => true,
+                'hasOrganic'          => true,
                 'users'               => $organicUsers,
                 'prevUsers'           => $prevOrganicUsers,
                 'usersDelta'          => '+13.2%',
@@ -707,49 +714,7 @@ class GoogleDashboardService
                 ['name' => 'Social', 'sessions' => (int) round(620 * $multipliers), 'share' => 12],
                 ['name' => 'Referral', 'sessions' => (int) round(350 * $multipliers), 'share' => 7],
             ],
-            'keyMetrics'           => [
-                'new_vs_returning' => [
-                    'title'    => __('Khách mới / Quay lại', 'lacadev'),
-                    'value'    => '64% / 36%',
-                    'subtext'  => sprintf(__('%s mới • %s quay lại', 'lacadev'), number_format_i18n($newUsers), number_format_i18n($returningUsers)),
-                ],
-                'top_traffic_source' => [
-                    'title'    => __('Nguồn hàng đầu', 'lacadev'),
-                    'value'    => 'Organic Search',
-                    'subtext'  => '54% ' . __('tổng lượt truy cập', 'lacadev'),
-                ],
-                'top_cities' => [
-                    'title'    => __('Thành phố top 3', 'lacadev'),
-                    'value'    => 'Đà Nẵng (42%)',
-                    'subtext'  => 'TP. HCM (31%) • Hà Nội (18%)',
-                ],
-                'pages_per_session' => [
-                    'title'    => __('Trang / Lượt', 'lacadev'),
-                    'value'    => '3.40',
-                    'subtext'  => '+0.4 ' . __('so kỳ trước', 'lacadev'),
-                ],
-                'session_duration' => [
-                    'title'    => __('Thời lượng trung bình', 'lacadev'),
-                    'value'    => '1m 45s',
-                    'subtext'  => '+15s ' . __('so kỳ trước', 'lacadev'),
-                ],
-                'top_products' => [
-                    'title'    => __('Sản phẩm xem nhiều', 'lacadev'),
-                    'value'    => 'Cà phê Arabica Cầu Đất',
-                    'subtext'  => '1.420 ' . __('lượt xem', 'lacadev'),
-                    'path'     => '/product/ca-phe-arabica-cau-dat/',
-                ],
-                'best_conversion_source' => [
-                    'title'    => __('Nguồn chuyển đổi tốt nhất', 'lacadev'),
-                    'value'    => 'Organic Search',
-                    'subtext'  => '6.8% ' . __('tỉ lệ chuyển đổi mục tiêu', 'lacadev'),
-                ],
-                'cart_or_purchase_source' => [
-                    'title'    => __('Nguồn thêm giỏ / Mua hàng', 'lacadev'),
-                    'value'    => 'Direct & Tìm kiếm',
-                    'subtext'  => '186 ' . __('sự kiện mua / thêm giỏ', 'lacadev'),
-                ],
-            ],
+            'keyMetrics'           => GaClient::parseKeyMetricsReports(GaClient::getMockKeyMetricsRawResponse()['reports'] ?? [], (int) round(5260 * $multipliers)),
             'businessKpis'         => [
                 [
                     'title' => __('Bấm Mua / Thêm giỏ (Cà phê)', 'lacadev'),

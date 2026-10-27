@@ -123,13 +123,26 @@ const report = (ok, check, w = '', detail = '') => {
           const hasMockBanner = text.includes('DỮ LIỆU MẪU');
           const docOver = document.documentElement.scrollWidth - window.innerWidth;
           const svgs = el ? el.querySelectorAll('svg[role="img"]').length : 0;
-          return { hasGsc, hasGa, hasMockBanner, docOver, svgs };
+
+          // Funnel step 3 check
+          const step3ValEl = el ? el.querySelector('.laca-google-funnel__step:nth-child(3) .laca-google-funnel__step-value') : null;
+          const funnelStep3Val = step3ValEl ? step3ValEl.innerText.trim() : '';
+
+          // Key metrics values check (6 default cards)
+          const kmVals = el ? Array.from(el.querySelectorAll('.laca-google-km__value, .laca-google-keymetrics__value')).map(v => v.innerText.trim()) : [];
+          const kmDashes = kmVals.filter(v => v === '—' || v === '-');
+
+          return { hasGsc, hasGa, hasMockBanner, docOver, svgs, funnelStep3Val, kmVals, kmDashes };
         });
 
         report(contentCheck.hasGsc && contentCheck.hasGa, 'BothGoogleSectionsPresent', w);
         report(contentCheck.hasMockBanner, 'MockDataBannerPresent', w);
         report(contentCheck.docOver <= 0, 'NoHorizontalPageScroll', w, `docOver=${contentCheck.docOver}px`);
         report(contentCheck.svgs >= 2, 'ServerSvgChartsPresent', w, `svgCount=${contentCheck.svgs}`);
+        if (w === 1440) {
+          report(contentCheck.funnelStep3Val !== '0' && contentCheck.funnelStep3Val !== '', 'SearchFunnelStep3NotZero', w, `val=${contentCheck.funnelStep3Val}`);
+          report(contentCheck.kmVals.length >= 6 && contentCheck.kmDashes.length === 0, 'KeyMetricsValuesNotDash', w, `count=${contentCheck.kmVals.length}, dashes=${contentCheck.kmDashes.length}`);
+        }
         report(errors.length === 0, 'NoPageErrors', w, errors.join('; '));
 
         // Chụp ảnh lưu file
@@ -299,16 +312,20 @@ const report = (ok, check, w = '', detail = '') => {
         const alertEl = card ? card.querySelector('.laca-alert--error') : null;
         const retryBtns = card ? card.querySelectorAll('[data-laca-psi-run]') : [];
         const hasKeyLink = alertEl ? !!alertEl.querySelector('a[href*="#laca-psi-key"]') : false;
+        const alertText = alertEl ? (alertEl.innerText || '') : '';
+        const hasRawLinkInText = alertText.includes('<a href') || alertText.includes('&lt;a');
         return {
           hasAlert: !!alertEl,
           retryBtnCount: retryBtns.length,
           hasKeyLink,
+          hasRawLinkInText,
         };
       });
 
       report(psiErrorCheck.hasAlert, 'PsiErrorAlertRendersOnQuotaExceeded');
       report(psiErrorCheck.retryBtnCount === 1, 'PsiErrorReplacesCardBodyWithSingleButton', '', `btnCount=${psiErrorCheck.retryBtnCount}`);
       report(psiErrorCheck.hasKeyLink, 'PsiErrorAlertContainsLinkToPsiKey');
+      report(!psiErrorCheck.hasRawLinkInText, 'PsiErrorDoesNotPrintRawHtmlAnchor');
 
       const psiErrorScreenshot = path.join(IMG_DIR, 'wp-dashboard-psi-error.png');
       await page.screenshot({ path: psiErrorScreenshot, fullPage: false });

@@ -2563,6 +2563,8 @@ runTest('G1: setupState (4 states + error), index.php hidden when unconfigured, 
 
     try {
         // --- 1. Test setupState: Case A - Chưa OAuth ---
+        delete_transient('laca_ga_last_error_code');
+        delete_transient('laca_gsc_last_error_code');
         add_filter('pre_option_' . GscOAuth::OPTION_KEY, '__return_empty_string');
         add_filter('pre_option_' . GscOAuth::LEGACY_OPTION_KEY, '__return_empty_string');
         add_filter('pre_option_laca_google_services', '__return_empty_array');
@@ -2693,6 +2695,8 @@ runTest('G1: setupState (4 states + error), index.php hidden when unconfigured, 
         };
         remove_filter('pre_option_laca_google_services', $mockServicesMismatch);
         add_filter('pre_option_laca_google_services', $mockServicesComplete);
+        delete_transient('laca_ga_last_error_code');
+        delete_transient('laca_gsc_last_error_code');
 
         $stateComplete = GoogleServices::setupState();
         if ($stateComplete['gsc']['status'] !== 'complete') {
@@ -3868,26 +3872,53 @@ runTest('Google Report v2: phễu đúng, key metrics đủ, Chart SVG, AJAX 100
             return "Funnel step 3 value should be 0 when no organic row";
         }
 
-        // --- 3. Test Key Metrics Filter & Option toggle ---
-        $mockKeyMetrics = [
-            'newVsReturning' => ['title' => 'Khách mới / Quay lại', 'value' => '60% / 40%', 'sub' => '100 mới • 60 cũ'],
-            'topSource' => ['title' => 'Nguồn truy cập hàng đầu', 'value' => 'Organic Search', 'sub' => '45%'],
-            'topCities' => ['title' => 'Top 3 thành phố', 'value' => 'Hà Nội, TP.HCM, Đà Nẵng', 'sub' => '70%'],
-            'pagesPerSession' => ['title' => 'Số trang / Lượt', 'value' => '3.50', 'sub' => 'Trang trên mỗi phiên'],
-            'sessionDuration' => ['title' => 'Thời lượng trung bình', 'value' => '2m 15s', 'sub' => '+15s'],
-            'topProduct' => ['title' => 'Sản phẩm xem nhiều nhất', 'value' => 'Cà phê Arabica', 'sub' => '320 lượt xem'],
-            'bestConversionSource' => ['title' => 'Nguồn chuyển đổi tốt nhất', 'value' => 'Organic Search (4.2%)', 'sub' => '12 chuyển đổi'],
-            'cartAndPurchaseSource' => ['title' => 'Nguồn thêm giỏ / mua hàng', 'value' => 'Direct (18 lượt)', 'sub' => '10 thêm giỏ • 8 mua'],
+        // Test Search Funnel WITH Organic Search present:
+        $gaWithOrganic = $gaNoOrganic;
+        $gaWithOrganic['channels'] = [
+            ['name' => 'Organic Search', 'sessions' => 2840, 'share' => 54],
+            ['name' => 'Direct', 'sessions' => 1450, 'share' => 27],
         ];
+        $gaWithOrganic['organicSearch'] = [
+            'hasData'        => true,
+            'hasOrganic'     => true,
+            'users'          => 2074,
+            'share'          => 54,
+            'engagementRate' => '68.5%',
+        ];
+        ob_start();
+        $ga = $gaWithOrganic;
+        include dirname(__DIR__, 3) . '/app/src/Features/GoogleServices/views/partials/google-report.php';
+        $funnelWithOrganicHtml = ob_get_clean();
+
+        if (str_contains($funnelWithOrganicHtml, 'Chưa ghi nhận người dùng từ tìm kiếm tự nhiên')) {
+            return "Funnel step 3 falsely showed empty note when organicSearch hasData=true";
+        }
+        if (!preg_match('/class="laca-google-funnel__step-value">\s*2,074\s*<\/div>/', $funnelWithOrganicHtml)) {
+            return "Funnel step 3 should display 2,074 organic users, got: " . $funnelWithOrganicHtml;
+        }
+
+        // --- 3. Test Key Metrics with RAW GA4 JSON API response ---
+        $rawReports = GaClient::getMockKeyMetricsRawResponse()['reports'];
+        $parsedKm = GaClient::parseKeyMetricsReports($rawReports, 5260);
+
+        if (empty($parsedKm['topCities']['value']) || !str_contains($parsedKm['topCities']['value'], 'Đà Nẵng')) {
+            return "Parsed raw reports missing topCities Đà Nẵng: " . json_encode($parsedKm['topCities'] ?? []);
+        }
+        if (empty($parsedKm['topTrafficSource']['value']) || $parsedKm['topTrafficSource']['value'] !== 'Organic Search') {
+            return "Parsed raw reports missing topTrafficSource: " . json_encode($parsedKm['topTrafficSource'] ?? []);
+        }
+        if (empty($parsedKm['topProducts']['value']) || !str_contains($parsedKm['topProducts']['value'], 'Cà phê Arabica')) {
+            return "Parsed raw reports missing topProducts: " . json_encode($parsedKm['topProducts'] ?? []);
+        }
 
         $allKeysFilter = function ($opts) {
-            $opts['key_metrics'] = ['newVsReturning', 'topSource', 'topCities', 'pagesPerSession', 'sessionDuration', 'topProduct', 'bestConversionSource', 'cartAndPurchaseSource'];
+            $opts['key_metrics'] = ['newVsReturning', 'topTrafficSource', 'topCities', 'pagesPerSession', 'sessionDuration', 'topProducts', 'bestConversionSource', 'addToCartSource'];
             return $opts;
         };
         add_filter('pre_option_laca_google_services', $allKeysFilter);
 
-        $gaWithKm = $gaNoOrganic;
-        $gaWithKm['keyMetrics'] = $mockKeyMetrics;
+        $gaWithKm = $gaWithOrganic;
+        $gaWithKm['keyMetrics'] = $parsedKm;
         $gaWithKm['businessKpis'] = [['title' => 'Purchase', 'value' => 12, 'delta' => '+2']];
         $gaWithKm['ecommerceEvents'] = ['add_to_cart' => 10, 'purchase' => 8];
 
@@ -3896,11 +3927,14 @@ runTest('Google Report v2: phễu đúng, key metrics đủ, Chart SVG, AJAX 100
         include dirname(__DIR__, 3) . '/app/src/Features/GoogleServices/views/partials/google-report.php';
         $kmHtml = ob_get_clean();
 
-        if (!str_contains($kmHtml, 'Hà Nội, TP.HCM, Đà Nẵng')) {
-            return "Key metrics HTML missing topCities value";
+        if (!str_contains($kmHtml, 'Đà Nẵng')) {
+            return "Key metrics HTML missing topCities Đà Nẵng value from raw GA4 parse";
         }
         if (!str_contains($kmHtml, 'Cà phê Arabica')) {
-            return "Key metrics HTML missing topProduct value";
+            return "Key metrics HTML missing topProducts value from raw GA4 parse";
+        }
+        if (preg_match_all('/class="[^"]*laca-google-km__value[^"]*"[^>]*>\s*—\s*<\/div>/', $kmHtml, $matchesDash)) {
+            return "Key metrics HTML illegally contains " . count($matchesDash[0]) . " '—' values for valid raw data!";
         }
 
         remove_filter('pre_option_laca_google_services', $allKeysFilter);
@@ -3918,7 +3952,7 @@ runTest('Google Report v2: phễu đúng, key metrics đủ, Chart SVG, AJAX 100
         if (!str_contains($kmHtmlOne, 'Nguồn truy cập hàng đầu')) {
             return "Key metrics HTML should have topSource";
         }
-        if (str_contains($kmHtmlOne, 'Hà Nội, TP.HCM, Đà Nẵng')) {
+        if (str_contains($kmHtmlOne, 'Đà Nẵng')) {
             return "Key metrics HTML should NOT have topCities when disabled in option";
         }
 
@@ -4044,8 +4078,15 @@ runTest('Google Report v2: phễu đúng, key metrics đủ, Chart SVG, AJAX 100
         if (!str_contains($psiResult1->get_error_message(), 'Đã hết hạn mức miễn phí')) {
             return "Expected Vietnamese error message for PSI 429, got: " . $psiResult1->get_error_message();
         }
-        if (!str_contains($psiResult1->get_error_message(), '#laca-psi-key')) {
-            return "Expected link to #laca-psi-key in PSI 429 message, got: " . $psiResult1->get_error_message();
+        if (str_contains($psiResult1->get_error_message(), '<a') || str_contains($psiResult1->get_error_message(), '&lt;a')) {
+            return "PSI 429 error message must be plain text without raw HTML link, got: " . $psiResult1->get_error_message();
+        }
+        $psiData = $psiResult1->get_error_data();
+        if (empty($psiData['actionUrl']) || !str_contains($psiData['actionUrl'], '#laca-psi-key')) {
+            return "Expected actionUrl pointing to #laca-psi-key in error data, got: " . json_encode($psiData);
+        }
+        if (empty($psiData['actionLabel'])) {
+            return "Expected non-empty actionLabel in error data";
         }
         if ($psiRequestCount !== 1) {
             return "Expected 1 HTTP request for first PSI call, got " . $psiRequestCount;
@@ -4067,6 +4108,33 @@ runTest('Google Report v2: phễu đúng, key metrics đủ, Chart SVG, AJAX 100
         remove_filter('pre_http_request', $mockPsiHttp, 10);
         delete_transient('laca_psi_429_' . md5(home_url('/') . '_mobile'));
         delete_transient('laca_psi_429_' . md5(home_url('/') . '_desktop'));
+
+        // Test AJAX PSI 429 error response format
+        $_POST = [
+            'action'              => 'laca_psi_run',
+            'nonce'               => wp_create_nonce('laca_google_report_nonce'),
+            'strategy'            => 'mobile',
+            'laca_mock_google'    => '1',
+            'laca_mock_psi_error' => '1',
+        ];
+        $_REQUEST = $_POST;
+        ob_start();
+        try {
+            GoogleServices::ajaxPageSpeedRun();
+        } catch (\RuntimeException $e) {
+        }
+        $psiAjaxOutput = ob_get_clean();
+        $psiAjaxData = json_decode($psiAjaxOutput, true);
+        if (empty($psiAjaxData) || !empty($psiAjaxData['success'])) {
+            return "Expected AJAX error response for mock PSI 429";
+        }
+        $errObj = $psiAjaxData['data'] ?? [];
+        if (str_contains($errObj['message'] ?? '', '<a') || str_contains($errObj['message'] ?? '', '&lt;a')) {
+            return "AJAX PSI error message must not contain HTML link tags, got: " . ($errObj['message'] ?? '');
+        }
+        if (empty($errObj['actionUrl']) || !str_contains($errObj['actionUrl'], '#laca-psi-key')) {
+            return "AJAX PSI error must include actionUrl pointing to #laca-psi-key";
+        }
 
         // --- 6. Request count measurement: <= 3 GA + <= 3 GSC on full report load ---
         $gscCount = 0;

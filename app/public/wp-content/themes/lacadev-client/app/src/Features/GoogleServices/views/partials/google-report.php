@@ -99,7 +99,7 @@ $activeKeyMetrics = \App\Features\GoogleServices\GoogleServices::getActiveKeyMet
         $gscImpressionsDelta = (string) ($gsc['impressions_delta'] ?? '—');
 
         $organic = $ga['organicSearch'] ?? null;
-        $hasOrganic = !empty($organic['hasOrganic']);
+        $hasOrganic = !empty($organic['hasData']) || !empty($organic['hasOrganic']);
         $organicUsers = (int) ($organic['users'] ?? 0);
         $organicShare = (int) ($organic['share'] ?? 0);
         $organicEngagementRate = (string) ($organic['engagementRate'] ?? '—');
@@ -191,69 +191,79 @@ $activeKeyMetrics = \App\Features\GoogleServices\GoogleServices::getActiveKeyMet
         $hasKeyEvents = !empty($ga['businessKpis']) || ((int) ($ga['keyEventsTotal'] ?? 0) > 0) || $isMock;
         $hasEcommerce = !empty($ga['ecommerceEvents']) || $isMock;
 
-        // Metric definitions with conditions
+        // Metric definitions with conditions (unified camelCase keys)
         $metricCards = [
             'newVsReturning' => [
                 'title'     => __('Khách mới / Quay lại', 'lacadev'),
                 'value'     => $kmData['newVsReturning']['value'] ?? '—',
                 'sub'       => $kmData['newVsReturning']['sub'] ?? '',
-                'available' => true,
+                'available' => isset($kmData['newVsReturning']['available']) ? (bool) $kmData['newVsReturning']['available'] : true,
             ],
-            'topSource' => [
+            'topTrafficSource' => [
                 'title'     => __('Nguồn truy cập hàng đầu', 'lacadev'),
-                'value'     => $kmData['topSource']['value'] ?? '—',
-                'sub'       => $kmData['topSource']['sub'] ?? '',
-                'available' => true,
+                'value'     => $kmData['topTrafficSource']['value'] ?? ($kmData['topSource']['value'] ?? '—'),
+                'sub'       => $kmData['topTrafficSource']['sub'] ?? ($kmData['topSource']['sub'] ?? ''),
+                'available' => isset($kmData['topTrafficSource']['available']) ? (bool) $kmData['topTrafficSource']['available'] : true,
             ],
             'topCities' => [
                 'title'     => __('Top 3 thành phố', 'lacadev'),
                 'value'     => $kmData['topCities']['value'] ?? '—',
                 'sub'       => $kmData['topCities']['sub'] ?? '',
-                'available' => true,
+                'available' => isset($kmData['topCities']['available']) ? (bool) $kmData['topCities']['available'] : true,
             ],
             'pagesPerSession' => [
                 'title'     => __('Số trang / Lượt', 'lacadev'),
                 'value'     => $kmData['pagesPerSession']['value'] ?? '—',
                 'sub'       => $kmData['pagesPerSession']['sub'] ?? '',
-                'available' => true,
+                'available' => isset($kmData['pagesPerSession']['available']) ? (bool) $kmData['pagesPerSession']['available'] : true,
             ],
             'sessionDuration' => [
                 'title'     => __('Thời lượng trung bình', 'lacadev'),
                 'value'     => $kmData['sessionDuration']['value'] ?? '—',
                 'sub'       => $kmData['sessionDuration']['sub'] ?? '',
-                'available' => true,
+                'available' => isset($kmData['sessionDuration']['available']) ? (bool) $kmData['sessionDuration']['available'] : true,
             ],
-            'topProduct' => [
+            'topProducts' => [
                 'title'     => __('Sản phẩm xem nhiều nhất', 'lacadev'),
-                'value'     => $kmData['topProduct']['value'] ?? '—',
-                'sub'       => $kmData['topProduct']['sub'] ?? '',
-                'available' => $hasProductPostType,
+                'value'     => $kmData['topProducts']['value'] ?? ($kmData['topProduct']['value'] ?? '—'),
+                'sub'       => $kmData['topProducts']['sub'] ?? ($kmData['topProduct']['sub'] ?? ''),
+                'available' => $hasProductPostType && (!isset($kmData['topProducts']['available']) || $kmData['topProducts']['available']),
             ],
             'bestConversionSource' => [
                 'title'     => __('Nguồn chuyển đổi tốt nhất', 'lacadev'),
                 'value'     => $kmData['bestConversionSource']['value'] ?? '—',
                 'sub'       => $kmData['bestConversionSource']['sub'] ?? '',
-                'available' => $hasKeyEvents,
+                'available' => $hasKeyEvents && (!isset($kmData['bestConversionSource']['available']) || $kmData['bestConversionSource']['available']),
             ],
-            'cartAndPurchaseSource' => [
+            'addToCartSource' => [
                 'title'     => __('Nguồn thêm giỏ / mua hàng', 'lacadev'),
-                'value'     => $kmData['cartAndPurchaseSource']['value'] ?? '—',
-                'sub'       => $kmData['cartAndPurchaseSource']['sub'] ?? '',
-                'available' => $hasEcommerce,
+                'value'     => $kmData['addToCartSource']['value'] ?? ($kmData['cartAndPurchaseSource']['value'] ?? '—'),
+                'sub'       => $kmData['addToCartSource']['sub'] ?? ($kmData['cartAndPurchaseSource']['sub'] ?? ''),
+                'available' => $hasEcommerce && (!isset($kmData['addToCartSource']['available']) || $kmData['addToCartSource']['available']),
             ],
         ];
 
-        // Filter by active settings and availability
+        // Filter by active settings and availability (support both canonical and legacy keys in active settings)
         $visibleCards = [];
         foreach ($metricCards as $key => $card) {
-            if (in_array($key, $activeKeyMetrics, true) && $card['available']) {
+            $isCardActive = in_array($key, $activeKeyMetrics, true);
+            if (!$isCardActive) {
+                if ($key === 'topTrafficSource' && in_array('topSource', $activeKeyMetrics, true)) {
+                    $isCardActive = true;
+                } elseif ($key === 'topProducts' && in_array('topProduct', $activeKeyMetrics, true)) {
+                    $isCardActive = true;
+                } elseif ($key === 'addToCartSource' && in_array('cartAndPurchaseSource', $activeKeyMetrics, true)) {
+                    $isCardActive = true;
+                }
+            }
+            if ($isCardActive && $card['available']) {
                 $visibleCards[$key] = $card;
             }
         }
         ?>
         <?php if (!empty($visibleCards)): ?>
-            <div class="laca-seo-card laca-google-keymetrics">
-                <div class="laca-google-keymetrics__header">
+            <div class="laca-seo-card laca-google-keymetrics laca-google-km">
+                <div class="laca-google-keymetrics__header laca-google-km__header">
                     <div class="laca-google-keymetrics__title-wrap">
                         <span class="dashicons dashicons-star-filled"></span>
                         <h3 class="laca-google-keymetrics__title">
@@ -266,15 +276,15 @@ $activeKeyMetrics = \App\Features\GoogleServices\GoogleServices::getActiveKeyMet
                     </a>
                 </div>
 
-                <div class="laca-google-keymetrics__grid">
+                <div class="laca-google-keymetrics__grid laca-google-km__grid">
                     <?php foreach ($visibleCards as $kId => $vCard): ?>
-                        <div class="laca-google-keymetrics__card">
-                            <div class="laca-google-keymetrics__label"><?php echo esc_html($vCard['title']); ?></div>
-                            <div class="laca-google-keymetrics__value" title="<?php echo esc_attr($vCard['value']); ?>">
+                        <div class="laca-google-keymetrics__card laca-google-km__card" data-metric-key="<?php echo esc_attr($kId); ?>">
+                            <div class="laca-google-keymetrics__label laca-google-km__label"><?php echo esc_html($vCard['title']); ?></div>
+                            <div class="laca-google-keymetrics__value laca-google-km__value" title="<?php echo esc_attr($vCard['value']); ?>">
                                 <?php echo esc_html($vCard['value']); ?>
                             </div>
                             <?php if (!empty($vCard['sub'])): ?>
-                                <div class="laca-google-keymetrics__meta"><?php echo esc_html($vCard['sub']); ?></div>
+                                <div class="laca-google-keymetrics__meta laca-google-km__sub"><?php echo esc_html($vCard['sub']); ?></div>
                             <?php endif; ?>
                         </div>
                     <?php endforeach; ?>

@@ -79,6 +79,8 @@ class PageSpeedClient
                 'status'      => $code,
                 'raw_message' => $rawMsg,
                 'data'        => $data,
+                'actionUrl'   => admin_url('admin.php?page=laca-google-search-console#laca-psi-key'),
+                'actionLabel' => __('Thêm API key', 'lacadev'),
                 'link'        => admin_url('admin.php?page=laca-google-search-console#laca-psi-key'),
             ];
 
@@ -111,8 +113,7 @@ class PageSpeedClient
 
         // 429 / Quota exceeded
         if ($code === 429 || str_contains($rawLower, 'quota exceeded') || str_contains($rawLower, 'resource_exhausted')) {
-            $keyUrl = admin_url('admin.php?page=laca-google-search-console#laca-psi-key');
-            return __('Đã hết hạn mức miễn phí của Google cho hôm nay. Thêm PageSpeed API key để có hạn mức riêng.', 'lacadev') . ' <a href="' . esc_url($keyUrl) . '">' . __('Thêm API key', 'lacadev') . '</a>';
+            return __('Đã hết hạn mức miễn phí của Google cho hôm nay. Thêm PageSpeed API key để có hạn mức riêng.', 'lacadev');
         }
 
         // 400 API key invalid

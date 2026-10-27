@@ -258,9 +258,12 @@
                         }
                         bindPsiEvents();
                     } else {
-                        const errMsg = (res && res.data && res.data.message) ? res.data.message : 'Không thể hoàn thành kiểm tra PageSpeed.';
-                        const is429 = (res && res.data && (res.data.status === 429 || res.data.code === 'psi_error_429' || String(errMsg).includes('429') || String(errMsg).includes('hạn mức')));
-                        renderPsiError(errMsg, is429);
+                        const resData = (res && res.data) ? res.data : {};
+                        const errMsg = (resData && resData.message) ? resData.message : 'Không thể hoàn thành kiểm tra PageSpeed.';
+                        const is429 = Boolean(resData && (resData.status === 429 || resData.code === 'psi_error_429' || String(errMsg).includes('429') || String(errMsg).includes('hạn mức')));
+                        const actionUrl = (resData && resData.actionUrl) ? resData.actionUrl : (is429 ? 'admin.php?page=laca-google-search-console#laca-psi-key' : '');
+                        const actionLabel = (resData && resData.actionLabel) ? resData.actionLabel : (is429 ? 'Thêm PageSpeed API key' : '');
+                        renderPsiError(errMsg, is429, actionUrl, actionLabel);
                     }
                 })
                 .catch(function (err) {
@@ -268,10 +271,10 @@
                     if (err && err.name === 'AbortError') {
                         return;
                     }
-                    renderPsiError('Lỗi kết nối khi gửi yêu cầu kiểm tra PageSpeed.', false);
+                    renderPsiError('Lỗi kết nối khi gửi yêu cầu kiểm tra PageSpeed.', false, '', '');
                 });
 
-            function renderPsiError(message, is429) {
+            function renderPsiError(message, is429, actionUrl, actionLabel) {
                 const currentCard = container.querySelector('#laca-google-psi-card, .laca-google-psi');
                 if (!currentCard) return;
 
@@ -282,12 +285,21 @@
                     });
                 }
 
-                let hint = '';
-                if (is429) {
-                    hint = '<div class="laca-google-psi__alert-hint">Đã hết hạn mức miễn phí của Google cho hôm nay. <a href="admin.php?page=laca-google-search-console#laca-psi-key" class="laca-google-btn-link">Thêm PageSpeed API key</a> để có hạn mức riêng.</div>';
+                let actionBtnHtml = `
+                    <button type="button" class="button button-secondary button-small" data-laca-psi-run>
+                        <span class="dashicons dashicons-update" aria-hidden="true"></span> Thử lại
+                    </button>
+                `;
+
+                if (actionUrl) {
+                    actionBtnHtml += `
+                        <a href="${escapeHtml(actionUrl)}" class="button button-secondary button-small">
+                            <span class="dashicons dashicons-admin-generic" aria-hidden="true"></span> ${escapeHtml(actionLabel || 'Cấu hình API key')}
+                        </a>
+                    `;
                 }
 
-                // V1 & 2.1: Replace ENTIRE body of card (keep only header) with monochrome Alert + exactly 1 button
+                // V1 & 2.1: Replace ENTIRE body of card (keep only header) with monochrome Alert + single message + action buttons
                 const alertHtml = `
                     <div class="laca-google-psi__alert laca-alert laca-alert--error" role="alert">
                         <div class="laca-google-psi__alert-body">
@@ -295,11 +307,8 @@
                             <div class="laca-google-psi__alert-text">
                                 <h4 class="laca-google-psi__alert-title">Lỗi kiểm tra tốc độ</h4>
                                 <p class="laca-google-psi__alert-message">${escapeHtml(message)}</p>
-                                ${hint}
                                 <div class="laca-google-psi__alert-actions">
-                                    <button type="button" class="button button-secondary button-small" data-laca-psi-run>
-                                        <span class="dashicons dashicons-update" aria-hidden="true"></span> Thử lại
-                                    </button>
+                                    ${actionBtnHtml}
                                 </div>
                             </div>
                         </div>

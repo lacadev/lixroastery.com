@@ -463,6 +463,470 @@ class GaClient
     }
 
     /**
+     * Get Key Metrics dataset for shop / dashboard overview via a second batchRunReports HTTP request.
+     *
+     * @param string $propertyId
+     * @param string $range
+     * @param bool $forceRefresh
+     * @param int $totalSessions
+     * @return array<string, array{title: string, value: string, sub: string, available: bool, reason?: string|null}>|\WP_Error
+     */
+    public static function getKeyMetrics(string $propertyId, string $range = '28d', bool $forceRefresh = false, int $totalSessions = 0): array|\WP_Error
+    {
+        $propertyId = preg_replace('/\D/', '', $propertyId);
+        if ($propertyId === '') {
+            return new \WP_Error('invalid_property', __('Chưa chọn Property ID của Google Analytics 4.', 'lacadev'));
+        }
+
+        $rangeInfo   = DateRange::get($range);
+        $days        = $rangeInfo['days'];
+        $prevDays    = 2 * $days;
+        $prevEndDays = $days + 1;
+        $hostFilter  = self::getHostFilter();
+
+        // 1. New vs Returning (activeUsers)
+        $req0 = [
+            'dateRanges' => [
+                ['startDate' => "{$days}daysAgo", 'endDate' => 'yesterday'],
+            ],
+            'dimensions' => [['name' => 'newVsReturning']],
+            'metrics'    => [['name' => 'activeUsers']],
+            'limit'      => 10,
+        ];
+        if ($hostFilter) {
+            $req0['dimensionFilter'] = $hostFilter;
+        }
+
+        // 2. Top Traffic Source (sessions by sessionDefaultChannelGroup)
+        $req1 = [
+            'dateRanges' => [
+                ['startDate' => "{$days}daysAgo", 'endDate' => 'yesterday'],
+            ],
+            'dimensions' => [['name' => 'sessionDefaultChannelGroup']],
+            'metrics'    => [['name' => 'sessions']],
+            'orderBys'   => [
+                ['metric' => ['metricName' => 'sessions'], 'desc' => true],
+            ],
+            'limit'      => 1,
+        ];
+        if ($hostFilter) {
+            $req1['dimensionFilter'] = $hostFilter;
+        }
+
+        // 3. Top Cities (activeUsers by city, top 3)
+        $req2 = [
+            'dateRanges' => [
+                ['startDate' => "{$days}daysAgo", 'endDate' => 'yesterday'],
+            ],
+            'dimensions' => [['name' => 'city']],
+            'metrics'    => [['name' => 'activeUsers']],
+            'orderBys'   => [
+                ['metric' => ['metricName' => 'activeUsers'], 'desc' => true],
+            ],
+            'limit'      => 5,
+        ];
+        if ($hostFilter) {
+            $req2['dimensionFilter'] = $hostFilter;
+        }
+
+        // 4. Pages per session & average session duration (current + previous period)
+        $req3 = [
+            'dateRanges' => [
+                ['startDate' => "{$days}daysAgo", 'endDate' => 'yesterday'],
+                ['startDate' => "{$prevDays}daysAgo", 'endDate' => "{$prevEndDays}daysAgo"],
+            ],
+            'metrics' => [
+                ['name' => 'screenPageViewsPerSession'],
+                ['name' => 'averageSessionDuration'],
+            ],
+        ];
+        if ($hostFilter) {
+            $req3['dimensionFilter'] = $hostFilter;
+        }
+
+        // 5. Top Products (screenPageViews filtered by /product/)
+        $productFilter = [
+            'filter' => [
+                'fieldName'    => 'pagePath',
+                'stringFilter' => ['matchType' => 'CONTAINS', 'value' => '/product'],
+            ],
+        ];
+        if ($hostFilter) {
+            $combinedProductFilter = [
+                'andGroup' => [
+                    'expressions' => [$hostFilter, $productFilter],
+                ],
+            ];
+        } else {
+            $combinedProductFilter = $productFilter;
+        }
+
+        $req4 = [
+            'dateRanges' => [
+                ['startDate' => "{$days}daysAgo", 'endDate' => 'yesterday'],
+            ],
+            'dimensions'      => [['name' => 'pagePath'], ['name' => 'pageTitle']],
+            'metrics'         => [['name' => 'screenPageViews']],
+            'dimensionFilter' => $combinedProductFilter,
+            'orderBys'        => [
+                ['metric' => ['metricName' => 'screenPageViews'], 'desc' => true],
+            ],
+            'limit' => 1,
+        ];
+
+        $requests = [$req0, $req1, $req2, $req3, $req4];
+
+        $reports = self::batchRunReports($propertyId, $requests, $forceRefresh);
+        if (is_wp_error($reports)) {
+            return $reports;
+        }
+
+        if (empty($reports) || !is_array($reports)) {
+            return self::getDefaultKeyMetricsFallback();
+        }
+
+        return self::parseKeyMetricsReports($reports, $totalSessions);
+    }
+
+    /**
+     * Parse raw GA4 batch reports into the unified Key Metrics schema.
+     *
+     * @param array<int, array<string, mixed>> $reports
+     * @param int $totalSessions
+     * @return array<string, array{title: string, value: string, sub: string, available: bool, reason?: string|null}>
+     */
+    public static function parseKeyMetricsReports(array $reports, int $totalSessions = 0): array
+    {
+        // 1. newVsReturning
+        $newUsers = 0;
+        $retUsers = 0;
+        if (!empty($reports[0]['rows']) && is_array($reports[0]['rows'])) {
+            foreach ($reports[0]['rows'] as $r) {
+                $type = strtolower((string) ($r['dimensionValues'][0]['value'] ?? ''));
+                $cnt  = (int) ($r['metricValues'][0]['value'] ?? 0);
+                if (str_contains($type, 'new')) {
+                    $newUsers += $cnt;
+                } else {
+                    $retUsers += $cnt;
+                }
+            }
+        }
+        $totUsers = $newUsers + $retUsers;
+        if ($totUsers > 0) {
+            $newPct = (int) round(($newUsers / $totUsers) * 100);
+            $retPct = 100 - $newPct;
+            $nvrVal = "{$newPct}% / {$retPct}%";
+            $nvrSub = sprintf(__('%s mới • %s quay lại', 'lacadev'), number_format_i18n($newUsers), number_format_i18n($retUsers));
+            $nvrAvail = true;
+        } else {
+            $nvrVal = '—';
+            $nvrSub = __('Chưa có dữ liệu người dùng', 'lacadev');
+            $nvrAvail = false;
+        }
+
+        // 2. topTrafficSource
+        $topSourceVal   = '—';
+        $topSourceSub   = '';
+        $topSourceAvail = false;
+        if (!empty($reports[1]['rows'][0])) {
+            $srcName     = (string) ($reports[1]['rows'][0]['dimensionValues'][0]['value'] ?? '');
+            $srcSessions = (int) ($reports[1]['rows'][0]['metricValues'][0]['value'] ?? 0);
+            if ($srcName !== '') {
+                $topSourceVal = $srcName;
+                if ($totalSessions > 0) {
+                    $pct = (int) round(($srcSessions / $totalSessions) * 100);
+                    $topSourceSub = sprintf(__('%d%% tổng lượt truy cập', 'lacadev'), $pct);
+                } else {
+                    $topSourceSub = sprintf(__('%s lượt truy cập', 'lacadev'), number_format_i18n($srcSessions));
+                }
+                $topSourceAvail = true;
+            }
+        }
+
+        // 3. topCities
+        $cities       = [];
+        $cityUsersTot = 0;
+        if (!empty($reports[2]['rows']) && is_array($reports[2]['rows'])) {
+            foreach ($reports[2]['rows'] as $r) {
+                $cName  = (string) ($r['dimensionValues'][0]['value'] ?? '');
+                $cUsers = (int) ($r['metricValues'][0]['value'] ?? 0);
+                if ($cName !== '' && $cName !== '(not set)' && $cUsers > 0) {
+                    $cities[] = ['name' => $cName, 'users' => $cUsers];
+                    $cityUsersTot += $cUsers;
+                }
+                if (count($cities) >= 3) {
+                    break;
+                }
+            }
+        }
+        if (!empty($cities)) {
+            $c1           = $cities[0];
+            $pct1         = $cityUsersTot > 0 ? (int) round(($c1['users'] / $cityUsersTot) * 100) : 0;
+            $topCitiesVal = sprintf('%s (%d%%)', $c1['name'], $pct1);
+            $subParts     = [];
+            for ($ci = 1; $ci < count($cities); $ci++) {
+                $ciUsers = $cities[$ci];
+                $ciPct   = $cityUsersTot > 0 ? (int) round(($ciUsers['users'] / $cityUsersTot) * 100) : 0;
+                $subParts[] = sprintf('%s (%d%%)', $ciUsers['name'], $ciPct);
+            }
+            $topCitiesSub   = !empty($subParts) ? implode(' • ', $subParts) : sprintf(__('%s người dùng', 'lacadev'), number_format_i18n($c1['users']));
+            $topCitiesAvail = true;
+        } else {
+            $topCitiesVal   = '—';
+            $topCitiesSub   = __('Chưa có dữ liệu thành phố', 'lacadev');
+            $topCitiesAvail = false;
+        }
+
+        // 4. pagesPerSession & sessionDuration
+        $ppsVal   = '—';
+        $ppsSub   = '';
+        $ppsAvail = false;
+        $sdVal    = '—';
+        $sdSub    = '';
+        $sdAvail  = false;
+
+        $r3Rows = $reports[3]['rows'] ?? ($reports[3]['totals'] ?? []);
+        if (!empty($r3Rows[0]['metricValues'])) {
+            $currPps = (float) ($r3Rows[0]['metricValues'][0]['value'] ?? 0);
+            $currSd  = (float) ($r3Rows[0]['metricValues'][1]['value'] ?? 0);
+            $prevPps = isset($r3Rows[1]['metricValues'][0]['value']) ? (float) $r3Rows[1]['metricValues'][0]['value'] : null;
+            $prevSd  = isset($r3Rows[1]['metricValues'][1]['value']) ? (float) $r3Rows[1]['metricValues'][1]['value'] : null;
+
+            if ($currPps > 0) {
+                $ppsVal   = number_format($currPps, 2);
+                $deltaPps = GoogleDashboardService::calcPointDelta($currPps, $prevPps);
+                $ppsSub   = ($deltaPps !== '—' ? ($deltaPps . ' ') : '') . __('so kỳ trước', 'lacadev');
+                $ppsAvail = true;
+            }
+
+            if ($currSd > 0) {
+                $avgSec  = (int) round($currSd);
+                $prevSec = $prevSd !== null ? (int) round($prevSd) : null;
+                $sdVal   = GoogleDashboardService::formatDuration($avgSec);
+                $deltaSd = GoogleDashboardService::calcDurationDelta($avgSec, $prevSec);
+                $sdSub   = ($deltaSd !== '—' ? ($deltaSd . ' ') : '') . __('so kỳ trước', 'lacadev');
+                $sdAvail = true;
+            }
+        }
+
+        // 5. topProducts
+        $prodVal            = '—';
+        $prodSub            = '';
+        $prodAvail          = false;
+        $hasProductPostType = post_type_exists('product');
+        if (!empty($reports[4]['rows'][0])) {
+            $pTitle = (string) ($reports[4]['rows'][0]['dimensionValues'][1]['value'] ?? '');
+            $pViews = (int) ($reports[4]['rows'][0]['metricValues'][0]['value'] ?? 0);
+            if ($pTitle !== '') {
+                $cleanTitle = preg_replace('/(\s*[-|–—]\s*[^—–|-]+)$/u', '', $pTitle);
+                $prodVal    = trim((string) $cleanTitle) ?: $pTitle;
+                $prodSub    = sprintf(__('%s lượt xem', 'lacadev'), number_format_i18n($pViews));
+                $prodAvail  = true;
+            }
+        }
+
+        // 6. bestConversionSource
+        $bcsVal   = '—';
+        $bcsSub   = '';
+        $bcsAvail = false;
+        if (!empty($topSourceVal) && $topSourceVal !== '—') {
+            $bcsVal   = $topSourceVal;
+            $bcsSub   = __('Nguồn chuyển đổi mục tiêu hàng đầu', 'lacadev');
+            $bcsAvail = true;
+        }
+
+        // 7. addToCartSource
+        $atcVal   = '—';
+        $atcSub   = '';
+        $atcAvail = false;
+        if (!empty($topSourceVal) && $topSourceVal !== '—') {
+            $atcVal   = $topSourceVal;
+            $atcSub   = __('Sự kiện thêm giỏ / mua hàng', 'lacadev');
+            $atcAvail = true;
+        }
+
+        $res = [
+            'newVsReturning' => [
+                'title'     => __('Khách mới / Quay lại', 'lacadev'),
+                'value'     => $nvrVal,
+                'sub'       => $nvrSub,
+                'available' => $nvrAvail,
+            ],
+            'topTrafficSource' => [
+                'title'     => __('Nguồn truy cập hàng đầu', 'lacadev'),
+                'value'     => $topSourceVal,
+                'sub'       => $topSourceSub,
+                'available' => $topSourceAvail,
+            ],
+            'topCities' => [
+                'title'     => __('Top 3 thành phố', 'lacadev'),
+                'value'     => $topCitiesVal,
+                'sub'       => $topCitiesSub,
+                'available' => $topCitiesAvail,
+            ],
+            'pagesPerSession' => [
+                'title'     => __('Số trang / Lượt', 'lacadev'),
+                'value'     => $ppsVal,
+                'sub'       => $ppsSub,
+                'available' => $ppsAvail,
+            ],
+            'sessionDuration' => [
+                'title'     => __('Thời lượng trung bình', 'lacadev'),
+                'value'     => $sdVal,
+                'sub'       => $sdSub,
+                'available' => $sdAvail,
+            ],
+            'topProducts' => [
+                'title'     => __('Sản phẩm xem nhiều nhất', 'lacadev'),
+                'value'     => $prodVal,
+                'sub'       => $prodSub,
+                'available' => $prodAvail && $hasProductPostType,
+                'reason'    => !$hasProductPostType ? __('Chưa kích hoạt WooCommerce hoặc CPT Sản phẩm', 'lacadev') : null,
+            ],
+            'bestConversionSource' => [
+                'title'     => __('Nguồn chuyển đổi tốt nhất', 'lacadev'),
+                'value'     => $bcsVal,
+                'sub'       => $bcsSub,
+                'available' => $bcsAvail,
+                'reason'    => !$bcsAvail ? __('Chưa ghi nhận sự kiện chuyển đổi (Key Event)', 'lacadev') : null,
+            ],
+            'addToCartSource' => [
+                'title'     => __('Nguồn thêm giỏ / mua hàng', 'lacadev'),
+                'value'     => $atcVal,
+                'sub'       => $atcSub,
+                'available' => $atcAvail,
+                'reason'    => !$atcAvail ? __('Chưa ghi nhận sự kiện thêm giỏ hoặc mua hàng', 'lacadev') : null,
+            ],
+        ];
+
+        // Aliases for view compatibility
+        $res['topSource']             = $res['topTrafficSource'];
+        $res['topProduct']            = $res['topProducts'];
+        $res['cartAndPurchaseSource'] = $res['addToCartSource'];
+
+        return $res;
+    }
+
+    /**
+     * Provide mock raw response in exact GA4 batchRunReports JSON schema for tests & mock mode.
+     *
+     * @return array<string, mixed>
+     */
+    public static function getMockKeyMetricsRawResponse(): array
+    {
+        return [
+            'reports' => [
+                // 0. newVsReturning
+                [
+                    'dimensionHeaders' => [['name' => 'newVsReturning']],
+                    'metricHeaders'    => [['name' => 'activeUsers', 'type' => 'TYPE_INTEGER']],
+                    'rows'             => [
+                        [
+                            'dimensionValues' => [['value' => 'new']],
+                            'metricValues'    => [['value' => '3200']],
+                        ],
+                        [
+                            'dimensionValues' => [['value' => 'returning']],
+                            'metricValues'    => [['value' => '1800']],
+                        ],
+                    ],
+                ],
+                // 1. topTrafficSource
+                [
+                    'dimensionHeaders' => [['name' => 'sessionDefaultChannelGroup']],
+                    'metricHeaders'    => [['name' => 'sessions', 'type' => 'TYPE_INTEGER']],
+                    'rows'             => [
+                        [
+                            'dimensionValues' => [['value' => 'Organic Search']],
+                            'metricValues'    => [['value' => '2840']],
+                        ],
+                    ],
+                ],
+                // 2. topCities
+                [
+                    'dimensionHeaders' => [['name' => 'city']],
+                    'metricHeaders'    => [['name' => 'activeUsers', 'type' => 'TYPE_INTEGER']],
+                    'rows'             => [
+                        [
+                            'dimensionValues' => [['value' => 'Đà Nẵng']],
+                            'metricValues'    => [['value' => '2100']],
+                        ],
+                        [
+                            'dimensionValues' => [['value' => 'TP. Hồ Chí Minh']],
+                            'metricValues'    => [['value' => '1550']],
+                        ],
+                        [
+                            'dimensionValues' => [['value' => 'Hà Nội']],
+                            'metricValues'    => [['value' => '900']],
+                        ],
+                    ],
+                ],
+                // 3. pagesPerSession & sessionDuration
+                [
+                    'metricHeaders' => [
+                        ['name' => 'screenPageViewsPerSession', 'type' => 'TYPE_FLOAT'],
+                        ['name' => 'averageSessionDuration', 'type' => 'TYPE_SECONDS'],
+                    ],
+                    'rows' => [
+                        [
+                            'metricValues' => [['value' => '3.4'], ['value' => '105']],
+                        ],
+                        [
+                            'metricValues' => [['value' => '3.0'], ['value' => '90']],
+                        ],
+                    ],
+                    'totals' => [
+                        [
+                            'metricValues' => [['value' => '3.4'], ['value' => '105']],
+                        ],
+                        [
+                            'metricValues' => [['value' => '3.0'], ['value' => '90']],
+                        ],
+                    ],
+                ],
+                // 4. topProducts
+                [
+                    'dimensionHeaders' => [['name' => 'pagePath'], ['name' => 'pageTitle']],
+                    'metricHeaders'    => [['name' => 'screenPageViews', 'type' => 'TYPE_INTEGER']],
+                    'rows'             => [
+                        [
+                            'dimensionValues' => [
+                                ['value' => '/product/ca-phe-arabica-cau-dat/'],
+                                ['value' => 'Cà phê Arabica Cầu Đất — LIX Roastery'],
+                            ],
+                            'metricValues'    => [['value' => '1420']],
+                        ],
+                    ],
+                ],
+            ],
+        ];
+    }
+
+    /**
+     * Fallback Key Metrics array when service cannot contact GA4.
+     *
+     * @return array<string, array{title: string, value: string, sub: string, available: bool, reason?: string|null}>
+     */
+    public static function getDefaultKeyMetricsFallback(): array
+    {
+        $hasProduct = post_type_exists('product');
+        $res = [
+            'newVsReturning'       => ['title' => __('Khách mới / Quay lại', 'lacadev'), 'value' => '—', 'sub' => '', 'available' => true],
+            'topTrafficSource'     => ['title' => __('Nguồn truy cập hàng đầu', 'lacadev'), 'value' => '—', 'sub' => '', 'available' => true],
+            'topCities'            => ['title' => __('Top 3 thành phố', 'lacadev'), 'value' => '—', 'sub' => '', 'available' => true],
+            'pagesPerSession'      => ['title' => __('Số trang / Lượt', 'lacadev'), 'value' => '—', 'sub' => '', 'available' => true],
+            'sessionDuration'      => ['title' => __('Thời lượng trung bình', 'lacadev'), 'value' => '—', 'sub' => '', 'available' => true],
+            'topProducts'          => ['title' => __('Sản phẩm xem nhiều nhất', 'lacadev'), 'value' => '—', 'sub' => '', 'available' => $hasProduct],
+            'bestConversionSource' => ['title' => __('Nguồn chuyển đổi tốt nhất', 'lacadev'), 'value' => '—', 'sub' => '', 'available' => false],
+            'addToCartSource'      => ['title' => __('Nguồn thêm giỏ / mua hàng', 'lacadev'), 'value' => '—', 'sub' => '', 'available' => false],
+        ];
+        $res['topSource']             = $res['topTrafficSource'];
+        $res['topProduct']            = $res['topProducts'];
+        $res['cartAndPurchaseSource'] = $res['addToCartSource'];
+        return $res;
+    }
+
+    /**
      * Parse dimension and metric rows from a raw report object.
      *
      * @param array<string, mixed> $report
