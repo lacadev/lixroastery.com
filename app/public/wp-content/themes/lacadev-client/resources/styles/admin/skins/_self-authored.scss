@@ -1997,4 +1997,108 @@ body.is-merchant-admin {
     }
 }
 
+// ── Malware Scanner Results (Monochromatic, zero green, BEM) ─────────────
+.laca-scan-meta {
+    margin-bottom: var(--laca-space-3);
+}
+
+.laca-scan-checksum-note {
+    font-size: var(--laca-font-size-sm);
+    color: var(--laca-fg-muted);
+    margin: 0 0 var(--laca-space-3);
+}
+
+.laca-scan-clean {
+    display: flex;
+    align-items: center;
+    gap: var(--laca-space-2);
+    padding: var(--laca-space-3) var(--laca-space-4);
+    background: var(--laca-bg-surface);
+    border: 1px solid var(--laca-border);
+    border-radius: var(--laca-radius-base);
+    color: var(--laca-fg);
+    font-size: var(--laca-font-size-sm);
+    font-weight: 500;
+
+    .dashicons {
+        color: var(--laca-fg);
+        font-size: 20px;
+        width: 20px;
+        height: 20px;
+    }
+}
+
+.laca-scan-summary {
+    font-size: var(--laca-font-size-sm);
+    color: var(--laca-fg);
+    margin-bottom: var(--laca-space-3);
+}
+
+.laca-scan-risk-heading {
+    font-size: var(--laca-font-size-sm);
+    font-weight: 600;
+    margin: var(--laca-space-4) 0 var(--laca-space-2);
+}
+
+.laca-scan-table-wrap {
+    overflow-x: auto;
+    margin-bottom: var(--laca-space-4);
+    border: 1px solid var(--laca-border);
+    border-radius: var(--laca-radius-base);
+}
+
+.laca-scan-table {
+    margin-bottom: 0 !important;
+    border: none !important;
+
+    .laca-scan-col-file {
+        width: 28%;
+    }
+
+    .laca-scan-col-line {
+        width: 8%;
+        text-align: center;
+    }
+
+    .laca-scan-col-desc {
+        width: 28%;
+    }
+
+    .laca-scan-col-code {
+        width: 24%;
+    }
+
+    .laca-scan-col-actions {
+        width: 12%;
+        text-align: right;
+    }
+
+    .laca-scan-row-whitelisted {
+        opacity: 0.5;
+    }
+}
+
+.laca-scan-file-code,
+.laca-scan-code-snippet {
+    font-size: 11px;
+    word-break: break-all;
+    background: var(--laca-bg-muted);
+    padding: 2px 4px;
+    border-radius: 3px;
+}
+
+.laca-scan-whitelisted {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: var(--laca-font-size-xs);
+    color: var(--laca-fg-muted);
+
+    .dashicons {
+        font-size: 16px;
+        width: 16px;
+        height: 16px;
+    }
+}
+
 

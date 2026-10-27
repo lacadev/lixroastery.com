@@ -42,6 +42,7 @@ class SecurityManager
         add_action('wp_ajax_laca_malware_init',          [$this, 'ajaxMalwareInit']);
         add_action('wp_ajax_laca_malware_chunk',         [$this, 'ajaxMalwareChunk']);
         add_action('wp_ajax_laca_malware_result',        [$this, 'ajaxMalwareResult']);
+        add_action('wp_ajax_laca_malware_whitelist_add', [$this, 'ajaxMalwareWhitelistAdd']);
 
         // ── AJAX: Hidden User Scanner ─────────────────────────────────────────
         add_action('wp_ajax_laca_hidden_user_scan',      [$this, 'ajaxHiddenUserScan']);
@@ -510,8 +511,15 @@ class SecurityManager
         if (empty($exts)) $exts = ['php'];
         $files  = MalwareScanner::getFileList($exts);
         $scanId = 'laca_scan_' . uniqid();
+        $stats  = [
+            'core_matched'     => 0,
+            'plugins_count'    => 0,
+            'plugins_matched'  => [],
+            'core_unavailable' => false,
+        ];
         set_transient($scanId . '_files',    $files,  600);
         set_transient($scanId . '_findings', [],      600);
+        set_transient($scanId . '_stats',    $stats,  600);
         wp_send_json_success(['scan_id' => $scanId, 'total' => count($files)]);
     }
 
@@ -522,13 +530,20 @@ class SecurityManager
         $offset   = (int) ($_POST['offset'] ?? 0);
         $files    = get_transient($scanId . '_files');
         $findings = get_transient($scanId . '_findings');
+        $stats    = get_transient($scanId . '_stats');
         if ($files === false) wp_send_json_error('Phiên đã hết hạn. Vui lòng thử lại.');
 
-        $chunk    = MalwareScanner::scanChunk($files, $offset, 50);
-        $findings = array_merge($findings, $chunk);
-        set_transient($scanId . '_findings', $findings, 600);
+        if (!is_array($stats)) {
+            $stats = [];
+        }
 
-        $next  = $offset + 50;
+        $size     = 100;
+        $chunkRes = MalwareScanner::scanChunkWithStats($files, $offset, $size, $stats);
+        $findings = array_merge($findings, $chunkRes['findings']);
+        set_transient($scanId . '_findings', $findings, 600);
+        set_transient($scanId . '_stats',    $chunkRes['stats'], 600);
+
+        $next  = $offset + $size;
         $total = count($files);
         wp_send_json_success([
             'done'        => $next >= $total,
@@ -545,13 +560,55 @@ class SecurityManager
         $scanId   = sanitize_text_field($_POST['scan_id'] ?? '');
         $findings = get_transient($scanId . '_findings');
         $files    = get_transient($scanId . '_files');
+        $stats    = get_transient($scanId . '_stats');
         if ($findings === false) wp_send_json_error('Phiên đã hết hạn.');
 
         $scanned = is_array($files) ? count($files) : 0;
+        if (!is_array($stats)) {
+            $stats = [];
+        }
+
         wp_send_json_success([
-            'html'     => MalwareScanner::renderResults($findings, $scanned),
+            'html'     => MalwareScanner::renderResults($findings, $scanned, $stats),
             'total'    => count($findings),
             'scan_id'  => $scanId,
+        ]);
+    }
+
+    public function ajaxMalwareWhitelistAdd(): void
+    {
+        $this->checkNonce();
+        if (!current_user_can('manage_options')) {
+            wp_send_json_error(__('Bạn không có quyền thực hiện thao tác này.', 'lacadev'));
+        }
+
+        $file = sanitize_text_field($_POST['file'] ?? '');
+        if (empty($file)) {
+            wp_send_json_error(__('Đường dẫn file không hợp lệ.', 'lacadev'));
+        }
+
+        $base = wp_normalize_path(ABSPATH);
+        $fullPath = $base . ltrim($file, '/');
+        if (!file_exists($fullPath) || !is_file($fullPath)) {
+            wp_send_json_error(__('File không tồn tại trên hệ thống.', 'lacadev'));
+        }
+
+        $hash = @hash_file('sha256', $fullPath);
+        if (!$hash) {
+            wp_send_json_error(__('Không thể tạo mã băm cho file.', 'lacadev'));
+        }
+
+        $whitelist = get_option('laca_malware_whitelist', []);
+        if (!is_array($whitelist)) {
+            $whitelist = [];
+        }
+
+        $whitelist[ltrim($file, '/')] = $hash;
+        update_option('laca_malware_whitelist', $whitelist);
+
+        wp_send_json_success([
+            'message' => __('Đã thêm vào danh sách an toàn.', 'lacadev'),
+            'file'    => $file,
         ]);
     }
 
@@ -765,6 +822,34 @@ class SecurityManager
                 if (errMsg) { $('#malware-progress').hide(); $('#malware-result').html('<p style="color:red;">'+errMsg+'</p>'); }
                 else { $('#malware-progress').hide(); }
             }
+
+            $(document).on('click', '.laca-btn-whitelist', function(e){
+                e.preventDefault();
+                var $btn = $(this);
+                var file = $btn.data('file');
+                if (!file) return;
+                if (!confirm('Bạn có chắc muốn đánh dấu an toàn cho file: ' + file + '?\nFile sẽ được bỏ qua trong các lần quét sau (trừ khi nội dung thay đổi).')) {
+                    return;
+                }
+                $btn.prop('disabled', true).text('Đang lưu...');
+                $.post(ajaxUrl, {
+                    action: 'laca_malware_whitelist_add',
+                    nonce: nonce,
+                    file: file
+                }, function(res){
+                    if (res.success) {
+                        var $tr = $btn.closest('tr');
+                        $tr.addClass('laca-scan-row-whitelisted');
+                        $btn.replaceWith('<span class="laca-scan-whitelisted"><span class="dashicons dashicons-yes-alt"></span> Đã an toàn</span>');
+                    } else {
+                        alert(res.data || 'Lỗi khi lưu.');
+                        $btn.prop('disabled', false).text('Đánh dấu an toàn');
+                    }
+                }).fail(function(){
+                    alert('Lỗi kết nối.');
+                    $btn.prop('disabled', false).text('Đánh dấu an toàn');
+                });
+            });
 
             // ── Hidden Users ──────────────────────────────────────────────────
             $('#btn-user-scan').on('click', function(){
