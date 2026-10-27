@@ -513,7 +513,6 @@ class SecurityManager
         $scanId = 'laca_scan_' . uniqid();
         $stats  = [
             'core_matched'     => 0,
-            'plugins_count'    => 0,
             'plugins_matched'  => [],
             'core_unavailable' => false,
         ];
