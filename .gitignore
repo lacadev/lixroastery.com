@@ -10,3 +10,7 @@ conf/
 .envrc
 .DS_Store
 local-phpinfo.php
+# Không đưa thư viện build, script tạm và file sao lưu cấu hình lên git/production
+node_modules/
+/scratch/
+/app/public/.htaccess.bk

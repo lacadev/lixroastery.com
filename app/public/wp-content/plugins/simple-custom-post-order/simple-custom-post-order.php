@@ -3,7 +3,7 @@
  * Plugin Name: Simple Custom Post Order
  * Plugin URI: https://wordpress.org/plugins/simple-custom-post-order/
  * Description: Order posts, pages, custom post types, and taxonomies with a simple drag and drop interface.
- * Version: 2.8.10
+ * Version: 2.8.11
  * Author: Colorlib
  * Author URI: https://colorlib.com/
  * Requires at least: 6.2
@@ -39,7 +39,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 define( 'SCPORDER_URL', plugins_url( '', __FILE__ ) );
 define( 'SCPORDER_DIR', plugin_dir_path( __FILE__ ) );
-define( 'SCPORDER_VERSION', '2.8.10' );
+define( 'SCPORDER_VERSION', '2.8.11' );
 
 $scporder = new SCPO_Engine();
 
@@ -91,6 +91,7 @@ class SCPO_Engine {
 		// than from inside the sanitize callback (see seed_newly_enabled()).
 		add_action( 'add_option_scporder_options', array( $this, 'seed_on_add_option' ), 10, 2 );
 		add_action( 'update_option_scporder_options', array( $this, 'seed_newly_enabled' ), 10, 2 );
+		add_action( 'created_term', array( $this, 'normalize_new_term' ), 10, 3 );
 
 		add_action( 'wp_ajax_scpo_reset_order', array( $this, 'scpo_ajax_reset_order' ) );
 
@@ -632,7 +633,10 @@ class SCPO_Engine {
 	 * page precede it), so a save only ever reorders the rows on screen.
 	 * Sibling order, which is all the tree displays, is unchanged.
 	 *
-	 * @param array $rows Rows of [ ID, menu_order, post_parent ], siblings already in order.
+	 * Hierarchical taxonomies use it too (WP_Terms_List_Table::_rows() renders
+	 * the same order; it hides orphans, so their place does not matter there).
+	 *
+	 * @param array $rows Rows of [ id, order, parent ], siblings already in order.
 	 * @return int[]
 	 */
 	private function tree_order( array $rows ): array {
@@ -692,10 +696,16 @@ class SCPO_Engine {
 	 * Taxonomy counterpart of normalize_post_type().
 	 *
 	 * @param string $taxonomy Taxonomy.
-	 * @return void
+	 * @return int[]|WP_Error IDs written, or the failed write.
 	 */
-	private function normalize_taxonomy( string $taxonomy ): void {
+	private function normalize_taxonomy( string $taxonomy ) {
 		global $wpdb;
+
+		// As for hierarchical post types: gapless is not enough, the drag
+		// conflict check needs term_order to follow the tree on screen.
+		if ( is_taxonomy_hierarchical( $taxonomy ) ) {
+			return $this->renumber_taxonomy( $taxonomy );
+		}
 
 		$probe = $wpdb->get_row(
 			$wpdb->prepare(
@@ -708,25 +718,26 @@ class SCPO_Engine {
 		);
 
 		if ( $this->is_already_sequential( $probe ) ) {
-			return;
+			return [];
 		}
 
-		$this->renumber_taxonomy( $taxonomy );
+		return $this->renumber_taxonomy( $taxonomy );
 	}
 
 	/**
 	 * Taxonomy counterpart of renumber_post_type(). Ties are broken by name, the
-	 * order core lists terms in, then term_id.
+	 * order core lists terms in, then term_id. Hierarchical taxonomies are
+	 * numbered in tree order.
 	 *
 	 * @param string $taxonomy Taxonomy.
-	 * @return void
+	 * @return int[]|WP_Error IDs written, or the failed write.
 	 */
-	private function renumber_taxonomy( string $taxonomy ): void {
+	private function renumber_taxonomy( string $taxonomy ) {
 		global $wpdb;
 
 		$rows = $wpdb->get_results(
 			$wpdb->prepare(
-				"SELECT terms.term_id, terms.term_order
+				"SELECT terms.term_id, terms.term_order, term_taxonomy.parent
 				FROM $wpdb->terms AS terms
 				INNER JOIN $wpdb->term_taxonomy AS term_taxonomy ON ( terms.term_id = term_taxonomy.term_id )
 				WHERE term_taxonomy.taxonomy = %s
@@ -736,7 +747,37 @@ class SCPO_Engine {
 			ARRAY_N
 		);
 
-		$this->renumber_rows( $wpdb->terms, 'term_id', 'term_order', array_column( $rows, 0 ), $taxonomy, array_column( $rows, 1, 0 ) );
+		$ordered_ids = is_taxonomy_hierarchical( $taxonomy )
+			? $this->tree_order( $rows )
+			: array_column( $rows, 0 );
+
+		return $this->renumber_rows( $wpdb->terms, 'term_id', 'term_order', $ordered_ids, $taxonomy, array_column( $rows, 1, 0 ) );
+	}
+
+	/**
+	 * After a quick-add on edit-tags.php, which shows the new row under its parent
+	 * without a reload, keep a sorted hierarchical taxonomy in tree order: at
+	 * term_order 0 the next drag is refused. Other inserts wait for refresh();
+	 * renumbering on each would make imports quadratic.
+	 *
+	 * @param int    $term_id  Term ID.
+	 * @param int    $tt_id    Term taxonomy ID.
+	 * @param string $taxonomy Taxonomy.
+	 * @return void
+	 */
+	public function normalize_new_term( $term_id, $tt_id, $taxonomy ): void {
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- wp_ajax_add_tag() checked its nonce before inserting.
+		$action = ( isset( $_POST['action'] ) && is_string( $_POST['action'] ) ) ? sanitize_key( wp_unslash( $_POST['action'] ) ) : '';
+		if ( ! wp_doing_ajax() || 'add-tag' !== $action || ! is_string( $taxonomy ) || ! is_taxonomy_hierarchical( $taxonomy )
+			|| ! $this->term_ordering_available() || ! in_array( $taxonomy, $this->get_scporder_options_tags(), true ) ) {
+			return;
+		}
+
+		$result = $this->normalize_taxonomy( $taxonomy );
+		// A concurrent insert renumbered first: read again rather than leave this term at 0.
+		if ( is_wp_error( $result ) && 'scpo_order_conflict' === $result->get_error_code() ) {
+			$this->normalize_taxonomy( $taxonomy );
+		}
 	}
 
 	/**
@@ -892,11 +933,7 @@ class SCPO_Engine {
 	 */
 	private function begin_order_transaction( string $table ) {
 		global $wpdb;
-		$engine = $wpdb->get_var( $wpdb->prepare(
-			'SELECT ENGINE FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = %s',
-			$table
-		) );
-		if ( 'innodb' !== strtolower( (string) $engine ) ) {
+		if ( in_array( $this->table_engine( $table ), [ 'myisam', 'aria', 'memory', 'heap', 'csv', 'archive', 'mrg_myisam', 'merge', 'blackhole', 'federated', 'spider', 'connect', 'mroonga', 'sequence', 'oqgraph', 'sphinx' ], true ) ) {
 			return new WP_Error( 'scpo_transaction_unavailable', __( 'Safe reordering requires an InnoDB database table. Please contact your site administrator.', 'simple-custom-post-order' ) );
 		}
 
@@ -910,6 +947,35 @@ class SCPO_Engine {
 			return new WP_Error( 'scpo_transaction_failed', __( 'Could not start a safe order update. Please try again.', 'simple-custom-post-order' ) );
 		}
 		return [ 'owned' => ! $nested, 'name' => $name ];
+	}
+
+	/**
+	 * Lowercase storage engine of a table, or '' when it cannot be determined.
+	 *
+	 * Only a positively identified non-transactional engine blocks a save. In
+	 * 2.8.10 an empty answer was treated as "not InnoDB", which refused every
+	 * reorder on sites whose tables are InnoDB but whose information_schema
+	 * lookup comes back empty (restricted metadata access, DB proxies, db.php
+	 * drop-ins) — reported on the forum as "Safe reordering requires an InnoDB
+	 * database table". SHOW TABLE STATUS is tried as a fallback; if both are
+	 * silent the save proceeds inside START TRANSACTION as on InnoDB.
+	 *
+	 * @param string $table Table name.
+	 * @return string
+	 */
+	private function table_engine( string $table ): string {
+		global $wpdb;
+		$suppressed = $wpdb->suppress_errors( true );
+		$engine = $wpdb->get_var( $wpdb->prepare(
+			'SELECT ENGINE FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = %s',
+			$table
+		) );
+		if ( ! is_string( $engine ) || '' === $engine ) {
+			$status = $wpdb->get_row( $wpdb->prepare( 'SHOW TABLE STATUS LIKE %s', $wpdb->esc_like( $table ) ), ARRAY_A );
+			$engine = is_array( $status ) && isset( $status['Engine'] ) ? $status['Engine'] : '';
+		}
+		$wpdb->suppress_errors( $suppressed );
+		return strtolower( (string) $engine );
 	}
 
 	/** Close only the transaction/savepoint owned by this operation. */

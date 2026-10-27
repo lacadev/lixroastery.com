@@ -24,7 +24,6 @@ use WooCommerce\PayPalCommerce\SdkV6\Helper\FastlaneConfig;
 use WooCommerce\PayPalCommerce\SdkV6\Helper\GooglePayConfig;
 use WooCommerce\PayPalCommerce\SdkV6\Helper\MessagesEligibility;
 use WooCommerce\PayPalCommerce\SdkV6\Helper\MessageStyleMapper;
-use WooCommerce\PayPalCommerce\SdkV6\Helper\RateLimiter;
 use WooCommerce\PayPalCommerce\SdkV6\Helper\RecordedQuote;
 use WooCommerce\PayPalCommerce\SdkV6\Helper\RecordedShippingRate;
 use WooCommerce\PayPalCommerce\SdkV6\Helper\RecordedTaxBasis;
@@ -137,7 +136,8 @@ return array(
             $container->get('sdk-v6.google-pay-config'),
             $container->get('sdk-v6.apple-pay-config'),
             $container->get('sdk-v6.fastlane-config'),
-            $container->get('sdk-v6.card-field-styles')
+            $container->get('sdk-v6.card-field-styles'),
+            $container->get('button.helper.disabled-funding-sources')
         );
     },
     'sdk-v6.add-payment-method-manager' => static function (ContainerInterface $container): AddPaymentMethodManager {
@@ -157,7 +157,7 @@ return array(
         );
     },
     'sdk-v6.endpoint.client-token' => static function (ContainerInterface $container): ClientTokenEndpoint {
-        return new ClientTokenEndpoint($container->get('order-endpoints.request-data'), $container->get('woocommerce.logger.woocommerce'), $container->get('api.sdk-client-token'), $container->get('sdk-v6.rate-limiter'));
+        return new ClientTokenEndpoint($container->get('order-endpoints.request-data'), $container->get('woocommerce.logger.woocommerce'), $container->get('api.sdk-client-token'));
     },
     'sdk-v6.endpoint.simulate-cart' => static function (ContainerInterface $container): SimulateCartEndpoint {
         return new SimulateCartEndpoint($container->get('order-endpoints.request-data'), $container->get('order-endpoints.helper.cart-products'), $container->get('button.helper.isolated-cart-simulator'), $container->get('woocommerce.logger.woocommerce'));
@@ -174,17 +174,14 @@ return array(
     'sdk-v6.endpoint.wallet-shipping' => static function (ContainerInterface $container): CartQuoteEndpoint {
         return new CartQuoteEndpoint($container->get('order-endpoints.request-data'), $container->get('api.factory.amount'), $container->get('sdk-v6.recorded-shipping-rate'), $container->get('sdk-v6.recorded-tax-basis'), $container->get('sdk-v6.recorded-quote'), $container->get('woocommerce.logger.woocommerce'));
     },
-    'sdk-v6.rate-limiter' => static function (): RateLimiter {
-        return new RateLimiter('ppcp_sdk_v6_rl_', 10, 60);
-    },
-    'sdk-v6.blocks.place-order-data' => static function (ContainerInterface $container): callable {
-        // The non-express PayPal row's state. A callable, since neither the cart
-        // nor the filtered values below are settled while the container is built.
+    'sdk-v6.blocks.place-order-enabled' => static function (ContainerInterface $container): callable {
+        // Whether the non-express PayPal row is offered. A callable, since neither
+        // the cart nor the filtered value below is settled while the container is built.
         $settings_provider = $container->get('settings.settings-provider');
         assert($settings_provider instanceof SettingsProvider);
         $subscription_helper = $container->get('wc-subscriptions.helper');
         assert($subscription_helper instanceof SubscriptionHelper);
-        return static function () use ($container, $settings_provider, $subscription_helper): array {
+        return static function () use ($container, $settings_provider, $subscription_helper): bool {
             /**
              * Whether to offer the non-express PayPal method.
              *
@@ -196,13 +193,13 @@ return array(
             // because extensions.php swaps in DisabledSmartButton on v6's pages.
             $can_vault = $settings_provider->save_paypal_and_venmo() && (bool) $container->get('button.client_id');
             $usable_for_cart = !$subscription_helper->cart_contains_subscription() || $can_vault;
-            return array('enabled' => $offer_method && $usable_for_cart, 'text' => (string) $container->get('wcgateway.place-order-button-text'), 'description' => (string) $container->get('wcgateway.place-order-button-description'));
+            return $offer_method && $usable_for_cart;
         };
     },
     'sdk-v6.blocks.payment-method' => static function (ContainerInterface $container): V6PaymentMethod {
         // The saved-PayPal vault component lives in its own feature-flagged module,
         // so its services may be absent; fall back to no saved-token support.
         $has_vault = $container->has('vault-component.data') && $container->has('vault-component.eligibility.check');
-        return new V6PaymentMethod($container->get('sdk-v6.manager'), $container->get('sdk-v6.asset-getter'), $container->get('ppcp.asset-version'), $container->get('wcgateway.paypal-gateway'), $container->get('wcgateway.credit-card-gateway'), $has_vault ? $container->get('vault-component.data') : null, $has_vault ? $container->get('vault-component.eligibility.check') : null, $container->get('button.client_id'), $container->get('sdk-v6.blocks.place-order-data'));
+        return new V6PaymentMethod($container->get('sdk-v6.manager'), $container->get('sdk-v6.asset-getter'), $container->get('ppcp.asset-version'), $container->get('wcgateway.paypal-gateway'), $container->get('wcgateway.credit-card-gateway'), $has_vault ? $container->get('vault-component.data') : null, $has_vault ? $container->get('vault-component.eligibility.check') : null, $container->get('button.client_id'), $container->get('sdk-v6.blocks.place-order-enabled'));
     },
 );
