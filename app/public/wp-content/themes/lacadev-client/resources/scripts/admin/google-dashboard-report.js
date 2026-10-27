@@ -1,8 +1,8 @@
 /**
  * LacaDev WP Dashboard Google Services Report (GSC + GA4) — V2
  * Handles AJAX lazy loading of the full-width Google Report, range switching,
- * refresh bypassing cache, collapse/expand toggle, PSI Mobile/Desktop tabs & run,
- * and 100 queries dialog with client-side sort & filter.
+ * refresh bypassing cache, collapse/expand toggle, instant PSI Mobile/Desktop tabs & run,
+ * authentic skeleton placeholder, and 100 queries dialog with client-side sort & filter.
  */
 (function () {
     'use strict';
@@ -49,31 +49,83 @@
             });
         }
 
-        // 2. AJAX Load Report
+        // 2. AJAX Load Report (U2 Authentic Skeleton, U3 Updating State & AbortController)
         let currentRange = wrap.dataset.range || '28d';
+        let pendingRange = null;
         let currentPsiStrategy = 'mobile';
+        let activeReportController = null;
+        let isReportUpdating = false;
 
         function loadReport(range, isRefresh) {
             if (!container || !ajaxUrl || !nonce) return;
 
-            if (!isRefresh) {
-                container.innerHTML = `
-                    <div class="laca-google-report-skeleton" aria-busy="true">
-                        <div class="laca-skeleton-bar"></div>
-                        <div class="laca-skeleton-grid">
-                            <div class="laca-skeleton-card"></div>
-                            <div class="laca-skeleton-card"></div>
-                        </div>
-                    </div>
-                `;
+            const targetRange = range || currentRange || '28d';
+
+            // U3: Prevent repeated clicks during in-flight request
+            if (isReportUpdating) {
+                // If user clicked the same range currently in flight or clicked refresh again, ignore
+                if (isRefresh || targetRange === pendingRange) {
+                    return;
+                }
+                // If user clicked a different range: abort previous request and continue with new range
+                if (activeReportController) {
+                    activeReportController.abort();
+                }
+            }
+
+            isReportUpdating = true;
+            pendingRange = targetRange;
+            activeReportController = new AbortController();
+            const controller = activeReportController;
+
+            const reportBody = container.querySelector('.laca-google-report-body');
+
+            if (!isRefresh && !reportBody) {
+                // U2: Initial load -> use authentic skeleton from shared <template>
+                const skeletonTpl = document.getElementById('laca-google-report-skeleton-tpl');
+                if (skeletonTpl && skeletonTpl.innerHTML) {
+                    container.innerHTML = skeletonTpl.innerHTML;
+                } else {
+                    container.innerHTML = '<div class="laca-google-report-skeleton" aria-busy="true"><span class="screen-reader-text">Đang tải báo cáo Google…</span></div>';
+                }
             } else {
-                container.classList.add('is-loading');
+                // U3: Refresh or Date range change -> Dim existing content and show indeterminate progress bar
+                if (reportBody) {
+                    reportBody.classList.add('laca-google-report--dimmed');
+                }
+
+                let progressBar = container.querySelector('.laca-google-progress-bar');
+                if (!progressBar) {
+                    progressBar = document.createElement('div');
+                    progressBar.className = 'laca-google-progress-bar';
+                    progressBar.setAttribute('role', 'progressbar');
+                    progressBar.setAttribute('aria-hidden', 'true');
+                    progressBar.innerHTML = '<div class="laca-google-progress-bar__inner"></div>';
+                    container.prepend(progressBar);
+                }
+
+                // Refresh button state: disabled, aria-busy="true", spinner, text "Đang cập nhật…"
+                const refreshBtn = container.querySelector('.laca-google-refresh-btn');
+                if (refreshBtn) {
+                    refreshBtn.disabled = true;
+                    refreshBtn.setAttribute('aria-busy', 'true');
+                    refreshBtn.innerHTML = '<span class="dashicons dashicons-update laca-spin" aria-hidden="true"></span> ' + escapeHtml('Đang cập nhật…');
+                }
+
+                // Range buttons: immediately mark target range as active
+                const rangeBtns = container.querySelectorAll('.laca-google-range-btn');
+                rangeBtns.forEach(function (b) {
+                    const isTarget = (b.dataset.range === targetRange);
+                    b.classList.toggle('button-primary', isTarget);
+                    b.classList.toggle('is-active', isTarget);
+                    b.classList.toggle('button-secondary', !isTarget);
+                });
             }
 
             const formData = new FormData();
             formData.append('action', 'laca_google_report');
             formData.append('nonce', nonce);
-            formData.append('range', range || '28d');
+            formData.append('range', targetRange);
             if (isRefresh) {
                 formData.append('refresh', '1');
             }
@@ -81,27 +133,85 @@
                 formData.append('laca_mock_google', '1');
             }
 
-            fetch(ajaxUrl, {
+            // U3: Minimum 300ms loading duration to prevent flickering
+            const minDelay = new Promise(function (resolve) {
+                setTimeout(resolve, 300);
+            });
+
+            const fetchPromise = fetch(ajaxUrl, {
                 method: 'POST',
                 body: formData,
                 credentials: 'same-origin',
-            })
-                .then(function (response) {
-                    return response.json();
-                })
-                .then(function (data) {
-                    container.classList.remove('is-loading');
+                signal: controller.signal,
+            }).then(function (response) {
+                return response.json();
+            });
+
+            Promise.all([fetchPromise, minDelay])
+                .then(function (results) {
+                    const data = results[0];
+                    isReportUpdating = false;
+                    pendingRange = null;
+
                     if (data && data.success && data.data && data.data.html) {
                         container.innerHTML = data.data.html;
-                        currentRange = data.data.range || range || '28d';
+                        currentRange = data.data.range || targetRange || '28d';
+
+                        // U3: Update "Cập nhật lúc HH:MM" in toolbar
+                        const now = new Date();
+                        const hh = String(now.getHours()).padStart(2, '0');
+                        const mm = String(now.getMinutes()).padStart(2, '0');
+                        const updateStr = 'Cập nhật lúc ' + hh + ':' + mm;
+
+                        const actions = container.querySelector('.laca-google-toolbar__actions');
+                        if (actions) {
+                            let updatedEl = actions.querySelector('.laca-google-toolbar__updated');
+                            if (!updatedEl) {
+                                updatedEl = document.createElement('span');
+                                updatedEl.className = 'laca-google-toolbar__updated';
+                                actions.appendChild(updatedEl);
+                            }
+                            updatedEl.textContent = updateStr;
+                        }
+
                         bindReportEvents();
                     } else {
                         const errMsg = (data && data.data && data.data.message) ? data.data.message : 'Không thể tải dữ liệu báo cáo Google.';
                         renderError(errMsg);
                     }
                 })
-                .catch(function () {
-                    container.classList.remove('is-loading');
+                .catch(function (err) {
+                    if (err && err.name === 'AbortError') {
+                        // Aborted due to new range selection, let the newer request complete
+                        return;
+                    }
+
+                    isReportUpdating = false;
+
+                    // Cleanup progress bar & dimmed state
+                    const curReportBody = container.querySelector('.laca-google-report-body');
+                    if (curReportBody) {
+                        curReportBody.classList.remove('laca-google-report--dimmed');
+                    }
+                    const curProgressBar = container.querySelector('.laca-google-progress-bar');
+                    if (curProgressBar) {
+                        curProgressBar.remove();
+                    }
+
+                    // Restore refresh button
+                    const curRefreshBtn = container.querySelector('.laca-google-refresh-btn');
+                    if (curRefreshBtn) {
+                        curRefreshBtn.disabled = false;
+                        curRefreshBtn.removeAttribute('aria-busy');
+                        curRefreshBtn.innerHTML = '<span class="dashicons dashicons-update"></span> ' + escapeHtml('Làm mới');
+                    }
+
+                    // Re-enable range buttons
+                    const curRangeBtns = container.querySelectorAll('.laca-google-range-btn');
+                    curRangeBtns.forEach(function (b) {
+                        b.disabled = false;
+                    });
+
                     renderError('Lỗi kết nối khi tải báo cáo Google.');
                 });
         }
@@ -195,7 +305,7 @@
             }
         });
 
-        // 4. PageSpeed Insights Handler (Run, Tabs, Error replacement)
+        // 4. PageSpeed Insights Handler (U1 Instant Tab Switch & Single Panel Run)
         let activePsiController = null;
 
         function runPageSpeed(btn, strategy, forceRefresh) {
@@ -207,12 +317,15 @@
             const activeStrategy = strategy || currentPsiStrategy || 'mobile';
             currentPsiStrategy = activeStrategy;
 
-            const allPsiBtns = psiCard.querySelectorAll('[data-laca-psi-run]');
-            allPsiBtns.forEach(function (b) {
-                b.disabled = true;
-            });
+            const targetPanel = psiCard.querySelector('.laca-google-psi__panel[data-strategy="' + activeStrategy + '"]');
+            if (targetPanel) {
+                targetPanel.querySelectorAll('[data-laca-psi-run]').forEach(function (b) {
+                    b.disabled = true;
+                });
+            }
             if (btn) {
-                btn.innerHTML = '<span class="dashicons dashicons-update laca-spin" aria-hidden="true"></span> Đang kiểm tra…';
+                btn.disabled = true;
+                btn.innerHTML = '<span class="dashicons dashicons-update laca-spin" aria-hidden="true"></span> ' + escapeHtml('Đang kiểm tra…');
             }
 
             if (activePsiController) {
@@ -251,10 +364,12 @@
                     return response.json();
                 })
                 .then(function (res) {
-                    const currentCard = container.querySelector('#laca-google-psi-card, .laca-google-psi');
                     if (res && res.success && res.data && res.data.html) {
-                        if (currentCard) {
-                            currentCard.outerHTML = res.data.html;
+                        const curTargetPanel = psiCard.querySelector('.laca-google-psi__panel[data-strategy="' + activeStrategy + '"]');
+                        if (curTargetPanel) {
+                            curTargetPanel.outerHTML = res.data.html;
+                        } else {
+                            psiCard.outerHTML = res.data.html;
                         }
                         bindPsiEvents();
                     } else {
@@ -263,7 +378,7 @@
                         const is429 = Boolean(resData && (resData.status === 429 || resData.code === 'psi_error_429' || String(errMsg).includes('429') || String(errMsg).includes('hạn mức')));
                         const actionUrl = (resData && resData.actionUrl) ? resData.actionUrl : (is429 ? 'admin.php?page=laca-google-search-console#laca-psi-key' : '');
                         const actionLabel = (resData && resData.actionLabel) ? resData.actionLabel : (is429 ? 'Thêm PageSpeed API key' : '');
-                        renderPsiError(errMsg, is429, actionUrl, actionLabel);
+                        renderPsiError(errMsg, is429, actionUrl, actionLabel, activeStrategy);
                     }
                 })
                 .catch(function (err) {
@@ -271,19 +386,17 @@
                     if (err && err.name === 'AbortError') {
                         return;
                     }
-                    renderPsiError('Lỗi kết nối khi gửi yêu cầu kiểm tra PageSpeed.', false, '', '');
+                    renderPsiError('Lỗi kết nối khi gửi yêu cầu kiểm tra PageSpeed.', false, '', '', activeStrategy);
                 });
 
-            function renderPsiError(message, is429, actionUrl, actionLabel) {
+            function renderPsiError(message, is429, actionUrl, actionLabel, targetStrat) {
                 const currentCard = container.querySelector('#laca-google-psi-card, .laca-google-psi');
                 if (!currentCard) return;
 
-                const header = currentCard.querySelector('.laca-google-psi__header');
-                if (header) {
-                    header.querySelectorAll('[data-laca-psi-run]').forEach(function (b) {
-                        b.remove();
-                    });
-                }
+                // Remove existing panels so only 1 single retry button is present in card
+                currentCard.querySelectorAll('.laca-google-psi__panel').forEach(function (p) {
+                    p.remove();
+                });
 
                 let actionBtnHtml = `
                     <button type="button" class="button button-secondary button-small" data-laca-psi-run>
@@ -299,8 +412,10 @@
                     `;
                 }
 
-                // V1 & 2.1: Replace ENTIRE body of card (keep only header) with monochrome Alert + single message + action buttons
-                const alertHtml = `
+                const alertWrap = document.createElement('div');
+                alertWrap.className = 'laca-google-psi__panel';
+                alertWrap.dataset.strategy = targetStrat;
+                alertWrap.innerHTML = `
                     <div class="laca-google-psi__alert laca-alert laca-alert--error" role="alert">
                         <div class="laca-google-psi__alert-body">
                             <span class="dashicons dashicons-no-alt laca-google-psi__alert-icon" aria-hidden="true"></span>
@@ -314,19 +429,7 @@
                         </div>
                     </div>
                 `;
-
-                // Remove all children except header
-                Array.from(currentCard.children).forEach(function (child) {
-                    if (child !== header) {
-                        child.remove();
-                    }
-                });
-
-                if (header) {
-                    header.insertAdjacentHTML('afterend', alertHtml);
-                } else {
-                    currentCard.innerHTML = alertHtml;
-                }
+                currentCard.appendChild(alertWrap);
 
                 bindPsiEvents();
             }
@@ -337,26 +440,89 @@
             const psiCard = container.querySelector('#laca-google-psi-card, .laca-google-psi');
             if (!psiCard) return;
 
-            currentPsiStrategy = psiCard.dataset.strategy || currentPsiStrategy || 'mobile';
+            const tabBtns = Array.from(psiCard.querySelectorAll('.laca-google-psi__tab, .laca-google-psi-tab'));
 
-            // Strategy Tab switching (Di động / Máy tính)
-            psiCard.querySelectorAll('.laca-google-psi__tab, .laca-google-psi-tab').forEach(function (tabBtn) {
+            function switchPsiTab(targetStrategy) {
+                currentPsiStrategy = targetStrategy;
+                psiCard.dataset.activeStrategy = targetStrategy;
+
+                // 1. Update tab buttons (U1: instant toggle, < 100ms, zero network)
+                tabBtns.forEach(function (t) {
+                    const isActive = (t.dataset.strategy === targetStrategy);
+                    t.classList.toggle('button-primary', isActive);
+                    t.classList.toggle('is-active', isActive);
+                    t.classList.toggle('button-secondary', !isActive);
+                    t.setAttribute('aria-selected', isActive ? 'true' : 'false');
+                    t.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+                    t.setAttribute('tabindex', isActive ? '0' : '-1');
+                });
+
+                // 2. Toggle panels visibility (zero AJAX)
+                const panels = psiCard.querySelectorAll('.laca-google-psi__panel');
+                panels.forEach(function (p) {
+                    p.hidden = (p.dataset.strategy !== targetStrategy);
+                });
+
+                // 3. Update external link URL
+                const extLink = psiCard.querySelector('#laca-psi-ext-link, .laca-google-psi__ext-link');
+                if (extLink && extLink.href) {
+                    try {
+                        const u = new URL(extLink.href);
+                        if (targetStrategy === 'desktop') {
+                            u.searchParams.set('form_factor', 'desktop');
+                        } else {
+                            u.searchParams.delete('form_factor');
+                        }
+                        extLink.href = u.toString();
+                    } catch (e) {
+                        // Ignore URL parse error
+                    }
+                }
+
+                // 4. Remember user preference
+                try {
+                    localStorage.setItem('laca_google_psi_strategy', targetStrategy);
+                } catch (e) {
+                    // Ignore storage quota error
+                }
+
+                // 5. Update strategy label for screen readers & audit
+                const stratLabel = psiCard.querySelector('.laca-google-psi__strategy-label');
+                if (stratLabel) {
+                    stratLabel.textContent = (targetStrategy === 'desktop') ? 'Máy tính' : 'Di động';
+                }
+            }
+
+            // Strategy Tab click and keyboard navigation (Left / Right arrows)
+            tabBtns.forEach(function (tabBtn, idx) {
                 tabBtn.addEventListener('click', function (e) {
                     e.preventDefault();
                     const targetStrategy = tabBtn.dataset.strategy || 'mobile';
-                    if (targetStrategy === currentPsiStrategy) return;
+                    switchPsiTab(targetStrategy);
+                });
 
-                    currentPsiStrategy = targetStrategy;
-                    psiCard.querySelectorAll('.laca-google-psi__tab, .laca-google-psi-tab').forEach(function (t) {
-                        const isActive = (t.dataset.strategy === targetStrategy);
-                        t.classList.toggle('is-active', isActive);
-                        t.setAttribute('aria-pressed', isActive ? 'true' : 'false');
-                    });
-
-                    // Load strategy with refresh=0 (read from cache if available)
-                    runPageSpeed(null, targetStrategy, false);
+                tabBtn.addEventListener('keydown', function (e) {
+                    if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
+                        e.preventDefault();
+                        const nextIdx = (idx === 0) ? 1 : 0;
+                        const nextTab = tabBtns[nextIdx];
+                        if (nextTab) {
+                            nextTab.focus();
+                            switchPsiTab(nextTab.dataset.strategy || 'mobile');
+                        }
+                    }
                 });
             });
+
+            // Restore user choice from localStorage if present
+            try {
+                const savedStrategy = localStorage.getItem('laca_google_psi_strategy');
+                if (savedStrategy && (savedStrategy === 'mobile' || savedStrategy === 'desktop')) {
+                    switchPsiTab(savedStrategy);
+                }
+            } catch (e) {
+                // Ignore
+            }
 
             // PageSpeed run/retry buttons
             psiCard.querySelectorAll('[data-laca-psi-run]').forEach(function (b) {
@@ -454,7 +620,7 @@
                             sortAsc = !sortAsc;
                         } else {
                             currentSortCol = col;
-                            sortAsc = (col === 'query' || col === 'position');
+                            sortAsc = false;
                         }
                         applySortAndFilter();
                     });
@@ -462,10 +628,10 @@
             }
 
             function applySortAndFilter() {
-                const term = searchInput ? searchInput.value.trim().toLowerCase() : '';
-                let filtered = queriesData.filter(function (item) {
-                    if (!term) return true;
-                    return String(item.query || '').toLowerCase().includes(term);
+                const keyword = (searchInput ? searchInput.value : '').trim().toLowerCase();
+                let filtered = queriesData.filter(function (row) {
+                    if (!keyword) return true;
+                    return String(row.query || '').toLowerCase().includes(keyword);
                 });
 
                 filtered.sort(function (a, b) {
@@ -474,12 +640,12 @@
 
                     if (typeof valA === 'string') {
                         valA = valA.toLowerCase();
-                        valB = String(valB || '').toLowerCase();
+                        valB = (valB || '').toLowerCase();
                         return sortAsc ? valA.localeCompare(valB) : valB.localeCompare(valA);
                     }
 
-                    valA = parseFloat(valA || 0);
-                    valB = parseFloat(valB || 0);
+                    valA = parseFloat(valA) || 0;
+                    valB = parseFloat(valB) || 0;
                     return sortAsc ? valA - valB : valB - valA;
                 });
 
@@ -487,9 +653,13 @@
             }
 
             function fetchQueries() {
+                if (queriesData.length > 0) {
+                    applySortAndFilter();
+                    return;
+                }
+
                 if (loadingEl) loadingEl.classList.remove('is-hidden');
                 if (contentEl) contentEl.innerHTML = '';
-                if (searchInput) searchInput.value = '';
 
                 const formData = new FormData();
                 formData.append('action', 'laca_gsc_queries');
@@ -504,8 +674,8 @@
                     body: formData,
                     credentials: 'same-origin',
                 })
-                    .then(function (res) {
-                        return res.json();
+                    .then(function (response) {
+                        return response.json();
                     })
                     .then(function (res) {
                         if (loadingEl) loadingEl.classList.add('is-hidden');
@@ -580,7 +750,7 @@
                 btn.addEventListener('click', function (e) {
                     e.preventDefault();
                     const newRange = btn.dataset.range || '28d';
-                    if (newRange !== currentRange) {
+                    if (newRange !== currentRange || isReportUpdating) {
                         stopRealtimePolling();
                         loadReport(newRange, false);
                     }
@@ -592,6 +762,7 @@
             if (refreshBtn) {
                 refreshBtn.addEventListener('click', function (e) {
                     e.preventDefault();
+                    if (isReportUpdating) return;
                     stopRealtimePolling();
                     loadReport(currentRange, true);
                 });

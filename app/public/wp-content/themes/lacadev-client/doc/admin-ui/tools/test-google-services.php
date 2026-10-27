@@ -3743,6 +3743,101 @@ runTest('G4 PageSpeed AJAX: Nonce gate, real CrUX & Lab parsing, 429 quota handl
             return "Empty partial contained unexpected metric number: " . $matches[0];
         }
 
+        // --- 7. Dual Panel PSI: mobile has cache, desktop empty -> HTML has 2 panels, desktop is empty without invented numbers; AJAX PSI strategy=desktop returns only desktop panel ---
+        $psiMobile = [
+            'strategy' => 'mobile',
+            'field' => [
+                'hasData' => true,
+                'metrics' => [
+                    'lcp' => ['label' => 'LCP', 'value' => '2.1s', 'category' => 'Good', 'categoryClass' => 'good'],
+                    'inp' => ['label' => 'INP', 'value' => '90ms', 'category' => 'Good', 'categoryClass' => 'good'],
+                    'cls' => ['label' => 'CLS', 'value' => '0.02', 'category' => 'Good', 'categoryClass' => 'good'],
+                ],
+            ],
+            'lab' => [
+                'score' => 92,
+                'scoreCategory' => 'Good',
+                'scoreClass' => 'good',
+            ],
+            'testedDate' => date('d/m/Y H:i'),
+        ];
+        $psiDesktop = null;
+        $siteUrl = home_url('/');
+        ob_start();
+        include dirname(__DIR__, 3) . '/app/src/Features/GoogleServices/views/partials/pagespeed-card.php';
+        $dualHtml = ob_get_clean();
+
+        if (!str_contains($dualHtml, 'data-strategy="mobile"') || !str_contains($dualHtml, 'data-strategy="desktop"')) {
+            return "Expected pagespeed-card.php to render both mobile and desktop panels";
+        }
+        if (!str_contains($dualHtml, 'role="tabpanel"') || !str_contains($dualHtml, 'id="laca-psi-panel-mobile"') || !str_contains($dualHtml, 'id="laca-psi-panel-desktop"')) {
+            return "Expected role=tabpanel and IDs for both mobile and desktop panels";
+        }
+        if (!preg_match('/id="laca-psi-panel-desktop"[^>]*>[\s\S]*?laca-google-psi__empty[\s\S]*?<\/div>/', $dualHtml, $desktopMatch)) {
+            return "Expected desktop panel to contain laca-google-psi__empty state";
+        }
+        if (preg_match('/\b\d+(\.\d+)?(s|ms|\/100)\b/', $desktopMatch[0], $badNum)) {
+            return "Desktop empty panel contained unexpected invented metric number: " . $badNum[0];
+        }
+
+        // Test AJAX PSI strategy=desktop returns only desktop panel
+        delete_transient('laca_psi_429');
+        delete_transient('laca_psi_429_' . md5(home_url('/') . '_desktop'));
+        delete_transient('laca_psi_429_' . md5(home_url('/') . '_mobile'));
+        delete_transient('laca_psi_' . md5(home_url('/') . '_desktop'));
+        $_POST = [
+            'action'   => 'laca_pagespeed_run',
+            'strategy' => 'desktop',
+            'refresh'  => '1',
+            'nonce'    => wp_create_nonce('laca_google_report_nonce'),
+        ];
+        $_REQUEST = $_POST;
+        $mockPsiHttp = function ($pre, $args, $url) {
+            if (str_contains($url, 'pagespeedonline/v5/runPagespeed')) {
+                return [
+                    'response' => ['code' => 200, 'message' => 'OK'],
+                    'body'     => json_encode([
+                        'lighthouseResult' => [
+                            'categories' => ['performance' => ['score' => 0.88]],
+                            'audits' => [
+                                'largest-contentful-paint' => ['displayValue' => '1.5 s'],
+                                'cumulative-layout-shift' => ['displayValue' => '0.01'],
+                                'total-blocking-time' => ['displayValue' => '80 ms'],
+                                'first-contentful-paint' => ['displayValue' => '0.9 s'],
+                            ],
+                        ],
+                    ]),
+                ];
+            }
+            return $pre;
+        };
+        add_filter('pre_http_request', $mockPsiHttp, 10, 3);
+        try {
+            ob_start();
+            GoogleServices::ajaxPageSpeedRun();
+        } catch (\RuntimeException $e) {
+            $out = ob_get_clean();
+            $resp = json_decode($out, true);
+            if (!isset($resp['success']) || !$resp['success']) {
+                remove_filter('pre_http_request', $mockPsiHttp, 10);
+                return "Expected ajaxPageSpeedRun success, got: " . $out;
+            }
+            $panelHtml = $resp['data']['html'] ?? '';
+            if (!str_contains($panelHtml, 'id="laca-psi-panel-desktop"')) {
+                remove_filter('pre_http_request', $mockPsiHttp, 10);
+                return "Expected ajaxPageSpeedRun for desktop to return html containing desktop panel, got: " . substr($panelHtml, 0, 200);
+            }
+            if (str_contains($panelHtml, 'id="laca-google-psi-card"')) {
+                remove_filter('pre_http_request', $mockPsiHttp, 10);
+                return "ajaxPageSpeedRun should return only the panel, not the entire card";
+            }
+            if (str_contains($panelHtml, 'id="laca-psi-panel-mobile"')) {
+                remove_filter('pre_http_request', $mockPsiHttp, 10);
+                return "ajaxPageSpeedRun for desktop should NOT contain mobile panel";
+            }
+        }
+        remove_filter('pre_http_request', $mockPsiHttp, 10);
+
         return true;
     } finally {
         $_GET = $origGet;

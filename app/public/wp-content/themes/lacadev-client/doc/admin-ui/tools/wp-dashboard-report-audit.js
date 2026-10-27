@@ -383,6 +383,294 @@ const report = (ok, check, w = '', detail = '') => {
       report(false, 'SearchConsoleViewTestFailed', '', err.message);
     }
 
+    // 4. KIỂM TRA LOADING UX & SKELETON (PLAN U1, U2, U3)
+    const LOADING_DIR = '/private/tmp/admin-ui/google-loading';
+    fs.mkdirSync(LOADING_DIR, { recursive: true });
+
+    // 4.1 U1: Tab Switch instant & Zero AJAX
+    try {
+      await page.setViewport({ width: 1440, height: 900 });
+      await page.goto('http://lixroastery.local/wp-admin/index.php?laca_mock_google=1', {
+        waitUntil: 'domcontentloaded',
+        timeout: 30000,
+      });
+      await page.waitForSelector('#laca-google-report .laca-google-toolbar', { timeout: 15000 });
+      await page.waitForSelector('.laca-google-psi-tab[data-strategy="desktop"]', { timeout: 10000 });
+
+      // Tab Máy tính có panel trong DOM ngay khi tải trang
+      const panelsExist = await page.evaluate(() => {
+        const desktopPanel = document.getElementById('laca-psi-panel-desktop');
+        const mobilePanel = document.getElementById('laca-psi-panel-mobile');
+        return {
+          desktopInDom: !!desktopPanel,
+          mobileInDom: !!mobilePanel,
+          desktopInitiallyHidden: desktopPanel ? desktopPanel.hidden : false,
+        };
+      });
+      report(panelsExist.desktopInDom && panelsExist.mobileInDom, 'U1_DesktopAndMobilePanelsRenderedInDom');
+
+      // Bấm tab -> panel desktop hiện trong < 100 ms
+      const t0 = performance.now();
+      await page.click('.laca-google-psi-tab[data-strategy="desktop"]');
+      await page.waitForFunction(() => {
+        const p = document.getElementById('laca-psi-panel-desktop');
+        return p && !p.hidden;
+      }, { timeout: 1000 });
+      const switchMs = performance.now() - t0;
+      report(switchMs < 100, 'U1_PsiTabSwitchDurationUnder100ms', '', switchMs.toFixed(1) + 'ms');
+
+      // Đổi qua lại 4 lần -> 0 request admin-ajax.php
+      let tabAjaxCount = 0;
+      const ajaxCountListener = (req) => {
+        if (req.url().includes('admin-ajax.php') && req.method() === 'POST') {
+          const postData = req.postData() || '';
+          if (postData.includes('laca_pagespeed_run') || postData.includes('laca_google_report')) {
+            tabAjaxCount++;
+          }
+        }
+      };
+      page.on('request', ajaxCountListener);
+      await page.click('.laca-google-psi-tab[data-strategy="mobile"]');
+      await page.waitForFunction(() => {
+        const p = document.getElementById('laca-psi-panel-mobile');
+        return p && !p.hidden;
+      }, { timeout: 500 });
+      await page.click('.laca-google-psi-tab[data-strategy="desktop"]');
+      await page.waitForFunction(() => {
+        const p = document.getElementById('laca-psi-panel-desktop');
+        return p && !p.hidden;
+      }, { timeout: 500 });
+      await page.click('.laca-google-psi-tab[data-strategy="mobile"]');
+      await page.waitForFunction(() => {
+        const p = document.getElementById('laca-psi-panel-mobile');
+        return p && !p.hidden;
+      }, { timeout: 500 });
+      await page.click('.laca-google-psi-tab[data-strategy="desktop"]');
+      await page.waitForFunction(() => {
+        const p = document.getElementById('laca-psi-panel-desktop');
+        return p && !p.hidden;
+      }, { timeout: 500 });
+      page.off('request', ajaxCountListener);
+
+      report(tabAjaxCount === 0, 'U1_PsiTabSwitchZeroAjaxRequests', '', `count=${tabAjaxCount}`);
+    } catch (err) {
+      report(false, 'U1_PsiTabSwitchTestFailed', '', err.message);
+    }
+
+    // 4.2 U2: Skeleton layout, contrast, and responsiveness
+    try {
+      const skeletonPage = await browser.newPage();
+      await skeletonPage.setCookie(...Object.entries(cookies).map(([name, value]) => ({
+        name,
+        value,
+        domain: 'lixroastery.local',
+        path: '/',
+      })));
+      await skeletonPage.setRequestInterception(true);
+
+      // Delay laca_google_report by 3 seconds to test skeleton
+      skeletonPage.on('request', (r) => {
+        const postData = r.postData() || '';
+        if (r.url().includes('admin-ajax.php') && postData.includes('laca_google_report')) {
+          setTimeout(() => {
+            r.continue().catch(() => {});
+          }, 3000);
+          return;
+        }
+        r.continue().catch(() => {});
+      });
+
+      // 1440 viewport
+      await skeletonPage.setViewport({ width: 1440, height: 900 });
+      await skeletonPage.goto('http://lixroastery.local/wp-admin/index.php?laca_mock_google=1', {
+        waitUntil: 'domcontentloaded',
+        timeout: 30000,
+      });
+
+      // Đợi skeleton xuất hiện
+      await skeletonPage.waitForSelector('#laca-google-report-container [aria-busy="true"]', { timeout: 5000 });
+
+      const skeleton1440Check = await skeletonPage.evaluate(() => {
+        const lum = (c) => {
+          const m = c.match(/[\d.]+/g); if (!m) return null;
+          const [r, g, b, a = 1] = m.map(Number); if (a === 0) return null;
+          const f = (v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; };
+          return 0.2126 * f(r) + 0.7152 * f(g) + 0.0722 * f(b);
+        };
+        const ratio = (a, b) => (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05);
+
+        const container = document.getElementById('laca-google-report-container');
+        const busyEl = container ? container.querySelector('[aria-busy="true"]') : null;
+        const boxes = container ? Array.from(container.querySelectorAll('.laca-google-skeleton__box')) : [];
+        const card = container ? container.querySelector('.laca-google-skeleton__card') : null;
+        const cardLum = card ? lum(getComputedStyle(card).backgroundColor) : 1;
+
+        let contrastPass = true;
+        let lowestRatio = 999;
+        for (const box of boxes) {
+          const bLum = lum(getComputedStyle(box).backgroundColor);
+          if (bLum !== null && cardLum !== null) {
+            const r = ratio(bLum, cardLum);
+            if (r < lowestRatio) lowestRatio = r;
+            if (r < 1.15) {
+              contrastPass = false;
+            }
+          }
+        }
+
+        const grid = container ? container.querySelector('.laca-google-grid') : null;
+        const cols = grid ? getComputedStyle(grid).gridTemplateColumns.split(' ').length : 0;
+
+        return {
+          hasBusy: !!busyEl,
+          boxCount: boxes.length,
+          contrastPass,
+          lowestRatio: lowestRatio === 999 ? 0 : lowestRatio,
+          cols,
+        };
+      });
+
+      report(skeleton1440Check.hasBusy, 'U2_SkeletonHasAriaBusy');
+      report(skeleton1440Check.boxCount >= 20, 'U2_SkeletonBoxCountAtLeast20', '', `count=${skeleton1440Check.boxCount}`);
+      report(skeleton1440Check.contrastPass, 'U2_SkeletonContrastAtLeast1_15', '', `lowestRatio=${skeleton1440Check.lowestRatio.toFixed(2)}`);
+      report(skeleton1440Check.cols === 2, 'U2_SkeletonHas2ColumnsAt1440', '', `cols=${skeleton1440Check.cols}`);
+
+      const skeleton1440Shot = path.join(LOADING_DIR, 'google-skeleton-1440.png');
+      await skeletonPage.screenshot({ path: skeleton1440Shot, fullPage: false });
+
+      // 390 viewport
+      await skeletonPage.setViewport({ width: 390, height: 844 });
+      const cols390 = await skeletonPage.evaluate(() => {
+        const grid = document.querySelector('#laca-google-report-container .laca-google-grid');
+        return grid ? getComputedStyle(grid).gridTemplateColumns.split(' ').length : 0;
+      });
+      report(cols390 === 1, 'U2_SkeletonHas1ColumnAt390', '', `cols=${cols390}`);
+
+      const skeleton390Shot = path.join(LOADING_DIR, 'google-skeleton-390.png');
+      await skeletonPage.screenshot({ path: skeleton390Shot, fullPage: false });
+
+      await skeletonPage.close();
+    } catch (err) {
+      report(false, 'U2_SkeletonAuditFailed', '', err.message);
+    }
+
+    // 4.3 U3: Refresh updating state, dimmed content, progress bar, debounce, AbortController
+    try {
+      const refreshPage = await browser.newPage();
+      await refreshPage.setCookie(...Object.entries(cookies).map(([name, value]) => ({
+        name,
+        value,
+        domain: 'lixroastery.local',
+        path: '/',
+      })));
+      await refreshPage.setRequestInterception(true);
+
+      let refreshDelay = 0;
+      let requestCount = 0;
+      const abortedRequests = [];
+
+      refreshPage.on('request', (r) => {
+        const postData = r.postData() || '';
+        if (r.url().includes('admin-ajax.php') && postData.includes('laca_google_report')) {
+          requestCount++;
+          if (refreshDelay > 0) {
+            setTimeout(() => {
+              r.continue().catch(() => {});
+            }, refreshDelay);
+            return;
+          }
+        }
+        r.continue().catch(() => {});
+      });
+
+      refreshPage.on('requestfailed', (r) => {
+        if (r.url().includes('admin-ajax.php')) {
+          abortedRequests.push(r.failure() ? r.failure().errorText : 'failed');
+        }
+      });
+
+      await refreshPage.setViewport({ width: 1440, height: 900 });
+      await refreshPage.goto('http://lixroastery.local/wp-admin/index.php?laca_mock_google=1', {
+        waitUntil: 'domcontentloaded',
+        timeout: 30000,
+      });
+      await refreshPage.waitForSelector('#laca-google-report .laca-google-refresh-btn', { timeout: 15000 });
+
+      // Bật delay 2000ms cho lần bấm Làm mới
+      refreshDelay = 2000;
+      requestCount = 0;
+
+      // Click Làm mới
+      await refreshPage.click('#laca-google-report .laca-google-refresh-btn');
+
+      // Trong vòng 100ms: nút có disabled, aria-busy="true", text "Đang cập nhật...", nội dung cũ mờ đi, có progress bar
+      await new Promise(r => setTimeout(r, 60));
+
+      const updatingStateCheck = await refreshPage.evaluate(() => {
+        const btn = document.querySelector('.laca-google-refresh-btn');
+        const reportBody = document.querySelector('.laca-google-report-body');
+        const progressBar = document.querySelector('.laca-google-progress-bar');
+        const kpi = document.querySelector('.laca-google-kpi__value');
+
+        return {
+          btnDisabled: btn ? btn.disabled : false,
+          btnBusy: btn ? btn.getAttribute('aria-busy') === 'true' : false,
+          btnText: btn ? btn.innerText.trim() : '',
+          hasProgressBar: !!progressBar,
+          hasDimmed: reportBody ? reportBody.classList.contains('laca-google-report--dimmed') : false,
+          kpiStillInDom: !!kpi,
+        };
+      });
+
+      report(updatingStateCheck.btnDisabled && updatingStateCheck.btnBusy, 'U3_RefreshButtonDisabledAndAriaBusy');
+      report(updatingStateCheck.btnText.includes('Đang cập nhật'), 'U3_RefreshButtonTextUpdating', '', updatingStateCheck.btnText);
+      report(updatingStateCheck.hasDimmed && updatingStateCheck.kpiStillInDom, 'U3_OldContentDimmedAndPreserved');
+      report(updatingStateCheck.hasProgressBar, 'U3_ProgressBarPresent');
+
+      // Chụp ảnh trạng thái đang cập nhật
+      const refreshShot = path.join(LOADING_DIR, 'google-refresh-loading-1440.png');
+      await refreshPage.screenshot({ path: refreshShot, fullPage: false });
+
+      // Thử bấm Làm mới liên tiếp 2 lần nữa -> debounce: requestCount vẫn chỉ là 1
+      await refreshPage.click('#laca-google-refresh-btn, .laca-google-refresh-btn').catch(() => {});
+      await refreshPage.click('#laca-google-refresh-btn, .laca-google-refresh-btn').catch(() => {});
+      report(requestCount === 1, 'U3_DebounceMultipleClicksSingleRequest', '', `requestCount=${requestCount}`);
+
+      // Đợi hoàn thành cập nhật (hết 2s delay + render)
+      await refreshPage.waitForFunction(() => {
+        const btn = document.querySelector('.laca-google-refresh-btn');
+        return btn && !btn.disabled && btn.innerText.includes('Làm mới');
+      }, { timeout: 10000 });
+
+      // Kiểm tra có dòng "Cập nhật lúc"
+      const updateTimeText = await refreshPage.evaluate(() => {
+        const el = document.querySelector('.laca-google-toolbar__updated');
+        return el ? el.innerText : '';
+      });
+      report(updateTimeText.includes('Cập nhật lúc'), 'U3_HasUpdatedTimestamp', '', updateTimeText);
+
+      // Rapid range switch test (7 -> 90 quickly -> request 7 aborted)
+      refreshDelay = 1500;
+      abortedRequests.length = 0;
+      await refreshPage.click('.laca-google-range-btn[data-range="7d"]');
+      await new Promise(r => setTimeout(r, 80));
+      await refreshPage.click('.laca-google-range-btn[data-range="90d"]');
+
+      // Đợi 90d xong
+      await refreshPage.waitForFunction(() => {
+        const btn90 = document.querySelector('.laca-google-range-btn[data-range="90d"]');
+        const refreshBtn = document.querySelector('.laca-google-refresh-btn');
+        return btn90 && btn90.classList.contains('is-active') && refreshBtn && !refreshBtn.disabled;
+      }, { timeout: 10000 });
+
+      const hasAborted = abortedRequests.some(e => e.includes('abort') || e.includes('ABORTED'));
+      report(hasAborted, 'U3_RapidRangeSwitchAbortsOldRequest', '', abortedRequests.join('; '));
+
+      await refreshPage.close();
+    } catch (err) {
+      report(false, 'U3_RefreshUpdatingTestFailed', '', err.message);
+    }
+
   } finally {
     clearTimeout(watchdog);
     await browser.close();

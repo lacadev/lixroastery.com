@@ -448,14 +448,11 @@ class GoogleServices
             </div>
             <div class="laca-google-report-container" id="laca-google-report-container">
                 <!-- Skeleton loader -->
-                <div class="laca-google-report-skeleton" aria-busy="true" aria-label="<?php esc_attr_e('Đang tải dữ liệu báo cáo Google...', 'lacadev'); ?>">
-                    <div style="height: 48px; border-radius: 8px; margin-bottom: 16px; background: var(--laca-bg-subtle, #f4f4f5); border: 1px solid var(--laca-border, #e4e4e7);"></div>
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(460px, 1fr)); gap: 24px;">
-                        <div style="height: 360px; border-radius: 8px; background: var(--laca-bg-subtle, #f4f4f5); border: 1px solid var(--laca-border, #e4e4e7);"></div>
-                        <div style="height: 360px; border-radius: 8px; background: var(--laca-bg-subtle, #f4f4f5); border: 1px solid var(--laca-border, #e4e4e7);"></div>
-                    </div>
-                </div>
+                <?php include __DIR__ . '/views/partials/google-report-skeleton.php'; ?>
             </div>
+            <template id="laca-google-report-skeleton-tpl">
+                <?php include __DIR__ . '/views/partials/google-report-skeleton.php'; ?>
+            </template>
         </div>
         <?php
     }
@@ -661,13 +658,15 @@ class GoogleServices
 
         $psiData = $result;
         $siteUrl = $targetUrl;
+        $isActive = true;
         ob_start();
-        include __DIR__ . '/views/partials/pagespeed-card.php';
+        include __DIR__ . '/views/partials/pagespeed-panel.php';
         $html = ob_get_clean();
 
         wp_send_json_success([
-            'html' => $html,
-            'data' => $result,
+            'html'     => $html,
+            'strategy' => $strategy,
+            'data'     => $result,
         ]);
     }
 

@@ -349,3 +349,7 @@ h1.wp-block-post-title {
 }
 
 // Column-specific styles are maintained in _admin-column-style.scss
+
+#wpadminbar .quicklinks #wp-admin-bar-woocommerce-site-visibility-badge a.ab-item {
+  background-color: transparent !important;
+}

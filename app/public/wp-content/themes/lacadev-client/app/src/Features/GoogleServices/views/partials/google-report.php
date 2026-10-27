@@ -26,7 +26,7 @@ if (!$gscComplete && !$gaComplete) {
 
 $activeKeyMetrics = \App\Features\GoogleServices\GoogleServices::getActiveKeyMetrics();
 ?>
-<div class="laca-google-report-body" id="laca-google-report">
+<div class="laca-google-report-body">
     <!-- Toolbar: Range selection & Refresh -->
     <div class="laca-seo-card laca-google-toolbar">
         <div class="laca-google-toolbar__inner">
@@ -58,7 +58,7 @@ $activeKeyMetrics = \App\Features\GoogleServices\GoogleServices::getActiveKeyMet
                         ?>
                         <button
                             type="button"
-                            class="button laca-google-range-btn <?php echo $range === $rKey ? 'button-primary' : 'button-secondary'; ?>"
+                            class="button laca-google-range-btn <?php echo $range === $rKey ? 'button-primary is-active' : 'button-secondary'; ?>"
                             data-range="<?php echo esc_attr($rKey); ?>"
                         >
                             <?php echo esc_html($shortLabel); ?>
@@ -385,7 +385,7 @@ $activeKeyMetrics = \App\Features\GoogleServices\GoogleServices::getActiveKeyMet
                             <div class="laca-seo-stat-card__info">
                                 <span class="laca-seo-stat-card__label"><?php esc_html_e('Tổng lượt click', 'lacadev'); ?></span>
                                 <div class="laca-google-stat-card__value-wrap">
-                                    <strong class="laca-seo-stat-card__value">
+                                    <strong class="laca-seo-stat-card__value laca-google-kpi__value">
                                         <?php echo number_format_i18n((int) ($gsc['clicks'] ?? 0)); ?>
                                     </strong>
                                     <?php $cDelta = (string) ($gsc['clicks_delta'] ?? '—'); ?>
@@ -402,7 +402,7 @@ $activeKeyMetrics = \App\Features\GoogleServices\GoogleServices::getActiveKeyMet
                             <div class="laca-seo-stat-card__info">
                                 <span class="laca-seo-stat-card__label"><?php esc_html_e('Lượt hiển thị', 'lacadev'); ?></span>
                                 <div class="laca-google-stat-card__value-wrap">
-                                    <strong class="laca-seo-stat-card__value">
+                                    <strong class="laca-seo-stat-card__value laca-google-kpi__value">
                                         <?php echo number_format_i18n((int) ($gsc['impressions'] ?? 0)); ?>
                                     </strong>
                                     <?php $iDelta = (string) ($gsc['impressions_delta'] ?? '—'); ?>
@@ -419,7 +419,7 @@ $activeKeyMetrics = \App\Features\GoogleServices\GoogleServices::getActiveKeyMet
                             <div class="laca-seo-stat-card__info">
                                 <span class="laca-seo-stat-card__label"><?php esc_html_e('CTR trung bình', 'lacadev'); ?></span>
                                 <div class="laca-google-stat-card__value-wrap">
-                                    <strong class="laca-seo-stat-card__value">
+                                    <strong class="laca-seo-stat-card__value laca-google-kpi__value">
                                         <?php echo esc_html((string) ($gsc['ctr'] ?? 0)); ?>%
                                     </strong>
                                     <?php $ctrDelta = (string) ($gsc['ctr_delta'] ?? '—'); ?>
@@ -436,7 +436,7 @@ $activeKeyMetrics = \App\Features\GoogleServices\GoogleServices::getActiveKeyMet
                             <div class="laca-seo-stat-card__info">
                                 <span class="laca-seo-stat-card__label"><?php esc_html_e('Vị trí trung bình', 'lacadev'); ?></span>
                                 <div class="laca-google-stat-card__value-wrap">
-                                    <strong class="laca-seo-stat-card__value">
+                                    <strong class="laca-seo-stat-card__value laca-google-kpi__value">
                                         #<?php echo esc_html((string) ($gsc['position'] ?? 0)); ?>
                                     </strong>
                                     <?php $posDelta = (string) ($gsc['position_delta'] ?? '—'); ?>
@@ -700,7 +700,7 @@ $activeKeyMetrics = \App\Features\GoogleServices\GoogleServices::getActiveKeyMet
                             <div class="laca-seo-stat-card__info">
                                 <span class="laca-seo-stat-card__label"><?php esc_html_e('Người dùng hoạt động', 'lacadev'); ?></span>
                                 <div class="laca-google-stat-card__value-wrap">
-                                    <strong class="laca-seo-stat-card__value">
+                                    <strong class="laca-seo-stat-card__value laca-google-kpi__value">
                                         <?php echo number_format_i18n((int) ($ga['users'] ?? 0)); ?>
                                     </strong>
                                     <?php $uDelta = (string) ($ga['users_delta'] ?? '—'); ?>
@@ -717,7 +717,7 @@ $activeKeyMetrics = \App\Features\GoogleServices\GoogleServices::getActiveKeyMet
                             <div class="laca-seo-stat-card__info">
                                 <span class="laca-seo-stat-card__label"><?php esc_html_e('Số phiên truy cập', 'lacadev'); ?></span>
                                 <div class="laca-google-stat-card__value-wrap">
-                                    <strong class="laca-seo-stat-card__value">
+                                    <strong class="laca-seo-stat-card__value laca-google-kpi__value">
                                         <?php echo number_format_i18n((int) ($ga['sessions'] ?? 0)); ?>
                                     </strong>
                                     <?php $sDelta = (string) ($ga['sessions_delta'] ?? '—'); ?>
@@ -734,7 +734,7 @@ $activeKeyMetrics = \App\Features\GoogleServices\GoogleServices::getActiveKeyMet
                             <div class="laca-seo-stat-card__info">
                                 <span class="laca-seo-stat-card__label"><?php esc_html_e('Thời gian tương tác TB', 'lacadev'); ?></span>
                                 <div class="laca-google-stat-card__value-wrap">
-                                    <strong class="laca-seo-stat-card__value">
+                                    <strong class="laca-seo-stat-card__value laca-google-kpi__value">
                                         <?php echo esc_html($ga['avgEngagement'] ?? '—'); ?>
                                     </strong>
                                     <?php $dDelta = (string) ($ga['avgEngagement_delta'] ?? '—'); ?>
@@ -752,7 +752,7 @@ $activeKeyMetrics = \App\Features\GoogleServices\GoogleServices::getActiveKeyMet
                                 <span class="laca-seo-stat-card__label"><?php esc_html_e('Tỷ lệ chuyển đổi', 'lacadev'); ?></span>
                                 <?php if (!empty($ga['conversionRate'])): ?>
                                     <div class="laca-google-stat-card__value-wrap">
-                                        <strong class="laca-seo-stat-card__value">
+                                        <strong class="laca-seo-stat-card__value laca-google-kpi__value">
                                             <?php echo esc_html((string) $ga['conversionRate']); ?>
                                         </strong>
                                         <?php $cvDelta = (string) ($ga['conversionRate_delta'] ?? '—'); ?>
@@ -929,13 +929,19 @@ $activeKeyMetrics = \App\Features\GoogleServices\GoogleServices::getActiveKeyMet
 
     <!-- ==================== 4. KHỐI PAGESPEED INSIGHTS & WEB VITALS ==================== -->
     <?php
-    $psiData = null;
+    $psiMobile = null;
+    $psiDesktop = null;
     if ($isMock) {
-        $psiData = \App\Features\GoogleServices\PageSpeedClient::getMockData(home_url('/'), 'mobile');
+        $psiMobile = \App\Features\GoogleServices\PageSpeedClient::getMockData(home_url('/'), 'mobile');
+        $psiDesktop = \App\Features\GoogleServices\PageSpeedClient::getMockData(home_url('/'), 'desktop');
     } else {
-        $psiCached = get_transient('laca_psi_' . md5(home_url('/') . '_mobile'));
-        if (is_array($psiCached)) {
-            $psiData = $psiCached;
+        $cachedMobile = get_transient('laca_psi_' . md5(home_url('/') . '_mobile'));
+        if (is_array($cachedMobile)) {
+            $psiMobile = $cachedMobile;
+        }
+        $cachedDesktop = get_transient('laca_psi_' . md5(home_url('/') . '_desktop'));
+        if (is_array($cachedDesktop)) {
+            $psiDesktop = $cachedDesktop;
         }
     }
     include __DIR__ . '/pagespeed-card.php';
