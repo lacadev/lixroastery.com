@@ -30,6 +30,7 @@ class GoogleServices
         'ga4_goal_events',
         'gsc_site_url',
         'pagespeed_api_key',
+        'key_metrics',
     ];
 
     /**
@@ -59,6 +60,7 @@ class GoogleServices
         add_action('wp_ajax_laca_google_report', [self::class, 'ajaxGoogleReport']);
         add_action('wp_ajax_laca_ga4_realtime', [self::class, 'ajaxGa4Realtime']);
         add_action('wp_ajax_laca_pagespeed_run', [self::class, 'ajaxPageSpeedRun']);
+        add_action('wp_ajax_laca_gsc_queries', [self::class, 'ajaxGscQueries']);
     }
 
     /**
@@ -156,11 +158,82 @@ class GoogleServices
 
         foreach (self::SETTINGS_KEYS as $key) {
             if (array_key_exists($key, $settings)) {
-                $current[$key] = $settings[$key];
+                if ($key === 'key_metrics') {
+                    $current[$key] = is_array($settings[$key]) ? array_values(array_filter(array_map('sanitize_key', $settings[$key]))) : [];
+                } else {
+                    $current[$key] = $settings[$key];
+                }
             }
         }
 
         return update_option(self::OPTION_KEY, $current, false);
+    }
+
+    public const KEY_METRICS_MAP = [
+        'newVsReturning'        => ['new_vs_returning', 'newvsreturning'],
+        'topSource'             => ['top_traffic_source', 'topsource', 'top_source'],
+        'topCities'             => ['top_cities', 'topcities'],
+        'pagesPerSession'       => ['pages_per_session', 'pagespersession'],
+        'sessionDuration'       => ['session_duration', 'sessionduration'],
+        'topProduct'            => ['top_products', 'topproduct', 'topproducts', 'top_product'],
+        'bestConversionSource'  => ['best_conversion_source', 'bestconversionsource'],
+        'cartAndPurchaseSource' => ['cart_or_purchase_source', 'cartandpurchasesource', 'cart_and_purchase_source'],
+    ];
+
+    /**
+     * Default enabled key metrics cards (first 6).
+     *
+     * @return string[]
+     */
+    public static function getDefaultKeyMetrics(): array
+    {
+        return [
+            'newVsReturning', 'new_vs_returning',
+            'topSource', 'top_traffic_source',
+            'topCities', 'top_cities',
+            'pagesPerSession', 'pages_per_session',
+            'sessionDuration', 'session_duration',
+            'topProduct', 'top_products',
+        ];
+    }
+
+    /**
+     * Get active key metrics keys configured in settings.
+     *
+     * @return string[]
+     */
+    public static function getActiveKeyMetrics(): array
+    {
+        $opts = get_option(self::OPTION_KEY, []);
+        if (!is_array($opts) || !isset($opts['key_metrics'])) {
+            return self::getDefaultKeyMetrics();
+        }
+
+        if (!is_array($opts['key_metrics'])) {
+            return [];
+        }
+
+        $active = [];
+        foreach ($opts['key_metrics'] as $rawKey) {
+            $k = (string) $rawKey;
+            $clean = strtolower(str_replace(['-', '_'], '', $k));
+            foreach (self::KEY_METRICS_MAP as $canonical => $aliases) {
+                if (strcasecmp($k, $canonical) === 0 || $clean === strtolower(str_replace(['-', '_'], '', $canonical))) {
+                    $active[] = $canonical;
+                    $active[] = $aliases[0];
+                    break;
+                }
+                foreach ($aliases as $al) {
+                    if (strcasecmp($k, $al) === 0 || $clean === strtolower(str_replace(['-', '_'], '', $al))) {
+                        $active[] = $canonical;
+                        $active[] = $aliases[0];
+                        break 2;
+                    }
+                }
+            }
+        }
+
+        return array_values(array_unique($active));
     }
 
     /**
@@ -558,7 +631,15 @@ class GoogleServices
         }
 
         if (GoogleDashboardService::isMockMode()) {
-            $result = PageSpeedClient::getMockData($targetUrl, $strategy);
+            if (!empty($_REQUEST['laca_mock_psi_error'])) {
+                $keyUrl = admin_url('admin.php?page=laca-google-search-console#laca-psi-key');
+                $result = new \WP_Error('psi_error_429', __('Đã hết hạn mức miễn phí của Google cho hôm nay. Thêm PageSpeed API key để có hạn mức riêng.', 'lacadev') . ' <a href="' . esc_url($keyUrl) . '">' . __('Thêm API key', 'lacadev') . '</a>', [
+                    'status' => 429,
+                    'link'   => $keyUrl,
+                ]);
+            } else {
+                $result = PageSpeedClient::getMockData($targetUrl, $strategy);
+            }
         } else {
             $result = PageSpeedClient::run($targetUrl, $strategy, $refresh);
         }
@@ -570,6 +651,7 @@ class GoogleServices
                 'message' => $result->get_error_message(),
                 'code'    => $result->get_error_code(),
                 'status'  => $statusCode,
+                'link'    => is_array($errData) ? ($errData['link'] ?? null) : null,
             ], $statusCode >= 400 && $statusCode < 600 ? $statusCode : 400);
         }
 
@@ -582,6 +664,75 @@ class GoogleServices
         wp_send_json_success([
             'html' => $html,
             'data' => $result,
+        ]);
+    }
+
+    /**
+     * AJAX endpoint to fetch up to 100 queries for GSC modal dialog.
+     */
+    public static function ajaxGscQueries(): void
+    {
+        $nonce = $_REQUEST['nonce'] ?? $_REQUEST['_ajax_nonce'] ?? '';
+        $valid = wp_verify_nonce($nonce, 'laca_google_report_nonce') || wp_verify_nonce($nonce, 'laca_seo_admin_nonce');
+        if (!$valid) {
+            wp_die('-1', 403);
+        }
+
+        if (!self::userCanViewReport()) {
+            wp_send_json_error(['message' => __('Bạn không có quyền thực hiện thao tác này.', 'lacadev')], 403);
+        }
+
+        $range = sanitize_key(wp_unslash($_REQUEST['range'] ?? DateRange::getUserRange()));
+        if (!in_array($range, DateRange::SUPPORTED_RANGES, true)) {
+            $range = DateRange::DEFAULT_RANGE;
+        }
+
+        if (!empty($_REQUEST['laca_mock_google']) && function_exists('wp_get_environment_type') && wp_get_environment_type() === 'local' && current_user_can('manage_options')) {
+            $_GET['laca_mock_google'] = '1';
+        }
+
+        $refresh = !empty($_REQUEST['refresh']);
+
+        if (GoogleDashboardService::isMockMode()) {
+            $rows = GoogleDashboardService::getMockGscQueries100($range);
+        } else {
+            $siteUrl = (string) self::getOption('gsc_site_url', '');
+            if (empty($siteUrl)) {
+                $siteUrl = GscClient::getSiteUrl();
+            }
+            $result = GscClient::getQueries100($siteUrl, $range, $refresh);
+            if (is_wp_error($result)) {
+                wp_send_json_error(['message' => $result->get_error_message()]);
+            }
+            $rows = is_array($result) ? $result : [];
+        }
+
+        ob_start();
+        if (empty($rows)) {
+            echo '<tr><td colspan="5" class="laca-google-dialog__empty">' . esc_html__('Không tìm thấy từ khóa tìm kiếm trong khoảng thời gian này.', 'lacadev') . '</td></tr>';
+        } else {
+            foreach ($rows as $r) {
+                $q = esc_html($r['query'] ?? '');
+                $cl = number_format_i18n((int) ($r['clicks'] ?? 0));
+                $imp = number_format_i18n((int) ($r['impressions'] ?? 0));
+                $ctr = number_format((float) ($r['ctr'] ?? 0), 1) . '%';
+                $pos = number_format((float) ($r['position'] ?? 0), 1);
+                echo '<tr>';
+                echo '<td class="col-query">' . $q . '</td>';
+                echo '<td class="col-clicks" data-val="' . (int) ($r['clicks'] ?? 0) . '">' . esc_html($cl) . '</td>';
+                echo '<td class="col-impressions" data-val="' . (int) ($r['impressions'] ?? 0) . '">' . esc_html($imp) . '</td>';
+                echo '<td class="col-ctr" data-val="' . (float) ($r['ctr'] ?? 0) . '">' . esc_html($ctr) . '</td>';
+                echo '<td class="col-position" data-val="' . (float) ($r['position'] ?? 0) . '">' . esc_html($pos) . '</td>';
+                echo '</tr>';
+            }
+        }
+        $html = ob_get_clean();
+
+        wp_send_json_success([
+            'rows'  => $rows,
+            'total' => count($rows),
+            'range' => $range,
+            'html'  => $html,
         ]);
     }
 }

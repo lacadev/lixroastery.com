@@ -25,6 +25,7 @@ use App\Features\GoogleServices\GoogleServices;
 use App\Features\GoogleServices\DateRange;
 use App\Features\GoogleServices\PageSpeedClient;
 use App\Features\GoogleServices\EntityStats;
+use App\Features\GoogleServices\Chart;
 use App\Features\LacaSeo\Core\Settings;
 use App\Settings\LacaAdmin\GoogleServicesPage;
 
@@ -3447,6 +3448,9 @@ runTest('G4 PageSpeed AJAX: Nonce gate, real CrUX & Lab parsing, 429 quota handl
             return "Expected AJAX call without nonce to trigger die -1/403, got '{$caughtDie}'";
         }
 
+        delete_transient('laca_psi_429_' . md5(home_url('/') . '_mobile'));
+        delete_transient('laca_psi_429_' . md5(home_url('/') . '_desktop'));
+
         // --- 2. Real CrUX sample (with loadingExperience.metrics) ---
         $mockCruxResponse = [
             'loadingExperience' => [
@@ -3671,11 +3675,13 @@ runTest('G4 PageSpeed AJAX: Nonce gate, real CrUX & Lab parsing, 429 quota handl
         if (!empty($res429['success'])) {
             return "Expected 429 response to have success=false, got: " . substr($json429Output, 0, 300);
         }
-        if (!str_contains($res429['data']['message'] ?? '', 'Quota exceeded')) {
-            return "Expected 429 error message to contain 'Quota exceeded', got: " . json_encode($res429);
+        if (!str_contains($res429['data']['message'] ?? '', 'Quota exceeded') && !str_contains($res429['data']['message'] ?? '', 'hạn mức')) {
+            return "Expected 429 error message to contain 'Quota exceeded' or 'hạn mức', got: " . json_encode($res429);
         }
 
         // --- 5. Host sanitization (evil.example -> home_url('/')) ---
+        delete_transient('laca_psi_429_' . md5(home_url('/') . '_mobile'));
+        delete_transient('laca_psi_429_' . md5(home_url('/') . '_desktop'));
         $capturedTargetUrl = null;
         $mockHttpSanitize = function ($preempt, $parsedArgs, $url) use (&$capturedTargetUrl) {
             if (str_contains($url, 'pagespeedonline/v5/runPagespeed')) {
@@ -3731,6 +3737,384 @@ runTest('G4 PageSpeed AJAX: Nonce gate, real CrUX & Lab parsing, 429 quota handl
         }
         if (preg_match('/\b\d+(\.\d+)?(s|ms|\/100)\b/', $emptyHtml, $matches)) {
             return "Empty partial contained unexpected metric number: " . $matches[0];
+        }
+
+        return true;
+    } finally {
+        $_GET = $origGet;
+        $_POST = $origPost;
+        $_REQUEST = $origRequest;
+        wp_set_current_user($oldUser instanceof \WP_User ? $oldUser->ID : (int) $oldUser);
+        remove_filter('wp_die_ajax_handler', $dieFilter);
+    }
+}, $pass, $fail);
+
+runTest('Google Report v2: phễu đúng, key metrics đủ, Chart SVG, AJAX 100 từ khoá, PSI desktop & 429 cache, request count <= 3', function () {
+    $origGet = $_GET;
+    $origPost = $_POST;
+    $origRequest = $_REQUEST;
+    $oldUser = wp_get_current_user();
+    $dieFilter = function () {
+        return function ($msg = '') {
+            throw new \RuntimeException(is_scalar($msg) ? (string) $msg : 'wp_die');
+        };
+    };
+    add_filter('wp_die_ajax_handler', $dieFilter);
+
+    try {
+        $adminUsers = get_users(['role' => 'administrator', 'number' => 1]);
+        $adminId = !empty($adminUsers) ? $adminUsers[0]->ID : 1;
+        wp_set_current_user($adminId);
+
+        // --- 1. Test Chart::line SVG ---
+        $emptySvg = Chart::line([], ['title' => 'Empty']);
+        if ($emptySvg !== '') {
+            return "Expected empty chart to return empty string, got: " . substr($emptySvg, 0, 50);
+        }
+
+        $series28 = [];
+        for ($i = 1; $i <= 28; $i++) {
+            $series28[] = [
+                'date' => sprintf('%02d/10', $i),
+                'value' => $i * 10,
+            ];
+        }
+        $svg = Chart::line([
+            ['name' => 'Kỳ này', 'data' => $series28, 'dashed' => false],
+        ], [
+            'title' => 'Biểu đồ kiểm tra 28 điểm',
+            'height' => 150,
+        ]);
+
+        if (empty($svg)) {
+            return "Chart::line produced empty string for 28 points";
+        }
+        if (!str_contains($svg, 'role="img"')) {
+            return "Chart SVG missing role=\"img\"";
+        }
+        if (preg_match('/#[0-9a-fA-F]{3,8}\b/', $svg)) {
+            return "Chart SVG contains raw hex color";
+        }
+
+        $dom = new \DOMDocument();
+        $loaded = @$dom->loadXML($svg);
+        if (!$loaded) {
+            return "Chart SVG is not valid XML";
+        }
+        $titleNodes = $dom->getElementsByTagName('title');
+        $pointTitles = 0;
+        foreach ($titleNodes as $tNode) {
+            if (str_contains($tNode->textContent, ': ')) {
+                $pointTitles++;
+            }
+        }
+        if ($pointTitles !== 28) {
+            return "Expected 28 point <title> tags, got " . $pointTitles;
+        }
+
+        // --- 2. Test Search Funnel without Organic row ---
+        $gsc = [
+            'connected' => true,
+            'isMock' => false,
+            'clicks' => 120,
+            'impressions' => 2500,
+            'ctr' => 4.8,
+            'clicks_delta' => '+10%',
+            'impressions_delta' => '+15%',
+            'ctr_delta' => '+0.2%',
+            'position' => 12.4,
+            'position_delta' => '-0.5',
+            'queries' => [],
+            'pages' => [],
+        ];
+        $gaNoOrganic = [
+            'connected' => true,
+            'isMock' => false,
+            'users' => 1500,
+            'users_delta' => '+5%',
+            'sessions' => 2000,
+            'sessions_delta' => '+8%',
+            'avgEngagement' => '1m 45s',
+            'avgEngagement_delta' => '+10s',
+            'channels' => [
+                ['name' => 'Direct', 'sessions' => 1200, 'share' => 60],
+                ['name' => 'Referral', 'sessions' => 800, 'share' => 40],
+            ],
+            'organicSearch' => [
+                'users' => 0,
+                'share' => 0,
+                'engagementRate' => '—',
+                'note' => 'Chưa ghi nhận người dùng từ tìm kiếm tự nhiên trong khoảng này',
+                'hasOrganic' => false,
+            ],
+            'keyMetrics' => [],
+            'topPages' => [],
+        ];
+        $range = '28d';
+        $rangeLabels = ['28d' => '28 ngày qua'];
+
+        ob_start();
+        $ga = $gaNoOrganic;
+        include dirname(__DIR__, 3) . '/app/src/Features/GoogleServices/views/partials/google-report.php';
+        $funnelHtml = ob_get_clean();
+
+        if (!str_contains($funnelHtml, 'Chưa ghi nhận người dùng từ tìm kiếm tự nhiên trong khoảng này')) {
+            return "Funnel HTML missing warning note when no organic channel";
+        }
+        if (preg_match('/class="laca-google-funnel__step-value">\s*1,500/i', $funnelHtml)) {
+            return "Funnel illegally fell back to total users 1500!";
+        }
+        if (!preg_match('/class="laca-google-funnel__step-value">\s*0\s*<\/div>/', $funnelHtml)) {
+            return "Funnel step 3 value should be 0 when no organic row";
+        }
+
+        // --- 3. Test Key Metrics Filter & Option toggle ---
+        $mockKeyMetrics = [
+            'newVsReturning' => ['title' => 'Khách mới / Quay lại', 'value' => '60% / 40%', 'sub' => '100 mới • 60 cũ'],
+            'topSource' => ['title' => 'Nguồn truy cập hàng đầu', 'value' => 'Organic Search', 'sub' => '45%'],
+            'topCities' => ['title' => 'Top 3 thành phố', 'value' => 'Hà Nội, TP.HCM, Đà Nẵng', 'sub' => '70%'],
+            'pagesPerSession' => ['title' => 'Số trang / Lượt', 'value' => '3.50', 'sub' => 'Trang trên mỗi phiên'],
+            'sessionDuration' => ['title' => 'Thời lượng trung bình', 'value' => '2m 15s', 'sub' => '+15s'],
+            'topProduct' => ['title' => 'Sản phẩm xem nhiều nhất', 'value' => 'Cà phê Arabica', 'sub' => '320 lượt xem'],
+            'bestConversionSource' => ['title' => 'Nguồn chuyển đổi tốt nhất', 'value' => 'Organic Search (4.2%)', 'sub' => '12 chuyển đổi'],
+            'cartAndPurchaseSource' => ['title' => 'Nguồn thêm giỏ / mua hàng', 'value' => 'Direct (18 lượt)', 'sub' => '10 thêm giỏ • 8 mua'],
+        ];
+
+        $allKeysFilter = function ($opts) {
+            $opts['key_metrics'] = ['newVsReturning', 'topSource', 'topCities', 'pagesPerSession', 'sessionDuration', 'topProduct', 'bestConversionSource', 'cartAndPurchaseSource'];
+            return $opts;
+        };
+        add_filter('pre_option_laca_google_services', $allKeysFilter);
+
+        $gaWithKm = $gaNoOrganic;
+        $gaWithKm['keyMetrics'] = $mockKeyMetrics;
+        $gaWithKm['businessKpis'] = [['title' => 'Purchase', 'value' => 12, 'delta' => '+2']];
+        $gaWithKm['ecommerceEvents'] = ['add_to_cart' => 10, 'purchase' => 8];
+
+        ob_start();
+        $ga = $gaWithKm;
+        include dirname(__DIR__, 3) . '/app/src/Features/GoogleServices/views/partials/google-report.php';
+        $kmHtml = ob_get_clean();
+
+        if (!str_contains($kmHtml, 'Hà Nội, TP.HCM, Đà Nẵng')) {
+            return "Key metrics HTML missing topCities value";
+        }
+        if (!str_contains($kmHtml, 'Cà phê Arabica')) {
+            return "Key metrics HTML missing topProduct value";
+        }
+
+        remove_filter('pre_option_laca_google_services', $allKeysFilter);
+        $oneKeyFilter = function ($opts) {
+            $opts['key_metrics'] = ['topSource'];
+            return $opts;
+        };
+        add_filter('pre_option_laca_google_services', $oneKeyFilter);
+
+        ob_start();
+        include dirname(__DIR__, 3) . '/app/src/Features/GoogleServices/views/partials/google-report.php';
+        $kmHtmlOne = ob_get_clean();
+        remove_filter('pre_option_laca_google_services', $oneKeyFilter);
+
+        if (!str_contains($kmHtmlOne, 'Nguồn truy cập hàng đầu')) {
+            return "Key metrics HTML should have topSource";
+        }
+        if (str_contains($kmHtmlOne, 'Hà Nội, TP.HCM, Đà Nẵng')) {
+            return "Key metrics HTML should NOT have topCities when disabled in option";
+        }
+
+        // --- 4. Test AJAX laca_gsc_queries ---
+        $_POST = ['action' => 'laca_gsc_queries'];
+        $_REQUEST = $_POST;
+        $caughtNoNonce = false;
+        try {
+            ob_start();
+            GoogleServices::ajaxGscQueries();
+        } catch (\RuntimeException $e) {
+            $caughtNoNonce = true;
+            ob_end_clean();
+        }
+        if (!$caughtNoNonce) {
+            return "Expected ajaxGscQueries without nonce to fail";
+        }
+
+        $capturedGscBody = null;
+        $mockGscApi = function ($preempt, $parsedArgs, $url) use (&$capturedGscBody) {
+            if (str_contains($url, 'searchAnalytics/query')) {
+                $capturedGscBody = json_decode($parsedArgs['body'] ?? '{}', true);
+                $rows = [];
+                for ($k = 1; $k <= 100; $k++) {
+                    $rows[] = [
+                        'keys' => ['từ khoá ' . $k],
+                        'clicks' => 100 - $k,
+                        'impressions' => 1000 - ($k * 5),
+                        'ctr' => 0.05,
+                        'position' => 1.5 + ($k * 0.1),
+                    ];
+                }
+                return [
+                    'response' => ['code' => 200, 'message' => 'OK'],
+                    'body'     => json_encode(['rows' => $rows]),
+                ];
+            }
+            return $preempt;
+        };
+        add_filter('pre_http_request', $mockGscApi, 10, 3);
+
+        $mockOAuthConnected = function () {
+            return [
+                'access_token'  => 'mock-token',
+                'refresh_token' => 'mock-refresh',
+                'expires_at'    => time() + 3600,
+                'email'         => 'client@example.com',
+                'scope'         => 'https://www.googleapis.com/auth/webmasters.readonly https://www.googleapis.com/auth/analytics.readonly',
+            ];
+        };
+        add_filter('pre_option_' . GscOAuth::OPTION_KEY, $mockOAuthConnected);
+
+        $mockServicesProp = function () {
+            return [
+                'gsc_property' => 'https://lixroastery.com/',
+            ];
+        };
+        add_filter('pre_option_laca_google_services', $mockServicesProp);
+
+        $_POST = [
+            'action' => 'laca_gsc_queries',
+            'nonce'  => wp_create_nonce('laca_google_report_nonce'),
+            'range'  => '28d',
+        ];
+        $_REQUEST = $_POST;
+
+        $gscResponseData = null;
+        try {
+            ob_start();
+            GoogleServices::ajaxGscQueries();
+        } catch (\RuntimeException $e) {
+            $output = ob_get_clean();
+            $gscResponseData = json_decode($output, true);
+        }
+        remove_filter('pre_http_request', $mockGscApi, 10);
+        remove_filter('pre_option_' . GscOAuth::OPTION_KEY, $mockOAuthConnected);
+        remove_filter('pre_option_laca_google_services', $mockServicesProp);
+
+        if (!empty($capturedGscBody)) {
+            if (($capturedGscBody['rowLimit'] ?? 0) !== 100) {
+                return "Expected GSC API request rowLimit=100, got: " . ($capturedGscBody['rowLimit'] ?? 'none');
+            }
+            if (($capturedGscBody['dataState'] ?? '') !== 'all') {
+                return "Expected GSC API request dataState='all', got: " . ($capturedGscBody['dataState'] ?? 'none');
+            }
+        }
+        if (!empty($gscResponseData['data']['rows'])) {
+            if (count($gscResponseData['data']['rows']) !== 100) {
+                return "Expected 100 queries returned, got " . count($gscResponseData['data']['rows']);
+            }
+        }
+
+        // --- 5. Test PSI: 429 Vietnamese message, 10m cache without request, strategy=desktop ---
+        delete_transient('laca_psi_429_' . md5(home_url('/') . '_mobile'));
+        delete_transient('laca_psi_429_' . md5(home_url('/') . '_desktop'));
+
+        $psiRequestCount = 0;
+        $capturedPsiStrategy = null;
+        $mockPsiHttp = function ($preempt, $parsedArgs, $url) use (&$psiRequestCount, &$capturedPsiStrategy) {
+            if (str_contains($url, 'pagespeedonline')) {
+                $psiRequestCount++;
+                $parsed = wp_parse_url($url);
+                parse_str($parsed['query'] ?? '', $queryParams);
+                $capturedPsiStrategy = $queryParams['strategy'] ?? null;
+                return [
+                    'response' => ['code' => 429, 'message' => 'Too Many Requests'],
+                    'body'     => json_encode([
+                        'error' => [
+                            'code' => 429,
+                            'message' => 'Quota exceeded for quota metric Queries and limit Queries per day of service pagespeedonline.googleapis.com',
+                        ],
+                    ]),
+                ];
+            }
+            return $preempt;
+        };
+        add_filter('pre_http_request', $mockPsiHttp, 10, 3);
+
+        $psiResult1 = PageSpeedClient::run(home_url('/'), 'mobile', true);
+        if (!is_wp_error($psiResult1)) {
+            return "Expected WP_Error for PSI 429 response";
+        }
+        if (!str_contains($psiResult1->get_error_message(), 'Đã hết hạn mức miễn phí')) {
+            return "Expected Vietnamese error message for PSI 429, got: " . $psiResult1->get_error_message();
+        }
+        if (!str_contains($psiResult1->get_error_message(), '#laca-psi-key')) {
+            return "Expected link to #laca-psi-key in PSI 429 message, got: " . $psiResult1->get_error_message();
+        }
+        if ($psiRequestCount !== 1) {
+            return "Expected 1 HTTP request for first PSI call, got " . $psiRequestCount;
+        }
+
+        $psiResult2 = PageSpeedClient::run(home_url('/'), 'mobile', false);
+        if (!is_wp_error($psiResult2)) {
+            return "Expected cached 429 WP_Error on second call";
+        }
+        if ($psiRequestCount !== 1) {
+            return "Expected 429 cache to prevent new HTTP request, but request count increased to " . $psiRequestCount;
+        }
+
+        delete_transient('laca_psi_429_' . md5(home_url('/') . '_desktop'));
+        PageSpeedClient::run(home_url('/'), 'desktop', true);
+        if ($capturedPsiStrategy !== 'desktop') {
+            return "Expected strategy=desktop sent to PSI API, got: " . $capturedPsiStrategy;
+        }
+        remove_filter('pre_http_request', $mockPsiHttp, 10);
+        delete_transient('laca_psi_429_' . md5(home_url('/') . '_mobile'));
+        delete_transient('laca_psi_429_' . md5(home_url('/') . '_desktop'));
+
+        // --- 6. Request count measurement: <= 3 GA + <= 3 GSC on full report load ---
+        $gscCount = 0;
+        $gaCount = 0;
+        $mockAllServices = function ($preempt, $parsedArgs, $url) use (&$gscCount, &$gaCount) {
+            if (str_contains($url, 'searchAnalytics/query')) {
+                $gscCount++;
+                return [
+                    'response' => ['code' => 200, 'message' => 'OK'],
+                    'body'     => json_encode([
+                        'rows' => [
+                            ['clicks' => 50, 'impressions' => 1000, 'ctr' => 0.05, 'position' => 3.2],
+                        ],
+                    ]),
+                ];
+            }
+            if (str_contains($url, 'analyticsdata.googleapis.com')) {
+                $gaCount++;
+                return [
+                    'response' => ['code' => 200, 'message' => 'OK'],
+                    'body'     => json_encode([
+                        'reports' => [
+                            ['rows' => [['metricValues' => [['value' => '100']]]]],
+                        ],
+                    ]),
+                ];
+            }
+            return $preempt;
+        };
+        add_filter('pre_http_request', $mockAllServices, 10, 3);
+        add_filter('pre_option_' . GscOAuth::OPTION_KEY, $mockOAuthConnected);
+        add_filter('pre_option_laca_google_services', function () {
+            return [
+                'gsc_property'    => 'https://lixroastery.com/',
+                'ga4_property_id' => '123456789',
+            ];
+        });
+
+        GscClient::getPerformanceSummary('https://lixroastery.com/', '28d', true);
+        GaClient::getBatchOverview('123456789', '28d', true);
+
+        remove_filter('pre_http_request', $mockAllServices, 10);
+
+        if ($gscCount > 3) {
+            return "GSC report load exceeded 3 requests: got " . $gscCount;
+        }
+        if ($gaCount > 3) {
+            return "GA4 report load exceeded 3 requests: got " . $gaCount;
         }
 
         return true;

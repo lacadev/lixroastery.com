@@ -130,6 +130,27 @@ class GuideContent
     }
 
     /**
+     * Section 3b: PageSpeed Insights API key (optional but recommended)
+     */
+    public static function getSection3b(): array
+    {
+        return [
+            'id'    => 'section-3b',
+            'title' => __('3b. PageSpeed Insights API key (tuỳ chọn nhưng nên có)', 'lacadev'),
+            'icon'  => 'dashicons-performance',
+            'open'  => false,
+            'type'  => 'ordered',
+            'items' => [
+                __('Đăng nhập email khách, chọn đúng project (cùng project OAuth).', 'lacadev'),
+                __('Bật API: https://console.cloud.google.com/apis/library/pagespeedonline.googleapis.com → Bật.', 'lacadev'),
+                __('Tạo key: https://console.cloud.google.com/apis/credentials → **Tạo thông tin xác thực (Create credentials)** → **Khoá API (API key)**.', 'lacadev'),
+                __('Bấm vào tên key vừa tạo → **Hạn chế API (API restrictions)**: chọn **Chỉ hạn chế khoá (Restrict key)** → tick chọn duy nhất **PageSpeed Insights API** → Lưu. Không đặt hạn chế IP/referrer (máy chủ hosting gọi từ IP có thể đổi → key bị từ chối).', 'lacadev'),
+                __('Về **Laca Admin → Dịch vụ Google → Search Console** → ô "PageSpeed API Key" (hoặc liên kết `#laca-psi-key`) → dán key → Lưu. Sau đó về `index.php` → Kiểm tra PageSpeed.', 'lacadev'),
+            ],
+        ];
+    }
+
+    /**
      * Section 4: Common errors and solutions table
      */
     public static function getSection4(string $scope = 'all'): array
@@ -157,6 +178,12 @@ class GuideContent
                 'symptom' => __('Báo cáo báo **"API … has not been used in project … / is disabled"**', 'lacadev'),
                 'cause'   => __('Chưa bật API, hoặc bật ở **project khác** với project chứa Client ID', 'lacadev'),
                 'fix'     => __('Bật đủ 3 API trong **cùng project** (mục 3.2)', 'lacadev'),
+                'scope'   => 'both',
+            ],
+            [
+                'symptom' => __('PageSpeed báo **"Quota exceeded … pagespeedonline"** / Lỗi 429', 'lacadev'),
+                'cause'   => __('Chưa có PageSpeed API key, dùng chung hạn mức miễn phí của Google và thường bị hết trong ngày', 'lacadev'),
+                'fix'     => __('Tạo API key riêng cho PageSpeed Insights theo **mục 3b**', 'lacadev'),
                 'scope'   => 'both',
             ],
             [
@@ -221,7 +248,66 @@ class GuideContent
     }
 
     /**
-     * Render the guide accordion details for Search Console page (Sections 0, 1, 3, 4).
+     * Section 5: API costs & quotas table
+     */
+    public static function getSection5(): array
+    {
+        return [
+            'id'      => 'section-5',
+            'title'   => __('5. Chi phí & hạn mức các API đang dùng', 'lacadev'),
+            'icon'    => 'dashicons-money-alt',
+            'open'    => false,
+            'type'    => 'custom_table',
+            'headers' => [
+                __('API', 'lacadev'),
+                __('Dùng cho', 'lacadev'),
+                __('Chi phí', 'lacadev'),
+                __('Hạn mức mặc định (tham khảo, có thể đổi)', 'lacadev'),
+                __('Site này dùng thế nào', 'lacadev'),
+            ],
+            'rows'    => [
+                [
+                    'api'   => 'Search Console API',
+                    'usage' => __('Báo cáo GSC, Kiểm tra index', 'lacadev'),
+                    'cost'  => __('Miễn phí', 'lacadev'),
+                    'quota' => __('Search Analytics: theo QPM/QPD mỗi site & project; URL Inspection: **2.000 lượt/ngày, 600/phút mỗi property**', 'lacadev'),
+                    'site'  => __('Báo cáo cache 1 giờ; Kiểm tra Index chỉ khi bấm', 'lacadev'),
+                ],
+                [
+                    'api'   => 'Google Analytics Data API (GA4)',
+                    'usage' => __('Báo cáo GA4, Realtime', 'lacadev'),
+                    'cost'  => __('Miễn phí (property thường)', 'lacadev'),
+                    'quota' => __('Core: **200.000 token/property/ngày, 40.000/giờ**; đa số request < 10 token', 'lacadev'),
+                    'site'  => __('Gom batch, cache 1 giờ; realtime chỉ khi tab đang mở', 'lacadev'),
+                ],
+                [
+                    'api'   => 'Google Analytics Admin API',
+                    'usage' => __('Danh sách property', 'lacadev'),
+                    'cost'  => __('Miễn phí', 'lacadev'),
+                    'quota' => __('Hạn mức riêng, dư dùng', 'lacadev'),
+                    'site'  => __('Cache 12 giờ + nút Tải lại', 'lacadev'),
+                ],
+                [
+                    'api'   => 'PageSpeed Insights API',
+                    'usage' => __('Tốc độ trang', 'lacadev'),
+                    'cost'  => __('Miễn phí, **không cần bật thanh toán**', 'lacadev'),
+                    'quota' => __('Có key: ~**25.000 lượt/ngày** mỗi project; không key: dùng chung hạn mức Google, **thường hết → lỗi 429**', 'lacadev'),
+                    'site'  => __('Chỉ chạy khi bấm, cache 24 giờ/strategy', 'lacadev'),
+                ],
+                [
+                    'api'   => 'OAuth 2.0',
+                    'usage' => __('Đăng nhập Google', 'lacadev'),
+                    'cost'  => __('Miễn phí', 'lacadev'),
+                    'quota' => '—',
+                    'site'  => '—',
+                ],
+            ],
+            'note'    => __('**Không cần và không nên bật Billing** cho project này — mọi API trên miễn phí; vượt hạn mức chỉ bị từ chối tạm (429), không phát sinh tiền. Không dùng project này cho API trả phí (Maps, Places, Gemini…). Xem hạn mức thật tại https://console.cloud.google.com/apis/dashboard (chọn API → tab Hạn mức). Nguồn: https://developers.google.com/analytics/devguides/reporting/data/v1/quotas, https://developers.google.com/webmaster-tools/limits.', 'lacadev'),
+        ];
+    }
+
+    /**
+     * Render the guide accordion details for Search Console page (Sections 0, 1, 3, 3b, 4, 5).
      */
     public static function renderForSearchConsole(string $siteUrl, string $canonicalUri, string $legacyUri): void
     {
@@ -229,14 +315,16 @@ class GuideContent
             self::getSection0(),
             self::getSection1(),
             self::getSection3($canonicalUri, $legacyUri),
+            self::getSection3b(),
             self::getSection4('all'),
+            self::getSection5(),
         ];
 
         self::renderSections($sections, $siteUrl);
     }
 
     /**
-     * Render the guide accordion details for Google Analytics page (Sections 0, 2, 4-ga).
+     * Render the guide accordion details for Google Analytics page (Sections 0, 2, 4-ga, 5).
      */
     public static function renderForAnalytics(string $siteUrl): void
     {
@@ -244,6 +332,7 @@ class GuideContent
             self::getSection0(),
             self::getSection2(),
             self::getSection4('ga'),
+            self::getSection5(),
         ];
 
         self::renderSections($sections, $siteUrl);
@@ -258,9 +347,9 @@ class GuideContent
         foreach ($sections as $sec) {
             $isOpen = !empty($sec['open']) ? ' open' : '';
             ?>
-            <details class="laca-seo-prep-details"<?php echo $isOpen; ?> style="margin-bottom: 12px; border: 1px solid var(--laca-border, #e4e4e7); border-radius: 6px; background: var(--laca-bg, #fff);">
+            <details class="laca-seo-prep-details"<?php echo $isOpen; ?> style="margin-bottom: 12px; border: 1px solid var(--laca-border); border-radius: 6px; background: var(--laca-bg);">
                 <summary class="laca-seo-prep-details__summary" style="cursor: pointer; font-weight: 600; padding: 12px 16px; display: flex; align-items: center; gap: 8px;">
-                    <span class="dashicons <?php echo esc_attr($sec['icon'] ?? 'dashicons-info'); ?>" style="color: var(--laca-accent, #2563eb);"></span>
+                    <span class="dashicons <?php echo esc_attr($sec['icon'] ?? 'dashicons-info'); ?>" style="color: var(--laca-fg);"></span>
                     <span><?php echo esc_html($sec['title']); ?></span>
                 </summary>
                 <div class="laca-seo-prep-details__content" style="padding: 16px 20px; font-size: 13.5px; line-height: 1.65;">
@@ -282,15 +371,15 @@ class GuideContent
                                             <?php echo nl2br(wp_kses_post(self::formatText($item['text_before'], $siteUrl))); ?>
                                         </div>
                                         <div style="display: flex; gap: 8px; align-items: center; margin: 8px 0; flex-wrap: wrap;">
-                                            <code style="background: var(--laca-bg-subtle, #f4f4f5); padding: 5px 10px; border-radius: 4px; font-size: 12px; word-break: break-all;"><?php echo esc_html($item['canonicalUri']); ?></code>
+                                            <code style="background: var(--laca-bg-subtle); padding: 5px 10px; border-radius: 4px; font-size: 12px; word-break: break-all;"><?php echo esc_html($item['canonicalUri']); ?></code>
                                             <button type="button" class="button button-small laca-seo-prep-step__copy" onclick="navigator.clipboard.writeText('<?php echo esc_js($item['canonicalUri']); ?>'); alert(window.lacaSeoData?.i18n?.copied || 'Đã sao chép!');">
                                                 <span class="dashicons dashicons-admin-page" style="margin-top: 2px;"></span> <?php esc_html_e('Sao chép', 'lacadev'); ?>
                                             </button>
                                         </div>
-                                        <div style="font-size: 12px; color: var(--laca-fg-muted, #71717a); margin-bottom: 8px;">
+                                        <div style="font-size: 12px; color: var(--laca-fg-muted); margin-bottom: 8px;">
                                             <?php esc_html_e('(Giai đoạn chuyển tiếp có thể thêm cả URI cũ:', 'lacadev'); ?>
                                             <div style="display: flex; gap: 8px; align-items: center; margin-top: 4px; flex-wrap: wrap;">
-                                                <code style="background: var(--laca-bg-subtle, #f4f4f5); padding: 4px 8px; border-radius: 4px; font-size: 11px; word-break: break-all;"><?php echo esc_html($item['legacyUri']); ?></code>
+                                                <code style="background: var(--laca-bg-subtle); padding: 4px 8px; border-radius: 4px; font-size: 11px; word-break: break-all;"><?php echo esc_html($item['legacyUri']); ?></code>
                                                 <button type="button" class="button button-small laca-seo-prep-step__copy" onclick="navigator.clipboard.writeText('<?php echo esc_js($item['legacyUri']); ?>'); alert(window.lacaSeoData?.i18n?.copied || 'Đã sao chép!');">
                                                     <span class="dashicons dashicons-admin-page" style="margin-top: 2px;"></span> <?php esc_html_e('Sao chép', 'lacadev'); ?>
                                                 </button>
@@ -311,24 +400,24 @@ class GuideContent
 
                     <?php elseif ($sec['type'] === 'table'): ?>
                         <div class="laca-seo-table-responsive" style="overflow-x: auto; -webkit-overflow-scrolling: touch; margin: 8px 0;">
-                            <table class="wp-list-table widefat striped" style="margin: 0; border: 1px solid var(--laca-border, #e4e4e7); border-radius: 4px; border-collapse: collapse; width: 100%;">
+                            <table class="wp-list-table widefat striped" style="margin: 0; border: 1px solid var(--laca-border); border-radius: 4px; border-collapse: collapse; width: 100%;">
                                 <thead>
-                                    <tr style="background: var(--laca-bg-muted, #f4f4f5);">
-                                        <th style="font-weight: 600; padding: 10px 14px; width: 28%; text-align: left; border-bottom: 1px solid var(--laca-border, #e4e4e7);"><?php esc_html_e('Triệu chứng', 'lacadev'); ?></th>
-                                        <th style="font-weight: 600; padding: 10px 14px; width: 36%; text-align: left; border-bottom: 1px solid var(--laca-border, #e4e4e7);"><?php esc_html_e('Nguyên nhân', 'lacadev'); ?></th>
-                                        <th style="font-weight: 600; padding: 10px 14px; width: 36%; text-align: left; border-bottom: 1px solid var(--laca-border, #e4e4e7);"><?php esc_html_e('Cách xử lý / phòng tránh', 'lacadev'); ?></th>
+                                    <tr style="background: var(--laca-bg-muted);">
+                                        <th style="font-weight: 600; padding: 10px 14px; width: 28%; text-align: left; border-bottom: 1px solid var(--laca-border);"><?php esc_html_e('Triệu chứng', 'lacadev'); ?></th>
+                                        <th style="font-weight: 600; padding: 10px 14px; width: 36%; text-align: left; border-bottom: 1px solid var(--laca-border);"><?php esc_html_e('Nguyên nhân', 'lacadev'); ?></th>
+                                        <th style="font-weight: 600; padding: 10px 14px; width: 36%; text-align: left; border-bottom: 1px solid var(--laca-border);"><?php esc_html_e('Cách xử lý / phòng tránh', 'lacadev'); ?></th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     <?php foreach ($sec['rows'] as $r): ?>
                                         <tr>
-                                            <td style="padding: 10px 14px; vertical-align: top; border-bottom: 1px solid var(--laca-border, #e4e4e7);">
+                                            <td style="padding: 10px 14px; vertical-align: top; border-bottom: 1px solid var(--laca-border);">
                                                 <?php echo wp_kses_post(self::formatText($r['symptom'], $siteUrl)); ?>
                                             </td>
-                                            <td style="padding: 10px 14px; vertical-align: top; border-bottom: 1px solid var(--laca-border, #e4e4e7);">
+                                            <td style="padding: 10px 14px; vertical-align: top; border-bottom: 1px solid var(--laca-border);">
                                                 <?php echo wp_kses_post(self::formatText($r['cause'], $siteUrl)); ?>
                                             </td>
-                                            <td style="padding: 10px 14px; vertical-align: top; border-bottom: 1px solid var(--laca-border, #e4e4e7);">
+                                            <td style="padding: 10px 14px; vertical-align: top; border-bottom: 1px solid var(--laca-border);">
                                                 <?php echo wp_kses_post(self::formatText($r['fix'], $siteUrl)); ?>
                                             </td>
                                         </tr>
@@ -336,6 +425,45 @@ class GuideContent
                                 </tbody>
                             </table>
                         </div>
+
+                    <?php elseif ($sec['type'] === 'custom_table'): ?>
+                        <div class="laca-seo-table-responsive" style="overflow-x: auto; -webkit-overflow-scrolling: touch; margin: 8px 0;">
+                            <table class="wp-list-table widefat striped" style="margin: 0; border: 1px solid var(--laca-border); border-radius: 4px; border-collapse: collapse; width: 100%;">
+                                <thead>
+                                    <tr style="background: var(--laca-bg-muted);">
+                                        <?php foreach ($sec['headers'] as $h): ?>
+                                            <th style="font-weight: 600; padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--laca-border);"><?php echo esc_html($h); ?></th>
+                                        <?php endforeach; ?>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php foreach ($sec['rows'] as $r): ?>
+                                        <tr>
+                                            <td style="padding: 10px 14px; vertical-align: top; border-bottom: 1px solid var(--laca-border); font-weight: 600;">
+                                                <?php echo esc_html($r['api']); ?>
+                                            </td>
+                                            <td style="padding: 10px 14px; vertical-align: top; border-bottom: 1px solid var(--laca-border);">
+                                                <?php echo wp_kses_post(self::formatText($r['usage'], $siteUrl)); ?>
+                                            </td>
+                                            <td style="padding: 10px 14px; vertical-align: top; border-bottom: 1px solid var(--laca-border);">
+                                                <?php echo wp_kses_post(self::formatText($r['cost'], $siteUrl)); ?>
+                                            </td>
+                                            <td style="padding: 10px 14px; vertical-align: top; border-bottom: 1px solid var(--laca-border);">
+                                                <?php echo wp_kses_post(self::formatText($r['quota'], $siteUrl)); ?>
+                                            </td>
+                                            <td style="padding: 10px 14px; vertical-align: top; border-bottom: 1px solid var(--laca-border);">
+                                                <?php echo wp_kses_post(self::formatText($r['site'], $siteUrl)); ?>
+                                            </td>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                </tbody>
+                            </table>
+                        </div>
+                        <?php if (!empty($sec['note'])): ?>
+                            <div style="font-size: 12.5px; color: var(--laca-fg-muted); margin-top: 10px; line-height: 1.5; padding: 8px 12px; background: var(--laca-bg-subtle); border-radius: 4px; border: 1px solid var(--laca-border);">
+                                <?php echo wp_kses_post(self::formatText($sec['note'], $siteUrl)); ?>
+                            </div>
+                        <?php endif; ?>
                     <?php endif; ?>
                 </div>
             </details>

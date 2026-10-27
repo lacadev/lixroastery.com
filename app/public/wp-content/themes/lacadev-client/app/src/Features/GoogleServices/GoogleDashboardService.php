@@ -195,24 +195,50 @@ class GoogleDashboardService
         $channels = $result['channels'] ?? [];
         $topPages = $result['topPages'] ?? [];
 
-        // Format channels with share
+        // Format channels with share (no raw hex)
         $totalChannelSessions = 0;
         foreach ($channels as $c) {
             $totalChannelSessions += (int) ($c['sessions'] ?? 0);
         }
         $formattedChannels = [];
-        $palette = ['#18181b', '#52525b', '#a1a1aa', '#d4d4d8', '#e4e4e7'];
-        $idx = 0;
         foreach ($channels as $c) {
             $sessions = (int) ($c['sessions'] ?? 0);
             $share = $totalChannelSessions > 0 ? round(($sessions / $totalChannelSessions) * 100) : 0;
             $formattedChannels[] = [
-                'name'     => (string) ($c['sessionDefaultChannelGroup'] ?? $c['name'] ?? '—'),
-                'sessions' => $sessions,
-                'share'    => (int) $share,
-                'color'    => $palette[$idx % count($palette)],
+                'name'           => (string) ($c['sessionDefaultChannelGroup'] ?? $c['name'] ?? '—'),
+                'sessions'       => $sessions,
+                'share'          => (int) $share,
+                'activeUsers'    => (int) ($c['activeUsers'] ?? $c['users'] ?? (int) round($sessions * 0.78)),
+                'engagementRate' => $c['engagementRate'] ?? null,
             ];
-            $idx++;
+        }
+
+        // Search Funnel - Organic Search specific metrics (NEVER fallback to total users)
+        $organicChannel = null;
+        foreach ($formattedChannels as $ch) {
+            if (strcasecmp($ch['name'], 'Organic Search') === 0) {
+                $organicChannel = $ch;
+                break;
+            }
+        }
+
+        $organicUsers = 0;
+        $organicShare = 0;
+        $organicEngagementRate = '—';
+        $hasOrganic = false;
+        $organicNote = null;
+
+        if ($organicChannel !== null && (int) ($organicChannel['sessions'] ?? 0) > 0) {
+            $hasOrganic = true;
+            $organicSessions = (int) $organicChannel['sessions'];
+            $organicShare = (int) ($organicChannel['share'] ?? 0);
+            $organicUsers = (int) ($organicChannel['activeUsers'] ?? (int) round($organicSessions * 0.78));
+            $organicEngagementRate = !empty($organicChannel['engagementRate'])
+                ? number_format((float) $organicChannel['engagementRate'] * 100, 1) . '%'
+                : (!empty($summary['engagementRate']) ? number_format((float) $summary['engagementRate'] * 100, 1) . '%' : '—');
+        } else {
+            $organicUsers = 0;
+            $organicNote = __('Chưa ghi nhận người dùng từ tìm kiếm tự nhiên trong khoảng này', 'lacadev');
         }
 
         $formattedTopPages = [];
@@ -310,6 +336,18 @@ class GoogleDashboardService
         $hasDataEver   = (bool) get_option('laca_google_data_available_ga', 0);
         $isCollecting  = ($isZeroData && !$hasDataEver);
 
+        // Extract daily chart series from byDate
+        $chartSeries = ['curr' => [], 'prev' => []];
+        if (!empty($result['byDate']) && is_array($result['byDate'])) {
+            foreach ($result['byDate'] as $bd) {
+                $chartSeries['curr'][] = [
+                    'date'  => $bd['date'] ?? '',
+                    'label' => !empty($bd['date']) ? date('d/m', strtotime($bd['date'])) : '',
+                    'value' => (int) ($bd['users'] ?? 0),
+                ];
+            }
+        }
+
         return [
             'connected'            => true,
             'isMock'               => false,
@@ -330,6 +368,17 @@ class GoogleDashboardService
             'collectingNotice'     => $isCollecting ? __('Đang thu thập dữ liệu (Google cần 24–48 giờ)', 'lacadev') : null,
             'isZeroData'           => ($isZeroData && $hasDataEver),
             'zeroDataNotice'       => ($isZeroData && $hasDataEver) ? __('Chưa có lượt truy cập trong khoảng này', 'lacadev') : null,
+            'summary'              => $summary,
+            'chartSeries'          => $chartSeries,
+            'organicSearch'        => [
+                'hasData'             => $hasOrganic,
+                'users'               => $organicUsers,
+                'share'               => $organicShare,
+                'engagementRate'      => $organicEngagementRate,
+                'note'                => $organicNote,
+                'usersDelta'          => $hasOrganic ? $usersDelta : '—',
+                'engagementRateDelta' => $hasOrganic ? $avgEngagementDelta : '—',
+            ],
         ];
     }
 
@@ -462,6 +511,23 @@ class GoogleDashboardService
         $clicks = (int) round(1420 * $multipliers);
         $impressions = (int) round(28500 * $multipliers);
 
+        $dates = DateRange::calculateDates($range);
+        $days = max(1, (int) round((strtotime($dates['endDate']) - strtotime($dates['startDate'])) / 86400) + 1);
+        $startTs = strtotime($dates['startDate']);
+
+        $clicksSeries = [];
+        $impressionsSeries = [];
+        for ($i = 0; $i < $days; $i++) {
+            $ts = $startTs + ($i * 86400);
+            $d = date('Y-m-d', $ts);
+            $lbl = date('d/m', $ts);
+            $wave = sin($i / 3.0) * 0.25 + 1.0;
+            $dailyClicks = max(1, (int) round(($clicks / $days) * $wave));
+            $dailyImp = max(10, (int) round(($impressions / $days) * $wave));
+            $clicksSeries[] = ['date' => $d, 'label' => $lbl, 'value' => $dailyClicks];
+            $impressionsSeries[] = ['date' => $d, 'label' => $lbl, 'value' => $dailyImp];
+        }
+
         return [
             'connected'         => true,
             'isMock'            => true,
@@ -474,6 +540,8 @@ class GoogleDashboardService
             'ctr_delta'         => '+0.5%',
             'position'          => 11.2,
             'position_delta'    => '+1.8',
+            'clicksSeries'      => $clicksSeries,
+            'impressionsSeries' => $impressionsSeries,
             'queries'           => [
                 ['query' => 'ca phe dac san da nang', 'clicks' => (int) round(312 * $multipliers), 'impressions' => (int) round(4500 * $multipliers), 'ctr' => 6.9, 'position' => 3.1],
                 ['query' => 'lix roastery', 'clicks' => (int) round(285 * $multipliers), 'impressions' => (int) round(1200 * $multipliers), 'ctr' => 23.7, 'position' => 1.0],
@@ -493,6 +561,77 @@ class GoogleDashboardService
     }
 
     /**
+     * Generate 100 mock GSC search queries for modal dialog testing.
+     *
+     * @param string $range
+     * @return array<int, array{query: string, clicks: int, impressions: int, ctr: float, position: float}>
+     */
+    public static function getMockGscQueries100(string $range = '28d'): array
+    {
+        $multipliers = match ($range) {
+            '7d'    => 0.25,
+            '90d'   => 3.2,
+            default => 1.0,
+        };
+
+        $baseQueries = [
+            'lix roastery',
+            'ca phe dac san da nang',
+            'mua ca phe hat arabica',
+            'gia ca phe rang xay nguyen chat',
+            'workshop pha che ca phe da nang',
+            'ca phe arabica cau dat rang moc',
+            'quan ca phe rang xay ngon o da nang',
+            'ca phe specialty la gi',
+            'mua hat ca phe robusta gia tot',
+            'ca phe espresso rang dam',
+            'khoa hoc pha che barista da nang',
+            'ca phe drip bag tien loi',
+            'ca phe pour over da nang',
+            'mua phin pha ca phe cao cap',
+            'ca phe hat gia si da nang',
+            'dia chi rang ca phe uy tin da nang',
+            'ca phe cold brew dong chai',
+            'huong vi ca phe catimor da lat',
+            'ca phe fine robusta viet nam',
+            'workshop cupping ca phe chuyen sau',
+        ];
+
+        $modifiers = [
+            '',
+            'nguyen chat',
+            'gia re',
+            'chinh hang',
+            'cao cap',
+        ];
+
+        $rows = [];
+        $count = 0;
+        foreach ($modifiers as $mod) {
+            foreach ($baseQueries as $bq) {
+                $q = trim($bq . ' ' . $mod);
+                $count++;
+                $clicks = max(1, (int) round((350 / sqrt($count)) * $multipliers));
+                $impressions = max(10, (int) round($clicks * (rand(12, 28))));
+                $ctr = round(($clicks / $impressions) * 100, 2);
+                $pos = round(1.0 + ($count * 0.4), 1);
+                $rows[] = [
+                    'query'       => $q,
+                    'clicks'      => $clicks,
+                    'impressions' => $impressions,
+                    'ctr'         => $ctr,
+                    'position'    => $pos,
+                ];
+                if ($count >= 100) {
+                    break 2;
+                }
+            }
+        }
+
+        return $rows;
+    }
+
+    /**
      * Mock GA4 data matching user specification for LIX Roastery.
      *
      * @param string $range
@@ -508,6 +647,28 @@ class GoogleDashboardService
 
         $users = (int) round(3840 * $multipliers);
         $sessions = (int) round(5260 * $multipliers);
+        $newUsers = (int) round(2458 * $multipliers);
+        $returningUsers = max(0, $users - $newUsers);
+
+        $dates = DateRange::calculateDates($range);
+        $days = max(1, (int) round((strtotime($dates['endDate']) - strtotime($dates['startDate'])) / 86400) + 1);
+        $startTs = strtotime($dates['startDate']);
+
+        $usersSeries = [];
+        $prevUsersSeries = [];
+        for ($i = 0; $i < $days; $i++) {
+            $ts = $startTs + ($i * 86400);
+            $d = date('Y-m-d', $ts);
+            $lbl = date('d/m', $ts);
+            $wave = sin($i / 3.2) * 0.22 + 1.0;
+            $dailyUsers = max(1, (int) round(($users / $days) * $wave));
+            $dailyPrev = max(1, (int) round((($users / 1.141) / $days) * ($wave * 0.94)));
+            $usersSeries[] = ['date' => $d, 'label' => $lbl, 'value' => $dailyUsers];
+            $prevUsersSeries[] = ['date' => $d, 'label' => $lbl, 'value' => $dailyPrev];
+        }
+
+        $organicUsers = (int) round(2074 * $multipliers);
+        $prevOrganicUsers = (int) round(1832 * $multipliers);
 
         return [
             'connected'            => true,
@@ -523,11 +684,71 @@ class GoogleDashboardService
             'conversionRate'       => '4.7%',
             'conversionRate_delta' => '+0.8%',
             'keyEventsTotal'       => (int) round(248 * $multipliers),
+            'hasKeyEvents'         => true,
+            'hasEcommerce'         => true,
+            'chartSeries'          => [
+                'curr' => $usersSeries,
+                'prev' => $prevUsersSeries,
+            ],
+            'organicSearch'        => [
+                'hasData'             => true,
+                'users'               => $organicUsers,
+                'prevUsers'           => $prevOrganicUsers,
+                'usersDelta'          => '+13.2%',
+                'share'               => 54,
+                'engagementRate'      => '68.5%',
+                'prevEngagementRate'  => '64.2%',
+                'engagementRateDelta' => '+4.3%',
+                'note'                => null,
+            ],
             'channels'             => [
-                ['name' => 'Organic Search', 'sessions' => (int) round(2840 * $multipliers), 'share' => 54, 'color' => '#18181b'],
-                ['name' => 'Direct', 'sessions' => (int) round(1450 * $multipliers), 'share' => 27, 'color' => '#52525b'],
-                ['name' => 'Social', 'sessions' => (int) round(620 * $multipliers), 'share' => 12, 'color' => '#a1a1aa'],
-                ['name' => 'Referral', 'sessions' => (int) round(350 * $multipliers), 'share' => 7, 'color' => '#d4d4d8'],
+                ['name' => 'Organic Search', 'sessions' => (int) round(2840 * $multipliers), 'share' => 54],
+                ['name' => 'Direct', 'sessions' => (int) round(1450 * $multipliers), 'share' => 27],
+                ['name' => 'Social', 'sessions' => (int) round(620 * $multipliers), 'share' => 12],
+                ['name' => 'Referral', 'sessions' => (int) round(350 * $multipliers), 'share' => 7],
+            ],
+            'keyMetrics'           => [
+                'new_vs_returning' => [
+                    'title'    => __('Khách mới / Quay lại', 'lacadev'),
+                    'value'    => '64% / 36%',
+                    'subtext'  => sprintf(__('%s mới • %s quay lại', 'lacadev'), number_format_i18n($newUsers), number_format_i18n($returningUsers)),
+                ],
+                'top_traffic_source' => [
+                    'title'    => __('Nguồn hàng đầu', 'lacadev'),
+                    'value'    => 'Organic Search',
+                    'subtext'  => '54% ' . __('tổng lượt truy cập', 'lacadev'),
+                ],
+                'top_cities' => [
+                    'title'    => __('Thành phố top 3', 'lacadev'),
+                    'value'    => 'Đà Nẵng (42%)',
+                    'subtext'  => 'TP. HCM (31%) • Hà Nội (18%)',
+                ],
+                'pages_per_session' => [
+                    'title'    => __('Trang / Lượt', 'lacadev'),
+                    'value'    => '3.40',
+                    'subtext'  => '+0.4 ' . __('so kỳ trước', 'lacadev'),
+                ],
+                'session_duration' => [
+                    'title'    => __('Thời lượng trung bình', 'lacadev'),
+                    'value'    => '1m 45s',
+                    'subtext'  => '+15s ' . __('so kỳ trước', 'lacadev'),
+                ],
+                'top_products' => [
+                    'title'    => __('Sản phẩm xem nhiều', 'lacadev'),
+                    'value'    => 'Cà phê Arabica Cầu Đất',
+                    'subtext'  => '1.420 ' . __('lượt xem', 'lacadev'),
+                    'path'     => '/product/ca-phe-arabica-cau-dat/',
+                ],
+                'best_conversion_source' => [
+                    'title'    => __('Nguồn chuyển đổi tốt nhất', 'lacadev'),
+                    'value'    => 'Organic Search',
+                    'subtext'  => '6.8% ' . __('tỉ lệ chuyển đổi mục tiêu', 'lacadev'),
+                ],
+                'cart_or_purchase_source' => [
+                    'title'    => __('Nguồn thêm giỏ / Mua hàng', 'lacadev'),
+                    'value'    => 'Direct & Tìm kiếm',
+                    'subtext'  => '186 ' . __('sự kiện mua / thêm giỏ', 'lacadev'),
+                ],
             ],
             'businessKpis'         => [
                 [

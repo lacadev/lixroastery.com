@@ -12,7 +12,9 @@
 defined('ABSPATH') || exit;
 
 $siteUrl = $siteUrl ?? home_url('/');
-$extReportUrl = 'https://pagespeed.web.dev/report?url=' . rawurlencode($siteUrl);
+$strategy = strtolower((string) ($psiData['strategy'] ?? 'mobile'));
+$isDesktop = ($strategy === 'desktop');
+$extReportUrl = 'https://pagespeed.web.dev/report?url=' . rawurlencode($siteUrl) . ($isDesktop ? '&form_factor=desktop' : '');
 
 $hasData = !empty($psiData) && (!empty($psiData['field']['hasData']) || !empty($psiData['lab']['score']));
 $hasField = !empty($psiData['field']['hasData']);
@@ -21,13 +23,23 @@ $labScore = isset($psiData['lab']['score']) ? (int) $psiData['lab']['score'] : n
 $labScoreCategory = (string) ($psiData['lab']['scoreCategory'] ?? '—');
 $labScoreClass = (string) ($psiData['lab']['scoreClass'] ?? 'average');
 ?>
-<div class="laca-seo-card laca-google-psi" id="laca-google-psi-card">
+<div class="laca-seo-card laca-google-psi" id="laca-google-psi-card" data-strategy="<?php echo esc_attr($strategy); ?>">
     <div class="laca-google-psi__header">
         <div class="laca-google-psi__title-wrap">
             <span class="dashicons dashicons-performance laca-google-psi__icon" aria-hidden="true"></span>
             <h3 class="laca-google-psi__title">
                 <?php esc_html_e('Tốc độ Trang & Trải nghiệm Người dùng (PageSpeed Insights)', 'lacadev'); ?>
             </h3>
+            <div class="laca-google-psi__strategy-tabs" role="tablist" aria-label="<?php esc_attr_e('Thiết bị kiểm tra', 'lacadev'); ?>">
+                <button type="button" role="tab" class="button button-small laca-google-psi__tab laca-google-psi-tab <?php echo !$isDesktop ? 'button-primary is-active' : 'button-secondary'; ?>" aria-pressed="<?php echo !$isDesktop ? 'true' : 'false'; ?>" data-strategy="mobile">
+                    <span class="dashicons dashicons-smartphone" aria-hidden="true"></span>
+                    <span><?php esc_html_e('Di động', 'lacadev'); ?></span>
+                </button>
+                <button type="button" role="tab" class="button button-small laca-google-psi__tab laca-google-psi-tab <?php echo $isDesktop ? 'button-primary is-active' : 'button-secondary'; ?>" aria-pressed="<?php echo $isDesktop ? 'true' : 'false'; ?>" data-strategy="desktop">
+                    <span class="dashicons dashicons-desktop" aria-hidden="true"></span>
+                    <span><?php esc_html_e('Máy tính', 'lacadev'); ?></span>
+                </button>
+            </div>
         </div>
         <div class="laca-google-psi__actions">
             <span class="laca-google-psi__url">
@@ -101,12 +113,12 @@ $labScoreClass = (string) ($psiData['lab']['scoreClass'] ?? 'average');
                     <span class="laca-google-psi__badge"><?php echo esc_html($labScoreCategory); ?></span>
                 </div>
                 <div class="laca-google-psi__metric-value"><?php echo $labScore !== null ? esc_html($labScore . '/100') : '—'; ?></div>
-                <div class="laca-google-psi__metric-desc"><?php esc_html_e('Điểm hiệu năng tổng thể trên thiết bị di động', 'lacadev'); ?></div>
+                <div class="laca-google-psi__metric-desc"><?php echo $isDesktop ? esc_html__('Điểm hiệu năng tổng thể trên thiết bị máy tính', 'lacadev') : esc_html__('Điểm hiệu năng tổng thể trên thiết bị di động', 'lacadev'); ?></div>
             </div>
         </div>
 
         <div class="laca-google-psi__footer">
-            <span><?php printf(esc_html__('Đo lúc %s · Di động', 'lacadev'), esc_html($testedDate ?: date('d/m/Y H:i'))); ?></span>
+            <span><?php printf(esc_html__('Đo lúc %s · %s', 'lacadev'), esc_html($testedDate ?: date('d/m/Y H:i')), $isDesktop ? __('Máy tính', 'lacadev') : __('Di động', 'lacadev')); ?></span>
         </div>
     <?php else: ?>
         <div class="laca-google-psi__notice">
@@ -173,7 +185,7 @@ $labScoreClass = (string) ($psiData['lab']['scoreClass'] ?? 'average');
         </div>
 
         <div class="laca-google-psi__footer">
-            <span><?php printf(esc_html__('Đo lúc %s · Di động', 'lacadev'), esc_html($testedDate ?: date('d/m/Y H:i'))); ?></span>
+            <span><?php printf(esc_html__('Đo lúc %s · %s', 'lacadev'), esc_html($testedDate ?: date('d/m/Y H:i')), $isDesktop ? __('Máy tính', 'lacadev') : __('Di động', 'lacadev')); ?></span>
         </div>
     <?php endif; ?>
 </div>

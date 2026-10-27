@@ -273,6 +273,9 @@ class GoogleServicesPage
             $omit404       = !empty($_POST['ga_omit_on_404']) ? 'on' : 'off';
             $ecommerce     = !empty($_POST['ga_ecommerce_events']) ? 'on' : 'off';
             $goalEvents    = sanitize_textarea_field(wp_unslash($_POST['ga4_goal_events'] ?? ''));
+            $keyMetrics    = isset($_POST['key_metrics']) && is_array($_POST['key_metrics'])
+                ? array_values(array_filter(array_map('sanitize_key', (array) $_POST['key_metrics'])))
+                : [];
 
             GoogleServices::updateSettings([
                 'ga4_measurement_id'  => $measurementId,
@@ -283,6 +286,7 @@ class GoogleServicesPage
                 'ga_omit_on_404'      => $omit404,
                 'ga_ecommerce_events' => $ecommerce,
                 'ga4_goal_events'     => $goalEvents,
+                'key_metrics'         => $keyMetrics,
             ]);
 
             wp_safe_redirect(add_query_arg(['updated' => '1'], admin_url('admin.php?page=' . self::PAGE_ANALYTICS)));
@@ -872,6 +876,93 @@ class GoogleServicesPage
                     </div>
                 </div>
 
+                <!-- Card: Chỉ số chính (Key Metrics) cho Báo cáo -->
+                <?php
+                $activeKeyMetrics = GoogleServices::getActiveKeyMetrics();
+                $hasProductPostType = post_type_exists('product') || apply_filters('laca/google/has_product_post_type', false);
+                $hasKeyEvents = !empty($goalEvents) || apply_filters('laca/google/has_key_events', false);
+                $hasEcommerce = ($ecommerce === 'on') || apply_filters('laca/google/has_ecommerce_events', false);
+
+                $allMetrics = [
+                    'new_vs_returning' => [
+                        'label'     => __('Khách mới / Quay lại (newVsReturning)', 'lacadev'),
+                        'desc'      => __('Tỷ lệ phần trăm và số lượng người dùng mới so với người dùng quay lại.', 'lacadev'),
+                        'available' => true,
+                    ],
+                    'top_traffic_source' => [
+                        'label'     => __('Nguồn hàng đầu (Top Traffic Source)', 'lacadev'),
+                        'desc'      => __('Kênh mang lại lượng phiên truy cập cao nhất cho website.', 'lacadev'),
+                        'available' => true,
+                    ],
+                    'top_cities' => [
+                        'label'     => __('Thành phố top 3 (Top Cities)', 'lacadev'),
+                        'desc'      => __('3 khu vực / thành phố có lượt truy cập nhiều nhất.', 'lacadev'),
+                        'available' => true,
+                    ],
+                    'pages_per_session' => [
+                        'label'     => __('Trang / Lượt (screenPageViewsPerSession)', 'lacadev'),
+                        'desc'      => __('Số trang trung bình người dùng xem trong mỗi phiên truy cập.', 'lacadev'),
+                        'available' => true,
+                    ],
+                    'session_duration' => [
+                        'label'     => __('Thời lượng trung bình (averageSessionDuration)', 'lacadev'),
+                        'desc'      => __('Thời gian trung bình người dùng tương tác trên website.', 'lacadev'),
+                        'available' => true,
+                    ],
+                    'top_products' => [
+                        'label'     => __('Sản phẩm xem nhiều (Top Viewed Products)', 'lacadev'),
+                        'desc'      => __('Trang sản phẩm có lượt xem cao nhất (đường dẫn /product/ hoặc /san-pham/).', 'lacadev'),
+                        'available' => $hasProductPostType,
+                        'reason'    => __('Yêu cầu website có post type sản phẩm (product)', 'lacadev'),
+                    ],
+                    'best_conversion_source' => [
+                        'label'     => __('Nguồn chuyển đổi tốt nhất (Best Conversion Source)', 'lacadev'),
+                        'desc'      => __('Kênh truy cập có tỷ lệ kích hoạt sự kiện mục tiêu cao nhất.', 'lacadev'),
+                        'available' => $hasKeyEvents,
+                        'reason'    => __('Yêu cầu cấu hình ít nhất 1 Mục tiêu chuyển đổi (Key Event)', 'lacadev'),
+                    ],
+                    'cart_or_purchase_source' => [
+                        'label'     => __('Nguồn thêm giỏ / Mua hàng (Cart & Purchase Source)', 'lacadev'),
+                        'desc'      => __('Kênh mang lại nhiều lượt thêm vào giỏ hàng hoặc mua hàng nhất.', 'lacadev'),
+                        'available' => $hasEcommerce,
+                        'reason'    => __('Yêu cầu bật Theo dõi Sự kiện WooCommerce hoặc có sự kiện trong 90 ngày', 'lacadev'),
+                    ],
+                ];
+                ?>
+                <div class="laca-seo-card" style="margin-top: 24px;">
+                    <div class="laca-seo-card__header">
+                        <h2 class="laca-seo-card__title"><?php esc_html_e('Chỉ số chính cho Cửa hàng (Key Metrics)', 'lacadev'); ?></h2>
+                        <p class="laca-seo-card__subtitle"><?php esc_html_e('Tùy chọn hiển thị 8 ô chỉ số trọng điểm trên báo cáo Google Analytics. Các ô thiếu điều kiện dữ liệu sẽ tự động ẩn trên Dashboard.', 'lacadev'); ?></p>
+                    </div>
+
+                    <div class="laca-seo-fields-container" style="padding: 0 20px;">
+                        <?php foreach ($allMetrics as $mKey => $mInfo): ?>
+                            <?php $isChecked = in_array($mKey, $activeKeyMetrics, true); ?>
+                            <div class="laca-seo-field-row">
+                                <div class="laca-seo-field-row__label-col">
+                                    <label for="metric_<?php echo esc_attr($mKey); ?>" style="font-weight: 600; color: var(--laca-fg);">
+                                        <?php echo esc_html($mInfo['label']); ?>
+                                    </label>
+                                </div>
+                                <div class="laca-seo-field-row__control-col">
+                                    <label style="display: inline-flex; align-items: center; gap: 8px; cursor: pointer;">
+                                        <input type="checkbox" name="key_metrics[]" id="metric_<?php echo esc_attr($mKey); ?>" value="<?php echo esc_attr($mKey); ?>" <?php checked($isChecked); ?>>
+                                        <span><?php esc_html_e('Bật hiển thị ô chỉ số này', 'lacadev'); ?></span>
+                                    </label>
+                                    <p class="description laca-seo-field-desc" style="margin: 4px 0 0 0;">
+                                        <?php echo esc_html($mInfo['desc']); ?>
+                                    </p>
+                                    <?php if (!$mInfo['available'] && !empty($mInfo['reason'])): ?>
+                                        <div style="font-size: 12px; color: var(--laca-fg-muted); margin-top: 4px;">
+                                            ⚠️ <em><?php echo esc_html($mInfo['reason']); ?></em>
+                                        </div>
+                                    <?php endif; ?>
+                                </div>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+                </div>
+
                 <div class="laca-seo-sticky-footer" style="margin-top: 24px;">
                     <div class="laca-seo-sticky-footer__inner">
                         <button type="submit" class="button button-primary button-hero laca-seo-save-btn">
@@ -1052,7 +1143,7 @@ class GoogleServicesPage
             </div>
 
             <!-- Card: PageSpeed Insights API Key (Tuỳ chọn) -->
-            <div class="laca-card" style="margin-top: 24px;">
+            <div class="laca-card" id="laca-psi-key" style="margin-top: 24px;">
                 <div class="laca-card__header">
                     <h2 class="laca-card__title" style="display: flex; align-items: center; gap: 8px;">
                         <span class="dashicons dashicons-performance" style="font-size: 20px; width: 20px; height: 20px; color: var(--laca-fg, #18181b);" aria-hidden="true"></span>

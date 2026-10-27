@@ -49,6 +49,13 @@
 6. Sau khi về trang: kiểm tra badge **"Đã kết nối OAuth: <email khách>"** → chọn property Search Console → Lưu. Trang Google Analytics tự tìm property GA4 theo Measurement ID.
 7. Mở `wp-admin/index.php` → khối báo cáo → **Làm mới**.
 
+## 3b. PageSpeed Insights API key (tuỳ chọn nhưng nên có)
+1. Đăng nhập email khách, chọn đúng project (cùng project OAuth).
+2. Bật API: https://console.cloud.google.com/apis/library/pagespeedonline.googleapis.com → Bật.
+3. Tạo key: https://console.cloud.google.com/apis/credentials → **Tạo thông tin xác thực** → **Khoá API**.
+4. Bấm vào key vừa tạo → **Hạn chế API**: chỉ chọn **PageSpeed Insights API**. Không đặt hạn chế IP/referrer (máy chủ hosting gọi từ IP có thể đổi → key bị từ chối).
+5. Dán vào **Laca Admin → Dịch vụ Google → Search Console** → ô "PageSpeed API Key" (hoặc `#laca-psi-key`) → Lưu. Về `index.php` → Kiểm tra PageSpeed.
+
 ## 4. Lỗi đã gặp và cách tránh
 | Triệu chứng | Nguyên nhân | Cách xử lý / phòng tránh |
 |---|---|---|
@@ -56,6 +63,7 @@
 | **"Tài khoản chưa có property nào"** / **HTTP 403 chưa có quyền với property** | Kết nối OAuth bằng **tài khoản Google khác** với tài khoản sở hữu website (từng xảy ra: kết nối bằng email khách nhưng property nằm ở email dev) | Xem badge email đang kết nối; bấm **Đổi tài khoản Google**, hoặc thêm email đang kết nối làm Chủ sở hữu trong Search Console (mục 1.3) |
 | **redirect_uri_mismatch** | URI trong Google Cloud không khớp từng ký tự (http/https, www, thiếu tham số, dư khoảng trắng) | Dùng nút **Sao chép** trên trang, dán nguyên văn |
 | Báo cáo báo **"API … has not been used in project … / is disabled"** | Chưa bật API, hoặc bật ở **project khác** với project chứa Client ID | Bật đủ 3 API trong **cùng project** (mục 3.2) |
+| PageSpeed báo **"Quota exceeded … pagespeedonline"** / Lỗi 429 | Chưa có PageSpeed API key, dùng chung hạn mức miễn phí của Google và thường bị hết trong ngày | Tạo API key riêng cho PageSpeed Insights theo **mục 3b** |
 | Kết nối **tự mất sau ~7 ngày** | App để chế độ Testing (refresh token hết hạn 7 ngày) | Publish app |
 | Đổi Client ID/Secret xong báo chưa kết nối | Token cũ thuộc client cũ, hệ thống tự xoá | Bấm kết nối lại |
 | Search Console hiện **0 / "Chưa có dữ liệu"** | Property mới; Search Console trễ **2–3 ngày** | Chờ vài ngày; kiểm tra đúng property đã chọn |
@@ -63,3 +71,16 @@
 | GA **đếm gấp đôi** lượt xem | Mã GA vừa ở Laca Theme → Scripts vừa ở ô Measurement ID | Chỉ giữ một nơi (hệ thống tự bỏ qua nếu trùng ID, nhưng nên dọn) |
 | Tỷ lệ chuyển đổi / Mục tiêu không hiện | GA4 chưa đánh dấu sự kiện chính, hoặc tên sự kiện ghi sai | Mục 2.4 — tên sự kiện phải giống hệt GA |
 | "Bỏ qua quản trị viên" không có tác dụng | Mã GA đang chèn thủ công qua Laca Theme → Scripts (tuỳ chọn chỉ áp cho mã chèn từ trang này) | Chuyển mã sang ô Measurement ID ở trang này |
+
+## 5. Chi phí & hạn mức các API đang dùng
+
+| API | Dùng cho | Chi phí | Hạn mức mặc định (tham khảo, có thể đổi) | Site này dùng thế nào |
+|---|---|---|---|---|
+| Search Console API | Báo cáo GSC, Kiểm tra index | Miễn phí | Search Analytics: theo QPM/QPD mỗi site & project; URL Inspection: **2.000 lượt/ngày, 600/phút mỗi property** | Báo cáo cache 1 giờ; Kiểm tra Index chỉ khi bấm |
+| Google Analytics Data API (GA4) | Báo cáo GA4, Realtime | Miễn phí (property thường) | Core: **200.000 token/property/ngày, 40.000/giờ**; đa số request < 10 token | Gom batch, cache 1 giờ; realtime chỉ khi tab đang mở |
+| Google Analytics Admin API | Danh sách property | Miễn phí | Hạn mức riêng, dư dùng | Cache 12 giờ + nút Tải lại |
+| PageSpeed Insights API | Tốc độ trang | Miễn phí, **không cần bật thanh toán** | Có key: ~**25.000 lượt/ngày** mỗi project; không key: dùng chung hạn mức Google, **thường hết → lỗi 429** | Chỉ chạy khi bấm, cache 24 giờ/strategy |
+| OAuth 2.0 | Đăng nhập Google | Miễn phí | — | — |
+
+> **Ghi chú quan trọng:** **Không cần và không nên bật Billing** cho project này — mọi API trên miễn phí; vượt hạn mức chỉ bị từ chối tạm (429), không phát sinh tiền. Không dùng project này cho API trả phí (Maps, Places, Gemini…). Xem hạn mức thật tại https://console.cloud.google.com/apis/dashboard (chọn API → tab Hạn mức).
+> Nguồn: https://developers.google.com/analytics/devguides/reporting/data/v1/quotas, https://developers.google.com/webmaster-tools/limits.

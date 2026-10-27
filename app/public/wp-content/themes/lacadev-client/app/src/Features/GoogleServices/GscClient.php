@@ -796,4 +796,62 @@ class GscClient
             'raw'                => $res,
         ];
     }
+
+    /**
+     * Get up to 100 top search queries from Search Console.
+     *
+     * @param string $siteUrl
+     * @param string $range
+     * @param bool $forceRefresh
+     * @return array<array{query: string, clicks: int, impressions: int, ctr: float, position: float}>|\WP_Error
+     */
+    public static function getQueries100(string $siteUrl, string $range = '28d', bool $forceRefresh = false): array|\WP_Error
+    {
+        $cacheKey = 'laca_gsc_q100_' . md5($siteUrl . '_' . $range);
+        if (!$forceRefresh) {
+            $cached = get_transient($cacheKey);
+            if (is_array($cached)) {
+                return $cached;
+            }
+        }
+
+        $dates = DateRange::calculateDates($range);
+        $startDate = $dates['startDate'];
+        $endDate = $dates['endDate'];
+
+        $domainFilters = self::getDomainFilter($siteUrl);
+        $body = array_merge([
+            'startDate'  => $startDate,
+            'endDate'    => $endDate,
+            'dimensions' => ['query'],
+            'dataState'  => 'all',
+            'rowLimit'   => 100,
+        ], $domainFilters);
+
+        $res = self::searchAnalytics($siteUrl, $body);
+        if (is_wp_error($res)) {
+            return $res;
+        }
+
+        $rawRows = $res['rows'] ?? [];
+        $rows = [];
+        if (is_array($rawRows)) {
+            foreach ($rawRows as $row) {
+                $q = (string) ($row['keys'][0] ?? '');
+                if ($q === '') {
+                    continue;
+                }
+                $rows[] = [
+                    'query'       => $q,
+                    'clicks'      => (int) ($row['clicks'] ?? 0),
+                    'impressions' => (int) ($row['impressions'] ?? 0),
+                    'ctr'         => round(((float) ($row['ctr'] ?? 0)) * 100, 2),
+                    'position'    => round((float) ($row['position'] ?? 0), 1),
+                ];
+            }
+        }
+
+        set_transient($cacheKey, $rows, HOUR_IN_SECONDS);
+        return $rows;
+    }
 }

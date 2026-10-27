@@ -27,6 +27,12 @@ class PageSpeedClient
         $url = $targetUrl ?: home_url('/');
         $strategy = in_array(strtolower($strategy), ['mobile', 'desktop'], true) ? strtolower($strategy) : 'mobile';
 
+        $cache429Key = 'laca_psi_429_' . md5($url . '_' . $strategy);
+        $cached429 = get_transient($cache429Key);
+        if ($cached429 instanceof \WP_Error) {
+            return $cached429;
+        }
+
         $cacheKey = 'laca_psi_' . md5($url . '_' . $strategy);
         if (!$forceRefresh) {
             $cached = get_transient($cacheKey);
@@ -65,18 +71,66 @@ class PageSpeedClient
         $body = wp_remote_retrieve_body($response);
         $data = json_decode($body, true);
 
-        if ($code < 200 || $code >= 300 || !is_array($data)) {
-            $msg = is_array($data) && isset($data['error']['message']) ? $data['error']['message'] : sprintf(__('Lỗi PageSpeed Insights (HTTP %d)', 'lacadev'), $code);
-            return new \WP_Error('psi_error_' . $code, $msg, [
-                'status' => $code,
-                'data'   => $data,
-            ]);
+        if ($code < 200 || $code >= 300 || !is_array($data) || !empty($data['error'])) {
+            $rawMsg = is_array($data) && isset($data['error']['message']) ? (string) $data['error']['message'] : sprintf(__('Lỗi PageSpeed Insights (HTTP %d)', 'lacadev'), $code);
+            $translatedMsg = self::translateErrorMessage($code, $rawMsg, is_array($data) ? $data : []);
+
+            $errorData = [
+                'status'      => $code,
+                'raw_message' => $rawMsg,
+                'data'        => $data,
+                'link'        => admin_url('admin.php?page=laca-google-search-console#laca-psi-key'),
+            ];
+
+            $err = new \WP_Error('psi_error_' . $code, $translatedMsg, $errorData);
+
+            if ($code === 429 || stripos($rawMsg, 'quota exceeded') !== false || stripos($rawMsg, 'resource_exhausted') !== false) {
+                set_transient($cache429Key, $err, 10 * MINUTE_IN_SECONDS);
+            }
+
+            return $err;
         }
 
         $parsed = self::parseResponse($data, $url, $strategy);
         set_transient($cacheKey, $parsed, DAY_IN_SECONDS);
 
         return $parsed;
+    }
+
+    /**
+     * Translate Google PageSpeed API errors into friendly Vietnamese messages.
+     *
+     * @param int $code
+     * @param string $rawMessage
+     * @param array<string, mixed> $data
+     * @return string
+     */
+    public static function translateErrorMessage(int $code, string $rawMessage, array $data = []): string
+    {
+        $rawLower = strtolower($rawMessage);
+
+        // 429 / Quota exceeded
+        if ($code === 429 || str_contains($rawLower, 'quota exceeded') || str_contains($rawLower, 'resource_exhausted')) {
+            $keyUrl = admin_url('admin.php?page=laca-google-search-console#laca-psi-key');
+            return __('Đã hết hạn mức miễn phí của Google cho hôm nay. Thêm PageSpeed API key để có hạn mức riêng.', 'lacadev') . ' <a href="' . esc_url($keyUrl) . '">' . __('Thêm API key', 'lacadev') . '</a>';
+        }
+
+        // 400 API key invalid
+        if (str_contains($rawLower, 'api key not valid') || str_contains($rawLower, 'api_key_invalid') || str_contains($rawLower, 'keyinvalid')) {
+            return __('API key không hợp lệ — kiểm tra lại key.', 'lacadev');
+        }
+
+        // 403 API not enabled or wrong restriction
+        if ($code === 403 || str_contains($rawLower, 'has not been used in project') || str_contains($rawLower, 'service_disabled') || str_contains($rawLower, 'permission_denied') || str_contains($rawLower, 'access_token_scope_insufficient')) {
+            return __('PageSpeed Insights API chưa được bật trong project Google Cloud của key, hoặc key bị giới hạn sai API.', 'lacadev');
+        }
+
+        // 400 failed document request
+        if (str_contains($rawLower, 'failed_document_request') || str_contains($rawLower, 'errored_document_request') || str_contains($rawLower, 'could not be loaded') || str_contains($rawLower, 'dns failure') || str_contains($rawLower, 'connect error')) {
+            return __('Google không tải được trang này (trang lỗi hoặc chặn bot).', 'lacadev');
+        }
+
+        return sprintf(__('Lỗi PageSpeed Insights (HTTP %d)', 'lacadev'), $code);
     }
 
     /**

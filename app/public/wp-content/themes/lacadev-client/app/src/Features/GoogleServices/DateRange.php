@@ -64,6 +64,17 @@ class DateRange
     }
 
     /**
+     * Alias for get() to maintain backward compatibility with date calculation calls.
+     *
+     * @param string $range
+     * @return array<string, mixed>
+     */
+    public static function calculateDates(string $range = '28d'): array
+    {
+        return self::get($range);
+    }
+
+    /**
      * Get human-readable labels for all supported date ranges.
      *
      * @return array<string, string>
