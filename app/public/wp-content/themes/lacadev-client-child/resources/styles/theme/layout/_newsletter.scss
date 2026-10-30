@@ -63,6 +63,7 @@ $newsletterLineColor: rgba($darkColor, 0.45);
         color: $darkColor;
         box-shadow: none;
         appearance: none;
+        font-family: $mainFont;
 
         &::placeholder {
             color: $darkColor;

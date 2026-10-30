@@ -52,7 +52,7 @@
         margin-bottom: rem(20);
         text-align: var(--stats-title-align-pc, left);
 
-        @include resFont(rem(30), rem(48));
+        @include resFont(rem(30), rem(80));
 
         @include maxWidth($md) {
             text-align: var(--stats-title-align-tablet, left);
