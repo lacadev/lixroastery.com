@@ -134,10 +134,12 @@ h4,
 h5,
 h6 {
   text-transform: uppercase;
+  font-weight: $regular;
 }
 
 h1 {
   @include resFont(rem(32), rem(48));
+
 }
 
 h2 {
