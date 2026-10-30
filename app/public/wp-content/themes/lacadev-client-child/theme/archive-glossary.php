@@ -140,11 +140,9 @@ if (!empty($auto_ids)) {
                                     <div class="glossary-page__related">
                                         <p class="glossary-page__related-label"><?php esc_html_e('Bài viết liên quan:', 'laca'); ?></p>
                                         <ul class="glossary-page__related-list">
-                                            <?php foreach ($related_ids as $related_id) :
-                                                $excerpt = wp_trim_words(get_the_excerpt($related_id), 16);
-                                            ?>
+                                            <?php foreach ($related_ids as $related_id) : ?>
                                                 <li>
-                                                    <a href="<?php echo esc_url(get_permalink($related_id)); ?>"><?php echo esc_html(get_the_title($related_id)); ?></a><?php if ($excerpt) : ?> - <?php echo esc_html($excerpt); ?><?php endif; ?>
+                                                    <a href="<?php echo esc_url(get_permalink($related_id)); ?>"><?php echo esc_html(get_the_title($related_id)); ?></a>
                                                 </li>
                                             <?php endforeach; ?>
                                         </ul>
