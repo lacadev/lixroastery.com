@@ -72,3 +72,12 @@
 * Không dùng jQuery. Sử dụng 100% Vanilla JS ES6+ modules.
 * SCSS đặt tên theo chuẩn BEM, không nesting quá 3 cấp, kết hợp utility classes của Tailwind CSS.
 * Đảm bảo Accessibility (A11y): Form có `<label>`, icon button có `aria-label`, 1 thẻ `<h1>` duy nhất trên trang.
+
+### 6. CÂU CHỮ & ĐA NGÔN NGỮ (i18n qua file .po)
+* Tuân thủ rule i18n chung (global CLAUDE.md / GEMINI.md): mọi câu hiển thị qua gettext, **cấm** mảng `['vi' => …, 'en' => …]` / `if (currentLanguage() === …)` / câu trần trong PHP/JS.
+* Text domain `laca`. **Câu gốc (msgid) tiếng Việt.** Bản tiếng Anh: `lacadev-client-child/theme/languages/en_US.po` + `en_US.mo` (Polylang `en` = locale `en_US`; `vi` dùng thẳng câu gốc). Template: `theme/languages/laca.pot`. Sửa từ ngữ/thêm ngôn ngữ bằng Loco Translate hoặc `.po`.
+* Child nạp bản dịch bằng `laca_child_load_textdomain()` (`theme/functions.php`, gọi lại ở `change_locale`) — KHÔNG đổi về `load_child_theme_textdomain()` (WP ≥ 6.7 sẽ bỏ qua file của child).
+* Câu admin ghi đè được: Theme Options (`getOption`) → trống thì `__()` (vd `laca_journal_text()`). Newsletter: `NewsletterTexts::strings()` + `switch_to_locale` theo ngôn ngữ khách.
+* Cập nhật sau khi thêm/sửa câu (trong `lacadev-client-child`, wp-cli của Local): `wp i18n make-pot . theme/languages/laca.pot --domain=laca --exclude=node_modules,dist,vendor,build,doc --skip-js` → thêm bản dịch vào `theme/languages/en_US.po` → `wp i18n make-mo theme/languages/en_US.po theme/languages`.
+* Phạm vi đã chuyển: toàn bộ câu phía khách của child. Chưa chuyển: nhãn admin (Carbon Fields, trang admin) và `edit.js` của block (đa số đã qua `__()` nhưng msgid tiếng Việt chưa có `.po`); câu ghi cứng trong theme cha (vd `search.js` "(hiển thị x/y)").
+
