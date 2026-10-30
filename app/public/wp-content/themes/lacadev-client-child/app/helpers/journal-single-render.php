@@ -409,28 +409,47 @@ if (!function_exists('laca_journal_related_posts')) {
 if (!function_exists('laca_glossary_related_posts')) {
     /**
      * Bài liên quan của 1 thuật ngữ: TẤT CẢ bài chọn ở field "Related
-     * Articles" (nhiều loại nội dung — theme/setup/glossary_meta.php). Không
-     * chọn thì trả rỗng → ẩn cả mục.
+     * Articles" (nhiều loại nội dung — theme/setup/glossary_meta.php). Chưa
+     * chọn (hoặc không bài nào đã publish) thì tự lấy tối đa $auto_limit bài
+     * tin tức/journal có chứa thuật ngữ (GlossaryAutoLink::autoRelatedIds());
+     * không có bài nào thì trả rỗng → ẩn cả mục.
      *
      * @return WP_Post[]
      */
-    function laca_glossary_related_posts(int $post_id): array
+    function laca_glossary_related_posts(int $post_id, int $auto_limit = GlossaryAutoLink::AUTO_RELATED_MAX): array
     {
         $ids = array_values(array_filter(array_map(
             static fn($item) => (int) ($item['id'] ?? 0),
             (array) carbon_get_post_meta($post_id, 'related_articles')
         )));
-        if (empty($ids)) {
-            return [];
+
+        $posts = $ids ? laca_glossary_query_posts($ids) : [];
+        if (!empty($posts)) {
+            return $posts;
         }
 
+        $term = get_post($post_id);
+        $ids = $term ? GlossaryAutoLink::autoRelatedIds($term, $auto_limit) : [];
+
+        return $ids ? laca_glossary_query_posts($ids) : [];
+    }
+}
+
+if (!function_exists('laca_glossary_query_posts')) {
+    /**
+     * @param int[] $ids
+     * @return WP_Post[]
+     */
+    function laca_glossary_query_posts(array $ids): array
+    {
         $query = new WP_Query([
             'post_type' => 'any',
             'post__in' => $ids,
             'orderby' => 'post__in',
             'posts_per_page' => count($ids),
             // Bài do admin chọn tay — không để Polylang lọc mất bài khác
-            // ngôn ngữ (vd sản phẩm "vi" trên trang "en").
+            // ngôn ngữ (vd sản phẩm "vi" trên trang "en"). Bài tự động đã
+            // được lọc ngôn ngữ từ trước (GlossaryAutoLink::autoRelatedIds()).
             'lang' => '',
             'post_status' => 'publish',
             'no_found_rows' => true,

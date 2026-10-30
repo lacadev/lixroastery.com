@@ -43,18 +43,40 @@ foreach ($terms as $term) {
 // get_the_excerpt() riêng lẻ ở vòng lặp render bên dưới (N+1 query), chậm
 // dần khi danh sách Glossary tăng lên. Gom hết ID lại, prime cache 1 lần
 // duy nhất trước khi render.
+$manual_ids_by_term = [];
 $all_related_ids = [];
 foreach ($terms as $term) {
-    $related_articles = carbon_get_post_meta($term->ID, 'related_articles');
-    foreach ((array) $related_articles as $related) {
-        $related_id = $related['id'] ?? 0;
+    $manual_ids_by_term[$term->ID] = [];
+    foreach ((array) carbon_get_post_meta($term->ID, 'related_articles') as $related) {
+        $related_id = (int) ($related['id'] ?? 0);
         if ($related_id) {
-            $all_related_ids[] = (int) $related_id;
+            $manual_ids_by_term[$term->ID][] = $related_id;
+            $all_related_ids[] = $related_id;
         }
     }
 }
 if (!empty($all_related_ids)) {
     _prime_post_caches(array_unique($all_related_ids), true, true);
+}
+
+// Trang danh sách chỉ hiện tối đa 3 bài liên quan đã publish (trang chi tiết
+// hiện đủ). Chọn thủ công thì chỉ dùng bài đã chọn; chưa chọn thì tự lấy bài
+// tin tức/journal có chứa thuật ngữ (GlossaryAutoLink::autoRelatedIds()).
+$related_by_term = [];
+$auto_ids = [];
+foreach ($terms as $term) {
+    $ids = array_slice(array_values(array_filter(
+        $manual_ids_by_term[$term->ID],
+        static fn($id) => 'publish' === get_post_status($id)
+    )), 0, 3);
+    if (empty($ids)) {
+        $ids = GlossaryAutoLink::autoRelatedIds($term, 3);
+        $auto_ids = array_merge($auto_ids, $ids);
+    }
+    $related_by_term[$term->ID] = $ids;
+}
+if (!empty($auto_ids)) {
+    _prime_post_caches(array_unique($auto_ids), true, true);
 }
 ?>
 
@@ -85,18 +107,7 @@ if (!empty($all_related_ids)) {
                         $is_first_of_letter = $first_char !== $prev_letter;
                         $prev_letter = $first_char;
 
-                        // Trang danh sách chỉ hiện tối đa 3 bài liên quan đã publish —
-                        // trang chi tiết thuật ngữ mới hiện đủ mọi bài đã chọn.
-                        $related_ids = [];
-                        foreach ((array) carbon_get_post_meta($term->ID, 'related_articles') as $related) {
-                            $related_id = (int) ($related['id'] ?? 0);
-                            if ($related_id && 'publish' === get_post_status($related_id)) {
-                                $related_ids[] = $related_id;
-                            }
-                            if (count($related_ids) === 3) {
-                                break;
-                            }
-                        }
+                        $related_ids = $related_by_term[$term->ID];
 
                         // id của item = slug, để link từ bài viết (GlossaryAutoLink)
                         // trỏ tới /glossary/#<slug> — nên neo chữ cái A-Z phải tách

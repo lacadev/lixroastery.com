@@ -22,6 +22,17 @@ if (!defined('ABSPATH')) {
 class GlossaryAutoLink
 {
     private const VERSION_OPTION = 'laca_glossary_terms_ver';
+    private const RELATED_VERSION_OPTION = 'laca_glossary_related_ver';
+
+    /** Loại nội dung được quét để tự tìm bài liên quan (tin tức + journal). */
+    private const RELATED_POST_TYPES = ['post', 'journal'];
+
+    /** Số bài tối đa lưu cache cho mỗi thuật ngữ (= giới hạn ở trang chi tiết). */
+    public const AUTO_RELATED_MAX = 10;
+
+    /** @var array<int, int[]>|null Map term ID → ID bài tự động (cache theo ngôn ngữ). */
+    private static ?array $autoRelated = null;
+    private static bool $autoRelatedDirty = false;
 
     /**
      * Text nằm trong các thẻ này không bao giờ bị link (link lồng link,
@@ -50,6 +61,12 @@ class GlossaryAutoLink
         add_action('deleted_post', [$this, 'maybeFlushCache'], 10, 2);
         add_action('trashed_post', [$this, 'maybeFlushCache']);
         add_action('untrashed_post', [$this, 'maybeFlushCache']);
+
+        add_action('save_post', [$this, 'maybeFlushRelatedCache'], 10, 2);
+        add_action('deleted_post', [$this, 'maybeFlushRelatedCache'], 10, 2);
+        add_action('trashed_post', [$this, 'maybeFlushRelatedCache']);
+        add_action('untrashed_post', [$this, 'maybeFlushRelatedCache']);
+        add_action('shutdown', [self::class, 'saveAutoRelated']);
     }
 
     public function filterContent($content)
@@ -200,11 +217,7 @@ class GlossaryAutoLink
      */
     public function getTerms(): array
     {
-        $lang = function_exists('pll_current_language') ? (string) pll_current_language() : '';
-        if ($lang === '') {
-            $lang = get_locale();
-        }
-        $cacheKey = 'laca_glossary_terms_v2_' .(int) get_option(self::VERSION_OPTION, 0) . '_' . sanitize_key($lang);
+        $cacheKey = 'laca_glossary_terms_v2_' .(int) get_option(self::VERSION_OPTION, 0) . '_' . self::currentLang();
 
         $cached = get_transient($cacheKey);
         if (is_array($cached)) {
@@ -280,6 +293,134 @@ class GlossaryAutoLink
         }
 
         return '';
+    }
+
+    /**
+     * Bài viết (tin tức/journal) có chứa thuật ngữ — dùng khi thuật ngữ CHƯA
+     * chọn "Related Articles" thủ công. Khớp nguyên từ, không phân biệt
+     * hoa/thường, quét cả text trong attribute của custom block (giống
+     * auto-link). Mới nhất trước, tối đa AUTO_RELATED_MAX bài; Polylang lọc
+     * theo ngôn ngữ hiện tại.
+     *
+     * Cache gộp 1 transient/ngôn ngữ (map term ID → ID bài) để trang
+     * /glossary/ không đọc transient riêng cho từng thuật ngữ; xoá khi bài
+     * tin tức/journal/thuật ngữ thay đổi.
+     *
+     * @return int[]
+     */
+    public static function autoRelatedIds(WP_Post $term, int $limit = self::AUTO_RELATED_MAX): array
+    {
+        if (self::$autoRelated === null) {
+            $cached = get_transient(self::autoRelatedCacheKey());
+            self::$autoRelated = is_array($cached) ? $cached : [];
+        }
+
+        if (!isset(self::$autoRelated[$term->ID])) {
+            self::$autoRelated[$term->ID] = self::findPostsUsingTerm($term);
+            self::$autoRelatedDirty = true;
+        }
+
+        return array_slice(self::$autoRelated[$term->ID], 0, $limit);
+    }
+
+    /**
+     * @return int[]
+     */
+    private static function findPostsUsingTerm(WP_Post $term): array
+    {
+        $title = trim(wp_strip_all_tags($term->post_title));
+        if ($title === '') {
+            return [];
+        }
+
+        // Lọc thô bằng LIKE (collation MySQL không phân biệt hoa/thường).
+        // Attribute block lưu dạng JSON escape (\u00e0...) nên tìm thêm bản đó.
+        $needles = array_unique([$title, trim((string) wp_json_encode($title), '"')]);
+        $where = static function ($sql) use ($needles) {
+            global $wpdb;
+            $likes = array_map(
+                static fn($n) => $wpdb->prepare("{$wpdb->posts}.post_content LIKE %s", '%' . $wpdb->esc_like($n) . '%'),
+                $needles
+            );
+            return $sql . ' AND (' . implode(' OR ', $likes) . ')';
+        };
+
+        add_filter('posts_where', $where);
+        $query = new WP_Query([
+            'post_type'              => self::RELATED_POST_TYPES,
+            'post_status'            => 'publish',
+            'posts_per_page'         => 50,
+            'orderby'                => 'date',
+            'order'                  => 'DESC',
+            'no_found_rows'          => true,
+            'ignore_sticky_posts'    => true,
+            'update_post_meta_cache' => false,
+            'update_post_term_cache' => false,
+        ]);
+        remove_filter('posts_where', $where);
+
+        // Lọc tinh: khớp nguyên từ trên text thật (bỏ "Airflows", "xAirflow"...).
+        $pattern = '/(?<![\p{L}\p{N}_])' . preg_quote(mb_strtolower($title), '/') . '(?![\p{L}\p{N}_])/iu';
+        $ids = [];
+        foreach ($query->posts as $post) {
+            if (preg_match($pattern, self::plainText($post->post_content))) {
+                $ids[] = (int) $post->ID;
+                if (count($ids) === self::AUTO_RELATED_MAX) {
+                    break;
+                }
+            }
+        }
+
+        return $ids;
+    }
+
+    /**
+     * Text thuần của post_content, GIỮ lại text trong attribute JSON của block
+     * (custom block render phía server chỉ lưu nội dung trong attribute).
+     */
+    private static function plainText(string $content): string
+    {
+        $content = str_replace(['<!--', '-->'], ' ', $content);
+        $content = preg_replace_callback(
+            '/\\\\u([0-9a-fA-F]{4})/',
+            static fn($m) => mb_chr(hexdec($m[1]), 'UTF-8'),
+            $content
+        ) ?? $content;
+
+        return html_entity_decode(wp_strip_all_tags($content), ENT_QUOTES, 'UTF-8');
+    }
+
+    public static function saveAutoRelated(): void
+    {
+        if (self::$autoRelatedDirty) {
+            set_transient(self::autoRelatedCacheKey(), self::$autoRelated, 12 * HOUR_IN_SECONDS);
+            self::$autoRelatedDirty = false;
+        }
+    }
+
+    private static function autoRelatedCacheKey(): string
+    {
+        return 'laca_glossary_related_' . (int) get_option(self::RELATED_VERSION_OPTION, 0) . '_' . self::currentLang();
+    }
+
+    private static function currentLang(): string
+    {
+        $lang = function_exists('pll_current_language') ? (string) pll_current_language() : '';
+
+        return sanitize_key($lang !== '' ? $lang : get_locale());
+    }
+
+    public function maybeFlushRelatedCache($postId, $post = null): void
+    {
+        if (wp_is_post_revision($postId) || wp_is_post_autosave($postId)) {
+            return;
+        }
+        $type = get_post_type($post ?: $postId);
+        if ($type === 'glossary' || in_array($type, self::RELATED_POST_TYPES, true)) {
+            update_option(self::RELATED_VERSION_OPTION, time(), false);
+            self::$autoRelated = null;
+            self::$autoRelatedDirty = false;
+        }
     }
 
     public function flushCache(): void
