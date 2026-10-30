@@ -60,7 +60,7 @@ if (!empty($all_related_ids)) {
 
 <section class="glossary-page">
     <div class="container-fluid">
-        <h1 class="glossary-page__title"><?php esc_html_e('Glossary', 'laca'); ?></h1>
+        <h1 class="glossary-page__title"><?php esc_html_e('Thuật ngữ', 'laca'); ?></h1>
 
         <?php if (!empty($terms)) : ?>
             <div class="glossary-page__body">
@@ -85,28 +85,51 @@ if (!empty($all_related_ids)) {
                         $is_first_of_letter = $first_char !== $prev_letter;
                         $prev_letter = $first_char;
 
-                        $related_articles = carbon_get_post_meta($term->ID, 'related_articles');
-                        $related_articles = is_array($related_articles) ? $related_articles : [];
+                        // Trang danh sách chỉ hiện tối đa 3 bài liên quan đã publish —
+                        // trang chi tiết thuật ngữ mới hiện đủ mọi bài đã chọn.
+                        $related_ids = [];
+                        foreach ((array) carbon_get_post_meta($term->ID, 'related_articles') as $related) {
+                            $related_id = (int) ($related['id'] ?? 0);
+                            if ($related_id && 'publish' === get_post_status($related_id)) {
+                                $related_ids[] = $related_id;
+                            }
+                            if (count($related_ids) === 3) {
+                                break;
+                            }
+                        }
+
+                        // id của item = slug, để link từ bài viết (GlossaryAutoLink)
+                        // trỏ tới /glossary/#<slug> — nên neo chữ cái A-Z phải tách
+                        // ra phần tử riêng (1 phần tử không có 2 id).
+                        $term_slug = urldecode($term->post_name);
                     ?>
+                        <?php if ($is_first_of_letter) : ?>
+                            <span class="glossary-page__anchor" id="glossary-letter-<?php echo esc_attr($first_char); ?>"></span>
+                        <?php endif; ?>
                         <div
                             class="glossary-page__item"
-                            <?php echo $is_first_of_letter ? 'id="glossary-letter-' . esc_attr($first_char) . '"' : ''; ?>
+                            id="<?php echo esc_attr($term_slug); ?>"
+                            data-slug="<?php echo esc_attr($term_slug); ?>"
                         >
-                            <h2 class="glossary-page__term"><?php echo esc_html($term->post_title); ?></h2>
+                            <h2 class="glossary-page__term">
+                                <a href="<?php echo esc_url(get_permalink($term)); ?>"><?php echo esc_html($term->post_title); ?></a>
+                            </h2>
                             <div class="glossary-page__content">
+                                <?php
+                                // Chỉ hiện tóm tắt (excerpt hoặc đoạn đầu) — chi tiết
+                                // thuật ngữ có thể chứa ảnh/block khác, xem ở trang chi tiết.
+                                $summary = GlossaryAutoLink::summary($term);
+                                ?>
                                 <div class="glossary-page__definition">
-                                    <?php echo apply_filters('the_content', $term->post_content); ?>
+                                    <?php echo $summary; // Đã wp_kses_post trong summary(). ?>
+                                    <a class="glossary-page__more" href="<?php echo esc_url(get_permalink($term)); ?>"><?php esc_html_e('Đọc thêm', 'laca'); ?></a>
                                 </div>
 
-                                <?php if (!empty($related_articles)) : ?>
+                                <?php if (!empty($related_ids)) : ?>
                                     <div class="glossary-page__related">
-                                        <p class="glossary-page__related-label"><?php esc_html_e('Related Articles:', 'laca'); ?></p>
+                                        <p class="glossary-page__related-label"><?php esc_html_e('Bài viết liên quan:', 'laca'); ?></p>
                                         <ul class="glossary-page__related-list">
-                                            <?php foreach ($related_articles as $related) :
-                                                $related_id = $related['id'] ?? 0;
-                                                if (!$related_id || 'publish' !== get_post_status($related_id)) {
-                                                    continue;
-                                                }
+                                            <?php foreach ($related_ids as $related_id) :
                                                 $excerpt = wp_trim_words(get_the_excerpt($related_id), 16);
                                             ?>
                                                 <li>

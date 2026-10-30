@@ -214,6 +214,23 @@
     }
   }
 
+  // "Quay lại Thuật ngữ" — chỉ ở chi tiết Glossary.
+  &__back {
+    margin-top: rem(80);
+    display: inline-block;
+    color: inherit;
+    font-size: rem(16);
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+    }
+
+    @include maxWidth($sm) {
+      margin-top: rem(50);
+    }
+  }
+
   &__tags {
     margin: rem(30) 0 0;
     padding: 0;

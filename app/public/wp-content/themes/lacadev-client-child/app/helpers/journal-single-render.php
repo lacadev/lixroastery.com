@@ -24,24 +24,24 @@ const LACA_JOURNAL_TOC_EXCLUDED_CLASSES = [
 if (!function_exists('laca_journal_text')) {
     /**
      * Câu chữ hiển thị: ưu tiên Theme Options theo ngôn ngữ, trống thì dùng
-     * câu mặc định theo ngôn ngữ (site chỉ có VI/EN).
+     * câu mặc định (câu gốc tiếng Việt, dịch qua theme/languages/*.po).
      */
     function laca_journal_text(string $key): string
     {
-        $defaults = [
-            'journal_toc_title' => ['vi' => 'Mục lục', 'en' => 'Table of contents'],
-            'journal_share_label' => ['vi' => 'Chia sẻ', 'en' => 'Share'],
-            'journal_related_title' => ['vi' => 'Bài viết liên quan', 'en' => 'Related articles'],
-            'journal_author_prefix' => ['vi' => 'Thực hiện bởi:', 'en' => 'By:'],
-        ];
-
         $value = trim((string) getOption($key));
         if ($value !== '') {
             return $value;
         }
 
-        $lang = currentLanguage() === 'en' ? 'en' : 'vi';
-        return $defaults[$key][$lang] ?? '';
+        $defaults = [
+            'journal_toc_title' => __('Mục lục', 'laca'),
+            'journal_share_label' => __('Chia sẻ', 'laca'),
+            'journal_related_title' => __('Bài viết liên quan', 'laca'),
+            'journal_author_prefix' => __('Thực hiện bởi:', 'laca'),
+            'glossary_back_label' => __('Quay lại Thuật ngữ', 'laca'),
+        ];
+
+        return $defaults[$key] ?? '';
     }
 }
 
@@ -343,6 +343,12 @@ if (!function_exists('laca_journal_render_footer')) {
                         <?php endif; ?>
                     </div>
                 <?php endif; ?>
+
+                <?php if (get_post_type($post_id) === 'glossary'): ?>
+                    <a class="journal-footer__back" href="<?php echo esc_url(get_post_type_archive_link('glossary')); ?>">
+                        <?php echo esc_html(laca_journal_text('glossary_back_label')); ?>
+                    </a>
+                <?php endif; ?>
             </div>
         </section>
         <?php
@@ -353,7 +359,11 @@ if (!function_exists('laca_journal_related_posts')) {
     /** @return WP_Post[] */
     function laca_journal_related_posts(int $post_id): array
     {
-        $mode = carbon_get_post_meta($post_id, 'related_posts_mode') ?: 'auto';
+        if (get_post_type($post_id) === 'glossary') {
+            return laca_glossary_related_posts($post_id);
+        }
+
+        $mode =carbon_get_post_meta($post_id, 'related_posts_mode') ?: 'auto';
 
         if ($mode === 'manual') {
             $ids = array_values(array_filter(array_map(
@@ -389,6 +399,43 @@ if (!function_exists('laca_journal_related_posts')) {
             'ignore_sticky_posts' => true,
             'update_post_meta_cache' => false,
             // Permalink journal có thể chứa danh mục — cần term cache, tránh N+1.
+            'update_post_term_cache' => true,
+        ]);
+
+        return $query->posts;
+    }
+}
+
+if (!function_exists('laca_glossary_related_posts')) {
+    /**
+     * Bài liên quan của 1 thuật ngữ: TẤT CẢ bài chọn ở field "Related
+     * Articles" (nhiều loại nội dung — theme/setup/glossary_meta.php). Không
+     * chọn thì trả rỗng → ẩn cả mục.
+     *
+     * @return WP_Post[]
+     */
+    function laca_glossary_related_posts(int $post_id): array
+    {
+        $ids = array_values(array_filter(array_map(
+            static fn($item) => (int) ($item['id'] ?? 0),
+            (array) carbon_get_post_meta($post_id, 'related_articles')
+        )));
+        if (empty($ids)) {
+            return [];
+        }
+
+        $query = new WP_Query([
+            'post_type' => 'any',
+            'post__in' => $ids,
+            'orderby' => 'post__in',
+            'posts_per_page' => count($ids),
+            // Bài do admin chọn tay — không để Polylang lọc mất bài khác
+            // ngôn ngữ (vd sản phẩm "vi" trên trang "en").
+            'lang' => '',
+            'post_status' => 'publish',
+            'no_found_rows' => true,
+            'ignore_sticky_posts' => true,
+            'update_post_meta_cache' => false,
             'update_post_term_cache' => true,
         ]);
 

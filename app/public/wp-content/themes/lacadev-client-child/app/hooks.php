@@ -66,14 +66,19 @@ require_once CHILD_APP_DIR . 'helpers/single-product-related-render.php';
 // ── Chi tiết bài Journal: mục lục tự động + bình chọn/chia sẻ/bài liên quan/tag ──
 require_once CHILD_APP_DIR . 'helpers/journal-single-render.php';
 
+// ── Glossary: tự link thuật ngữ trong nội dung bài + tooltip định nghĩa khi
+// hover (resources/scripts/theme/components/glossary-tooltip.js) ─────────────
+require_once CHILD_APP_DIR . 'src/Glossary/GlossaryAutoLink.php';
+
 // kk-star-ratings không có bản dịch tiếng Việt — legend "{count} {votes}"
-// cần hiện "31 bình chọn" giống XLIII.
-add_filter('ngettext_kk-star-ratings', function ($translation, $single, $plural) {
-    if ($single === 'vote' && currentLanguage() !== 'en') {
-        return 'bình chọn';
+// cần hiện "31 bình chọn" giống XLIII. Lấy chữ qua textdomain của theme
+// (câu gốc tiếng Việt, ngôn ngữ khác dịch trong theme/languages/*.po).
+add_filter('ngettext_kk-star-ratings', function ($translation, $single, $plural, $number) {
+    if ($single === 'vote') {
+        return _n('bình chọn', 'bình chọn', (int) $number, 'laca');
     }
     return $translation;
-}, 10, 3);
+}, 10, 4);
 
 // ── Newsletter ở footer: bảng lưu email + AJAX đăng ký (đồng bộ Google Sheet
 // / Mailchimp / Brevo nếu đã cấu hình) + trang admin xem/xuất CSV — xem

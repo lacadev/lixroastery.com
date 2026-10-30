@@ -23,8 +23,50 @@ function initGlossaryNav() {
 	} );
 }
 
+/**
+ * Mở /glossary/#<slug> (link thuật ngữ trong bài viết — GlossaryAutoLink.php)
+ * → scroll tới thuật ngữ đó + tô nền khung để dễ nhận ra.
+ */
+function highlightFromHash() {
+	let slug = '';
+	try {
+		slug = decodeURIComponent( window.location.hash.slice( 1 ) );
+	} catch ( e ) {
+		return;
+	}
+	slug = slug.replace( /\/+$/, '' );
+	if ( ! slug ) {
+		return;
+	}
+
+	const item = document.querySelector(
+		`.glossary-page__item[data-slug="${ window.CSS.escape( slug ) }"]`
+	);
+	if ( ! item ) {
+		return;
+	}
+
+	document
+		.querySelectorAll( '.glossary-page__item--active' )
+		.forEach( ( el ) =>
+			el.classList.remove( 'glossary-page__item--active' )
+		);
+	item.classList.add( 'glossary-page__item--active' );
+	item.scrollIntoView( { block: 'center' } );
+}
+
+function initGlossaryHighlight() {
+	if ( ! document.querySelector( '.glossary-page' ) ) {
+		return;
+	}
+	highlightFromHash();
+	window.addEventListener( 'hashchange', highlightFromHash );
+}
+
 if ( document.readyState === 'loading' ) {
 	document.addEventListener( 'DOMContentLoaded', initGlossaryNav );
+	document.addEventListener( 'DOMContentLoaded', initGlossaryHighlight );
 } else {
 	initGlossaryNav();
+	initGlossaryHighlight();
 }

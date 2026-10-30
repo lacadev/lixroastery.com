@@ -6,6 +6,7 @@ import './components/newsletter-form.js';
 import './components/aos-global.js';
 import './components/single-product-nav.js';
 import './components/glossary-nav.js';
+import './components/glossary-tooltip.js';
 import './components/cpt-grid.js';
 import './components/journal-directory.js';
 import './components/floating-contact.js';

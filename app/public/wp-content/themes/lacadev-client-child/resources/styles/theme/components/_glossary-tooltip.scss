@@ -1,0 +1,63 @@
+@use "../abstracts/variables.scss" as *;
+@use "../abstracts/mixin.scss" as *;
+
+// Thuật ngữ Glossary được tự link trong nội dung bài
+// (app/src/Glossary/GlossaryAutoLink.php).
+// Lặp class để specificity (0,3,1) thắng rule link chung
+// `p a, .wp-block-list.has-marker a, [class*="__desc"] a` (tới 0,2,1, cũng
+// !important) trong layout/_general.scss.
+a.glossary-term.glossary-term.glossary-term {
+    color: inherit !important;
+    text-decoration: underline dashed !important;
+    text-decoration-color: currentColor !important;
+    text-decoration-thickness: 1px !important;
+    text-underline-offset: 3px !important;
+    text-underline-position: auto;
+    cursor: pointer;
+
+    &:hover,
+    &:focus-visible {
+        color: inherit !important;
+    }
+}
+
+// Tooltip định nghĩa (resources/scripts/theme/components/glossary-tooltip.js).
+.glossary-tip {
+    position: absolute;
+    z-index: 9999;
+    width: min(320px, calc(100vw - 16px));
+    max-height: 180px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: 12px 14px;
+    background: #fff;
+    color: $darkColor;
+    border: 1px solid rgba(0, 0, 0, 0.12);
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.12);
+    font-family: $mainFont;
+    font-size: 12px;
+    line-height: 1.5;
+    text-align: left;
+
+    &[hidden] {
+        display: none;
+    }
+
+    p {
+        margin: 0 0 0.6em;
+        font-size: inherit;
+        line-height: inherit;
+
+        &:last-child {
+            margin-bottom: 0;
+        }
+    }
+
+    &__title {
+        font-family: $subFont;
+        text-transform: uppercase;
+        letter-spacing: 0.02em;
+        font-size: 12px;
+        margin-bottom: 6px;
+    }
+}

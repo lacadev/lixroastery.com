@@ -65,15 +65,29 @@
         min-width: 0;
     }
 
+    // Neo chữ cái A-Z (tách khỏi item vì item đã có id = slug).
+    &__anchor {
+        display: block;
+        scroll-margin-top: rem(110);
+    }
+
     &__item {
         display: grid;
         grid-template-columns: minmax(300px, 467px) 1fr;
         gap: rem(32);
-        scroll-margin-top: rem(24);
-        margin-bottom: rem(64);
+        scroll-margin-top: rem(110);
+        // Padding + margin âm: chừa chỗ cho nền khi --active mà chữ vẫn
+        // thẳng hàng như cũ.
+        padding: rem(16) rem(12);
+        margin: 0 rem(-12) rem(32);
+        transition: background-color 0.3s ease;
 
         &:last-child {
             margin-bottom: 0;
+        }
+
+        &--active {
+            background-color: #e8e8e8;
         }
 
         @include maxWidth($sm) {
@@ -91,7 +105,16 @@
         line-height: 1.2;
         margin: 0;
 
-        @include resFont(rem(16), rem(18));
+        a {
+            color: inherit;
+            text-decoration: none;
+
+            &:hover {
+                text-decoration: underline;
+            }
+        }
+
+        @include resFont(rem(14), rem(16));
     }
 
     &__definition {
@@ -100,14 +123,21 @@
         line-height: 1.4;
 
         p {
-            margin: 0 0 1em;
-
-            &:last-child {
-                margin-bottom: 0;
-            }
+            margin: 0 0 0.5em;
         }
 
-        @include resFont(rem(16), rem(20));
+        @include resFont(rem(14), rem(16));
+    }
+
+    &__more {
+        font-size: rem(14);
+        color: inherit;
+        text-decoration: underline;
+        text-underline-offset: 3px;
+
+        &:hover {
+            color: $primaryColor;
+        }
     }
 
     &__related {

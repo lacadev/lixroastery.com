@@ -12,11 +12,14 @@
 theBreadcrumb();
 $post_id = get_the_ID();
 $is_journal = get_post_type() === 'journal';
+// Chi tiết Glossary dùng chung bố cục Journal (mục lục, bình chọn, chia sẻ,
+// bài viết liên quan) — trừ "Sản phẩm liên quan".
+$has_journal_layout = $is_journal || get_post_type() === 'glossary';
 ?>
 
 <article class="single-post">
 	<div class="entry-content single-post__content">
-		<?php if ($is_journal && function_exists('laca_journal_render_content')): ?>
+		<?php if ($has_journal_layout && function_exists('laca_journal_render_content')): ?>
 			<?php laca_journal_render_content($post_id); ?>
 		<?php else: ?>
 			<?php
@@ -27,7 +30,7 @@ $is_journal = get_post_type() === 'journal';
 		<?php endif; ?>
 	</div>
 
-	<?php if ($is_journal && function_exists('laca_journal_render_footer')): ?>
+	<?php if ($has_journal_layout && function_exists('laca_journal_render_footer')): ?>
 		<div class="container-fluid">
 			<?php laca_journal_render_footer($post_id); ?>
 		</div>
