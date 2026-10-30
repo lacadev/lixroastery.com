@@ -64,7 +64,7 @@ function laca_render_single_product_related(WC_Product $product): void
                 <h2 class="single-product-related__title"><?php esc_html_e('SẢN PHẨM LIÊN QUAN', 'laca'); ?></h2>
                 <?php if ($view_all_url): ?>
                     <a href="<?php echo esc_url($view_all_url); ?>" class="single-product-related__view-all">
-                        <?php echo esc_html__('View all', 'laca'); ?>
+                        <?php echo esc_html__('Xem tất cả', 'laca'); ?>
                     </a>
                 <?php endif; ?>
             </div>

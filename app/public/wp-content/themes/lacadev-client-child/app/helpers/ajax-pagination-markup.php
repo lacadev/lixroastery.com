@@ -35,7 +35,7 @@ function lacadev_child_pagination_markup( array $args ): string {
 	if ( ! is_array( $pages ) ) {
 		return '';
 	}
-	$out = '<nav class="pagination-container" aria-label="' . esc_attr__( 'Page navigation', 'laca' ) . '"><ul class="pagination-list">';
+	$out = '<nav class="pagination-container" aria-label="' . esc_attr__('Phân trang', 'laca' ) . '"><ul class="pagination-list">';
 	foreach ( $pages as $page ) {
 		$is_current = strpos( $page, 'current' ) !== false;
 		$is_dots    = strpos( $page, 'dots' ) !== false;

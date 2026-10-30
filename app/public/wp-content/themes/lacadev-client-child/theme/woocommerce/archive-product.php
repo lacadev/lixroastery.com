@@ -115,7 +115,7 @@ if (!$current_term) {
 
             <div class="shop-archive__tabbar">
                 <button type="button" class="shop-archive__nav shop-archive__nav--prev" data-cpt-grid-prev aria-label="<?php esc_attr_e('Trang trước', 'laca'); ?>" disabled>
-                    <?php echo esc_html__('PREV', 'laca'); ?>
+                    <?php echo esc_html__('TRƯỚC', 'laca'); ?>
                 </button>
 
                 <?php if (!empty($terms) && !is_wp_error($terms)) : ?>
@@ -134,7 +134,7 @@ if (!$current_term) {
                 <?php endif; ?>
 
                 <button type="button" class="shop-archive__nav shop-archive__nav--next" data-cpt-grid-next aria-label="<?php esc_attr_e('Trang sau', 'laca'); ?>"<?php echo $max_pages <= 1 ? ' disabled' : ''; ?>>
-                    <?php echo esc_html__('NEXT', 'laca'); ?>
+                    <?php echo esc_html__('SAU', 'laca'); ?>
                 </button>
             </div>
 

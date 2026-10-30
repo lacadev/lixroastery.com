@@ -188,7 +188,7 @@ $active_key = array_key_first($sections);
                     <strong><?php printf(esc_html__('%s liên quan', 'laca'), esc_html($section['label'])); ?></strong>
                     <span class="search-section__count" data-displayed="<?php echo (int) $total_displayed; ?>"
                         data-total="<?php echo (int) $query->found_posts; ?>">
-                        (hiển thị <?php echo (int) $total_displayed; ?>/<?php echo (int) $query->found_posts; ?>)
+                        <?php /* translators: 1: số kết quả đang hiển thị, 2: tổng số kết quả. */ printf(esc_html__('(hiển thị %1$d/%2$d)', 'laca'), (int) $total_displayed, (int) $query->found_posts); ?>
                     </span>:
                 </h2>
                 <div class="list-post">

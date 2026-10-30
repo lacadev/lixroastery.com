@@ -194,7 +194,7 @@ class NewsletterEndpoints
             <div class="container-fluid">
                 <div class="newsletter-page__box">
                     <?php // h2 vì link luôn trỏ về trang chủ — header.php đã in <h1> tên site ở trang chủ. ?>
-                    <h2 class="newsletter-page__title">Newsletter</h2>
+                    <h2 class="newsletter-page__title"><?php esc_html_e('Bản tin', 'laca'); ?></h2>
                     <p class="newsletter-page__text"><?php echo esc_html($messages[$state]); ?></p>
 
                     <?php if ($state === 'ask'): ?>

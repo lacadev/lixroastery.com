@@ -59,7 +59,7 @@ $shop_url = function_exists('wc_get_page_permalink') ? esc_url(wc_get_page_perma
             <?php endif; ?>
             <?php if ($shop_url): ?>
                 <a class="block-product-grid__view-all"
-                    href="<?php echo $shop_url; ?>"><?php esc_html_e('View all', 'laca'); ?></a>
+                    href="<?php echo $shop_url; ?>"><?php esc_html_e('Xem tất cả', 'laca'); ?></a>
             <?php endif; ?>
         </div>
         <hr class="block-product-grid__rule" />

@@ -92,7 +92,7 @@ $wrapper_attrs = get_block_wrapper_attributes(['class' => trim('block-cpt-grid c
                 <div class="block-cpt-grid__tabs-wrap">
                     <div class="block-cpt-grid__tabs">
                         <button type="button" class="block-cpt-grid__tab is-active" data-term-slug="">
-                            <?php echo esc_html($tax_obj->labels->all_items ?? __('All', 'laca')); ?>
+                            <?php echo esc_html($tax_obj->labels->all_items ?? __('Tất cả', 'laca')); ?>
                         </button>
                         <?php foreach ($terms as $term) : ?>
                             <button type="button" class="block-cpt-grid__tab" data-term-slug="<?php echo esc_attr($term->slug); ?>">

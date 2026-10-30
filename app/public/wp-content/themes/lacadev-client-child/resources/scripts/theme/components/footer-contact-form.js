@@ -29,18 +29,21 @@ const bindFooterContactForm = () => {
 				const result = await response.json();
 				message.removeAttribute( 'hidden' );
 
+				// Câu dự phòng lấy từ data-msg-* của form (PHP in ra qua
+				// __(), dịch bằng .po) — không ghi cứng chữ trong JS.
 				if ( result.success ) {
-					message.textContent = result.data || 'Gửi thành công!';
+					message.textContent =
+						result.data || form.dataset.msgSuccess || '';
 					message.className = 'bcf__msg bcf__msg--ok';
 					form.reset();
 				} else {
 					message.textContent =
-						result.data || 'Có lỗi, vui lòng thử lại.';
+						result.data || form.dataset.msgError || '';
 					message.className = 'bcf__msg bcf__msg--err';
 				}
 			} catch ( error ) {
 				message.removeAttribute( 'hidden' );
-				message.textContent = 'Lỗi kết nối.';
+				message.textContent = form.dataset.msgNetwork || '';
 				message.className = 'bcf__msg bcf__msg--err';
 			} finally {
 				button.classList.remove( 'bcf__btn--loading' );

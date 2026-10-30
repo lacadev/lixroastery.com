@@ -71,7 +71,7 @@ $nl_recaptcha_key = NewsletterAjaxHandler::recaptchaSiteKey();
             <p class="newsletter__consent">
                 <?php echo esc_html($nl_consent); ?>
                 <?php if ($nl_privacy_url !== ''): ?>
-                    <a href="<?php echo esc_url($nl_privacy_url); ?>"><?php esc_html_e('Privacy Policy', 'laca'); ?></a>
+                    <a href="<?php echo esc_url($nl_privacy_url); ?>"><?php esc_html_e('Chính sách bảo mật', 'laca'); ?></a>
                 <?php endif; ?>
             </p>
         <?php endif; ?>

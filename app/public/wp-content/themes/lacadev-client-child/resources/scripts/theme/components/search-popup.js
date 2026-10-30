@@ -61,8 +61,11 @@ export function initSearchPopup() {
 		currentController?.abort();
 		currentController = new AbortController();
 
-		resultsEl.innerHTML =
-			'<div class="search-results__loading">Đang tìm kiếm…</div>';
+		// Chữ lấy từ data-loading-text (theme/header.php, dịch qua .po).
+		const loading = document.createElement( 'div' );
+		loading.className = 'search-results__loading';
+		loading.textContent = resultsEl.dataset.loadingText || '';
+		resultsEl.replaceChildren( loading );
 		resultsEl.classList.add( 'active' );
 
 		const params = new URLSearchParams( {

@@ -26,7 +26,7 @@ $producer_story = getPostMeta('producer_story');
 $first_cooperation_year = getPostMeta('first_cooperation_year');
 $cooperation_model = getPostMeta('cooperation_model');
 $annual_volume = getPostMeta('annual_volume');
-$annual_volume_note = getPostMeta('annual_volume_note') ?: __('Annual volume', 'laca');
+$annual_volume_note = getPostMeta('annual_volume_note') ?: __('Sản lượng hằng năm', 'laca');
 $google_maps_embed = getPostMeta('google_maps_embed');
 
 // ── Flavor profile ───────────────────────────────────────────────────────
@@ -36,58 +36,58 @@ $sca_coffee_score = getPostMeta('sca_coffee_score');
 
 // Danh sách spec hiện NGAY TRONG HERO (cạnh ảnh sản phẩm)
 $hero_spec_fields = [
-    'origin' => __('Origin', 'laca'),
-    'region' => __('Region', 'laca'),
-    'farm' => __('Farm', 'laca'),
-    'variety' => __('Variety', 'laca'),
-    'crop_year' => __('Crop Year', 'laca'),
-    'altitude' => __('Altitude', 'laca'),
-    'process' => __('Process', 'laca'),
-    'net_weight' => __('Net Weight', 'laca'),
-    'flavor_profile' => __('Flavor Profile', 'laca'),
-    'sourcing' => __('Sourcing', 'laca'),
-    'paid_for_producer' => __('Paid for Producer', 'laca'),
+    'origin' => __('Xuất xứ', 'laca'),
+    'region' => __('Vùng', 'laca'),
+    'farm' => __('Nông trại', 'laca'),
+    'variety' => __('Giống', 'laca'),
+    'crop_year' => __('Niên vụ', 'laca'),
+    'altitude' => __('Độ cao', 'laca'),
+    'process' => __('Sơ chế', 'laca'),
+    'net_weight' => __('Khối lượng tịnh', 'laca'),
+    'flavor_profile' => __('Hồ sơ hương vị', 'laca'),
+    'sourcing' => __('Nguồn cung', 'laca'),
+    'paid_for_producer' => __('Giá trả cho nhà sản xuất', 'laca'),
 ];
 
 // Các field truy xuất nguồn gốc CÒN LẠI (hiện trong tab Producer)
 $traceability_fields = [
-    'cooperative' => __('Cooperative', 'laca'),
-    'wet_mill' => __('Wet Mill', 'laca'),
-    'factory' => __('Factory', 'laca'),
-    'paid_for_exporter' => __('Paid for exporter', 'laca'),
-    'fob_price' => __('FOB price', 'laca'),
-    'ddp_price' => __('DDP price', 'laca'),
+    'cooperative' => __('Hợp tác xã', 'laca'),
+    'wet_mill' => __('Trạm sơ chế ướt', 'laca'),
+    'factory' => __('Nhà máy', 'laca'),
+    'paid_for_exporter' => __('Giá trả cho nhà xuất khẩu', 'laca'),
+    'fob_price' => __('Giá FOB', 'laca'),
+    'ddp_price' => __('Giá DDP', 'laca'),
 ];
 $flavor_grid = [
-    'flavor_aroma' => __('Aroma', 'laca'),
-    'flavor_hot' => __('Hot', 'laca'),
-    'flavor_warm' => __('Warm', 'laca'),
-    'flavor_cool' => __('Cool', 'laca'),
-    'flavor_aftertaste' => __('Aftertaste', 'laca'),
-    'flavor_acidity' => __('Acidity', 'laca'),
-    'flavor_sweetness' => __('Sweetness', 'laca'),
-    'flavor_mouthfeel' => __('Mouthfeel', 'laca'),
+    'flavor_aroma' => __('Hương thơm', 'laca'),
+    'flavor_hot' => __('Nóng', 'laca'),
+    'flavor_warm' => __('Ấm', 'laca'),
+    'flavor_cool' => __('Nguội', 'laca'),
+    'flavor_aftertaste' => __('Hậu vị', 'laca'),
+    'flavor_acidity' => __('Độ chua', 'laca'),
+    'flavor_sweetness' => __('Độ ngọt', 'laca'),
+    'flavor_mouthfeel' => __('Cảm giác miệng', 'laca'),
 ];
 
 // ── Roasting profile ─────────────────────────────────────────────────────
-$title_roasting_profile = getPostMeta('title_roasting_profile') ?: __('Roasting profile', 'laca');
+$title_roasting_profile = getPostMeta('title_roasting_profile') ?: __('Hồ sơ rang', 'laca');
 $img_roasting_profile = getPostMeta('img_roasting_profile');
 $roasting_story = getPostMeta('roasting_story') ?: $producer_story;
 $roast_machine = getPostMeta('roast_machine');
 $roast_level = getPostMeta('roast_level');
 $end_air_temperature = getPostMeta('end_air_temperature');
 $roasting_detail_fields = [
-    'roasting_profile' => __('Roast Profile', 'laca'),
-    'roast_duration' => __('Roast Duration', 'laca'),
-    'drying_phase' => __('Drying Phase', 'laca'),
-    'maillard_phase' => __('Maillard Phase', 'laca'),
-    'development_phase' => __('Development Phase', 'laca'),
-    'development_ratio' => __('Development Ratio', 'laca'),
-    'charge_temperature' => __('Charge Temperature', 'laca'),
-    'turning_point' => __('Turning Point', 'laca'),
-    'dry_end_temperature' => __('Dry-end Temperature', 'laca'),
-    'first_crack_temperature' => __('First Crack Temperature', 'laca'),
-    'end_bean_temperature' => __('End Bean Temperature', 'laca'),
+    'roasting_profile' => __('Cấu hình rang', 'laca'),
+    'roast_duration' => __('Thời gian rang', 'laca'),
+    'drying_phase' => __('Giai đoạn sấy', 'laca'),
+    'maillard_phase' => __('Giai đoạn Maillard', 'laca'),
+    'development_phase' => __('Giai đoạn phát triển', 'laca'),
+    'development_ratio' => __('Tỷ lệ phát triển', 'laca'),
+    'charge_temperature' => __('Nhiệt độ cho hạt vào', 'laca'),
+    'turning_point' => __('Điểm đảo nhiệt', 'laca'),
+    'dry_end_temperature' => __('Nhiệt độ kết thúc sấy', 'laca'),
+    'first_crack_temperature' => __('Nhiệt độ nổ lần 1', 'laca'),
+    'end_bean_temperature' => __('Nhiệt độ hạt khi ra lò', 'laca'),
 ];
 
 // ── Coffee journal — nội dung trên/dưới + các ô hình ảnh/tiêu đề/mô tả ───
@@ -102,10 +102,10 @@ $how_to_use_title = getOption('how_to_use_title');
 $how_to_use_content = getOption('how_to_use_content');
 $water_quality_title = getOption('water_quality_title');
 $water_quality_items = [
-    'water_quality_calcium' => __('Calcium Hardness', 'laca'),
-    'water_quality_magnesium' => __('Magnesium Hardness', 'laca'),
-    'water_quality_alkalinity' => __('Total Alkalinity', 'laca'),
-    'water_quality_sodium' => __('Sodium', 'laca'),
+    'water_quality_calcium' => __('Độ cứng canxi', 'laca'),
+    'water_quality_magnesium' => __('Độ cứng magie', 'laca'),
+    'water_quality_alkalinity' => __('Tổng độ kiềm', 'laca'),
+    'water_quality_sodium' => __('Natri', 'laca'),
 ];
 
 // ── Reviews — testimonial dùng chung toàn site ───────────────────────────
@@ -117,16 +117,16 @@ $has_journal = !empty($journal_content_top) || !empty($journal_content_bottom) |
 $has_reviews = !empty($reviews_list);
 
 $tabs = [
-    'producer' => __('Producer', 'laca'),
-    'flavor-profile' => __('Flavor Profile', 'laca'),
-    'roasting-profile' => __('Roasting Profile', 'laca'),
+    'producer' => __('Nhà sản xuất', 'laca'),
+    'flavor-profile' => __('Hồ sơ hương vị', 'laca'),
+    'roasting-profile' => __('Hồ sơ rang', 'laca'),
 ];
 if ($has_journal) {
-    $tabs['coffee-journal'] = __('Coffee Journal', 'laca');
+    $tabs['coffee-journal'] = __('Nhật ký cà phê', 'laca');
 }
-$tabs['how-to-use'] = __('How to Use', 'laca');
+$tabs['how-to-use'] = __('Hướng dẫn sử dụng', 'laca');
 if ($has_reviews) {
-    $tabs['reviews'] = __('Reviews', 'laca');
+    $tabs['reviews'] = __('Đánh giá', 'laca');
 }
 $tab_keys = array_keys($tabs);
 $first_tab = reset($tab_keys);
@@ -207,13 +207,13 @@ $first_tab = reset($tab_keys);
                         <div class="single-product-page__stat">
                             <span
                                 class="single-product-page__stat-value"><?php echo esc_html($first_cooperation_year); ?></span>
-                            <span class="single-product-page__stat-label"><?php _e('First time cooperation', 'laca'); ?></span>
+                            <span class="single-product-page__stat-label"><?php _e('Lần đầu hợp tác', 'laca'); ?></span>
                         </div>
                     <?php endif; ?>
                     <?php if ($cooperation_model): ?>
                         <div class="single-product-page__stat">
                             <span class="single-product-page__stat-value"><?php echo esc_html($cooperation_model); ?></span>
-                            <span class="single-product-page__stat-label"><?php _e('Cooperation model', 'laca'); ?></span>
+                            <span class="single-product-page__stat-label"><?php _e('Mô hình hợp tác', 'laca'); ?></span>
                         </div>
                     <?php endif; ?>
                     <?php if ($annual_volume): ?>
@@ -264,7 +264,7 @@ $first_tab = reset($tab_keys);
     <div id="panel-flavor-profile" role="tabpanel" aria-labelledby="tab-flavor-profile"
         class="single-product-page__panel" <?php echo ($first_tab !== 'flavor-profile') ? ' hidden' : ''; ?>>
         <div class="container-fluid">
-            <h2 class="single-product-page__title"><?php _e('Flavor Profile', 'laca'); ?></h2>
+            <h2 class="single-product-page__title"><?php _e('Hồ sơ hương vị', 'laca'); ?></h2>
             <?php if ($flavor_profile_content): ?>
                 <div class="single-product-page__desc single-product-page__rich-text">
                     <?php echo wp_kses_post($flavor_profile_content); ?></div>
@@ -307,19 +307,19 @@ $first_tab = reset($tab_keys);
                     <?php if ($roast_machine): ?>
                         <div class="single-product-page__stat">
                             <span class="single-product-page__stat-value"><?php echo esc_html($roast_machine); ?></span>
-                            <span class="single-product-page__stat-label"><?php _e('Roast Machine', 'laca'); ?></span>
+                            <span class="single-product-page__stat-label"><?php _e('Máy rang', 'laca'); ?></span>
                         </div>
                     <?php endif; ?>
                     <?php if ($roast_level): ?>
                         <div class="single-product-page__stat">
                             <span class="single-product-page__stat-value"><?php echo esc_html($roast_level); ?></span>
-                            <span class="single-product-page__stat-label"><?php _e('Roast Level', 'laca'); ?></span>
+                            <span class="single-product-page__stat-label"><?php _e('Mức độ rang', 'laca'); ?></span>
                         </div>
                     <?php endif; ?>
                     <?php if ($end_air_temperature): ?>
                         <div class="single-product-page__stat">
                             <span class="single-product-page__stat-value"><?php echo esc_html($end_air_temperature); ?></span>
-                            <span class="single-product-page__stat-label"><?php _e('End Temperature', 'laca'); ?></span>
+                            <span class="single-product-page__stat-label"><?php _e('Nhiệt độ kết thúc', 'laca'); ?></span>
                         </div>
                     <?php endif; ?>
                 </div>
@@ -369,7 +369,7 @@ $first_tab = reset($tab_keys);
         <div id="panel-coffee-journal" role="tabpanel" aria-labelledby="tab-coffee-journal"
             class="single-product-page__panel" <?php echo ($first_tab !== 'coffee-journal') ? ' hidden' : ''; ?>>
             <div class="container-fluid">
-                <h2 class="single-product-page__title"><?php _e('Coffee Journal', 'laca'); ?></h2>
+                <h2 class="single-product-page__title"><?php _e('Nhật ký cà phê', 'laca'); ?></h2>
 
                 <?php if ($journal_content_top): ?>
                     <div class="single-product-page__desc single-product-page__rich-text single-product-page__journal-content">
@@ -431,7 +431,7 @@ $first_tab = reset($tab_keys);
     <!-- ── PANEL 5: HOW TO USE ──────────────────────────────────────────── -->
     <div id="panel-how-to-use" role="tabpanel" aria-labelledby="tab-how-to-use" class="single-product-page__panel" <?php echo ($first_tab !== 'how-to-use') ? ' hidden' : ''; ?>>
         <div class="container-fluid">
-            <h2 class="single-product-page__title"><?php _e('How to Use', 'laca'); ?></h2>
+            <h2 class="single-product-page__title"><?php _e('Hướng dẫn sử dụng', 'laca'); ?></h2>
 
             <?php if ($how_to_use_title || $how_to_use_content): ?>
                 <div class="single-product-page__how-to-use">
@@ -481,7 +481,7 @@ $first_tab = reset($tab_keys);
     <?php if ($has_reviews): ?>
         <div id="panel-reviews" role="tabpanel" aria-labelledby="tab-reviews" class="single-product-page__panel" <?php echo ($first_tab !== 'reviews') ? ' hidden' : ''; ?>>
             <div class="container-fluid">
-                <h2 class="single-product-page__title"><?php _e('Reviews', 'laca'); ?></h2>
+                <h2 class="single-product-page__title"><?php _e('Đánh giá', 'laca'); ?></h2>
 
                 <div class="single-product-page__reviews-grid">
                     <?php foreach ($reviews_list as $review):

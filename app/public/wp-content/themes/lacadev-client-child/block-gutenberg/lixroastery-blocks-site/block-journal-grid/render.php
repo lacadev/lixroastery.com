@@ -216,7 +216,7 @@ $wrapper_attrs = get_block_wrapper_attributes(['class' => trim("block-journal-gr
                                 <span><?php echo $date; ?></span>
                             </div>
                             <h3 class="block-journal-grid__card-title"><?php echo $title; ?></h3>
-                            <span class="block-journal-grid__read-time"><?php echo esc_html($read_time); ?> min read</span>
+                            <span class="block-journal-grid__read-time"><?php /* translators: %s: số phút đọc. */ echo esc_html(sprintf(__('%s phút đọc', 'laca'), $read_time)); ?></span>
                         </div>
                         <?php if ($excerpt): ?>
                                 <p class="block-journal-grid__card-excerpt"><?php echo $excerpt; ?></p>

@@ -1,0 +1,2062 @@
+# Copyright (C) 2026 La Cà Dev
+# This file is distributed under the same license as the La Cà Dev - Client Child theme.
+msgid ""
+msgstr ""
+"Project-Id-Version: La Cà Dev - Client Child 1.0\n"
+"Report-Msgid-Bugs-To: \n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"POT-Creation-Date: 2026-10-30T05:01:16+00:00\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"X-Generator: WP-CLI 2.12.0\n"
+"X-Domain: laca\n"
+
+#. Theme Name of the theme
+#: theme
+msgid "La Cà Dev - Client Child"
+msgstr ""
+
+#. Theme URI of the theme
+#. Author URI of the theme
+#: theme
+msgid "https://lacadev.com"
+msgstr ""
+
+#. Description of the theme
+#: theme
+msgid "Child theme của La Cà Dev - Client. Dùng để tùy chỉnh giao diện mà không ảnh hưởng đến theme gốc."
+msgstr ""
+
+#. Author of the theme
+#: theme
+msgid "La Cà Dev"
+msgstr ""
+
+#: app/helpers/ajax-pagination-markup.php:38
+msgid "Phân trang"
+msgstr ""
+
+#: app/helpers/cpt-grid-render.php:80
+msgid "Chưa có bài viết nào."
+msgstr ""
+
+#: app/helpers/journal-cat-render.php:62
+msgid "Chưa có danh mục con nào."
+msgstr ""
+
+#: app/helpers/journal-related-products-render.php:47
+msgid "Sản phẩm liên quan (Tự động): bài viết này chưa chọn Brand nào — vào khung \"Brands\" bên phải để chọn."
+msgstr ""
+
+#: app/helpers/journal-related-products-render.php:115
+#: app/helpers/single-product-related-render.php:64
+msgid "SẢN PHẨM LIÊN QUAN"
+msgstr ""
+
+#: app/helpers/journal-single-render.php:37
+msgid "Mục lục"
+msgstr ""
+
+#: app/helpers/journal-single-render.php:38
+msgid "Chia sẻ"
+msgstr ""
+
+#: app/helpers/journal-single-render.php:39
+#: theme/setup/glossary_meta.php:27
+#: theme/setup/journal_single_meta.php:27
+msgid "Bài viết liên quan"
+msgstr ""
+
+#: app/helpers/journal-single-render.php:40
+msgid "Thực hiện bởi:"
+msgstr ""
+
+#: app/helpers/journal-single-render.php:41
+msgid "Quay lại Thuật ngữ"
+msgstr ""
+
+#: app/helpers/journal-single-render.php:210
+msgid "Dữ liệu đang được cập nhật"
+msgstr ""
+
+#: app/helpers/list-table-fields.php:19
+#: theme/setup/product_meta.php:25
+msgid "Tên phụ"
+msgstr ""
+
+#: app/helpers/list-table-fields.php:23
+msgid "Phân loại giống"
+msgstr ""
+
+#: app/helpers/list-table-fields.php:48
+msgid "Brand liên kết"
+msgstr ""
+
+#: app/helpers/list-table-fields.php:58
+#: app/helpers/list-table-fields.php:63
+msgid "Ẩn breadcrumb"
+msgstr ""
+
+#: app/helpers/list-table-fields.php:61
+msgid "Hiện (Mặc định)"
+msgstr ""
+
+#: app/helpers/list-table-fields.php:62
+msgid "Hiện"
+msgstr ""
+
+#. translators: %d: số lượng sản phẩm trong giỏ — tiếng Việt không chia số ít/nhiều nên không cần _n()
+#: app/helpers/mini-cart-render.php:32
+#, php-format
+msgid "%d sản phẩm"
+msgstr ""
+
+#: app/helpers/mini-cart-render.php:39
+msgid "Giỏ hàng trống."
+msgstr ""
+
+#: app/helpers/mini-cart-render.php:60
+msgid "Xóa khỏi giỏ hàng"
+msgstr ""
+
+#: app/helpers/mini-cart-render.php:68
+msgid "Giảm số lượng"
+msgstr ""
+
+#: app/helpers/mini-cart-render.php:70
+msgid "Tăng số lượng"
+msgstr ""
+
+#: app/helpers/mini-cart-render.php:81
+msgid "Tổng cộng"
+msgstr ""
+
+#: app/helpers/mini-cart-render.php:85
+#: theme/woocommerce/checkout/payment.php:24
+msgid "Thanh toán"
+msgstr ""
+
+#: app/helpers/mini-cart-render.php:88
+msgid "Đã bao gồm thuế. Phí vận chuyển và mã giảm giá tính ở bước thanh toán."
+msgstr ""
+
+#: app/helpers/single-product-related-render.php:67
+#: theme/woocommerce/single-product/related.php:62
+msgid "Xem tất cả"
+msgstr ""
+
+#: app/hooks.php:78
+msgid "bình chọn"
+msgid_plural "bình chọn"
+msgstr[0] ""
+msgstr[1] ""
+
+#: app/src/Ajax/GalleryAjaxHandler.php:64
+msgid "Chưa có thư viện thiết kế nào."
+msgstr ""
+
+#: app/src/Ajax/GalleryAjaxHandler.php:72
+#: app/src/Ajax/PdnTvAjaxHandler.php:68
+#: app/src/Ajax/ProjectAjaxHandler.php:68
+#: app/src/Newsletter/NewsletterAdminPage.php:112
+#: block-gutenberg/lixroastery-blocks-site/block-cpt-grid/render.php:95
+#: theme/woocommerce/archive-product.php:125
+msgid "Tất cả"
+msgstr ""
+
+#: app/src/Ajax/GalleryAjaxHandler.php:188
+#: app/src/Ajax/PdnTvAjaxHandler.php:164
+#: app/src/Ajax/ProjectAjaxHandler.php:147
+msgid "Chủ đầu tư:"
+msgstr ""
+
+#: app/src/Ajax/GalleryAjaxHandler.php:194
+#: app/src/Ajax/PdnTvAjaxHandler.php:167
+msgid "Diện tích:"
+msgstr ""
+
+#: app/src/Ajax/GalleryAjaxHandler.php:200
+#: app/src/Ajax/PdnTvAjaxHandler.php:170
+msgid "Địa chỉ:"
+msgstr ""
+
+#: app/src/Ajax/GalleryAjaxHandler.php:206
+#: app/src/Ajax/PdnTvAjaxHandler.php:173
+#: app/src/Ajax/ProjectAjaxHandler.php:153
+msgid "Số tầng:"
+msgstr ""
+
+#: app/src/Ajax/GalleryAjaxHandler.php:213
+msgid "Xem chi tiết"
+msgstr ""
+
+#: app/src/Ajax/PdnTvAjaxHandler.php:61
+msgid "Chưa có video nào."
+msgstr ""
+
+#: app/src/Ajax/ProjectAjaxHandler.php:61
+msgid "Chưa có dự án nào."
+msgstr ""
+
+#: app/src/Ajax/ProjectAjaxHandler.php:150
+msgid "Địa điểm:"
+msgstr ""
+
+#: app/src/Ajax/ProjectAjaxHandler.php:156
+msgid "Mặt tiền:"
+msgstr ""
+
+#: app/src/Newsletter/NewsletterAdminPage.php:32
+msgid "Đã đăng ký"
+msgstr ""
+
+#: app/src/Newsletter/NewsletterAdminPage.php:33
+msgid "Đã huỷ"
+msgstr ""
+
+#: app/src/Newsletter/NewsletterAdminPage.php:48
+#: app/src/Newsletter/NewsletterAdminPage.php:49
+msgid "Newsletter"
+msgstr ""
+
+#: app/src/Newsletter/NewsletterAdminPage.php:81
+msgid "Newsletter — Email đăng ký"
+msgstr ""
+
+#. translators: %s: tên trạng thái
+#: app/src/Newsletter/NewsletterAdminPage.php:85
+#, php-format
+msgid "Xuất CSV (%s)"
+msgstr ""
+
+#: app/src/Newsletter/NewsletterAdminPage.php:86
+msgid "Xuất CSV"
+msgstr ""
+
+#: app/src/Newsletter/NewsletterAdminPage.php:90
+msgid "Ghi lại toàn bộ danh sách hiện tại lên Google Sheet (cập nhật trạng thái từng email)?"
+msgstr ""
+
+#: app/src/Newsletter/NewsletterAdminPage.php:90
+msgid "Đồng bộ lại Google Sheet"
+msgstr ""
+
+#: app/src/Newsletter/NewsletterAdminPage.php:95
+msgid "Đã xoá email khỏi website (và gỡ khỏi Google Sheet / Mailchimp / Brevo nếu có kết nối). Email này có thể đăng ký lại từ đầu."
+msgstr ""
+
+#: app/src/Newsletter/NewsletterAdminPage.php:101
+msgid "Đã đồng bộ lại toàn bộ danh sách lên Google Sheet."
+msgstr ""
+
+#: app/src/Newsletter/NewsletterAdminPage.php:103
+msgid "Đồng bộ lại thất bại."
+msgstr ""
+
+#: app/src/Newsletter/NewsletterAdminPage.php:132
+#: app/src/Newsletter/NewsletterAdminPage.php:134
+msgid "Tìm email"
+msgstr ""
+
+#: app/src/Newsletter/NewsletterAdminPage.php:141
+#: theme/page_templates/template-contact.php:44
+msgid "Email"
+msgstr ""
+
+#: app/src/Newsletter/NewsletterAdminPage.php:142
+msgid "Trạng thái"
+msgstr ""
+
+#: app/src/Newsletter/NewsletterAdminPage.php:143
+msgid "Ngôn ngữ"
+msgstr ""
+
+#: app/src/Newsletter/NewsletterAdminPage.php:144
+msgid "Trang đăng ký"
+msgstr ""
+
+#: app/src/Newsletter/NewsletterAdminPage.php:145
+msgid "Đăng ký lúc"
+msgstr ""
+
+#: app/src/Newsletter/NewsletterAdminPage.php:146
+msgid "Cập nhật trạng thái"
+msgstr ""
+
+#: app/src/Newsletter/NewsletterAdminPage.php:147
+msgid "Thao tác"
+msgstr ""
+
+#: app/src/Newsletter/NewsletterAdminPage.php:155
+msgid "Không tìm thấy email nào khớp."
+msgstr ""
+
+#: app/src/Newsletter/NewsletterAdminPage.php:156
+msgid "Chưa có email nào đăng ký."
+msgstr ""
+
+#: app/src/Newsletter/NewsletterAdminPage.php:182
+msgid "Xoá email này khỏi danh sách?"
+msgstr ""
+
+#: app/src/Newsletter/NewsletterAdminPage.php:182
+msgid "Xoá"
+msgstr ""
+
+#: app/src/Newsletter/NewsletterAdminPage.php:211
+msgid "Email cảm ơn (SMTP)"
+msgstr ""
+
+#: app/src/Newsletter/NewsletterAdminPage.php:224
+msgid "Lưu email vào website"
+msgstr ""
+
+#: app/src/Newsletter/NewsletterAdminPage.php:230
+msgid "chưa có lần gửi/đồng bộ nào."
+msgstr ""
+
+#. translators: %s: thời gian
+#: app/src/Newsletter/NewsletterAdminPage.php:234
+#, php-format
+msgid "lần gần nhất thành công lúc %s."
+msgstr ""
+
+#. translators: 1: thời gian, 2: thông báo lỗi
+#: app/src/Newsletter/NewsletterAdminPage.php:238
+#, php-format
+msgid "lỗi lúc %1$s — %2$s"
+msgstr ""
+
+#: app/src/Newsletter/NewsletterAdminPage.php:255
+#: app/src/Newsletter/NewsletterAdminPage.php:292
+#: app/src/Newsletter/NewsletterAdminPage.php:311
+msgid "Bạn không có quyền thực hiện thao tác này."
+msgstr ""
+
+#: app/src/Newsletter/NewsletterEndpoints.php:197
+msgid "Bản tin"
+msgstr ""
+
+#: app/src/Newsletter/NewsletterMailer.php:67
+msgid "wp_mail() không gửi được email cảm ơn — kiểm tra cấu hình SMTP ở Laca Admin → SMTP."
+msgstr ""
+
+#: app/src/Newsletter/NewsletterSync.php:168
+msgid "Chưa cấu hình URL Apps Script."
+msgstr ""
+
+#: app/src/Newsletter/NewsletterSync.php:178
+#: app/src/Newsletter/NewsletterSync.php:221
+msgid "Chuỗi bí mật không khớp với SECRET trong Apps Script."
+msgstr ""
+
+#: app/src/Newsletter/NewsletterSync.php:179
+msgid "Apps Script chưa hỗ trợ đồng bộ lại — dán lại đoạn code mới ở Laca Theme → Newsletter rồi tạo phiên bản triển khai mới (hoặc chuỗi bí mật không khớp)."
+msgstr ""
+
+#. translators: %d: mã HTTP
+#: app/src/Newsletter/NewsletterSync.php:226
+#, php-format
+msgid "Apps Script trả về phản hồi lạ (HTTP %d) — kiểm tra lại URL và quyền truy cập \"Bất kỳ ai\"."
+msgstr ""
+
+#: app/src/Newsletter/NewsletterSync.php:246
+msgid "Thiếu hoặc sai API key / Audience ID Mailchimp."
+msgstr ""
+
+#: app/src/Newsletter/NewsletterSync.php:291
+msgid "Thiếu API key hoặc List ID Brevo."
+msgstr ""
+
+#: app/src/Newsletter/NewsletterTexts.php:36
+msgid "Kết nối cùng sứ mệnh - Tham gia vòng tròn bền vững"
+msgstr ""
+
+#: app/src/Newsletter/NewsletterTexts.php:37
+msgid "Địa chỉ email của bạn"
+msgstr ""
+
+#: app/src/Newsletter/NewsletterTexts.php:38
+msgid "Đăng ký"
+msgstr ""
+
+#: app/src/Newsletter/NewsletterTexts.php:39
+msgid "Khi đăng ký, bạn đồng ý nhận email từ LIX Roastery. Bạn có thể huỷ đăng ký bất cứ lúc nào."
+msgstr ""
+
+#: app/src/Newsletter/NewsletterTexts.php:40
+msgid "Cảm ơn bạn đã đăng ký! Email chào mừng đang được gửi tới hộp thư của bạn."
+msgstr ""
+
+#: app/src/Newsletter/NewsletterTexts.php:41
+msgid "Email này đã được đăng ký."
+msgstr ""
+
+#: app/src/Newsletter/NewsletterTexts.php:42
+msgid "Vui lòng nhập địa chỉ email hợp lệ."
+msgstr ""
+
+#: app/src/Newsletter/NewsletterTexts.php:43
+msgid "Bạn đã thử quá nhiều lần. Vui lòng thử lại sau vài phút."
+msgstr ""
+
+#: app/src/Newsletter/NewsletterTexts.php:44
+msgid "Không thể xác minh yêu cầu của bạn. Vui lòng tải lại trang và thử lại."
+msgstr ""
+
+#: app/src/Newsletter/NewsletterTexts.php:45
+msgid "Đã có lỗi xảy ra. Vui lòng thử lại."
+msgstr ""
+
+#: app/src/Newsletter/NewsletterTexts.php:48
+msgid "Cảm ơn bạn đã đăng ký nhận tin từ LIX Roastery"
+msgstr ""
+
+#: app/src/Newsletter/NewsletterTexts.php:49
+msgid ""
+"Cảm ơn bạn đã tham gia vòng tròn bền vững cùng LIX Roastery!\n"
+"Từ bây giờ, bạn sẽ nhận được tin tức, câu chuyện và cập nhật mới nhất từ chúng tôi. Rất vui được đồng hành cùng bạn."
+msgstr ""
+
+#: app/src/Newsletter/NewsletterTexts.php:52
+msgid "Bạn muốn ngừng nhận email từ LIX Roastery?"
+msgstr ""
+
+#: app/src/Newsletter/NewsletterTexts.php:53
+msgid "Huỷ đăng ký"
+msgstr ""
+
+#: app/src/Newsletter/NewsletterTexts.php:54
+msgid "Bạn đã huỷ đăng ký thành công. Rất tiếc khi phải chia tay bạn."
+msgstr ""
+
+#: app/src/Newsletter/NewsletterTexts.php:55
+msgid "Liên kết không hợp lệ hoặc đã hết hạn."
+msgstr ""
+
+#: app/src/PostTypes/DynamicMeta/gallery-meta.php:12
+msgid "Thông tin gallery"
+msgstr ""
+
+#: app/src/PostTypes/DynamicMeta/gallery-meta.php:18
+msgid "Chủ đầu tư"
+msgstr ""
+
+#: app/src/PostTypes/DynamicMeta/gallery-meta.php:21
+msgid "Số tầng"
+msgstr ""
+
+#: app/src/PostTypes/DynamicMeta/gallery-meta.php:24
+#: theme/page_templates/template-contact.php:67
+#: theme/setup/theme-options.php:108
+msgid "Địa điểm"
+msgstr ""
+
+#: app/src/PostTypes/DynamicMeta/gallery-meta.php:28
+msgid "Tổng diện tích"
+msgstr ""
+
+#: app/src/PostTypes/DynamicMeta/gallery-meta.php:32
+msgid "Thư viện ảnh dự án"
+msgstr ""
+
+#: app/src/PostTypes/DynamicMeta/pdn_tv-meta.php:12
+msgid "Thông tin PĐN TV"
+msgstr ""
+
+#: app/src/PostTypes/DynamicMeta/pdn_tv-meta.php:18
+msgid "Youtube url"
+msgstr ""
+
+#: app/src/PostTypes/DynamicMeta/project-meta.php:12
+msgid "Thong tin Du an"
+msgstr ""
+
+#: app/src/PostTypes/DynamicMeta/project-meta.php:18
+msgid "Chu dau tu"
+msgstr ""
+
+#: app/src/PostTypes/DynamicMeta/project-meta.php:21
+msgid "So tang"
+msgstr ""
+
+#: app/src/PostTypes/DynamicMeta/project-meta.php:24
+msgid "Dia diem"
+msgstr ""
+
+#: app/src/PostTypes/DynamicMeta/project-meta.php:28
+msgid "Tong dien tich"
+msgstr ""
+
+#: app/src/PostTypes/DynamicMeta/project-meta.php:31
+msgid "Dien tich nha"
+msgstr ""
+
+#: app/src/PostTypes/DynamicMeta/project-meta.php:34
+msgid "Mat tien"
+msgstr ""
+
+#: app/src/PostTypes/DynamicMeta/project-meta.php:38
+msgid "Nam thuc hien"
+msgstr ""
+
+#: app/src/PostTypes/DynamicMeta/project-meta.php:41
+msgid "Loai thiet ke"
+msgstr ""
+
+#: app/src/PostTypes/DynamicMeta/project-meta.php:44
+msgid "Cong nang su dung"
+msgstr ""
+
+#: app/src/PostTypes/DynamicMeta/project-meta.php:47
+msgid "Thu vien anh du an"
+msgstr ""
+
+#: app/src/PostTypes/DynamicMeta/project-meta.php:51
+msgid "Anh"
+msgstr ""
+
+#: block-gutenberg/lixroastery-blocks-site/block-cpt-grid/render.php:30
+msgid "CPT Grid: post type chưa tồn tại hoặc chưa được chọn."
+msgstr ""
+
+#: block-gutenberg/lixroastery-blocks-site/block-cpt-grid/render.php:125
+msgid "Đang tải thêm…"
+msgstr ""
+
+#. translators: %s: số phút đọc.
+#: block-gutenberg/lixroastery-blocks-site/block-journal-grid/render.php:219
+#, php-format
+msgid "%s phút đọc"
+msgstr ""
+
+#: block-gutenberg/lixroastery-blocks-site/block-product-grid/render.php:94
+msgid "Product Grid (Cùng Brand): bài viết này chưa chọn Brand nào — vào Journal > Brands (bên phải khung soạn thảo) để chọn."
+msgstr ""
+
+#: block-gutenberg/lixroastery-blocks-site/block-tabs/render.php:44
+msgid "Trước"
+msgstr ""
+
+#: block-gutenberg/lixroastery-blocks-site/block-tabs/render.php:45
+msgid "Sau"
+msgstr ""
+
+#: theme/archive-glossary.php:63
+msgid "Thuật ngữ"
+msgstr ""
+
+#: theme/archive-glossary.php:67
+msgid "Bảng chữ cái"
+msgstr ""
+
+#: theme/archive-glossary.php:125
+msgid "Đọc thêm"
+msgstr ""
+
+#: theme/archive-glossary.php:130
+msgid "Bài viết liên quan:"
+msgstr ""
+
+#: theme/archive-glossary.php:148
+msgid "Chưa có thuật ngữ nào."
+msgstr ""
+
+#: theme/archive-journal.php:68
+msgid "Chưa có danh mục nào."
+msgstr ""
+
+#: theme/archive.php:122
+msgid "Chưa có bài viết nào trong mục này."
+msgstr ""
+
+#: theme/footer.php:191
+msgid "Lên đầu trang"
+msgstr ""
+
+#: theme/footer.php:200
+msgid "Gọi điện"
+msgstr ""
+
+#: theme/footer.php:217
+msgid "Liên hệ"
+msgstr ""
+
+#: theme/header.php:51
+msgid "Chuyển đến nội dung chính"
+msgstr ""
+
+#: theme/header.php:69
+msgid "Menu chính"
+msgstr ""
+
+#: theme/header.php:125
+msgid "Menu phụ"
+msgstr ""
+
+#: theme/header.php:140
+#: theme/header.php:209
+#: theme/header.php:219
+msgid "Tìm kiếm"
+msgstr ""
+
+#: theme/header.php:149
+#: theme/header.php:241
+msgid "Giỏ hàng"
+msgstr ""
+
+#: theme/header.php:161
+msgid "Mở menu"
+msgstr ""
+
+#: theme/header.php:176
+msgid "Đóng menu"
+msgstr ""
+
+#: theme/header.php:180
+msgid "Menu chính trên di động"
+msgstr ""
+
+#: theme/header.php:211
+#: theme/header.php:243
+msgid "Đóng"
+msgstr ""
+
+#: theme/header.php:217
+msgid "Bạn đang tìm gì…"
+msgstr ""
+
+#: theme/header.php:227
+msgid "Đang tìm kiếm…"
+msgstr ""
+
+#. Template Name of the theme
+msgid "Contact Page"
+msgstr ""
+
+#: theme/page_templates/template-contact.php:28
+msgid "Ping tôi tại đây"
+msgstr ""
+
+#: theme/page_templates/template-contact.php:29
+msgid "Bạn có ý tưởng mới, một dự án hay ho hay đơn giản là muốn chia sẻ một hành trình? Đừng ngần ngại, trạm luôn mở cửa đón chờ!"
+msgstr ""
+
+#: theme/page_templates/template-contact.php:56
+msgid "Điện thoại"
+msgstr ""
+
+#: theme/page_templates/template-contact.php:101
+msgid "Họ và tên"
+msgstr ""
+
+#: theme/page_templates/template-contact.php:106
+msgid "Họ và tên của bạn"
+msgstr ""
+
+#: theme/page_templates/template-contact.php:114
+msgid "Số điện thoại"
+msgstr ""
+
+#: theme/page_templates/template-contact.php:119
+msgid "09xx xxx xxx"
+msgstr ""
+
+#: theme/page_templates/template-contact.php:128
+msgid "Email liên hệ"
+msgstr ""
+
+#: theme/page_templates/template-contact.php:133
+msgid "Để tôi có thể gửi phản hồi (Không bắt buộc)"
+msgstr ""
+
+#: theme/page_templates/template-contact.php:139
+msgid "Nội dung"
+msgstr ""
+
+#: theme/page_templates/template-contact.php:144
+msgid "Nơi bạn viết nên những ý tưởng hoặc lời nhắn gửi..."
+msgstr ""
+
+#: theme/page_templates/template-contact.php:159
+msgid "Trang này được bảo vệ bởi reCAPTCHA và tuân thủ"
+msgstr ""
+
+#: theme/page_templates/template-contact.php:160
+#: theme/template-parts/newsletter-form.php:74
+msgid "Chính sách bảo mật"
+msgstr ""
+
+#: theme/page_templates/template-contact.php:161
+msgid "và"
+msgstr ""
+
+#: theme/page_templates/template-contact.php:162
+msgid "Điều khoản dịch vụ"
+msgstr ""
+
+#: theme/page_templates/template-contact.php:163
+msgid "của Google."
+msgstr ""
+
+#: theme/page_templates/template-contact.php:176
+msgid "Gửi lời nhắn"
+msgstr ""
+
+#: theme/search.php:71
+msgid "Sản phẩm"
+msgstr ""
+
+#: theme/search.php:92
+msgid "Bài viết"
+msgstr ""
+
+#: theme/search.php:112
+msgid "Trang"
+msgstr ""
+
+#. translators: 1: số kết quả, 2: từ khóa tìm kiếm
+#: theme/search.php:163
+#, php-format
+msgid "%1$d kết quả cho \"%2$s\""
+msgstr ""
+
+#: theme/search.php:171
+msgid "Lọc theo loại kết quả"
+msgstr ""
+
+#: theme/search.php:188
+#, php-format
+msgid "%s liên quan"
+msgstr ""
+
+#. translators: 1: số kết quả đang hiển thị, 2: tổng số kết quả.
+#: theme/search.php:191
+#, php-format
+msgid "(hiển thị %1$d/%2$d)"
+msgstr ""
+
+#: theme/search.php:218
+msgid "Xem thêm"
+msgstr ""
+
+#: theme/search.php:227
+#, php-format
+msgid "Không tìm thấy kết quả nào cho \"%s\""
+msgstr ""
+
+#: theme/search.php:229
+msgid "Vui lòng thử lại với từ khóa khác."
+msgstr ""
+
+#: theme/setup/glossary_meta.php:35
+msgid "Related Articles"
+msgstr ""
+
+#: theme/setup/journal_related_products_meta.php:24
+#: theme/woocommerce/single-product/related.php:51
+msgid "Sản phẩm liên quan"
+msgstr ""
+
+#: theme/setup/journal_related_products_meta.php:29
+msgid "Chế độ"
+msgstr ""
+
+#: theme/setup/journal_related_products_meta.php:31
+msgid "Tự động (theo Brand)"
+msgstr ""
+
+#: theme/setup/journal_related_products_meta.php:32
+#: theme/setup/journal_single_meta.php:30
+msgid "Thủ công (chọn tay)"
+msgstr ""
+
+#: theme/setup/journal_related_products_meta.php:37
+msgid "Số lượng sản phẩm"
+msgstr ""
+
+#: theme/setup/journal_related_products_meta.php:42
+msgid "Bài viết cần chọn sẵn 1 Brand ở khung \"Brands\" để chế độ này có sản phẩm hiển thị."
+msgstr ""
+
+#: theme/setup/journal_related_products_meta.php:47
+msgid "Sắp xếp theo"
+msgstr ""
+
+#: theme/setup/journal_related_products_meta.php:49
+msgid "Mới nhất"
+msgstr ""
+
+#: theme/setup/journal_related_products_meta.php:50
+msgid "Cũ nhất"
+msgstr ""
+
+#: theme/setup/journal_related_products_meta.php:51
+msgid "Bán chạy nhất"
+msgstr ""
+
+#: theme/setup/journal_related_products_meta.php:52
+msgid "Ngẫu nhiên"
+msgstr ""
+
+#: theme/setup/journal_related_products_meta.php:53
+msgid "Đang giảm giá"
+msgstr ""
+
+#: theme/setup/journal_related_products_meta.php:54
+msgid "Nổi bật (Featured)"
+msgstr ""
+
+#: theme/setup/journal_related_products_meta.php:62
+msgid "Chọn sản phẩm"
+msgstr ""
+
+#: theme/setup/journal_single_meta.php:18
+msgid "Mục lục & bài viết liên quan"
+msgstr ""
+
+#: theme/setup/journal_single_meta.php:23
+msgid "Ẩn mục lục ở bài này"
+msgstr ""
+
+#: theme/setup/journal_single_meta.php:25
+msgid "Mục lục tự lấy từ các tiêu đề H2 nằm sau block đầu tiên của bài."
+msgstr ""
+
+#: theme/setup/journal_single_meta.php:29
+msgid "Tự động (cùng danh mục)"
+msgstr ""
+
+#: theme/setup/journal_single_meta.php:35
+msgid "Chọn bài viết"
+msgstr ""
+
+#: theme/setup/menus.php:21
+msgid "Header Right Menu"
+msgstr ""
+
+#: theme/setup/page_meta.php:20
+msgid "Breadcrumb"
+msgstr ""
+
+#: theme/setup/page_meta.php:25
+msgid "Ẩn breadcrumb trên trang này"
+msgstr ""
+
+#: theme/setup/page_meta.php:27
+msgid "Mặc định breadcrumb vẫn hiện — tick vào đây nếu muốn ẩn riêng cho Page này."
+msgstr ""
+
+#: theme/setup/product_meta.php:31
+msgid "VD: Buenos Aires Gesha #0370"
+msgstr ""
+
+#: theme/setup/product_meta.php:34
+msgid "Chi tiết sản phẩm"
+msgstr ""
+
+#: theme/setup/product_meta.php:40
+msgid "📋 Truy xuất nguồn gốc"
+msgstr ""
+
+#: theme/setup/product_meta.php:46
+msgid "Origin | Xuất xứ"
+msgstr ""
+
+#: theme/setup/product_meta.php:48
+msgid "Region | Vùng"
+msgstr ""
+
+#: theme/setup/product_meta.php:50
+msgid "Farm | Trang trại"
+msgstr ""
+
+#: theme/setup/product_meta.php:52
+msgid "Cooperative | Hợp tác xã"
+msgstr ""
+
+#: theme/setup/product_meta.php:54
+msgid "Wet Mill | Trạm rửa"
+msgstr ""
+
+#: theme/setup/product_meta.php:56
+msgid "Factory | Nhà máy"
+msgstr ""
+
+#: theme/setup/product_meta.php:61
+msgid "Variety | Giống"
+msgstr ""
+
+#: theme/setup/product_meta.php:63
+msgid "Crop year | Năm thu hoạch"
+msgstr ""
+
+#: theme/setup/product_meta.php:66
+msgid "Altitude | Độ cao"
+msgstr ""
+
+#: theme/setup/product_meta.php:69
+msgid "Process | Phương pháp sơ chế"
+msgstr ""
+
+#: theme/setup/product_meta.php:71
+msgid "Net weight | Trọng lượng"
+msgstr ""
+
+#: theme/setup/product_meta.php:77
+msgid "Sourcing | Nguồn cung ứng"
+msgstr ""
+
+#: theme/setup/product_meta.php:79
+msgid "Paid for producer | Trả cho nhà sản xuất"
+msgstr ""
+
+#: theme/setup/product_meta.php:82
+msgid "Paid for exporter | Trả cho nhà xuất khẩu"
+msgstr ""
+
+#: theme/setup/product_meta.php:85
+msgid "FOB price | Giá FOB"
+msgstr ""
+
+#: theme/setup/product_meta.php:88
+msgid "DDP price | Giá DDP"
+msgstr ""
+
+#: theme/setup/product_meta.php:94
+msgid "👤 Producer"
+msgstr ""
+
+#: theme/setup/product_meta.php:98
+msgid "Tên nhà sản xuất"
+msgstr ""
+
+#: theme/setup/product_meta.php:99
+msgid "VD: Café Granja La Esperanza"
+msgstr ""
+
+#: theme/setup/product_meta.php:101
+msgid "Giới thiệu nhà sản xuất"
+msgstr ""
+
+#: theme/setup/product_meta.php:102
+msgid "VD: Café Granja La Esperanza, a brand specializing in producing and commercializing high-quality specialty coffees..."
+msgstr ""
+
+#: theme/setup/product_meta.php:104
+msgid "Năm hợp tác đầu tiên"
+msgstr ""
+
+#: theme/setup/product_meta.php:107
+#: theme/single-product.php:216
+msgid "Mô hình hợp tác"
+msgstr ""
+
+#: theme/setup/product_meta.php:110
+msgid "Sản lượng theo năm"
+msgstr ""
+
+#: theme/setup/product_meta.php:113
+msgid "Ghi chú sản lượng (vd: For the year 2025)"
+msgstr ""
+
+#: theme/setup/product_meta.php:116
+msgid "Google Maps — link nhúng (embed src)"
+msgstr ""
+
+#: theme/setup/product_meta.php:117
+msgid "Vào Google Maps → Chia sẻ → Nhúng bản đồ → copy đường dẫn trong src=\"...\". Chỉ dán đúng đường dẫn đó, không dán cả đoạn mã iframe."
+msgstr ""
+
+#: theme/setup/product_meta.php:122
+msgid "☕ Flavor Profile"
+msgstr ""
+
+#: theme/setup/product_meta.php:126
+msgid "Nội dung Flavor Profile"
+msgstr ""
+
+#: theme/setup/product_meta.php:127
+msgid "VD: Sudan Rume #00313 by CGLE..."
+msgstr ""
+
+#: theme/setup/product_meta.php:128
+msgid "Mô tả hương vị ngắn (hiện ở thông số đầu trang)"
+msgstr ""
+
+#: theme/setup/product_meta.php:129
+msgid "VD: Sudan Rume #00313 by CGLE remains a testament to the botanical preservation..."
+msgstr ""
+
+#: theme/setup/product_meta.php:130
+msgid "SCA coffee score | Điểm SCA"
+msgstr ""
+
+#: theme/setup/product_meta.php:137
+msgid "Aroma"
+msgstr ""
+
+#: theme/setup/product_meta.php:138
+msgid "Hot"
+msgstr ""
+
+#: theme/setup/product_meta.php:139
+msgid "Warm"
+msgstr ""
+
+#: theme/setup/product_meta.php:140
+msgid "Cool"
+msgstr ""
+
+#: theme/setup/product_meta.php:141
+msgid "Aftertaste"
+msgstr ""
+
+#: theme/setup/product_meta.php:142
+msgid "Acidity"
+msgstr ""
+
+#: theme/setup/product_meta.php:143
+msgid "Sweetness"
+msgstr ""
+
+#: theme/setup/product_meta.php:144
+msgid "Mouthfeel"
+msgstr ""
+
+#: theme/setup/product_meta.php:148
+msgid "🔥 Roasting Profile"
+msgstr ""
+
+#: theme/setup/product_meta.php:152
+msgid "Title | Tiêu đề"
+msgstr ""
+
+#: theme/setup/product_meta.php:155
+msgid "Image | Hình ảnh"
+msgstr ""
+
+#: theme/setup/product_meta.php:158
+msgid "Mô tả Roasting Profile"
+msgstr ""
+
+#: theme/setup/product_meta.php:159
+msgid "Mô tả quá trình và triết lý rang của sản phẩm..."
+msgstr ""
+
+#: theme/setup/product_meta.php:161
+msgid "Roast Machine"
+msgstr ""
+
+#: theme/setup/product_meta.php:164
+msgid "Roast Level"
+msgstr ""
+
+#: theme/setup/product_meta.php:167
+msgid "End Temperature"
+msgstr ""
+
+#: theme/setup/product_meta.php:174
+msgid "Roast Profile"
+msgstr ""
+
+#: theme/setup/product_meta.php:176
+msgid "Roast Duration"
+msgstr ""
+
+#: theme/setup/product_meta.php:178
+msgid "Drying Phase"
+msgstr ""
+
+#: theme/setup/product_meta.php:180
+msgid "Maillard Phase"
+msgstr ""
+
+#: theme/setup/product_meta.php:182
+msgid "Development Phase"
+msgstr ""
+
+#: theme/setup/product_meta.php:184
+msgid "Development Ratio"
+msgstr ""
+
+#: theme/setup/product_meta.php:186
+msgid "Charge Temperature"
+msgstr ""
+
+#: theme/setup/product_meta.php:189
+msgid "Turning Point"
+msgstr ""
+
+#: theme/setup/product_meta.php:192
+msgid "Dry-end Temperature"
+msgstr ""
+
+#: theme/setup/product_meta.php:195
+msgid "First Crack Temperature"
+msgstr ""
+
+#: theme/setup/product_meta.php:198
+msgid "End Bean Temperature"
+msgstr ""
+
+#: theme/setup/product_meta.php:204
+msgid "📰 Coffee Journal"
+msgstr ""
+
+#: theme/setup/product_meta.php:208
+msgid "Nội dung — phía trên các ô"
+msgstr ""
+
+#: theme/setup/product_meta.php:209
+msgid "VD: Cùng khám phá câu chuyện và trải nghiệm liên quan tới sản phẩm này..."
+msgstr ""
+
+#: theme/setup/product_meta.php:211
+msgid "Các ô Coffee Journal"
+msgstr ""
+
+#: theme/setup/product_meta.php:214
+msgid "Hình ảnh"
+msgstr ""
+
+#: theme/setup/product_meta.php:216
+#: theme/setup/theme-options.php:355
+#: theme/setup/theme-options.php:489
+#: theme/setup/theme-options.php:495
+msgid "Tiêu đề"
+msgstr ""
+
+#: theme/setup/product_meta.php:219
+msgid "Mô tả"
+msgstr ""
+
+#: theme/setup/product_meta.php:221
+msgid "Đường dẫn \"Bài viết chi tiết\" (không bắt buộc)"
+msgstr ""
+
+#: theme/setup/product_meta.php:226
+msgid "Nội dung — phía dưới các ô"
+msgstr ""
+
+#: theme/setup/product_meta.php:227
+msgid "VD: Nội dung bổ sung hiển thị sau các ô Coffee Journal..."
+msgstr ""
+
+#: theme/setup/product_taxonomy.php:21
+#: theme/setup/product_taxonomy.php:22
+#: theme/setup/product_taxonomy.php:32
+msgid "Phân loại Giống"
+msgstr ""
+
+#: theme/setup/product_taxonomy.php:23
+msgid "Tìm kiếm Danh mục"
+msgstr ""
+
+#: theme/setup/product_taxonomy.php:24
+msgid "Tất cả Danh mục"
+msgstr ""
+
+#: theme/setup/product_taxonomy.php:25
+msgid "Danh mục cha"
+msgstr ""
+
+#: theme/setup/product_taxonomy.php:26
+msgid "Danh mục cha:"
+msgstr ""
+
+#: theme/setup/product_taxonomy.php:27
+msgid "Hiển thị Danh mục"
+msgstr ""
+
+#: theme/setup/product_taxonomy.php:28
+msgid "Chỉnh sửa Danh mục"
+msgstr ""
+
+#: theme/setup/product_taxonomy.php:29
+msgid "Cập nhật Danh mục"
+msgstr ""
+
+#: theme/setup/product_taxonomy.php:30
+msgid "Thêm mới Danh mục"
+msgstr ""
+
+#: theme/setup/product_taxonomy.php:31
+msgid "Tên mới Danh mục"
+msgstr ""
+
+#: theme/setup/theme-options.php:57
+msgid "Laca Theme"
+msgstr ""
+
+#: theme/setup/theme-options.php:60
+msgid "Branding | Thương hiệu"
+msgstr ""
+
+#: theme/setup/theme-options.php:64
+msgid "Logo chính (mặc định / tối)"
+msgstr ""
+
+#: theme/setup/theme-options.php:66
+msgid "Hiển thị trên nền sáng hoặc khi cuộn trang"
+msgstr ""
+
+#: theme/setup/theme-options.php:67
+msgid "Logo trắng"
+msgstr ""
+
+#: theme/setup/theme-options.php:69
+msgid "Hiển thị trên nền tối / Top Hero"
+msgstr ""
+
+#: theme/setup/theme-options.php:70
+msgid "Default image | Hình ảnh mặc định"
+msgstr ""
+
+#: theme/setup/theme-options.php:74
+msgid "Giao diện"
+msgstr ""
+
+#: theme/setup/theme-options.php:78
+msgid "Khung giao diện website"
+msgstr ""
+
+#: theme/setup/theme-options.php:80
+msgid "Fluid (Toàn chiều rộng + lề chuẩn)"
+msgstr ""
+
+#: theme/setup/theme-options.php:81
+msgid "Boxed (Cố định chiều rộng tối đa, căn giữa)"
+msgstr ""
+
+#: theme/setup/theme-options.php:84
+msgid "Mặc định website dùng Fluid (toàn rộng). Chọn Boxed nếu muốn giới hạn độ rộng tối đa toàn site."
+msgstr ""
+
+#: theme/setup/theme-options.php:87
+msgid "Contact | Liên hệ"
+msgstr ""
+
+#: theme/setup/theme-options.php:99
+msgid "Số hotline"
+msgstr ""
+
+#: theme/setup/theme-options.php:139
+msgid "🦶 Footer"
+msgstr ""
+
+#: theme/setup/theme-options.php:143
+msgid "Tên công ty"
+msgstr ""
+
+#: theme/setup/theme-options.php:146
+msgid "Giấy CNĐKKD số"
+msgstr ""
+
+#: theme/setup/theme-options.php:150
+msgid "Cột liên kết 1"
+msgstr ""
+
+#: theme/setup/theme-options.php:154
+#: theme/setup/theme-options.php:170
+#: theme/setup/theme-options.php:186
+msgid "Tên hiển thị"
+msgstr ""
+
+#: theme/setup/theme-options.php:155
+#: theme/setup/theme-options.php:171
+#: theme/setup/theme-options.php:187
+msgid "Đường dẫn"
+msgstr ""
+
+#: theme/setup/theme-options.php:166
+msgid "Cột liên kết 2"
+msgstr ""
+
+#: theme/setup/theme-options.php:182
+msgid "Đăng ký / Chứng nhận"
+msgstr ""
+
+#: theme/setup/theme-options.php:192
+msgid "Huy hiệu DMCA / Mã nhúng chứng nhận (HTML)"
+msgstr ""
+
+#: theme/setup/theme-options.php:195
+msgid "Mã nhúng HTML huy hiệu DMCA hoặc chứng nhận"
+msgstr ""
+
+#: theme/setup/theme-options.php:200
+msgid "Hiển thị Stats Info ở footer"
+msgstr ""
+
+#: theme/setup/theme-options.php:205
+msgid "Số lượng cột / hàng"
+msgstr ""
+
+#: theme/setup/theme-options.php:214
+msgid "Kích thước tối đa khung (%)"
+msgstr ""
+
+#: theme/setup/theme-options.php:227
+msgid "Vị trí khung"
+msgstr ""
+
+#: theme/setup/theme-options.php:230
+#: theme/setup/theme-options.php:240
+#: theme/setup/theme-options.php:250
+msgid "Giữa (Center)"
+msgstr ""
+
+#: theme/setup/theme-options.php:231
+#: theme/setup/theme-options.php:239
+#: theme/setup/theme-options.php:249
+msgid "Trái (Left)"
+msgstr ""
+
+#: theme/setup/theme-options.php:232
+#: theme/setup/theme-options.php:241
+#: theme/setup/theme-options.php:251
+msgid "Phải (Right)"
+msgstr ""
+
+#: theme/setup/theme-options.php:236
+msgid "Căn lề tiêu đề (số + nhãn)"
+msgstr ""
+
+#: theme/setup/theme-options.php:242
+#: theme/setup/theme-options.php:252
+msgid "Căn đều (Justify)"
+msgstr ""
+
+#: theme/setup/theme-options.php:246
+msgid "Căn lề mô tả"
+msgstr ""
+
+#: theme/setup/theme-options.php:256
+msgid "Đoạn văn mở đầu (không bắt buộc)"
+msgstr ""
+
+#: theme/setup/theme-options.php:258
+msgid "Để trống nếu chỉ muốn hiển thị 4 cột chỉ số."
+msgstr ""
+
+#: theme/setup/theme-options.php:260
+msgid "Chữ nút bấm (không bắt buộc)"
+msgstr ""
+
+#: theme/setup/theme-options.php:264
+msgid "Link nút bấm"
+msgstr ""
+
+#: theme/setup/theme-options.php:268
+msgid "Danh sách chỉ số"
+msgstr ""
+
+#: theme/setup/theme-options.php:271
+msgid "Chỉ số (Số)"
+msgstr ""
+
+#: theme/setup/theme-options.php:274
+msgid "Tiêu đề / Nhãn"
+msgstr ""
+
+#: theme/setup/theme-options.php:277
+msgid "Đường dẫn (URL)"
+msgstr ""
+
+#: theme/setup/theme-options.php:280
+msgid "Mô tả chi tiết"
+msgstr ""
+
+#: theme/setup/theme-options.php:312
+msgid "📰 Journal"
+msgstr ""
+
+#: theme/setup/theme-options.php:316
+msgid "Câu chữ"
+msgstr ""
+
+#: theme/setup/theme-options.php:317
+msgid "Tiêu đề mục lục"
+msgstr ""
+
+#: theme/setup/theme-options.php:320
+msgid "Chữ \"Chia sẻ\""
+msgstr ""
+
+#: theme/setup/theme-options.php:323
+msgid "Tiêu đề bài viết liên quan"
+msgstr ""
+
+#: theme/setup/theme-options.php:327
+msgid "Tác giả"
+msgstr ""
+
+#: theme/setup/theme-options.php:328
+msgid "Chữ đứng trước"
+msgstr ""
+
+#: theme/setup/theme-options.php:331
+msgid "Tên tác giả / nhóm tác giả"
+msgstr ""
+
+#: theme/setup/theme-options.php:333
+msgid "Link trang tác giả"
+msgstr ""
+
+#: theme/setup/theme-options.php:337
+msgid "Google News"
+msgstr ""
+
+#: theme/setup/theme-options.php:338
+msgid "Link Google News"
+msgstr ""
+
+#: theme/setup/theme-options.php:341
+msgid "Ảnh nút Google News"
+msgstr ""
+
+#: theme/setup/theme-options.php:343
+msgid "Hiển thị rộng tối đa 180px."
+msgstr ""
+
+#: theme/setup/theme-options.php:346
+msgid "📧 Newsletter"
+msgstr ""
+
+#: theme/setup/theme-options.php:350
+msgid "Hiển thị form Newsletter ở footer"
+msgstr ""
+
+#: theme/setup/theme-options.php:354
+msgid "Form ở footer"
+msgstr ""
+
+#: theme/setup/theme-options.php:357
+msgid "Chữ gợi ý trong ô email"
+msgstr ""
+
+#: theme/setup/theme-options.php:360
+msgid "Chữ nút bấm"
+msgstr ""
+
+#: theme/setup/theme-options.php:363
+msgid "Dòng đồng ý nhận email"
+msgstr ""
+
+#: theme/setup/theme-options.php:366
+msgid "Hiện nhỏ dưới form — cần có theo Nghị định 13/2023 về dữ liệu cá nhân. Để trống để ẩn."
+msgstr ""
+
+#: theme/setup/theme-options.php:367
+msgid "Link chính sách bảo mật (không bắt buộc)"
+msgstr ""
+
+#: theme/setup/theme-options.php:370
+msgid "Thông báo: đăng ký thành công"
+msgstr ""
+
+#: theme/setup/theme-options.php:372
+msgid "Thông báo: email đã đăng ký"
+msgstr ""
+
+#: theme/setup/theme-options.php:375
+msgid "Thông báo: email không hợp lệ"
+msgstr ""
+
+#: theme/setup/theme-options.php:378
+msgid "Thông báo: lỗi chung"
+msgstr ""
+
+#: theme/setup/theme-options.php:381
+msgid "Thông báo: gửi quá nhiều lần"
+msgstr ""
+
+#: theme/setup/theme-options.php:384
+msgid "Mỗi IP được gửi tối đa 5 lần trong 10 phút."
+msgstr ""
+
+#: theme/setup/theme-options.php:385
+msgid "Thông báo: không qua được reCAPTCHA"
+msgstr ""
+
+#: theme/setup/theme-options.php:387
+msgid "reCAPTCHA v3 tự bật cho form này khi đã nhập đủ Site Key + Secret Key ở Laca Admin → Google reCAPTCHA."
+msgstr ""
+
+#: theme/setup/theme-options.php:389
+msgid "Email cảm ơn sau khi đăng ký"
+msgstr ""
+
+#: theme/setup/theme-options.php:390
+msgid "Tiêu đề email"
+msgstr ""
+
+#: theme/setup/theme-options.php:392
+msgid "Nội dung email"
+msgstr ""
+
+#: theme/setup/theme-options.php:395
+msgid "Mỗi dòng là 1 đoạn. Link huỷ đăng ký được tự thêm ở cuối email."
+msgstr ""
+
+#: theme/setup/theme-options.php:397
+msgid "Trang sau khi bấm link huỷ đăng ký trong email"
+msgstr ""
+
+#: theme/setup/theme-options.php:398
+msgid "Hỏi lại trước khi huỷ"
+msgstr ""
+
+#: theme/setup/theme-options.php:401
+msgid "Chữ nút / link huỷ đăng ký"
+msgstr ""
+
+#: theme/setup/theme-options.php:404
+msgid "Đã huỷ đăng ký"
+msgstr ""
+
+#: theme/setup/theme-options.php:407
+msgid "Link không hợp lệ"
+msgstr ""
+
+#: theme/setup/theme-options.php:427
+msgid "URL Apps Script Web App"
+msgstr ""
+
+#: theme/setup/theme-options.php:430
+msgid "Chỉ chấp nhận địa chỉ https://script.google.com/…"
+msgstr ""
+
+#: theme/setup/theme-options.php:431
+msgid "Chuỗi bí mật (trùng SECRET trong Apps Script)"
+msgstr ""
+
+#: theme/setup/theme-options.php:437
+msgid "Dịch vụ"
+msgstr ""
+
+#: theme/setup/theme-options.php:439
+msgid "Không dùng"
+msgstr ""
+
+#: theme/setup/theme-options.php:445
+msgid "Mailchimp API key"
+msgstr ""
+
+#: theme/setup/theme-options.php:449
+msgid "Mailchimp → Profile → Extras → API keys. Key phải có đuôi dạng \"-us21\"."
+msgstr ""
+
+#: theme/setup/theme-options.php:451
+msgid "Audience ID"
+msgstr ""
+
+#: theme/setup/theme-options.php:454
+msgid "Audience → Settings → Audience name and defaults → Audience ID."
+msgstr ""
+
+#: theme/setup/theme-options.php:463
+msgid "Brevo API key"
+msgstr ""
+
+#: theme/setup/theme-options.php:467
+msgid "Brevo → SMTP & API → API Keys."
+msgstr ""
+
+#: theme/setup/theme-options.php:469
+msgid "List ID"
+msgstr ""
+
+#: theme/setup/theme-options.php:473
+msgid "Contacts → Lists → số ID của danh sách."
+msgstr ""
+
+#: theme/setup/theme-options.php:483
+msgid "☕ Trang sản phẩm | Product Page"
+msgstr ""
+
+#: theme/setup/theme-options.php:491
+msgid "Nội dung hướng dẫn"
+msgstr ""
+
+#: theme/setup/theme-options.php:497
+msgid "Calcium Hardness"
+msgstr ""
+
+#: theme/setup/theme-options.php:500
+msgid "Magnesium Hardness"
+msgstr ""
+
+#: theme/setup/theme-options.php:503
+msgid "Total Alkalinity"
+msgstr ""
+
+#: theme/setup/theme-options.php:506
+msgid "Sodium"
+msgstr ""
+
+#: theme/setup/theme-options.php:512
+msgid "Danh sách đánh giá"
+msgstr ""
+
+#: theme/setup/theme-options.php:515
+msgid "Tên khách hàng"
+msgstr ""
+
+#: theme/setup/theme-options.php:517
+msgid "Nội dung đánh giá"
+msgstr ""
+
+#: theme/setup/theme-options.php:518
+msgid "Đường dẫn (không bắt buộc)"
+msgstr ""
+
+#: theme/setup/theme-options.php:524
+msgid "AI Translation | Dịch thuật AI"
+msgstr ""
+
+#: theme/setup/theme-options.php:528
+msgid "Gemini API Key"
+msgstr ""
+
+#: theme/setup/theme-options.php:531
+msgid "Groq API Key"
+msgstr ""
+
+#: theme/setup/theme-options.php:534
+msgid "OpenRouter API Key"
+msgstr ""
+
+#: theme/setup/theme-options.php:537
+msgid "Cloudflare Account ID"
+msgstr ""
+
+#: theme/setup/theme-options.php:540
+msgid "Cloudflare API Token"
+msgstr ""
+
+#: theme/setup/theme-options.php:543
+msgid "Mistral API Key"
+msgstr ""
+
+#: theme/setup/theme-options.php:546
+msgid "Cohere API Key"
+msgstr ""
+
+#: theme/setup/theme-options.php:549
+msgid "NVIDIA NIM API Key"
+msgstr ""
+
+#: theme/setup/theme-options.php:552
+msgid "DeepSeek API Key"
+msgstr ""
+
+#: theme/setup/theme-options.php:555
+msgid "OpenAI API Key"
+msgstr ""
+
+#: theme/setup/theme-options.php:558
+msgid "Anthropic API Key"
+msgstr ""
+
+#: theme/setup/theme-options.php:561
+msgid "Bộ xử lý ưu tiên"
+msgstr ""
+
+#: theme/setup/theme-options.php:578
+msgid "🛒 Block Marketplace"
+msgstr ""
+
+#: theme/setup/theme-options.php:587
+msgid "Scripts"
+msgstr ""
+
+#: theme/setup/theme-options.php:591
+msgid "Header Script"
+msgstr ""
+
+#: theme/setup/theme-options.php:592
+msgid "Footer Script"
+msgstr ""
+
+#: theme/single-product.php:29
+msgid "Sản lượng hằng năm"
+msgstr ""
+
+#: theme/single-product.php:39
+msgid "Xuất xứ"
+msgstr ""
+
+#: theme/single-product.php:40
+msgid "Vùng"
+msgstr ""
+
+#: theme/single-product.php:41
+msgid "Nông trại"
+msgstr ""
+
+#: theme/single-product.php:42
+msgid "Giống"
+msgstr ""
+
+#: theme/single-product.php:43
+msgid "Niên vụ"
+msgstr ""
+
+#: theme/single-product.php:44
+msgid "Độ cao"
+msgstr ""
+
+#: theme/single-product.php:45
+msgid "Sơ chế"
+msgstr ""
+
+#: theme/single-product.php:46
+msgid "Khối lượng tịnh"
+msgstr ""
+
+#: theme/single-product.php:47
+#: theme/single-product.php:121
+#: theme/single-product.php:267
+msgid "Hồ sơ hương vị"
+msgstr ""
+
+#: theme/single-product.php:48
+msgid "Nguồn cung"
+msgstr ""
+
+#: theme/single-product.php:49
+msgid "Giá trả cho nhà sản xuất"
+msgstr ""
+
+#: theme/single-product.php:54
+msgid "Hợp tác xã"
+msgstr ""
+
+#: theme/single-product.php:55
+msgid "Trạm sơ chế ướt"
+msgstr ""
+
+#: theme/single-product.php:56
+msgid "Nhà máy"
+msgstr ""
+
+#: theme/single-product.php:57
+msgid "Giá trả cho nhà xuất khẩu"
+msgstr ""
+
+#: theme/single-product.php:58
+msgid "Giá FOB"
+msgstr ""
+
+#: theme/single-product.php:59
+msgid "Giá DDP"
+msgstr ""
+
+#: theme/single-product.php:62
+msgid "Hương thơm"
+msgstr ""
+
+#: theme/single-product.php:63
+msgid "Nóng"
+msgstr ""
+
+#: theme/single-product.php:64
+msgid "Ấm"
+msgstr ""
+
+#: theme/single-product.php:65
+msgid "Nguội"
+msgstr ""
+
+#: theme/single-product.php:66
+msgid "Hậu vị"
+msgstr ""
+
+#: theme/single-product.php:67
+msgid "Độ chua"
+msgstr ""
+
+#: theme/single-product.php:68
+msgid "Độ ngọt"
+msgstr ""
+
+#: theme/single-product.php:69
+msgid "Cảm giác miệng"
+msgstr ""
+
+#: theme/single-product.php:73
+#: theme/single-product.php:122
+msgid "Hồ sơ rang"
+msgstr ""
+
+#: theme/single-product.php:80
+msgid "Cấu hình rang"
+msgstr ""
+
+#: theme/single-product.php:81
+msgid "Thời gian rang"
+msgstr ""
+
+#: theme/single-product.php:82
+msgid "Giai đoạn sấy"
+msgstr ""
+
+#: theme/single-product.php:83
+msgid "Giai đoạn Maillard"
+msgstr ""
+
+#: theme/single-product.php:84
+msgid "Giai đoạn phát triển"
+msgstr ""
+
+#: theme/single-product.php:85
+msgid "Tỷ lệ phát triển"
+msgstr ""
+
+#: theme/single-product.php:86
+msgid "Nhiệt độ cho hạt vào"
+msgstr ""
+
+#: theme/single-product.php:87
+msgid "Điểm đảo nhiệt"
+msgstr ""
+
+#: theme/single-product.php:88
+msgid "Nhiệt độ kết thúc sấy"
+msgstr ""
+
+#: theme/single-product.php:89
+msgid "Nhiệt độ nổ lần 1"
+msgstr ""
+
+#: theme/single-product.php:90
+msgid "Nhiệt độ hạt khi ra lò"
+msgstr ""
+
+#: theme/single-product.php:105
+msgid "Độ cứng canxi"
+msgstr ""
+
+#: theme/single-product.php:106
+msgid "Độ cứng magie"
+msgstr ""
+
+#: theme/single-product.php:107
+msgid "Tổng độ kiềm"
+msgstr ""
+
+#: theme/single-product.php:108
+msgid "Natri"
+msgstr ""
+
+#: theme/single-product.php:120
+msgid "Nhà sản xuất"
+msgstr ""
+
+#: theme/single-product.php:125
+#: theme/single-product.php:372
+msgid "Nhật ký cà phê"
+msgstr ""
+
+#: theme/single-product.php:127
+#: theme/single-product.php:434
+msgid "Hướng dẫn sử dụng"
+msgstr ""
+
+#: theme/single-product.php:129
+#: theme/single-product.php:484
+msgid "Đánh giá"
+msgstr ""
+
+#: theme/single-product.php:210
+msgid "Lần đầu hợp tác"
+msgstr ""
+
+#: theme/single-product.php:231
+msgid "Google Maps"
+msgstr ""
+
+#: theme/single-product.php:310
+msgid "Máy rang"
+msgstr ""
+
+#: theme/single-product.php:316
+msgid "Mức độ rang"
+msgstr ""
+
+#: theme/single-product.php:322
+msgid "Nhiệt độ kết thúc"
+msgstr ""
+
+#: theme/template-parts/block-stats-info.php:24
+msgid "NĂM KINH NGHIỆM TRONG NGÀNH CÀ PHÊ"
+msgstr ""
+
+#: theme/template-parts/block-stats-info.php:25
+msgid "Tám năm tích lũy kinh nghiệm trong tuyển chọn nguồn cà phê, cảm quan và dịch vụ đã trở thành nền tảng vận hành của LIX."
+msgstr ""
+
+#: theme/template-parts/block-stats-info.php:30
+msgid "MẠNG LƯỚI ĐỐI TÁC TOÀN CẦU"
+msgstr ""
+
+#: theme/template-parts/block-stats-info.php:31
+msgid "Được xây dựng từ mạng lưới tám năm của XLIII Coffee, kết nối những mối quan hệ tin cậy xuyên suốt vùng trồng, hoạt động tìm nguồn và hợp tác trong ngành cà phê."
+msgstr ""
+
+#: theme/template-parts/block-stats-info.php:36
+msgid "HỆ THỐNG RANG CÀ PHÊ CỐT LÕI"
+msgstr ""
+
+#: theme/template-parts/block-stats-info.php:37
+msgid "Origin, Lab và Roastery vận hành như một hệ thống thống nhất, xuyên suốt từ khâu đánh giá cà phê nhân xanh đến rang sản xuất."
+msgstr ""
+
+#: theme/template-parts/block-stats-info.php:42
+msgid "ĐIỂM KIỂM SOÁT CHẤT LƯỢNG"
+msgstr ""
+
+#: theme/template-parts/block-stats-info.php:43
+msgid "Đánh giá cà phê nhân xanh, giám sát quá trình rang, phân loại sau rang và kiểm định cảm quan giúp duy trì tính nhất quán trong từng chu kỳ sản xuất."
+msgstr ""
+
+#. translators: %s: khoảng thời gian, vd "5 phút".
+#: theme/template-parts/comment-single.php:35
+#, php-format
+msgid "%s trước"
+msgstr ""
+
+#: theme/template-parts/comment-single.php:42
+msgid "Bình luận của bạn đang chờ duyệt."
+msgstr ""
+
+#: theme/template-parts/page-hero.php:78
+#: theme/template-parts/post-hero.php:18
+msgid "lượt xem"
+msgstr ""
+
+#: theme/template-parts/post-hero.php:9
+msgid "Dịch vụ chuyên nghiệp"
+msgstr ""
+
+#: theme/template-parts/rating-box.php:8
+msgid "Đánh giá bài viết"
+msgstr ""
+
+#: theme/template-parts/share_box.php:12
+msgid "Chia sẻ bài viết:"
+msgstr ""
+
+#. translators: %s: tên mạng xã hội.
+#: theme/template-parts/share_box.php:15
+#: theme/template-parts/share_box.php:20
+#: theme/template-parts/share_box.php:25
+#, php-format
+msgid "Chia sẻ lên %s"
+msgstr ""
+
+#: theme/woocommerce/archive-product.php:117
+msgid "Trang trước"
+msgstr ""
+
+#: theme/woocommerce/archive-product.php:118
+msgid "TRƯỚC"
+msgstr ""
+
+#: theme/woocommerce/archive-product.php:136
+msgid "Trang sau"
+msgstr ""
+
+#: theme/woocommerce/archive-product.php:137
+msgid "SAU"
+msgstr ""
+
+#: block-gutenberg/lixroastery-blocks-site/block-container/block.json
+msgctxt "block title"
+msgid "Khung nội dung (Container)"
+msgstr ""
+
+#: block-gutenberg/lixroastery-blocks-site/block-container/block.json
+msgctxt "block description"
+msgid "Bọc các block mặc định (paragraph, heading, list...) vào 1 khung có thể tùy chỉnh kích thước tối đa và căn lề, để khớp độ rộng với các block riêng của theme."
+msgstr ""
+
+#: block-gutenberg/lixroastery-blocks-site/block-content-grid/block.json
+msgctxt "block title"
+msgid "Content Grid"
+msgstr ""
+
+#: block-gutenberg/lixroastery-blocks-site/block-content-rows/block.json
+msgctxt "block title"
+msgid "Content Rows"
+msgstr ""
+
+#: block-gutenberg/lixroastery-blocks-site/block-content-text/block.json
+msgctxt "block title"
+msgid "Content / Quote"
+msgstr ""
+
+#: block-gutenberg/lixroastery-blocks-site/block-cpt-grid/block.json
+msgctxt "block title"
+msgid "CPT Grid"
+msgstr ""
+
+#: block-gutenberg/lixroastery-blocks-site/block-cta-section/block.json
+msgctxt "block title"
+msgid "CTA Section"
+msgstr ""
+
+#: block-gutenberg/lixroastery-blocks-site/block-image-card-grid/block.json
+msgctxt "block title"
+msgid "Image Card Grid"
+msgstr ""
+
+#: block-gutenberg/lixroastery-blocks-site/block-journal-grid/block.json
+msgctxt "block title"
+msgid "Journal Grid"
+msgstr ""
+
+#: block-gutenberg/lixroastery-blocks-site/block-partnership-grid/block.json
+msgctxt "block title"
+msgid "Partnership Grid"
+msgstr ""
+
+#: block-gutenberg/lixroastery-blocks-site/block-product-grid/block.json
+msgctxt "block title"
+msgid "Product Grid"
+msgstr ""
+
+#: block-gutenberg/lixroastery-blocks-site/block-stats-info/block.json
+msgctxt "block title"
+msgid "Stats Info"
+msgstr ""
+
+#: block-gutenberg/lixroastery-blocks-site/block-tab-panel/block.json
+msgctxt "block title"
+msgid "Tab Panel"
+msgstr ""
+
+#: block-gutenberg/lixroastery-blocks-site/block-tabs/block.json
+msgctxt "block title"
+msgid "Tabs"
+msgstr ""
+
+#: block-gutenberg/lixroastery-blocks-site/block-timeline/block.json
+msgctxt "block title"
+msgid "Timeline"
+msgstr ""
+
+#: block-gutenberg/lixroastery-blocks-site/block-toggle/block.json
+msgctxt "block title"
+msgid "Toggle / FAQ"
+msgstr ""
+
+#: block-gutenberg/lixroastery-blocks-site/block-top-hero/block.json
+msgctxt "block title"
+msgid "Top Hero"
+msgstr ""

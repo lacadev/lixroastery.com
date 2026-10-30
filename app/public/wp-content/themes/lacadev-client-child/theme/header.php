@@ -48,7 +48,7 @@ if (!defined('ABSPATH')) {
 
 	<!-- Skip to content link for accessibility -->
 	<a class="skip-link screen-reader-text" href="#main-content">
-		<?php esc_html_e('Skip to content', 'laca'); ?>
+		<?php esc_html_e('Chuyển đến nội dung chính', 'laca'); ?>
 	</a>
 
 	<?php
@@ -66,7 +66,7 @@ if (!defined('ABSPATH')) {
 					<div class="header__inner">
 
 						<!-- Menu chính — bên trái -->
-						<nav class="header__nav header__nav--left" aria-label="<?php esc_attr_e('Main menu', 'laca'); ?>">
+						<nav class="header__nav header__nav--left" aria-label="<?php esc_attr_e('Menu chính', 'laca'); ?>">
 							<?php
 							wp_nav_menu([
 								'theme_location' => 'main-menu',
@@ -122,7 +122,7 @@ if (!defined('ABSPATH')) {
 						<!-- Menu phụ + đổi ngôn ngữ — bên phải -->
 						<div class="header__right">
 							<nav class="header__nav header__nav--right"
-								aria-label="<?php esc_attr_e('Secondary menu', 'laca'); ?>">
+								aria-label="<?php esc_attr_e('Menu phụ', 'laca'); ?>">
 								<?php
 								wp_nav_menu([
 									'theme_location' => 'header-right-menu',
@@ -177,7 +177,7 @@ if (!defined('ABSPATH')) {
 							<span></span>
 							<span></span>
 						</button>
-						<nav class="header__overlay-nav" aria-label="<?php esc_attr_e('Main menu mobile', 'laca'); ?>">
+						<nav class="header__overlay-nav" aria-label="<?php esc_attr_e('Menu chính trên di động', 'laca'); ?>">
 							<?php
 							wp_nav_menu([
 								'theme_location' => 'main-menu',
@@ -223,7 +223,8 @@ if (!defined('ABSPATH')) {
 								</svg>
 							</button>
 						</form>
-						<div class="header__search-results" id="header-search-results"></div>
+						<div class="header__search-results" id="header-search-results"
+							data-loading-text="<?php esc_attr_e('Đang tìm kiếm…', 'laca'); ?>"></div>
 					</div>
 				</div>
 

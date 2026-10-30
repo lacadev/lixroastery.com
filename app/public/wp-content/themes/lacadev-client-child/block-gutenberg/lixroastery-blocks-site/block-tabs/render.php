@@ -41,8 +41,8 @@ $scoped_selector = '#' . $unique_id;
             </div>
             <?php if ($show_nav_buttons): ?>
             <div class="tabs-block__footer">
-                <a href="#" class="tabs-block__prev"><?php esc_html_e('Prev', 'laca'); ?></a>
-                <a href="#" class="tabs-block__next"><?php esc_html_e('Next', 'laca'); ?></a>
+                <a href="#" class="tabs-block__prev"><?php esc_html_e('Trước', 'laca'); ?></a>
+                <a href="#" class="tabs-block__next"><?php esc_html_e('Sau', 'laca'); ?></a>
             </div>
             <?php endif; ?>
         </div>
