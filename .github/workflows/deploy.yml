@@ -116,6 +116,11 @@ jobs:
           # Quan trọng: exclude mới thực sự chặn xoá trên server (include chỉ ưu tiên
           # upload, không giới hạn phạm vi xoá) — nên các file core WP phải nằm ở đây,
           # để việc gỡ chúng khỏi git không kéo theo xoá trên hosting.
+          # Nhóm wp-content/themes/**/doc/** … *.scss: file chỉ dùng khi dev. Riêng
+          # doc/ chứa script test tự nạp wp-load.php (gọi được qua URL) và mẫu test
+          # bị trình quét mã độc của hosting nhận nhầm rồi tự "dọn" file. Loại ở đây
+          # KHÔNG xoá bản đang có trên server — cần xoá tay 1 lần. Giữ khớp với
+          # danh sách loại trừ ở bước "Báo site danh sách file đã deploy".
           exclude: |
             .git/
             .github/
@@ -123,6 +128,23 @@ jobs:
             .cpanel.yml
             .gitignore
             wp-content/themes/**/node_modules/**
+            wp-content/themes/**/doc/**
+            wp-content/themes/**/theme-server/**
+            wp-content/themes/**/build-release.sh
+            wp-content/themes/**/composer.json
+            wp-content/themes/**/composer.lock
+            wp-content/themes/**/package.json
+            wp-content/themes/**/yarn.lock
+            wp-content/themes/**/config.json
+            wp-content/themes/**/config.json.dist
+            wp-content/themes/**/postcss.config.js
+            wp-content/themes/**/tailwind.config.js
+            wp-content/themes/**/.eslintrc.js
+            wp-content/themes/**/.stylelintrc.json
+            wp-content/themes/**/.editorconfig
+            wp-content/themes/**/.gitignore
+            wp-content/themes/**/.DS_Store
+            wp-content/themes/**/*.scss
             wp-content/plugins/**
             wp-content/uploads/**
             wp-admin/**
@@ -168,7 +190,10 @@ jobs:
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: |
           cd app/public
+          # Loại trừ khớp với "exclude" của bước FTP — file không deploy thì không khai trong manifest.
           find wp-content/themes -type f -not -path '*/node_modules/*' -not -name '*.md' \
+            -not -path '*/doc/*' -not -path '*/theme-server/*' -not -name 'build-release.sh' \
+            -not -name 'postcss.config.js' -not -name 'tailwind.config.js' -not -name '.eslintrc.js' \
             \( -name '*.php' -o -name '*.phtml' -o -name '*.phar' -o -name '*.pht' -o -name '*.php[3-8]' \
                -o -name '*.inc' -o -name '*.js' -o -name '*.ini' -o -name '*.sh' -o -name '*.py' -o -name '*.pl' \
                -o -name '*.cgi' -o -name '.htaccess' -o -name '.user.ini' \) -print0 \

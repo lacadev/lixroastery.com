@@ -135,7 +135,28 @@ class CustomLoginManager
         $wp_query->set_404();
         status_header(404);
         nocache_headers();
+
+        // Đang ở 'init': style block (init priority 15) chưa đăng ký → hoãn
+        // render sang 'wp_loaded' (vẫn trước auth_redirect của wp-admin).
+        if (doing_action('init')) {
+            add_action('wp_loaded', [$this, 'render404'], PHP_INT_MAX);
+            return;
+        }
+
+        $this->render404();
+    }
+
+    /**
+     * 404.php là view WPEmerge, cần bọc header/footer như layouts/app.php —
+     * require trần sẽ thiếu wp_head()/wp_footer() nên trang không có CSS.
+     */
+    public function render404(): void
+    {
+        \WPEmerge\render('header');
+        echo '<main id="main_content">';
         require get_404_template();
+        echo '</main>';
+        \WPEmerge\render('footer');
         exit;
     }
 

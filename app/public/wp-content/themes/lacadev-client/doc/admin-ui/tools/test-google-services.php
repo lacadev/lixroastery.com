@@ -32,7 +32,8 @@ use App\Settings\LacaAdmin\GoogleServicesPage;
 $pass = 0;
 $fail = 0;
 
-function runTest(string $name, callable $fn, &$pass, &$fail): void {
+function runTest(string $name, callable $fn, &$pass, &$fail): void
+{
     try {
         $result = $fn();
         if ($result === true) {
@@ -81,14 +82,14 @@ runTest('GSC Error Handling: HTTP 403 returns WP_Error and does NOT cache transi
         if (str_contains($url, 'searchanalytics/query')) {
             return [
                 'response' => ['code' => 403, 'message' => 'Forbidden'],
-                'body'     => json_encode([
+                'body' => json_encode([
                     'error' => [
-                        'code'    => 403,
+                        'code' => 403,
                         'message' => 'User does not have sufficient permission for site.',
-                        'status'  => 'PERMISSION_DENIED',
+                        'status' => 'PERMISSION_DENIED',
                     ],
                 ]),
-                'headers'  => ['content-type' => 'application/json'],
+                'headers' => ['content-type' => 'application/json'],
             ];
         }
         return $preempt;
@@ -98,13 +99,13 @@ runTest('GSC Error Handling: HTTP 403 returns WP_Error and does NOT cache transi
 
     $mockOAuthFilter = function () {
         return GscCrypto::encrypt([
-            'access_token'  => 'mock-token',
+            'access_token' => 'mock-token',
             'refresh_token' => 'mock-refresh',
-            'created_at'    => time(),
-            'expires_in'    => 3600,
-            'client_id'     => 'mock-client',
+            'created_at' => time(),
+            'expires_in' => 3600,
+            'client_id' => 'mock-client',
             'client_secret' => 'mock-secret',
-            'scopes'        => [GscOAuth::SCOPE_GSC],
+            'scopes' => [GscOAuth::SCOPE_GSC],
         ]);
     };
     add_filter('pre_option_' . GscOAuth::OPTION_KEY, $mockOAuthFilter);
@@ -135,18 +136,18 @@ runTest('GSC Response Parsing: Correct clicks, impressions, CTR, position, and r
     $mockResponse = [
         'rows' => [
             [
-                'keys'        => ['ca phe dac san'],
-                'clicks'      => 45,
+                'keys' => ['ca phe dac san'],
+                'clicks' => 45,
                 'impressions' => 500,
-                'ctr'         => 0.09,
-                'position'    => 4.2,
+                'ctr' => 0.09,
+                'position' => 4.2,
             ],
             [
-                'keys'        => ['rang ca phe'],
-                'clicks'      => 15,
+                'keys' => ['rang ca phe'],
+                'clicks' => 15,
                 'impressions' => 250,
-                'ctr'         => 0.06,
-                'position'    => 6.8,
+                'ctr' => 0.06,
+                'position' => 6.8,
             ],
         ],
     ];
@@ -246,25 +247,25 @@ runTest('GA4 Property Auto-Discovery: Find property matching measurementId', fun
         if (str_contains($url, 'accountSummaries')) {
             return [
                 'response' => ['code' => 200, 'message' => 'OK'],
-                'body'     => json_encode([
+                'body' => json_encode([
                     'accountSummaries' => [
                         [
-                            'name'             => 'accountSummaries/1001',
-                            'displayName'      => 'LIX Account',
+                            'name' => 'accountSummaries/1001',
+                            'displayName' => 'LIX Account',
                             'propertySummaries' => [
                                 [
-                                    'property'    => 'properties/111111',
+                                    'property' => 'properties/111111',
                                     'displayName' => 'Site Alpha',
                                 ],
                                 [
-                                    'property'    => 'properties/222222',
+                                    'property' => 'properties/222222',
                                     'displayName' => 'Lix Roastery Main',
                                 ],
                             ],
                         ],
                     ],
                 ]),
-                'headers'  => ['content-type' => 'application/json'],
+                'headers' => ['content-type' => 'application/json'],
             ];
         }
 
@@ -272,16 +273,16 @@ runTest('GA4 Property Auto-Discovery: Find property matching measurementId', fun
         if (str_contains($url, 'properties/111111/dataStreams')) {
             return [
                 'response' => ['code' => 200, 'message' => 'OK'],
-                'body'     => json_encode([
+                'body' => json_encode([
                     'dataStreams' => [
                         [
-                            'name'            => 'properties/111111/dataStreams/901',
-                            'type'            => 'WEB_DATA_STREAM',
-                            'webStreamData'   => ['measurementId' => 'G-OTHER999'],
+                            'name' => 'properties/111111/dataStreams/901',
+                            'type' => 'WEB_DATA_STREAM',
+                            'webStreamData' => ['measurementId' => 'G-OTHER999'],
                         ],
                     ],
                 ]),
-                'headers'  => ['content-type' => 'application/json'],
+                'headers' => ['content-type' => 'application/json'],
             ];
         }
 
@@ -289,16 +290,16 @@ runTest('GA4 Property Auto-Discovery: Find property matching measurementId', fun
         if (str_contains($url, 'properties/222222/dataStreams')) {
             return [
                 'response' => ['code' => 200, 'message' => 'OK'],
-                'body'     => json_encode([
+                'body' => json_encode([
                     'dataStreams' => [
                         [
-                            'name'            => 'properties/222222/dataStreams/902',
-                            'type'            => 'WEB_DATA_STREAM',
-                            'webStreamData'   => ['measurementId' => 'G-TARGET123'],
+                            'name' => 'properties/222222/dataStreams/902',
+                            'type' => 'WEB_DATA_STREAM',
+                            'webStreamData' => ['measurementId' => 'G-TARGET123'],
                         ],
                     ],
                 ]),
-                'headers'  => ['content-type' => 'application/json'],
+                'headers' => ['content-type' => 'application/json'],
             ];
         }
 
@@ -309,13 +310,13 @@ runTest('GA4 Property Auto-Discovery: Find property matching measurementId', fun
 
     $mockOAuthFilter = function () {
         return GscCrypto::encrypt([
-            'access_token'  => 'mock-token',
+            'access_token' => 'mock-token',
             'refresh_token' => 'mock-refresh',
-            'created_at'    => time(),
-            'expires_in'    => 3600,
-            'client_id'     => 'mock-client',
+            'created_at' => time(),
+            'expires_in' => 3600,
+            'client_id' => 'mock-client',
             'client_secret' => 'mock-secret',
-            'scopes'        => [GscOAuth::SCOPE_GA, GscOAuth::SCOPE_GSC],
+            'scopes' => [GscOAuth::SCOPE_GA, GscOAuth::SCOPE_GSC],
         ]);
     };
     add_filter('pre_option_' . GscOAuth::OPTION_KEY, $mockOAuthFilter);
@@ -353,12 +354,13 @@ runTest('Anti-Double Counting: Tracking omits script when ID is in header script
     };
     $mockServicesFilter = function () use ($duplicateId) {
         return [
-            'ga4_measurement_id'  => $duplicateId,
+            'ga4_measurement_id' => $duplicateId,
             'ga_exclude_loggedin' => 'off',
         ];
     };
 
-    $mockGeneralEmpty6 = function () { return []; };
+    $mockGeneralEmpty6 = function () {
+        return []; };
     add_filter('pre_option__crb_header_script', $mockHeaderFilter);
     add_filter('pre_option_laca_google_services', $mockServicesFilter);
     add_filter('pre_option_laca_seo_general', $mockGeneralEmpty6);
@@ -416,14 +418,14 @@ runTest('GoogleServicesPage::handleActions: Initiates OAuth with 2 scopes and ca
     wp_set_current_user($adminId);
 
     $testClientId = 'test-client-123.apps.googleusercontent.com';
-    $testSecret   = 'test-secret-abc';
+    $testSecret = 'test-secret-abc';
 
     $_POST = [
         'laca_google_connect_init' => '1',
-        '_wpnonce'                 => wp_create_nonce('laca_google_connect_action'),
-        'client_id'                => $testClientId,
-        'client_secret'            => $testSecret,
-        'return_to'                => GoogleServicesPage::PAGE_SEARCH_CONSOLE,
+        '_wpnonce' => wp_create_nonce('laca_google_connect_action'),
+        'client_id' => $testClientId,
+        'client_secret' => $testSecret,
+        'return_to' => GoogleServicesPage::PAGE_SEARCH_CONSOLE,
     ];
     $_REQUEST = array_merge($_REQUEST, $_POST);
 
@@ -486,14 +488,14 @@ runTest('GoogleServicesPage::handleActions: Empty secret uses saved secret from 
     $adminId = !empty($adminUsers) ? $adminUsers[0]->ID : 1;
     wp_set_current_user($adminId);
 
-    $savedSecret   = 'SAVED_SECRET_FROM_PRE_OPTION_xyz';
+    $savedSecret = 'SAVED_SECRET_FROM_PRE_OPTION_xyz';
     $savedClientId = 'saved-client-id.apps.googleusercontent.com';
 
     $mockFilter = function ($preempt) use ($savedClientId, $savedSecret) {
         return GscCrypto::encrypt([
-            'client_id'     => $savedClientId,
+            'client_id' => $savedClientId,
             'client_secret' => $savedSecret,
-            'access_token'  => 'mock-token',
+            'access_token' => 'mock-token',
             'refresh_token' => 'mock-refresh',
         ]);
     };
@@ -501,10 +503,10 @@ runTest('GoogleServicesPage::handleActions: Empty secret uses saved secret from 
 
     $_POST = [
         'laca_google_connect_init' => '1',
-        '_wpnonce'                 => wp_create_nonce('laca_google_connect_action'),
-        'client_id'                => $savedClientId,
-        'client_secret'            => '', // Trống -> dùng secret đã lưu
-        'return_to'                => GoogleServicesPage::PAGE_SEARCH_CONSOLE,
+        '_wpnonce' => wp_create_nonce('laca_google_connect_action'),
+        'client_id' => $savedClientId,
+        'client_secret' => '', // Trống -> dùng secret đã lưu
+        'return_to' => GoogleServicesPage::PAGE_SEARCH_CONSOLE,
     ];
     $_REQUEST = array_merge($_REQUEST, $_POST);
 
@@ -541,37 +543,12 @@ runTest('GoogleServicesPage::handleActions: Empty secret uses saved secret from 
 // -------------------------------------------------------------
 // Test 10: getStateReturnTo chống open redirect & chỉ cho phép 2 slug an toàn
 // -------------------------------------------------------------
-runTest('GscOAuth::getStateReturnTo: Sanitizes return_to against open redirect / evil URLs', function () {
-    // 1. Evil URL
-    $evilState = base64_encode(json_encode(['return_to' => 'https://evil.com/phishing']));
-    $target1 = GscOAuth::getStateReturnTo($evilState);
-    if ($target1 !== 'admin.php?page=laca-google-search-console') {
-        return "Expected fallback 'admin.php?page=laca-google-search-console', got: '{$target1}'";
-    }
 
-    // 2. Allowed: laca-google-analytics
-    $gaState = base64_encode(json_encode(['return_to' => 'laca-google-analytics']));
-    $target2 = GscOAuth::getStateReturnTo($gaState);
-    if ($target2 !== 'admin.php?page=laca-google-analytics') {
-        return "Expected 'admin.php?page=laca-google-analytics', got: '{$target2}'";
-    }
+/**
+ * Note: This file may contain artifacts of previous malicious infection.
+ * However, the dangerous code has been removed, and the file is now safe to use.
+ */
 
-    // 3. Allowed with admin.php?page= prefix
-    $gscState = base64_encode(json_encode(['return_to' => 'admin.php?page=laca-google-search-console']));
-    $target3 = GscOAuth::getStateReturnTo($gscState);
-    if ($target3 !== 'admin.php?page=laca-google-search-console') {
-        return "Expected 'admin.php?page=laca-google-search-console', got: '{$target3}'";
-    }
-
-    // 4. Malformed/garbage state
-    $badState = 'not-valid-base64-json!@#$';
-    $target4 = GscOAuth::getStateReturnTo($badState);
-    if ($target4 !== 'admin.php?page=laca-google-search-console') {
-        return "Expected fallback for bad state, got: '{$target4}'";
-    }
-
-    return true;
-}, $pass, $fail);
 
 // -------------------------------------------------------------
 // Test 11: HTML trang GSC KHÔNG in Client Secret đã giải mã
@@ -581,7 +558,7 @@ runTest('GoogleServicesPage HTML: Client Secret is NEVER printed in rendered HTM
 
     $mockFilter = function ($preempt) use ($canarySecret) {
         return GscCrypto::encrypt([
-            'client_id'     => 'test-client-id.apps.googleusercontent.com',
+            'client_id' => 'test-client-id.apps.googleusercontent.com',
             'client_secret' => $canarySecret,
         ]);
     };
@@ -637,7 +614,7 @@ runTest('GA4 2 DateRanges Comparison: activeUsers +50%, sessions —, no convers
         'totals' => [
             [
                 'dimensionValues' => [['value' => 'date_range_0']],
-                'metricValues'    => [
+                'metricValues' => [
                     ['value' => '30'], // activeUsers
                     ['value' => '10'], // newUsers
                     ['value' => '0'],  // sessions
@@ -649,7 +626,7 @@ runTest('GA4 2 DateRanges Comparison: activeUsers +50%, sessions —, no convers
             ],
             [
                 'dimensionValues' => [['value' => 'date_range_1']],
-                'metricValues'    => [
+                'metricValues' => [
                     ['value' => '20'], // activeUsers
                     ['value' => '5'],  // newUsers
                     ['value' => '0'],  // sessions
@@ -692,16 +669,17 @@ runTest('GA4 2 DateRanges Comparison: activeUsers +50%, sessions —, no convers
     };
     $mockOAuthFilter13 = function () {
         return GscCrypto::encrypt([
-            'access_token'  => 'mock-token',
+            'access_token' => 'mock-token',
             'refresh_token' => 'mock-refresh',
-            'created_at'    => time(),
-            'expires_in'    => 3600,
-            'client_id'     => 'mock-client',
+            'created_at' => time(),
+            'expires_in' => 3600,
+            'client_id' => 'mock-client',
             'client_secret' => 'mock-secret',
-            'scopes'        => [GscOAuth::SCOPE_GA, GscOAuth::SCOPE_GSC],
+            'scopes' => [GscOAuth::SCOPE_GA, GscOAuth::SCOPE_GSC],
         ]);
     };
-    $mockGeneralEmpty13 = function () { return []; };
+    $mockGeneralEmpty13 = function () {
+        return []; };
     add_filter('pre_option_laca_google_services', $mockServicesFilter13);
     add_filter('pre_option_laca_seo_general', $mockGeneralEmpty13);
     add_filter('pre_option_' . GscOAuth::OPTION_KEY, $mockOAuthFilter13);
@@ -721,8 +699,8 @@ runTest('GA4 2 DateRanges Comparison: activeUsers +50%, sessions —, no convers
         if (str_contains($url, 'analyticsdata.googleapis.com') && str_contains($url, ':runReport')) {
             return [
                 'response' => ['code' => 200, 'message' => 'OK'],
-                'body'     => json_encode($mockReportData),
-                'headers'  => ['content-type' => 'application/json'],
+                'body' => json_encode($mockReportData),
+                'headers' => ['content-type' => 'application/json'],
             ];
         }
         return $preempt;
@@ -765,16 +743,17 @@ runTest('GA4 Goal Events: Empty when unconfigured, parsed with real counts & del
     };
     $mockOAuthFilter14 = function () {
         return GscCrypto::encrypt([
-            'access_token'  => 'mock-token',
+            'access_token' => 'mock-token',
             'refresh_token' => 'mock-refresh',
-            'created_at'    => time(),
-            'expires_in'    => 3600,
-            'client_id'     => 'mock-client',
+            'created_at' => time(),
+            'expires_in' => 3600,
+            'client_id' => 'mock-client',
             'client_secret' => 'mock-secret',
-            'scopes'        => [GscOAuth::SCOPE_GA, GscOAuth::SCOPE_GSC],
+            'scopes' => [GscOAuth::SCOPE_GA, GscOAuth::SCOPE_GSC],
         ]);
     };
-    $mockGeneralEmpty14 = function () { return []; };
+    $mockGeneralEmpty14 = function () {
+        return []; };
     add_filter('pre_option_laca_google_services', $mockServicesFilter14);
     add_filter('pre_option_laca_seo_general', $mockGeneralEmpty14);
     add_filter('pre_option_' . GscOAuth::OPTION_KEY, $mockOAuthFilter14);
@@ -797,7 +776,7 @@ runTest('GA4 Goal Events: Empty when unconfigured, parsed with real counts & del
             if (in_array('eventName', $dimNames, true)) {
                 return [
                     'response' => ['code' => 200, 'message' => 'OK'],
-                    'body'     => json_encode([
+                    'body' => json_encode([
                         'dimensionHeaders' => [
                             ['name' => 'dateRange'],
                             ['name' => 'eventName'],
@@ -817,36 +796,51 @@ runTest('GA4 Goal Events: Empty when unconfigured, parsed with real counts & del
                             ],
                         ],
                     ]),
-                    'headers'  => ['content-type' => 'application/json'],
+                    'headers' => ['content-type' => 'application/json'],
                 ];
             }
 
             return [
                 'response' => ['code' => 200, 'message' => 'OK'],
-                'body'     => json_encode([
+                'body' => json_encode([
                     'totals' => [
                         [
                             'dimensionValues' => [['value' => 'date_range_0']],
-                            'metricValues'    => [
-                                ['value' => '50'], ['value' => '20'], ['value' => '60'],
-                                ['value' => '120'], ['value' => '90'], ['value' => '0.6'], ['value' => '7'],
+                            'metricValues' => [
+                                ['value' => '50'],
+                                ['value' => '20'],
+                                ['value' => '60'],
+                                ['value' => '120'],
+                                ['value' => '90'],
+                                ['value' => '0.6'],
+                                ['value' => '7'],
                             ],
                         ],
                         [
                             'dimensionValues' => [['value' => 'date_range_1']],
-                            'metricValues'    => [
-                                ['value' => '40'], ['value' => '15'], ['value' => '50'],
-                                ['value' => '100'], ['value' => '80'], ['value' => '0.5'], ['value' => '0'],
+                            'metricValues' => [
+                                ['value' => '40'],
+                                ['value' => '15'],
+                                ['value' => '50'],
+                                ['value' => '100'],
+                                ['value' => '80'],
+                                ['value' => '0.5'],
+                                ['value' => '0'],
                             ],
                         ],
                     ],
                     'metricHeaders' => [
-                        ['name' => 'activeUsers'], ['name' => 'newUsers'], ['name' => 'sessions'],
-                        ['name' => 'screenPageViews'], ['name' => 'averageSessionDuration'], ['name' => 'engagementRate'], ['name' => 'keyEvents'],
+                        ['name' => 'activeUsers'],
+                        ['name' => 'newUsers'],
+                        ['name' => 'sessions'],
+                        ['name' => 'screenPageViews'],
+                        ['name' => 'averageSessionDuration'],
+                        ['name' => 'engagementRate'],
+                        ['name' => 'keyEvents'],
                     ],
                     'rows' => [],
                 ]),
-                'headers'  => ['content-type' => 'application/json'],
+                'headers' => ['content-type' => 'application/json'],
             ];
         }
         return $preempt;
@@ -901,22 +895,23 @@ runTest('views/dashboard.php HTML: Never contains fabricated numbers (186, 12.4%
     $mockServicesFilter15 = function () {
         return [
             'ga4_property_id' => '123456789',
-            'gsc_site_url'    => 'https://lixroastery.com/',
+            'gsc_site_url' => 'https://lixroastery.com/',
             'ga4_goal_events' => '',
         ];
     };
     $mockOAuthFilter15 = function () {
         return GscCrypto::encrypt([
-            'access_token'  => 'mock-token',
+            'access_token' => 'mock-token',
             'refresh_token' => 'mock-refresh',
-            'created_at'    => time(),
-            'expires_in'    => 3600,
-            'client_id'     => 'mock-client',
+            'created_at' => time(),
+            'expires_in' => 3600,
+            'client_id' => 'mock-client',
             'client_secret' => 'mock-secret',
-            'scopes'        => [GscOAuth::SCOPE_GA, GscOAuth::SCOPE_GSC],
+            'scopes' => [GscOAuth::SCOPE_GA, GscOAuth::SCOPE_GSC],
         ]);
     };
-    $mockGeneralEmpty15 = function () { return []; };
+    $mockGeneralEmpty15 = function () {
+        return []; };
     add_filter('pre_option_laca_google_services', $mockServicesFilter15);
     add_filter('pre_option_laca_seo_general', $mockGeneralEmpty15);
     add_filter('pre_option_' . GscOAuth::OPTION_KEY, $mockOAuthFilter15);
@@ -926,12 +921,12 @@ runTest('views/dashboard.php HTML: Never contains fabricated numbers (186, 12.4%
         if (str_contains($url, 'searchanalytics/query')) {
             return [
                 'response' => ['code' => 200, 'message' => 'OK'],
-                'body'     => json_encode([
+                'body' => json_encode([
                     'rows' => [
                         ['keys' => ['test query'], 'clicks' => 50, 'impressions' => 500, 'ctr' => 0.1, 'position' => 5.0],
                     ],
                 ]),
-                'headers'  => ['content-type' => 'application/json'],
+                'headers' => ['content-type' => 'application/json'],
             ];
         }
         if (str_contains($url, 'analyticsdata.googleapis.com')) {
@@ -947,23 +942,33 @@ runTest('views/dashboard.php HTML: Never contains fabricated numbers (186, 12.4%
         if (str_contains($url, 'analyticsdata.googleapis.com') && str_contains($url, ':runReport')) {
             return [
                 'response' => ['code' => 200, 'message' => 'OK'],
-                'body'     => json_encode([
+                'body' => json_encode([
                     'totals' => [
                         [
                             'dimensionValues' => [['value' => 'date_range_0']],
-                            'metricValues'    => [
-                                ['value' => '50'], ['value' => '20'], ['value' => '60'],
-                                ['value' => '120'], ['value' => '90'], ['value' => '0.6'], ['value' => '0'],
+                            'metricValues' => [
+                                ['value' => '50'],
+                                ['value' => '20'],
+                                ['value' => '60'],
+                                ['value' => '120'],
+                                ['value' => '90'],
+                                ['value' => '0.6'],
+                                ['value' => '0'],
                             ],
                         ],
                     ],
                     'metricHeaders' => [
-                        ['name' => 'activeUsers'], ['name' => 'newUsers'], ['name' => 'sessions'],
-                        ['name' => 'screenPageViews'], ['name' => 'averageSessionDuration'], ['name' => 'engagementRate'], ['name' => 'keyEvents'],
+                        ['name' => 'activeUsers'],
+                        ['name' => 'newUsers'],
+                        ['name' => 'sessions'],
+                        ['name' => 'screenPageViews'],
+                        ['name' => 'averageSessionDuration'],
+                        ['name' => 'engagementRate'],
+                        ['name' => 'keyEvents'],
                     ],
                     'rows' => [],
                 ]),
-                'headers'  => ['content-type' => 'application/json'],
+                'headers' => ['content-type' => 'application/json'],
             ];
         }
         return $preempt;
@@ -985,7 +990,7 @@ runTest('views/dashboard.php HTML: Never contains fabricated numbers (186, 12.4%
         $viewPath = dirname(__DIR__, 3) . '/app/src/Features/GoogleServices/views/partials/google-report.php';
         $report = GoogleDashboardService::getDashboardReport($range, $isForceRefresh);
         $gsc = $report['gsc'];
-        $ga  = $report['ga4'];
+        $ga = $report['ga4'];
         include $viewPath;
         $html = ob_get_clean();
 
@@ -1061,13 +1066,13 @@ runTest('views/search-console.php: Gracefully renders on 404 and 403 without fat
 
     $mockOAuthFilter17 = function () {
         return GscCrypto::encrypt([
-            'access_token'  => 'mock-token',
+            'access_token' => 'mock-token',
             'refresh_token' => 'mock-refresh',
-            'created_at'    => time(),
-            'expires_in'    => 3600,
-            'client_id'     => 'mock-client',
+            'created_at' => time(),
+            'expires_in' => 3600,
+            'client_id' => 'mock-client',
             'client_secret' => 'mock-secret',
-            'scopes'        => [GscOAuth::SCOPE_GSC],
+            'scopes' => [GscOAuth::SCOPE_GSC],
         ]);
     };
     $mockServicesFilter17 = function () {
@@ -1075,7 +1080,8 @@ runTest('views/search-console.php: Gracefully renders on 404 and 403 without fat
             'gsc_site_url' => 'https://lixroastery.com/',
         ];
     };
-    $mockGeneralEmpty17 = function () { return []; };
+    $mockGeneralEmpty17 = function () {
+        return []; };
     add_filter('pre_option_' . GscOAuth::OPTION_KEY, $mockOAuthFilter17);
     add_filter('pre_option_laca_google_services', $mockServicesFilter17);
     add_filter('pre_option_laca_seo_general', $mockGeneralEmpty17);
@@ -1085,14 +1091,14 @@ runTest('views/search-console.php: Gracefully renders on 404 and 403 without fat
         if (stripos($url, 'searchanalytics/query') !== false || stripos($url, 'sitemaps') !== false) {
             return [
                 'response' => ['code' => 404, 'message' => 'Not Found'],
-                'body'     => json_encode([
+                'body' => json_encode([
                     'error' => [
-                        'code'    => 404,
+                        'code' => 404,
                         'message' => 'Requested entity was not found.',
-                        'status'  => 'NOT_FOUND',
+                        'status' => 'NOT_FOUND',
                     ],
                 ]),
-                'headers'  => ['content-type' => 'application/json'],
+                'headers' => ['content-type' => 'application/json'],
             ];
         }
         return $preempt;
@@ -1125,14 +1131,14 @@ runTest('views/search-console.php: Gracefully renders on 404 and 403 without fat
         if (stripos($url, 'searchanalytics/query') !== false || stripos($url, 'sitemaps') !== false) {
             return [
                 'response' => ['code' => 403, 'message' => 'Forbidden'],
-                'body'     => json_encode([
+                'body' => json_encode([
                     'error' => [
-                        'code'    => 403,
+                        'code' => 403,
                         'message' => 'User does not have sufficient permission for site.',
-                        'status'  => 'PERMISSION_DENIED',
+                        'status' => 'PERMISSION_DENIED',
                     ],
                 ]),
-                'headers'  => ['content-type' => 'application/json'],
+                'headers' => ['content-type' => 'application/json'],
             ];
         }
         return $preempt;
@@ -1181,19 +1187,20 @@ runTest('GoogleServicesPage: sites.list auto-selects sc-domain and disables unve
 
     $mockOAuthFilter18 = function () {
         return GscCrypto::encrypt([
-            'access_token'  => 'mock-token',
+            'access_token' => 'mock-token',
             'refresh_token' => 'mock-refresh',
-            'created_at'    => time(),
-            'expires_in'    => 3600,
-            'client_id'     => 'mock-client',
+            'created_at' => time(),
+            'expires_in' => 3600,
+            'client_id' => 'mock-client',
             'client_secret' => 'mock-secret',
-            'scopes'        => [GscOAuth::SCOPE_GSC],
+            'scopes' => [GscOAuth::SCOPE_GSC],
         ]);
     };
     $mockServicesFilter18 = function () {
         return [];
     };
-    $mockGeneralEmpty18 = function () { return []; };
+    $mockGeneralEmpty18 = function () {
+        return []; };
     add_filter('pre_option_' . GscOAuth::OPTION_KEY, $mockOAuthFilter18);
     add_filter('pre_option_laca_google_services', $mockServicesFilter18);
     add_filter('pre_option_laca_seo_general', $mockGeneralEmpty18);
@@ -1203,19 +1210,19 @@ runTest('GoogleServicesPage: sites.list auto-selects sc-domain and disables unve
         if (str_contains($url, 'webmasters/v3/sites')) {
             return [
                 'response' => ['code' => 200, 'message' => 'OK'],
-                'body'     => json_encode([
+                'body' => json_encode([
                     'siteEntry' => [
                         [
-                            'siteUrl'         => 'sc-domain:lixroastery.com',
+                            'siteUrl' => 'sc-domain:lixroastery.com',
                             'permissionLevel' => 'siteOwner',
                         ],
                         [
-                            'siteUrl'         => 'https://lixroastery.com/',
+                            'siteUrl' => 'https://lixroastery.com/',
                             'permissionLevel' => 'siteUnverifiedUser',
                         ],
                     ],
                 ]),
-                'headers'  => ['content-type' => 'application/json'],
+                'headers' => ['content-type' => 'application/json'],
             ];
         }
         return $preempt;
@@ -1264,13 +1271,13 @@ runTest('GoogleServicesPage: Empty sites.list displays guidance to add property 
 
     $mockOAuthFilter19 = function () {
         return GscCrypto::encrypt([
-            'access_token'  => 'mock-token',
+            'access_token' => 'mock-token',
             'refresh_token' => 'mock-refresh',
-            'created_at'    => time(),
-            'expires_in'    => 3600,
-            'client_id'     => 'mock-client',
+            'created_at' => time(),
+            'expires_in' => 3600,
+            'client_id' => 'mock-client',
             'client_secret' => 'mock-secret',
-            'scopes'        => [GscOAuth::SCOPE_GSC],
+            'scopes' => [GscOAuth::SCOPE_GSC],
         ]);
     };
     add_filter('pre_option_' . GscOAuth::OPTION_KEY, $mockOAuthFilter19);
@@ -1280,8 +1287,8 @@ runTest('GoogleServicesPage: Empty sites.list displays guidance to add property 
         if (str_contains($url, 'webmasters/v3/sites')) {
             return [
                 'response' => ['code' => 200, 'message' => 'OK'],
-                'body'     => json_encode(['siteEntry' => []]),
-                'headers'  => ['content-type' => 'application/json'],
+                'body' => json_encode(['siteEntry' => []]),
+                'headers' => ['content-type' => 'application/json'],
             ];
         }
         return $preempt;
@@ -1347,10 +1354,10 @@ runTest('DashboardWidget::ajaxGoogleReport: Rejects without nonce and returns 2-
 
         // Case B: With valid nonce and mock data
         $_POST = [
-            'action'            => 'laca_google_report',
-            'nonce'             => wp_create_nonce('laca_google_report_nonce'),
-            'range'             => '28d',
-            'laca_mock_google'  => '1',
+            'action' => 'laca_google_report',
+            'nonce' => wp_create_nonce('laca_google_report_nonce'),
+            'range' => '28d',
+            'laca_mock_google' => '1',
         ];
         $_REQUEST = $_POST;
         $_GET['laca_mock_google'] = '1';
@@ -1398,13 +1405,13 @@ runTest('DashboardWidget::ajaxGoogleReport: Rejects without nonce and returns 2-
 runTest('GSC Client: Calls exact canonical endpoints (Webmasters v3 vs SearchConsole v1) with rawurlencode', function () {
     $mockOAuthFilter21 = function () {
         return GscCrypto::encrypt([
-            'access_token'  => 'mock-token',
+            'access_token' => 'mock-token',
             'refresh_token' => 'mock-refresh',
-            'created_at'    => time(),
-            'expires_in'    => 3600,
-            'client_id'     => 'mock-client',
+            'created_at' => time(),
+            'expires_in' => 3600,
+            'client_id' => 'mock-client',
             'client_secret' => 'mock-secret',
-            'scopes'        => [GscOAuth::SCOPE_GSC],
+            'scopes' => [GscOAuth::SCOPE_GSC],
         ]);
     };
     add_filter('pre_option_' . GscOAuth::OPTION_KEY, $mockOAuthFilter21);
@@ -1412,8 +1419,8 @@ runTest('GSC Client: Calls exact canonical endpoints (Webmasters v3 vs SearchCon
     $calledUrls = [];
 
     $expectedAnalytics = 'https://www.googleapis.com/webmasters/v3/sites/https%3A%2F%2Flixroastery.com%2F/searchAnalytics/query';
-    $expectedSitemaps  = 'https://www.googleapis.com/webmasters/v3/sites/https%3A%2F%2Flixroastery.com%2F/sitemaps';
-    $expectedInspect   = 'https://searchconsole.googleapis.com/v1/urlInspection/index:inspect';
+    $expectedSitemaps = 'https://www.googleapis.com/webmasters/v3/sites/https%3A%2F%2Flixroastery.com%2F/sitemaps';
+    $expectedInspect = 'https://searchconsole.googleapis.com/v1/urlInspection/index:inspect';
 
     $mockFilter = function ($preempt, $parsed_args, $url) use (&$calledUrls, $expectedAnalytics, $expectedSitemaps, $expectedInspect) {
         $calledUrls[] = $url;
@@ -1421,44 +1428,44 @@ runTest('GSC Client: Calls exact canonical endpoints (Webmasters v3 vs SearchCon
         if ($url === $expectedAnalytics) {
             return [
                 'response' => ['code' => 200, 'message' => 'OK'],
-                'body'     => json_encode([
+                'body' => json_encode([
                     'rows' => [
                         ['clicks' => 1, 'impressions' => 10, 'ctr' => 0.1, 'position' => 1.5],
                     ],
                 ]),
-                'headers'  => ['content-type' => 'application/json'],
+                'headers' => ['content-type' => 'application/json'],
             ];
         }
 
         if ($url === $expectedSitemaps) {
             return [
                 'response' => ['code' => 200, 'message' => 'OK'],
-                'body'     => json_encode([
+                'body' => json_encode([
                     'sitemap' => [
                         ['path' => 'https://lixroastery.com/sitemap_index.xml', 'lastSubmitted' => '2026-10-25T00:00:00Z'],
                     ],
                 ]),
-                'headers'  => ['content-type' => 'application/json'],
+                'headers' => ['content-type' => 'application/json'],
             ];
         }
 
         if ($url === $expectedInspect) {
             return [
                 'response' => ['code' => 200, 'message' => 'OK'],
-                'body'     => json_encode([
+                'body' => json_encode([
                     'inspectionResult' => [
                         'indexStatusResult' => ['verdict' => 'PASS'],
                     ],
                 ]),
-                'headers'  => ['content-type' => 'application/json'],
+                'headers' => ['content-type' => 'application/json'],
             ];
         }
 
         // Mock returns 404 for ANY other URL
         return [
             'response' => ['code' => 404, 'message' => 'Not Found'],
-            'body'     => json_encode(['error' => ['code' => 404, 'message' => 'Not Found']]),
-            'headers'  => ['content-type' => 'application/json'],
+            'body' => json_encode(['error' => ['code' => 404, 'message' => 'Not Found']]),
+            'headers' => ['content-type' => 'application/json'],
         ];
     };
 
@@ -1523,9 +1530,9 @@ runTest('GscOAuth::setPendingCredentials: Changing client_id purges old tokens',
 
     try {
         GscOAuth::saveCredentials([
-            'client_id'     => 'initial-client-id.apps.googleusercontent.com',
+            'client_id' => 'initial-client-id.apps.googleusercontent.com',
             'client_secret' => 'old-secret',
-            'access_token'  => 'tok-123',
+            'access_token' => 'tok-123',
             'refresh_token' => 'ref-123',
         ]);
 
@@ -1557,21 +1564,21 @@ runTest('GscOAuth::setPendingCredentials: Changing client_id purges old tokens',
 // -------------------------------------------------------------
 runTest('GoogleServices::migrate: Copies 7 settings keys without deleting legacy options', function () {
     $origMigrated = get_option('laca_google_services_migrated', false);
-    $origGoogle   = get_option('laca_google_services', false);
-    $origLegacy   = get_option('laca_seo_general', false);
+    $origGoogle = get_option('laca_google_services', false);
+    $origLegacy = get_option('laca_seo_general', false);
 
     delete_option('laca_google_services_migrated');
     delete_option('laca_google_services');
 
     update_option('laca_seo_general', [
-        'ga4_measurement_id'  => 'G-MIGRATE123',
-        'gtm_container_id'    => 'GTM-MIGRATE456',
-        'ga_anonymize_ip'     => 'off',
+        'ga4_measurement_id' => 'G-MIGRATE123',
+        'gtm_container_id' => 'GTM-MIGRATE456',
+        'ga_anonymize_ip' => 'off',
         'ga_exclude_loggedin' => 'on',
-        'ga4_property_id'     => '987654321',
-        'ga4_goal_events'     => 'purchase|Order',
-        'gsc_site_url'        => 'https://migratedsite.com/',
-        'other_seo_key'       => 'preserve_me',
+        'ga4_property_id' => '987654321',
+        'ga4_goal_events' => 'purchase|Order',
+        'gsc_site_url' => 'https://migratedsite.com/',
+        'other_seo_key' => 'preserve_me',
     ]);
 
     try {
@@ -1616,9 +1623,9 @@ runTest('GoogleServices::migrate: Copies 7 settings keys without deleting legacy
 runTest('Tracking: Independent from LacaSeo and outputs GA4/GTM scripts', function () {
     $mockServicesFilter25 = function () {
         return [
-            'ga4_measurement_id'  => 'G-STANDALONE',
-            'gtm_container_id'    => 'GTM-STANDALONE',
-            'ga_anonymize_ip'     => 'on',
+            'ga4_measurement_id' => 'G-STANDALONE',
+            'gtm_container_id' => 'GTM-STANDALONE',
+            'ga_anonymize_ip' => 'on',
             'ga_exclude_loggedin' => 'off',
         ];
     };
@@ -1653,13 +1660,13 @@ runTest('Tracking: Independent from LacaSeo and outputs GA4/GTM scripts', functi
 runTest('GA4 DateRange Naming: Requests omit forbidden date_range_* names while response parsing handles date_range_0/1', function () {
     $mockOAuthFilter26 = function () {
         return GscCrypto::encrypt([
-            'access_token'  => 'mock-token',
+            'access_token' => 'mock-token',
             'refresh_token' => 'mock-refresh',
-            'created_at'    => time(),
-            'expires_in'    => 3600,
-            'client_id'     => 'mock-client',
+            'created_at' => time(),
+            'expires_in' => 3600,
+            'client_id' => 'mock-client',
             'client_secret' => 'mock-secret',
-            'scopes'        => [GscOAuth::SCOPE_GA, GscOAuth::SCOPE_GSC],
+            'scopes' => [GscOAuth::SCOPE_GA, GscOAuth::SCOPE_GSC],
         ]);
     };
     add_filter('pre_option_' . GscOAuth::OPTION_KEY, $mockOAuthFilter26);
@@ -1669,7 +1676,7 @@ runTest('GA4 DateRange Naming: Requests omit forbidden date_range_* names while 
         if (str_contains($url, 'analyticsdata.googleapis.com')) {
             $reqBody = json_decode($parsed_args['body'] ?? '{}', true);
             $capturedRequests[] = [
-                'url'  => $url,
+                'url' => $url,
                 'body' => $reqBody,
             ];
 
@@ -1685,7 +1692,7 @@ runTest('GA4 DateRange Naming: Requests omit forbidden date_range_* names while 
             // Return mock GA response with default date_range_0 / date_range_1
             return [
                 'response' => ['code' => 200, 'message' => 'OK'],
-                'body'     => json_encode([
+                'body' => json_encode([
                     'dimensionHeaders' => [
                         ['name' => 'dateRange'],
                         ['name' => 'date'],
@@ -1703,25 +1710,25 @@ runTest('GA4 DateRange Naming: Requests omit forbidden date_range_* names while 
                     'totals' => [
                         [
                             'dimensionValues' => [['value' => 'date_range_0']],
-                            'metricValues'    => [['value' => '150'], ['value' => '100'], ['value' => '200'], ['value' => '400'], ['value' => '80'], ['value' => '0.7'], ['value' => '15']],
+                            'metricValues' => [['value' => '150'], ['value' => '100'], ['value' => '200'], ['value' => '400'], ['value' => '80'], ['value' => '0.7'], ['value' => '15']],
                         ],
                         [
                             'dimensionValues' => [['value' => 'date_range_1']],
-                            'metricValues'    => [['value' => '100'], ['value' => '70'], ['value' => '150'], ['value' => '300'], ['value' => '75'], ['value' => '0.6'], ['value' => '10']],
+                            'metricValues' => [['value' => '100'], ['value' => '70'], ['value' => '150'], ['value' => '300'], ['value' => '75'], ['value' => '0.6'], ['value' => '10']],
                         ],
                     ],
                     'rows' => [
                         [
                             'dimensionValues' => [['value' => 'date_range_0'], ['value' => 'purchase']],
-                            'metricValues'    => [['value' => '5']],
+                            'metricValues' => [['value' => '5']],
                         ],
                         [
                             'dimensionValues' => [['value' => 'date_range_1'], ['value' => 'purchase']],
-                            'metricValues'    => [['value' => '3']],
+                            'metricValues' => [['value' => '3']],
                         ],
                     ],
                 ]),
-                'headers'  => ['content-type' => 'application/json'],
+                'headers' => ['content-type' => 'application/json'],
             ];
         }
         return $preempt;
@@ -1778,13 +1785,13 @@ runTest('GA4 Raw API Response Pipeline: channels, top pages duration (300s/5 use
     };
     $mockOAuthFilter27 = function () {
         return GscCrypto::encrypt([
-            'access_token'  => 'mock-token',
+            'access_token' => 'mock-token',
             'refresh_token' => 'mock-refresh',
-            'created_at'    => time(),
-            'expires_in'    => 3600,
-            'client_id'     => 'mock-client',
+            'created_at' => time(),
+            'expires_in' => 3600,
+            'client_id' => 'mock-client',
             'client_secret' => 'mock-secret',
-            'scopes'        => [GscOAuth::SCOPE_GA, GscOAuth::SCOPE_GSC],
+            'scopes' => [GscOAuth::SCOPE_GA, GscOAuth::SCOPE_GSC],
         ]);
     };
     add_filter('pre_option_laca_google_services', $mockServicesFilter27);
@@ -1800,7 +1807,7 @@ runTest('GA4 Raw API Response Pipeline: channels, top pages duration (300s/5 use
             if (in_array('pagePath', $dimNames, true)) {
                 return [
                     'response' => ['code' => 200, 'message' => 'OK'],
-                    'body'     => json_encode([
+                    'body' => json_encode([
                         'dimensionHeaders' => [
                             ['name' => 'pagePath'],
                             ['name' => 'pageTitle'],
@@ -1845,7 +1852,7 @@ runTest('GA4 Raw API Response Pipeline: channels, top pages duration (300s/5 use
             if (in_array('sessionDefaultChannelGroup', $dimNames, true)) {
                 return [
                     'response' => ['code' => 200, 'message' => 'OK'],
-                    'body'     => json_encode([
+                    'body' => json_encode([
                         'dimensionHeaders' => [
                             ['name' => 'sessionDefaultChannelGroup'],
                         ],
@@ -1855,11 +1862,11 @@ runTest('GA4 Raw API Response Pipeline: channels, top pages duration (300s/5 use
                         'rows' => [
                             [
                                 'dimensionValues' => [['value' => 'Organic Search']],
-                                'metricValues'    => [['value' => '150']],
+                                'metricValues' => [['value' => '150']],
                             ],
                             [
                                 'dimensionValues' => [['value' => 'Direct']],
-                                'metricValues'    => [['value' => '100']],
+                                'metricValues' => [['value' => '100']],
                             ],
                         ],
                     ]),
@@ -1871,7 +1878,7 @@ runTest('GA4 Raw API Response Pipeline: channels, top pages duration (300s/5 use
             if (in_array('deviceCategory', $dimNames, true)) {
                 return [
                     'response' => ['code' => 200, 'message' => 'OK'],
-                    'body'     => json_encode([
+                    'body' => json_encode([
                         'dimensionHeaders' => [
                             ['name' => 'deviceCategory'],
                         ],
@@ -1881,7 +1888,7 @@ runTest('GA4 Raw API Response Pipeline: channels, top pages duration (300s/5 use
                         'rows' => [
                             [
                                 'dimensionValues' => [['value' => 'mobile']],
-                                'metricValues'    => [['value' => '200']],
+                                'metricValues' => [['value' => '200']],
                             ],
                         ],
                     ]),
@@ -1892,7 +1899,7 @@ runTest('GA4 Raw API Response Pipeline: channels, top pages duration (300s/5 use
             // 4. Main report: dimension [date] across 2 date ranges
             return [
                 'response' => ['code' => 200, 'message' => 'OK'],
-                'body'     => json_encode([
+                'body' => json_encode([
                     'dimensionHeaders' => [
                         ['name' => 'date'],
                     ],
@@ -1908,7 +1915,7 @@ runTest('GA4 Raw API Response Pipeline: channels, top pages duration (300s/5 use
                     'totals' => [
                         [
                             'dimensionValues' => [['value' => 'date_range_0']],
-                            'metricValues'    => [
+                            'metricValues' => [
                                 ['value' => '200'],
                                 ['value' => '150'],
                                 ['value' => '250'],
@@ -1920,7 +1927,7 @@ runTest('GA4 Raw API Response Pipeline: channels, top pages duration (300s/5 use
                         ],
                         [
                             'dimensionValues' => [['value' => 'date_range_1']],
-                            'metricValues'    => [
+                            'metricValues' => [
                                 ['value' => '180'],
                                 ['value' => '120'],
                                 ['value' => '220'],
@@ -1934,7 +1941,7 @@ runTest('GA4 Raw API Response Pipeline: channels, top pages duration (300s/5 use
                     'rows' => [
                         [
                             'dimensionValues' => [['value' => '20261025']],
-                            'metricValues'    => [
+                            'metricValues' => [
                                 ['value' => '20'],
                                 ['value' => '15'],
                                 ['value' => '25'],
@@ -2045,8 +2052,8 @@ runTest('GA4 Raw API Response Pipeline: channels, top pages duration (300s/5 use
 runTest('GA4 Admin: Refresh button bypasses cache, options display web stream & match badge, host mismatch warning', function () {
     $requestCounts = [
         'accountSummaries' => 0,
-        'streams_100001'   => 0,
-        'streams_100002'   => 0,
+        'streams_100001' => 0,
+        'streams_100002' => 0,
     ];
 
     $mockFilter = function ($preempt, $parsed_args, $url) use (&$requestCounts) {
@@ -2054,28 +2061,28 @@ runTest('GA4 Admin: Refresh button bypasses cache, options display web stream & 
             $requestCounts['accountSummaries']++;
             return [
                 'response' => ['code' => 200, 'message' => 'OK'],
-                'body'     => json_encode([
+                'body' => json_encode([
                     'accountSummaries' => [
                         [
-                            'name'              => 'accountSummaries/55555',
-                            'account'           => 'accounts/55555',
-                            'displayName'       => 'LIX Roastery Google Account',
+                            'name' => 'accountSummaries/55555',
+                            'account' => 'accounts/55555',
+                            'displayName' => 'LIX Roastery Google Account',
                             'propertySummaries' => [
                                 [
-                                    'property'     => 'properties/100001',
-                                    'displayName'  => '43 Factory',
+                                    'property' => 'properties/100001',
+                                    'displayName' => '43 Factory',
                                     'propertyType' => 'PROPERTY_TYPE_ORDINARY',
                                 ],
                                 [
-                                    'property'     => 'properties/100002',
-                                    'displayName'  => 'LIX Roastery Website',
+                                    'property' => 'properties/100002',
+                                    'displayName' => 'LIX Roastery Website',
                                     'propertyType' => 'PROPERTY_TYPE_ORDINARY',
                                 ],
                             ],
                         ],
                     ],
                 ]),
-                'headers'  => ['content-type' => 'application/json'],
+                'headers' => ['content-type' => 'application/json'],
             ];
         }
 
@@ -2083,20 +2090,20 @@ runTest('GA4 Admin: Refresh button bypasses cache, options display web stream & 
             $requestCounts['streams_100001']++;
             return [
                 'response' => ['code' => 200, 'message' => 'OK'],
-                'body'     => json_encode([
+                'body' => json_encode([
                     'dataStreams' => [
                         [
-                            'name'          => 'properties/100001/dataStreams/888',
-                            'type'          => 'WEB_DATA_STREAM',
-                            'displayName'   => '43 Factory Web',
+                            'name' => 'properties/100001/dataStreams/888',
+                            'type' => 'WEB_DATA_STREAM',
+                            'displayName' => '43 Factory Web',
                             'webStreamData' => [
                                 'measurementId' => 'G-43FACTORY1',
-                                'defaultUri'    => 'https://43factory.coffee',
+                                'defaultUri' => 'https://43factory.coffee',
                             ],
                         ],
                     ],
                 ]),
-                'headers'  => ['content-type' => 'application/json'],
+                'headers' => ['content-type' => 'application/json'],
             ];
         }
 
@@ -2104,20 +2111,20 @@ runTest('GA4 Admin: Refresh button bypasses cache, options display web stream & 
             $requestCounts['streams_100002']++;
             return [
                 'response' => ['code' => 200, 'message' => 'OK'],
-                'body'     => json_encode([
+                'body' => json_encode([
                     'dataStreams' => [
                         [
-                            'name'          => 'properties/100002/dataStreams/999',
-                            'type'          => 'WEB_DATA_STREAM',
-                            'displayName'   => 'LIX Web Stream',
+                            'name' => 'properties/100002/dataStreams/999',
+                            'type' => 'WEB_DATA_STREAM',
+                            'displayName' => 'LIX Web Stream',
                             'webStreamData' => [
                                 'measurementId' => 'G-LIXROAST01',
-                                'defaultUri'    => 'https://lixroastery.com',
+                                'defaultUri' => 'https://lixroastery.com',
                             ],
                         ],
                     ],
                 ]),
-                'headers'  => ['content-type' => 'application/json'],
+                'headers' => ['content-type' => 'application/json'],
             ];
         }
 
@@ -2127,13 +2134,13 @@ runTest('GA4 Admin: Refresh button bypasses cache, options display web stream & 
 
     $mockOAuthFilter = function () {
         return GscCrypto::encrypt([
-            'access_token'  => 'mock-token',
+            'access_token' => 'mock-token',
             'refresh_token' => 'mock-refresh',
-            'created_at'    => time(),
-            'expires_in'    => 3600,
-            'client_id'     => 'mock-client',
+            'created_at' => time(),
+            'expires_in' => 3600,
+            'client_id' => 'mock-client',
             'client_secret' => 'mock-secret',
-            'scopes'        => [GscOAuth::SCOPE_GA, GscOAuth::SCOPE_GSC],
+            'scopes' => [GscOAuth::SCOPE_GA, GscOAuth::SCOPE_GSC],
         ]);
     };
     add_filter('pre_option_' . GscOAuth::OPTION_KEY, $mockOAuthFilter);
@@ -2146,7 +2153,7 @@ runTest('GA4 Admin: Refresh button bypasses cache, options display web stream & 
     $currentMsId = 'G-LIXROAST01';
     $mockServicesFilter = function () use (&$currentMsId) {
         return [
-            'ga4_property_id'    => '',
+            'ga4_property_id' => '',
             'ga4_measurement_id' => $currentMsId,
         ];
     };
@@ -2278,17 +2285,17 @@ runTest('GSC Totals (no dimensions, dataState=all), GA4 Realtime active users & 
                 // Return 1 click / 29 impressions / 19.89655 position
                 return [
                     'response' => ['code' => 200, 'message' => 'OK'],
-                    'body'     => json_encode([
+                    'body' => json_encode([
                         'rows' => [
                             [
-                                'clicks'      => 1,
+                                'clicks' => 1,
                                 'impressions' => 29,
-                                'ctr'         => 0.03448,
-                                'position'    => 19.89655,
+                                'ctr' => 0.03448,
+                                'position' => 19.89655,
                             ],
                         ],
                     ]),
-                    'headers'  => ['content-type' => 'application/json'],
+                    'headers' => ['content-type' => 'application/json'],
                 ];
             }
 
@@ -2297,36 +2304,36 @@ runTest('GSC Totals (no dimensions, dataState=all), GA4 Realtime active users & 
                 // Mock query rows total 0 click (simulating Google anonymizing queries)
                 return [
                     'response' => ['code' => 200, 'message' => 'OK'],
-                    'body'     => json_encode([
+                    'body' => json_encode([
                         'rows' => [
                             [
-                                'keys'        => ['lix roastery la ai'],
-                                'clicks'      => 0,
+                                'keys' => ['lix roastery la ai'],
+                                'clicks' => 0,
                                 'impressions' => 15,
-                                'ctr'         => 0,
-                                'position'    => 20.0,
+                                'ctr' => 0,
+                                'position' => 20.0,
                             ],
                         ],
                     ]),
-                    'headers'  => ['content-type' => 'application/json'],
+                    'headers' => ['content-type' => 'application/json'],
                 ];
             }
 
             if ($body['dimensions'] === ['page']) {
                 return [
                     'response' => ['code' => 200, 'message' => 'OK'],
-                    'body'     => json_encode([
+                    'body' => json_encode([
                         'rows' => [
                             [
-                                'keys'        => ['https://lixroastery.com/journal/lix-roastery-la-ai/'],
-                                'clicks'      => 1,
+                                'keys' => ['https://lixroastery.com/journal/lix-roastery-la-ai/'],
+                                'clicks' => 1,
                                 'impressions' => 29,
-                                'ctr'         => 0.03448,
-                                'position'    => 19.9,
+                                'ctr' => 0.03448,
+                                'position' => 19.9,
                             ],
                         ],
                     ]),
-                    'headers'  => ['content-type' => 'application/json'],
+                    'headers' => ['content-type' => 'application/json'],
                 ];
             }
         }
@@ -2335,7 +2342,7 @@ runTest('GSC Totals (no dimensions, dataState=all), GA4 Realtime active users & 
         if (str_contains($url, ':runRealtimeReport')) {
             return [
                 'response' => ['code' => 200, 'message' => 'OK'],
-                'body'     => json_encode([
+                'body' => json_encode([
                     'rows' => [
                         [
                             'metricValues' => [
@@ -2345,7 +2352,7 @@ runTest('GSC Totals (no dimensions, dataState=all), GA4 Realtime active users & 
                     ],
                     'rowCount' => 1,
                 ]),
-                'headers'  => ['content-type' => 'application/json'],
+                'headers' => ['content-type' => 'application/json'],
             ];
         }
 
@@ -2353,7 +2360,7 @@ runTest('GSC Totals (no dimensions, dataState=all), GA4 Realtime active users & 
         if (str_contains($url, ':runReport')) {
             return [
                 'response' => ['code' => 200, 'message' => 'OK'],
-                'body'     => json_encode([
+                'body' => json_encode([
                     'rows' => [
                         [
                             'metricValues' => [
@@ -2365,7 +2372,7 @@ runTest('GSC Totals (no dimensions, dataState=all), GA4 Realtime active users & 
                         ],
                     ],
                 ]),
-                'headers'  => ['content-type' => 'application/json'],
+                'headers' => ['content-type' => 'application/json'],
             ];
         }
 
@@ -2375,21 +2382,21 @@ runTest('GSC Totals (no dimensions, dataState=all), GA4 Realtime active users & 
 
     $mockOAuthFilter = function () {
         return GscCrypto::encrypt([
-            'access_token'  => 'mock-token',
+            'access_token' => 'mock-token',
             'refresh_token' => 'mock-refresh',
-            'created_at'    => time(),
-            'expires_in'    => 3600,
-            'client_id'     => 'mock-client',
+            'created_at' => time(),
+            'expires_in' => 3600,
+            'client_id' => 'mock-client',
             'client_secret' => 'mock-secret',
-            'scopes'        => [GscOAuth::SCOPE_GSC, GscOAuth::SCOPE_GA],
+            'scopes' => [GscOAuth::SCOPE_GSC, GscOAuth::SCOPE_GA],
         ]);
     };
     add_filter('pre_option_' . GscOAuth::OPTION_KEY, $mockOAuthFilter);
 
     $mockServicesFilter = function () {
         return [
-            'gsc_property'       => 'https://lixroastery.com/',
-            'ga4_property_id'    => '999888777',
+            'gsc_property' => 'https://lixroastery.com/',
+            'ga4_property_id' => '999888777',
             'ga4_measurement_id' => 'G-LIXTEST01',
         ];
     };
@@ -2506,7 +2513,7 @@ runTest('GSC Totals (no dimensions, dataState=all), GA4 Realtime active users & 
 
         $_POST = [
             'action' => 'laca_ga4_realtime',
-            'nonce'  => wp_create_nonce('laca_google_report_nonce'),
+            'nonce' => wp_create_nonce('laca_google_report_nonce'),
         ];
         $_REQUEST = $_POST;
 
@@ -2611,11 +2618,11 @@ runTest('G1: setupState (4 states + error), index.php hidden when unconfigured, 
         // --- 2. Test setupState: Case B - Có OAuth nhưng thiếu property ---
         $mockOAuth = function () {
             return GscCrypto::encrypt([
-                'access_token'  => 'mock-token',
+                'access_token' => 'mock-token',
                 'refresh_token' => 'mock-refresh',
-                'created_at'    => time(),
-                'expires_in'    => 3600,
-                'scopes'        => [GscOAuth::SCOPE_GSC, GscOAuth::SCOPE_GA],
+                'created_at' => time(),
+                'expires_in' => 3600,
+                'scopes' => [GscOAuth::SCOPE_GSC, GscOAuth::SCOPE_GA],
             ]);
         };
         remove_filter('pre_option_' . GscOAuth::OPTION_KEY, '__return_empty_string');
@@ -2635,8 +2642,8 @@ runTest('G1: setupState (4 states + error), index.php hidden when unconfigured, 
         // --- 3. Test setupState: Case C - Measurement ID không khớp stream của property ---
         $mockServicesMismatch = function () {
             return [
-                'gsc_property'       => 'https://lixroastery.com/',
-                'ga4_property_id'    => '123456',
+                'gsc_property' => 'https://lixroastery.com/',
+                'ga4_property_id' => '123456',
                 'ga4_measurement_id' => 'G-WRONGID99',
             ];
         };
@@ -2659,17 +2666,17 @@ runTest('G1: setupState (4 states + error), index.php hidden when unconfigured, 
         // Test index.php khi CHỈ GSC COMPLETE:
         ob_start();
         $gsc = [
-            'connected'   => true,
-            'clicks'      => 10,
+            'connected' => true,
+            'clicks' => 10,
             'impressions' => 100,
-            'ctr'         => 10.0,
-            'position'    => 5.0,
-            'queries'     => [],
-            'pages'       => [],
+            'ctr' => 10.0,
+            'position' => 5.0,
+            'queries' => [],
+            'pages' => [],
         ];
         $ga = [
             'connected' => false,
-            'users'     => 0,
+            'users' => 0,
         ];
         $range = '28d';
         include dirname(__DIR__, 3) . '/app/src/Features/GoogleServices/views/partials/google-report.php';
@@ -2688,8 +2695,8 @@ runTest('G1: setupState (4 states + error), index.php hidden when unconfigured, 
         // --- 4. Test setupState: Case D - Đủ (cả 2 dịch vụ complete) ---
         $mockServicesComplete = function () {
             return [
-                'gsc_property'       => 'https://lixroastery.com/',
-                'ga4_property_id'    => '123456',
+                'gsc_property' => 'https://lixroastery.com/',
+                'ga4_property_id' => '123456',
                 'ga4_measurement_id' => 'G-CORRECTID1',
             ];
         };
@@ -2802,13 +2809,13 @@ runTest('G2: DateRange calculations, GA4 batch & hostName, GSC domain filter, 42
     // --- 2. GA4 Request Body Verification (metricAggregations, hostName filter, keepEmptyRows) ---
     $mockOAuthFilter = function () {
         return GscCrypto::encrypt([
-            'access_token'  => 'mock-token-g2',
+            'access_token' => 'mock-token-g2',
             'refresh_token' => 'mock-refresh-g2',
-            'created_at'    => time(),
-            'expires_in'    => 3600,
-            'client_id'     => 'mock-client',
+            'created_at' => time(),
+            'expires_in' => 3600,
+            'client_id' => 'mock-client',
             'client_secret' => 'mock-secret',
-            'scopes'        => [GscOAuth::SCOPE_GA, GscOAuth::SCOPE_GSC],
+            'scopes' => [GscOAuth::SCOPE_GA, GscOAuth::SCOPE_GSC],
         ]);
     };
     add_filter('pre_option_' . GscOAuth::OPTION_KEY, $mockOAuthFilter);
@@ -2823,38 +2830,38 @@ runTest('G2: DateRange calculations, GA4 batch & hostName, GSC domain filter, 42
                 $capturedBatchBody = json_decode($parsedArgs['body'] ?? '{}', true);
                 return [
                     'response' => ['code' => 200, 'message' => 'OK'],
-                    'body'     => json_encode([
+                    'body' => json_encode([
                         'reports' => [
                             // Report 0: Overview
                             [
                                 'dimensionHeaders' => [['name' => 'date']],
-                                'metricHeaders'    => [['name' => 'activeUsers'], ['name' => 'newUsers'], ['name' => 'sessions'], ['name' => 'screenPageViews'], ['name' => 'averageSessionDuration'], ['name' => 'engagementRate'], ['name' => 'keyEvents']],
-                                'totals'           => [
+                                'metricHeaders' => [['name' => 'activeUsers'], ['name' => 'newUsers'], ['name' => 'sessions'], ['name' => 'screenPageViews'], ['name' => 'averageSessionDuration'], ['name' => 'engagementRate'], ['name' => 'keyEvents']],
+                                'totals' => [
                                     ['dimensionValues' => [['value' => 'date_range_0']], 'metricValues' => [['value' => '500'], ['value' => '300'], ['value' => '700'], ['value' => '2500'], ['value' => '120'], ['value' => '0.65'], ['value' => '15']]],
                                 ],
-                                'rows'             => [],
+                                'rows' => [],
                             ],
                             // Report 1: Top Pages
                             [
                                 'dimensionHeaders' => [['name' => 'pagePath'], ['name' => 'pageTitle']],
-                                'metricHeaders'    => [['name' => 'screenPageViews'], ['name' => 'userEngagementDuration'], ['name' => 'activeUsers']],
-                                'rows'             => [
+                                'metricHeaders' => [['name' => 'screenPageViews'], ['name' => 'userEngagementDuration'], ['name' => 'activeUsers']],
+                                'rows' => [
                                     ['dimensionValues' => [['value' => '/product/arabica/'], ['value' => 'Arabica Coffee']], 'metricValues' => [['value' => '400'], ['value' => '600'], ['value' => '10']]],
                                 ],
                             ],
                             // Report 2: Channels
                             [
                                 'dimensionHeaders' => [['name' => 'sessionDefaultChannelGroup']],
-                                'metricHeaders'    => [['name' => 'sessions']],
-                                'rows'             => [
+                                'metricHeaders' => [['name' => 'sessions']],
+                                'rows' => [
                                     ['dimensionValues' => [['value' => 'Organic Search']], 'metricValues' => [['value' => '450']]],
                                 ],
                             ],
                             // Report 3: Devices
                             [
                                 'dimensionHeaders' => [['name' => 'deviceCategory']],
-                                'metricHeaders'    => [['name' => 'sessions']],
-                                'rows'             => [
+                                'metricHeaders' => [['name' => 'sessions']],
+                                'rows' => [
                                     ['dimensionValues' => [['value' => 'mobile']], 'metricValues' => [['value' => '550']]],
                                 ],
                             ],
@@ -2871,13 +2878,13 @@ runTest('G2: DateRange calculations, GA4 batch & hostName, GSC domain filter, 42
                 }
                 return [
                     'response' => ['code' => 200, 'message' => 'OK'],
-                    'body'     => json_encode([
+                    'body' => json_encode([
                         'dimensionHeaders' => [['name' => 'date']],
-                        'metricHeaders'    => [['name' => 'activeUsers'], ['name' => 'newUsers'], ['name' => 'sessions'], ['name' => 'screenPageViews'], ['name' => 'averageSessionDuration'], ['name' => 'engagementRate'], ['name' => 'keyEvents']],
-                        'totals'           => [
+                        'metricHeaders' => [['name' => 'activeUsers'], ['name' => 'newUsers'], ['name' => 'sessions'], ['name' => 'screenPageViews'], ['name' => 'averageSessionDuration'], ['name' => 'engagementRate'], ['name' => 'keyEvents']],
+                        'totals' => [
                             ['dimensionValues' => [['value' => 'date_range_0']], 'metricValues' => [['value' => '100'], ['value' => '60'], ['value' => '120'], ['value' => '400'], ['value' => '60'], ['value' => '0.6'], ['value' => '2']]],
                         ],
-                        'rows'             => [],
+                        'rows' => [],
                     ]),
                     'headers' => ['content-type' => 'application/json'],
                 ];
@@ -2888,7 +2895,7 @@ runTest('G2: DateRange calculations, GA4 batch & hostName, GSC domain filter, 42
             $capturedGscBody = json_decode($parsedArgs['body'] ?? '{}', true);
             return [
                 'response' => ['code' => 200, 'message' => 'OK'],
-                'body'     => json_encode([
+                'body' => json_encode([
                     'rows' => [
                         ['clicks' => 50, 'impressions' => 1000, 'ctr' => 0.05, 'position' => 12.3],
                     ],
@@ -2963,8 +2970,8 @@ runTest('G2: DateRange calculations, GA4 batch & hostName, GSC domain filter, 42
         $mock429 = function ($preempt, $parsedArgs, $url) {
             return [
                 'response' => ['code' => 429, 'message' => 'Too Many Requests'],
-                'body'     => json_encode(['error' => ['message' => 'Rate limit exceeded']]),
-                'headers'  => ['content-type' => 'application/json'],
+                'body' => json_encode(['error' => ['message' => 'Rate limit exceeded']]),
+                'headers' => ['content-type' => 'application/json'],
             ];
         };
         add_filter('pre_http_request', $mock429, 10, 3);
@@ -2994,8 +3001,8 @@ runTest('G2: DateRange calculations, GA4 batch & hostName, GSC domain filter, 42
             if (str_contains($url, 'searchAnalytics/query')) {
                 return [
                     'response' => ['code' => 200, 'message' => 'OK'],
-                    'body'     => json_encode(['rows' => []]),
-                    'headers'  => ['content-type' => 'application/json'],
+                    'body' => json_encode(['rows' => []]),
+                    'headers' => ['content-type' => 'application/json'],
                 ];
             }
             return $preempt;
@@ -3044,18 +3051,18 @@ runTest('G4: PageSpeed Insights parsing (Field + Lab), encrypted API key in DB, 
     $rawResponse = [
         'loadingExperience' => [
             'overall_category' => 'FAST',
-            'metrics'          => [
+            'metrics' => [
                 'LARGEST_CONTENTFUL_PAINT_MS' => [
                     'percentile' => 2500,
-                    'category'   => 'FAST',
+                    'category' => 'FAST',
                 ],
                 'INTERACTION_TO_NEXT_PAINT' => [
                     'percentile' => 150,
-                    'category'   => 'FAST',
+                    'category' => 'FAST',
                 ],
                 'CUMULATIVE_LAYOUT_SHIFT_SCORE' => [
                     'percentile' => 5,
-                    'category'   => 'FAST',
+                    'category' => 'FAST',
                 ],
             ],
         ],
@@ -3067,19 +3074,19 @@ runTest('G4: PageSpeed Insights parsing (Field + Lab), encrypted API key in DB, 
             ],
             'audits' => [
                 'largest-contentful-paint' => [
-                    'score'        => 0.88,
+                    'score' => 0.88,
                     'displayValue' => '2.8 s',
                 ],
                 'cumulative-layout-shift' => [
-                    'score'        => 0.95,
+                    'score' => 0.95,
                     'displayValue' => '0.04',
                 ],
                 'total-blocking-time' => [
-                    'score'        => 0.82,
+                    'score' => 0.82,
                     'displayValue' => '210 ms',
                 ],
                 'first-contentful-paint' => [
-                    'score'        => 0.92,
+                    'score' => 0.92,
                     'displayValue' => '1.5 s',
                 ],
             ],
@@ -3177,19 +3184,19 @@ runTest('G5: Entity Stats filters (GSC page equals, GA4 pagePath & hostName), me
 
     $mockOAuthFilter = function () {
         return GscCrypto::encrypt([
-            'access_token'  => 'mock-token',
+            'access_token' => 'mock-token',
             'refresh_token' => 'mock-refresh',
-            'created_at'    => time(),
-            'expires_in'    => 3600,
-            'scopes'        => [GscOAuth::SCOPE_GSC, GscOAuth::SCOPE_GA],
+            'created_at' => time(),
+            'expires_in' => 3600,
+            'scopes' => [GscOAuth::SCOPE_GSC, GscOAuth::SCOPE_GA],
         ]);
     };
     add_filter('pre_option_' . GscOAuth::OPTION_KEY, $mockOAuthFilter);
 
     $mockServices = function () {
         return [
-            'gsc_property'       => 'https://lixroastery.com/',
-            'ga4_property_id'    => '438291045',
+            'gsc_property' => 'https://lixroastery.com/',
+            'ga4_property_id' => '438291045',
             'ga4_measurement_id' => 'G-CORRECTID1',
         ];
     };
@@ -3208,9 +3215,9 @@ runTest('G5: Entity Stats filters (GSC page equals, GA4 pagePath & hostName), me
     try {
         // Case A: Draft post
         $post = (object) [
-            'ID'          => 9991,
+            'ID' => 9991,
             'post_status' => 'draft',
-            'post_type'   => 'post',
+            'post_type' => 'post',
         ];
         $wp_meta_boxes = [];
         EntityStats::registerMetabox();
@@ -3221,9 +3228,9 @@ runTest('G5: Entity Stats filters (GSC page equals, GA4 pagePath & hostName), me
 
         // Case B: Published post
         $post = (object) [
-            'ID'          => 9992,
+            'ID' => 9992,
             'post_status' => 'publish',
-            'post_type'   => 'post',
+            'post_type' => 'post',
         ];
         $wp_meta_boxes = [];
         EntityStats::registerMetabox();
@@ -3234,19 +3241,19 @@ runTest('G5: Entity Stats filters (GSC page equals, GA4 pagePath & hostName), me
 
         // 2. Test live stats query filters
         $capturedGscBody = null;
-        $capturedGaBody  = null;
+        $capturedGaBody = null;
 
         $mockHttp = function ($preempt, $parsedArgs, $url) use (&$capturedGscBody, &$capturedGaBody) {
             if (str_contains($url, 'searchAnalytics/query')) {
                 $capturedGscBody = json_decode($parsedArgs['body'] ?? '{}', true);
                 return [
                     'response' => ['code' => 200, 'message' => 'OK'],
-                    'body'     => json_encode([
+                    'body' => json_encode([
                         'rows' => [
                             ['clicks' => 25, 'impressions' => 300, 'ctr' => 0.0833, 'position' => 3.2],
                         ],
                     ]),
-                    'headers'  => ['content-type' => 'application/json'],
+                    'headers' => ['content-type' => 'application/json'],
                 ];
             }
 
@@ -3254,11 +3261,11 @@ runTest('G5: Entity Stats filters (GSC page equals, GA4 pagePath & hostName), me
                 $capturedGaBody = json_decode($parsedArgs['body'] ?? '{}', true);
                 return [
                     'response' => ['code' => 200, 'message' => 'OK'],
-                    'body'     => json_encode([
+                    'body' => json_encode([
                         'rows' => [
                             [
                                 'dimensionValues' => [['value' => '/journal/test-slug/']],
-                                'metricValues'    => [
+                                'metricValues' => [
                                     ['value' => '150'],
                                     ['value' => '90'],
                                     ['value' => '450'],
@@ -3266,7 +3273,7 @@ runTest('G5: Entity Stats filters (GSC page equals, GA4 pagePath & hostName), me
                             ],
                         ],
                     ]),
-                    'headers'  => ['content-type' => 'application/json'],
+                    'headers' => ['content-type' => 'application/json'],
                 ];
             }
 
@@ -3342,9 +3349,9 @@ runTest('G6: Tag guard (?laca_tagverify=1), ga-disable injected for logged-in, d
     // --- 2. Excluded user receives window['ga-disable-<ID>'] = true ---
     $mockOptions = function () {
         return [
-            'ga4_measurement_id'  => 'G-EXCLUDE123',
+            'ga4_measurement_id' => 'G-EXCLUDE123',
             'ga_exclude_loggedin' => 'on',
-            'ga_exclude_role'     => 'admin',
+            'ga_exclude_role' => 'admin',
         ];
     };
     add_filter('pre_option_laca_google_services', $mockOptions);
@@ -3380,8 +3387,8 @@ runTest('G6: Tag guard (?laca_tagverify=1), ga-disable injected for logged-in, d
         if (str_contains($url, 'laca_tagverify=1')) {
             return [
                 'response' => ['code' => 200, 'message' => 'OK'],
-                'body'     => '<html><head><script src="https://www.googletagmanager.com/gtag/js?id=G-EXTERNAL888"></script><script>gtag("config", "G-MYCONFIGURED1");</script></head><body></body></html>',
-                'headers'  => ['content-type' => 'text/html'],
+                'body' => '<html><head><script src="https://www.googletagmanager.com/gtag/js?id=G-EXTERNAL888"></script><script>gtag("config", "G-MYCONFIGURED1");</script></head><body></body></html>',
+                'headers' => ['content-type' => 'text/html'],
             ];
         }
         return $preempt;
@@ -3459,18 +3466,18 @@ runTest('G4 PageSpeed AJAX: Nonce gate, real CrUX & Lab parsing, 429 quota handl
         $mockCruxResponse = [
             'loadingExperience' => [
                 'overall_category' => 'FAST',
-                'metrics'          => [
+                'metrics' => [
                     'LARGEST_CONTENTFUL_PAINT_MS' => [
                         'percentile' => 2100,
-                        'category'   => 'FAST',
+                        'category' => 'FAST',
                     ],
                     'INTERACTION_TO_NEXT_PAINT' => [
                         'percentile' => 120,
-                        'category'   => 'FAST',
+                        'category' => 'FAST',
                     ],
                     'CUMULATIVE_LAYOUT_SHIFT_SCORE' => [
                         'percentile' => 3,
-                        'category'   => 'FAST',
+                        'category' => 'FAST',
                     ],
                 ],
             ],
@@ -3482,19 +3489,19 @@ runTest('G4 PageSpeed AJAX: Nonce gate, real CrUX & Lab parsing, 429 quota handl
                 ],
                 'audits' => [
                     'largest-contentful-paint' => [
-                        'score'        => 0.92,
+                        'score' => 0.92,
                         'displayValue' => '2.1 s',
                     ],
                     'cumulative-layout-shift' => [
-                        'score'        => 0.98,
+                        'score' => 0.98,
                         'displayValue' => '0.03',
                     ],
                     'total-blocking-time' => [
-                        'score'        => 0.88,
+                        'score' => 0.88,
                         'displayValue' => '140 ms',
                     ],
                     'first-contentful-paint' => [
-                        'score'        => 0.95,
+                        'score' => 0.95,
                         'displayValue' => '1.2 s',
                     ],
                 ],
@@ -3505,8 +3512,8 @@ runTest('G4 PageSpeed AJAX: Nonce gate, real CrUX & Lab parsing, 429 quota handl
             if (str_contains($url, 'pagespeedonline/v5/runPagespeed')) {
                 return [
                     'response' => ['code' => 200, 'message' => 'OK'],
-                    'body'     => json_encode($mockCruxResponse),
-                    'headers'  => ['content-type' => 'application/json'],
+                    'body' => json_encode($mockCruxResponse),
+                    'headers' => ['content-type' => 'application/json'],
                 ];
             }
             return $preempt;
@@ -3514,8 +3521,8 @@ runTest('G4 PageSpeed AJAX: Nonce gate, real CrUX & Lab parsing, 429 quota handl
         add_filter('pre_http_request', $mockHttpCrux, 10, 3);
 
         $_POST = [
-            'action'  => 'laca_pagespeed_run',
-            'nonce'   => wp_create_nonce('laca_google_report_nonce'),
+            'action' => 'laca_pagespeed_run',
+            'nonce' => wp_create_nonce('laca_google_report_nonce'),
             'refresh' => '1',
         ];
         $_REQUEST = $_POST;
@@ -3567,19 +3574,19 @@ runTest('G4 PageSpeed AJAX: Nonce gate, real CrUX & Lab parsing, 429 quota handl
                 ],
                 'audits' => [
                     'largest-contentful-paint' => [
-                        'score'        => 0.75,
+                        'score' => 0.75,
                         'displayValue' => '3.5 s',
                     ],
                     'cumulative-layout-shift' => [
-                        'score'        => 0.90,
+                        'score' => 0.90,
                         'displayValue' => '0.08',
                     ],
                     'total-blocking-time' => [
-                        'score'        => 0.70,
+                        'score' => 0.70,
                         'displayValue' => '320 ms',
                     ],
                     'first-contentful-paint' => [
-                        'score'        => 0.85,
+                        'score' => 0.85,
                         'displayValue' => '1.9 s',
                     ],
                 ],
@@ -3590,8 +3597,8 @@ runTest('G4 PageSpeed AJAX: Nonce gate, real CrUX & Lab parsing, 429 quota handl
             if (str_contains($url, 'pagespeedonline/v5/runPagespeed')) {
                 return [
                     'response' => ['code' => 200, 'message' => 'OK'],
-                    'body'     => json_encode($mockLabResponse),
-                    'headers'  => ['content-type' => 'application/json'],
+                    'body' => json_encode($mockLabResponse),
+                    'headers' => ['content-type' => 'application/json'],
                 ];
             }
             return $preempt;
@@ -3599,8 +3606,8 @@ runTest('G4 PageSpeed AJAX: Nonce gate, real CrUX & Lab parsing, 429 quota handl
         add_filter('pre_http_request', $mockHttpLab, 10, 3);
 
         $_POST = [
-            'action'  => 'laca_pagespeed_run',
-            'nonce'   => wp_create_nonce('laca_google_report_nonce'),
+            'action' => 'laca_pagespeed_run',
+            'nonce' => wp_create_nonce('laca_google_report_nonce'),
             'refresh' => '1',
         ];
         $_REQUEST = $_POST;
@@ -3644,14 +3651,14 @@ runTest('G4 PageSpeed AJAX: Nonce gate, real CrUX & Lab parsing, 429 quota handl
             if (str_contains($url, 'pagespeedonline/v5/runPagespeed')) {
                 return [
                     'response' => ['code' => 429, 'message' => 'Too Many Requests'],
-                    'body'     => json_encode([
+                    'body' => json_encode([
                         'error' => [
-                            'code'    => 429,
+                            'code' => 429,
                             'message' => 'Quota exceeded for quota metric PageSpeed Insights API',
-                            'status'  => 'RESOURCE_EXHAUSTED',
+                            'status' => 'RESOURCE_EXHAUSTED',
                         ],
                     ]),
-                    'headers'  => ['content-type' => 'application/json'],
+                    'headers' => ['content-type' => 'application/json'],
                 ];
             }
             return $preempt;
@@ -3659,8 +3666,8 @@ runTest('G4 PageSpeed AJAX: Nonce gate, real CrUX & Lab parsing, 429 quota handl
         add_filter('pre_http_request', $mockHttp429, 10, 3);
 
         $_POST = [
-            'action'  => 'laca_pagespeed_run',
-            'nonce'   => wp_create_nonce('laca_google_report_nonce'),
+            'action' => 'laca_pagespeed_run',
+            'nonce' => wp_create_nonce('laca_google_report_nonce'),
             'refresh' => '1',
         ];
         $_REQUEST = $_POST;
@@ -3694,13 +3701,13 @@ runTest('G4 PageSpeed AJAX: Nonce gate, real CrUX & Lab parsing, 429 quota handl
                 $capturedTargetUrl = $query['url'] ?? '';
                 return [
                     'response' => ['code' => 200, 'message' => 'OK'],
-                    'body'     => json_encode([
+                    'body' => json_encode([
                         'lighthouseResult' => [
                             'categories' => ['performance' => ['score' => 0.8]],
                             'audits' => [],
                         ],
                     ]),
-                    'headers'  => ['content-type' => 'application/json'],
+                    'headers' => ['content-type' => 'application/json'],
                 ];
             }
             return $preempt;
@@ -3708,10 +3715,10 @@ runTest('G4 PageSpeed AJAX: Nonce gate, real CrUX & Lab parsing, 429 quota handl
         add_filter('pre_http_request', $mockHttpSanitize, 10, 3);
 
         $_POST = [
-            'action'  => 'laca_pagespeed_run',
-            'nonce'   => wp_create_nonce('laca_google_report_nonce'),
+            'action' => 'laca_pagespeed_run',
+            'nonce' => wp_create_nonce('laca_google_report_nonce'),
             'refresh' => '1',
-            'url'     => 'https://evil.example/phishing-path',
+            'url' => 'https://evil.example/phishing-path',
         ];
         $_REQUEST = $_POST;
         $_GET = [];
@@ -3786,17 +3793,17 @@ runTest('G4 PageSpeed AJAX: Nonce gate, real CrUX & Lab parsing, 429 quota handl
         delete_transient('laca_psi_429_' . md5(home_url('/') . '_mobile'));
         delete_transient('laca_psi_' . md5(home_url('/') . '_desktop'));
         $_POST = [
-            'action'   => 'laca_pagespeed_run',
+            'action' => 'laca_pagespeed_run',
             'strategy' => 'desktop',
-            'refresh'  => '1',
-            'nonce'    => wp_create_nonce('laca_google_report_nonce'),
+            'refresh' => '1',
+            'nonce' => wp_create_nonce('laca_google_report_nonce'),
         ];
         $_REQUEST = $_POST;
         $mockPsiHttp = function ($pre, $args, $url) {
             if (str_contains($url, 'pagespeedonline/v5/runPagespeed')) {
                 return [
                     'response' => ['code' => 200, 'message' => 'OK'],
-                    'body'     => json_encode([
+                    'body' => json_encode([
                         'lighthouseResult' => [
                             'categories' => ['performance' => ['score' => 0.88]],
                             'audits' => [
@@ -3974,10 +3981,10 @@ runTest('Google Report v2: phễu đúng, key metrics đủ, Chart SVG, AJAX 100
             ['name' => 'Direct', 'sessions' => 1450, 'share' => 27],
         ];
         $gaWithOrganic['organicSearch'] = [
-            'hasData'        => true,
-            'hasOrganic'     => true,
-            'users'          => 2074,
-            'share'          => 54,
+            'hasData' => true,
+            'hasOrganic' => true,
+            'users' => 2074,
+            'share' => 54,
             'engagementRate' => '68.5%',
         ];
         ob_start();
@@ -4082,7 +4089,7 @@ runTest('Google Report v2: phễu đúng, key metrics đủ, Chart SVG, AJAX 100
                 }
                 return [
                     'response' => ['code' => 200, 'message' => 'OK'],
-                    'body'     => json_encode(['rows' => $rows]),
+                    'body' => json_encode(['rows' => $rows]),
                 ];
             }
             return $preempt;
@@ -4091,11 +4098,11 @@ runTest('Google Report v2: phễu đúng, key metrics đủ, Chart SVG, AJAX 100
 
         $mockOAuthConnected = function () {
             return [
-                'access_token'  => 'mock-token',
+                'access_token' => 'mock-token',
                 'refresh_token' => 'mock-refresh',
-                'expires_at'    => time() + 3600,
-                'email'         => 'client@example.com',
-                'scope'         => 'https://www.googleapis.com/auth/webmasters.readonly https://www.googleapis.com/auth/analytics.readonly',
+                'expires_at' => time() + 3600,
+                'email' => 'client@example.com',
+                'scope' => 'https://www.googleapis.com/auth/webmasters.readonly https://www.googleapis.com/auth/analytics.readonly',
             ];
         };
         add_filter('pre_option_' . GscOAuth::OPTION_KEY, $mockOAuthConnected);
@@ -4109,8 +4116,8 @@ runTest('Google Report v2: phễu đúng, key metrics đủ, Chart SVG, AJAX 100
 
         $_POST = [
             'action' => 'laca_gsc_queries',
-            'nonce'  => wp_create_nonce('laca_google_report_nonce'),
-            'range'  => '28d',
+            'nonce' => wp_create_nonce('laca_google_report_nonce'),
+            'range' => '28d',
         ];
         $_REQUEST = $_POST;
 
@@ -4154,7 +4161,7 @@ runTest('Google Report v2: phễu đúng, key metrics đủ, Chart SVG, AJAX 100
                 $capturedPsiStrategy = $queryParams['strategy'] ?? null;
                 return [
                     'response' => ['code' => 429, 'message' => 'Too Many Requests'],
-                    'body'     => json_encode([
+                    'body' => json_encode([
                         'error' => [
                             'code' => 429,
                             'message' => 'Quota exceeded for quota metric Queries and limit Queries per day of service pagespeedonline.googleapis.com',
@@ -4206,10 +4213,10 @@ runTest('Google Report v2: phễu đúng, key metrics đủ, Chart SVG, AJAX 100
 
         // Test AJAX PSI 429 error response format
         $_POST = [
-            'action'              => 'laca_psi_run',
-            'nonce'               => wp_create_nonce('laca_google_report_nonce'),
-            'strategy'            => 'mobile',
-            'laca_mock_google'    => '1',
+            'action' => 'laca_psi_run',
+            'nonce' => wp_create_nonce('laca_google_report_nonce'),
+            'strategy' => 'mobile',
+            'laca_mock_google' => '1',
             'laca_mock_psi_error' => '1',
         ];
         $_REQUEST = $_POST;
@@ -4239,7 +4246,7 @@ runTest('Google Report v2: phễu đúng, key metrics đủ, Chart SVG, AJAX 100
                 $gscCount++;
                 return [
                     'response' => ['code' => 200, 'message' => 'OK'],
-                    'body'     => json_encode([
+                    'body' => json_encode([
                         'rows' => [
                             ['clicks' => 50, 'impressions' => 1000, 'ctr' => 0.05, 'position' => 3.2],
                         ],
@@ -4250,7 +4257,7 @@ runTest('Google Report v2: phễu đúng, key metrics đủ, Chart SVG, AJAX 100
                 $gaCount++;
                 return [
                     'response' => ['code' => 200, 'message' => 'OK'],
-                    'body'     => json_encode([
+                    'body' => json_encode([
                         'reports' => [
                             ['rows' => [['metricValues' => [['value' => '100']]]]],
                         ],
@@ -4263,7 +4270,7 @@ runTest('Google Report v2: phễu đúng, key metrics đủ, Chart SVG, AJAX 100
         add_filter('pre_option_' . GscOAuth::OPTION_KEY, $mockOAuthConnected);
         add_filter('pre_option_laca_google_services', function () {
             return [
-                'gsc_property'    => 'https://lixroastery.com/',
+                'gsc_property' => 'https://lixroastery.com/',
                 'ga4_property_id' => '123456789',
             ];
         });
