@@ -42,6 +42,19 @@ class LacaAdminMenuOrganizer
                 'laca-security',
             ],
         ],
+        'users' => [
+            'label' => 'Quản lý người dùng',
+            'items' => [
+                'laca-2fa',
+                'laca-login-log',
+            ],
+        ],
+        'superuser' => [
+            'label' => 'Super User',
+            'items' => [
+                'laca-super-user',
+            ],
+        ],
         'google' => [
             'label' => 'Dịch vụ Google',
             'items' => [
@@ -270,6 +283,9 @@ class LacaAdminMenuOrganizer
             'laca-management-settings'   => 'Quản trị & HD Sử dụng',
             'laca-tools'                 => 'Hiệu năng & Bảo trì',
             'laca-security'              => 'Bảo mật',
+            'laca-2fa'                   => 'Xác thực 2 bước (2FA)',
+            'laca-super-user'            => 'Super User',
+            'laca-login-log'             => 'Login Log',
             'laca-recaptcha'             => 'Dịch vụ Google',
             'laca-dynamic-cpt'           => 'Custom Post Types',
             'laca-contact-forms'         => 'Form Liên Hệ',

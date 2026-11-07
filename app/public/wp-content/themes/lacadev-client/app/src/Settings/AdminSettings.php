@@ -412,6 +412,8 @@ class AdminSettings
 	{
 		return apply_filters('lacadev_extra_super_user_denied_laca_slugs', [
 			'laca-security',
+			'laca-2fa',
+			'laca-super-user',
 			'laca-recaptcha',
 			'laca-login-socials',
 			'laca-block-sync',

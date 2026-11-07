@@ -29,6 +29,7 @@ class SecurityManager
     public function init(): void
     {
         add_action('admin_menu',            [$this, 'addMenu'], 20);
+        add_action('admin_init',            [$this, 'redirectLegacyTabs']);
         add_action('admin_enqueue_scripts', [$this, 'enqueueAssets']);
 
         // ── AJAX: Security Audit ───────────────────────────────────────────────
@@ -62,6 +63,9 @@ class SecurityManager
 
     // ── Admin Menu ───────────────────────────────────────────────────────────
 
+    public const PAGE_2FA        = 'laca-2fa';
+    public const PAGE_SUPER_USER = 'laca-super-user';
+
     public function addMenu(): void
     {
         add_submenu_page(
@@ -72,13 +76,71 @@ class SecurityManager
             'laca-security',
             [$this, 'renderPage']
         );
+
+        // 2FA thuộc nhóm "Quản lý người dùng", Super User là menu riêng —
+        // tách khỏi trang Bảo mật (xem LacaAdminMenuOrganizer::GROUPS).
+        add_submenu_page(
+            'laca-admin',
+            __('Xác thực 2 bước (2FA)', 'laca'),
+            __('Xác thực 2 bước (2FA)', 'laca'),
+            'manage_options',
+            self::PAGE_2FA,
+            [$this, 'renderTwoFactorPage']
+        );
+
+        add_submenu_page(
+            'laca-admin',
+            __('Super User', 'laca'),
+            __('Super User', 'laca'),
+            'manage_options',
+            self::PAGE_SUPER_USER,
+            [$this, 'renderSuperUserPage']
+        );
+    }
+
+    /**
+     * Link cũ ?page=laca-security&tab=2fa|superuser → chuyển sang trang mới.
+     */
+    public function redirectLegacyTabs(): void
+    {
+        if (($_GET['page'] ?? '') !== 'laca-security') {
+            return;
+        }
+        $map = ['2fa' => self::PAGE_2FA, 'superuser' => self::PAGE_SUPER_USER];
+        $tab = sanitize_key($_GET['tab'] ?? '');
+        if (isset($map[$tab])) {
+            wp_safe_redirect(admin_url('admin.php?page=' . $map[$tab]));
+            exit;
+        }
+    }
+
+    public function renderTwoFactorPage(): void
+    {
+        echo '<div class="wrap"><h1>' . esc_html__('Xác thực 2 bước (2FA)', 'laca') . '</h1>';
+        echo '<div class="tab-content laca-security-tab-content">';
+        $this->render2faTab();
+        echo '</div></div>';
+        $this->renderInlineScripts();
+    }
+
+    public function renderSuperUserPage(): void
+    {
+        echo '<div class="wrap"><h1>' . esc_html__('Super User', 'laca') . '</h1>';
+        echo '<div class="tab-content laca-security-tab-content">';
+        $this->renderSuperUserTab();
+        echo '</div></div>';
+        $this->renderInlineScripts();
     }
 
     // ── Enqueue ──────────────────────────────────────────────────────────────
 
     public function enqueueAssets(string $hook): void
     {
-        if (!str_contains($hook, 'laca-security')) return;
+        if (!str_contains($hook, 'laca-security')
+            && !str_contains($hook, self::PAGE_2FA)
+            && !str_contains($hook, self::PAGE_SUPER_USER)) {
+            return;
+        }
         wp_add_inline_script('jquery', 'var lacaSecurity = ' . wp_json_encode([
             'ajaxUrl' => admin_url('admin-ajax.php'),
             'nonce'   => wp_create_nonce(self::NONCE),
@@ -96,16 +158,14 @@ class SecurityManager
             'malware'   => 'Quét mã độc',
             'users'     => 'User ẩn',
             'login'     => 'URL đăng nhập',
-            '2fa'       => '2FA TOTP',
             'hardening' => 'Thiết lập bảo vệ',
-            'superuser' => 'Super User',
         ];
         ?>
         <div class="wrap">
             <h1>Bảo mật</h1>
             <div class="laca-alert laca-alert--info">
                 <p class="laca-alert__title">Bảo mật website</p>
-                <p class="laca-alert__desc">Trang này tập hợp các công cụ giúp bảo vệ site: kiểm tra điểm bảo mật tổng quan, giám sát file bị thay đổi, quét mã độc, phát hiện tài khoản admin ẩn, đổi URL đăng nhập để tránh dò mật khẩu, và bật xác thực 2 bước (2FA) cho tài khoản quản trị.</p>
+                <p class="laca-alert__desc">Trang này tập hợp các công cụ giúp bảo vệ site: kiểm tra điểm bảo mật tổng quan, giám sát file bị thay đổi, quét mã độc, phát hiện tài khoản admin ẩn và đổi URL đăng nhập để tránh dò mật khẩu. Xác thực 2 bước (2FA) và Super User nằm ở menu riêng.</p>
             </div>
             <nav class="nav-tab-wrapper">
                 <?php foreach ($tabs as $key => $label): ?>
@@ -123,9 +183,7 @@ class SecurityManager
                     case 'malware':   $this->renderMalwareTab();   break;
                     case 'users':     $this->renderUsersTab();     break;
                     case 'login':     $this->renderLoginTab();     break;
-                    case '2fa':       $this->render2faTab();       break;
                     case 'hardening': $this->renderHardeningTab(); break;
-                    case 'superuser': $this->renderSuperUserTab(); break;
                 }
                 ?>
             </div>

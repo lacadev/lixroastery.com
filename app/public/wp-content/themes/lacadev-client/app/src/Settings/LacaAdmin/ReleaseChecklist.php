@@ -222,7 +222,7 @@ final class ReleaseChecklist
                         }],
                     ['id' => 'twofa', 'title' => 'Bật 2FA cho tài khoản quản trị', 'type' => 'auto', 'high' => true,
                         'guide' => 'Lớp chặn duy nhất còn hiệu lực khi mật khẩu bị lộ. Bật rồi yêu cầu mọi admin quét mã.',
-                        'url' => $sec('2fa'),
+                        'url' => admin_url('admin.php?page=laca-2fa'),
                         'check' => static fn () => get_option('laca_2fa_master_enabled', 0) ? [true, 'Đang bật'] : [false, 'Chưa bật']],
                     ['id' => 'no_admin_user', 'title' => 'Không có tài khoản tên "admin"', 'type' => 'auto', 'high' => true,
                         'guide' => 'Tạo tài khoản mới tên khác, chuyển bài viết sang rồi xoá "admin" — đây là username bot dò đầu tiên.',
