@@ -3,6 +3,50 @@
 @use "../theme/base/_fonts.scss" as *;
 
 body.login {
+  /* Nature scene — màu theo buổi (login-phase-*), xem laca_login_sky_state() */
+  --ls-sky-top: #4a9be0;
+  --ls-sky-mid: #8cc8f0;
+  --ls-sky-bottom: #e2f2fb;
+  --ls-far: #b4cfe0;       // dãy núi xa nhất (nhạt, ngả màu trời)
+  --ls-near: #3d6f4e;      // đồi gần nhất
+  --ls-forest: #2a5239;    // hàng cây gần
+  --ls-mist: #eef7fc;      // sương thung lũng
+  --ls-cloud: #fff;
+  --ls-cloud-alpha: 0.95;
+  --ls-stars: 0;
+  --ls-card-shadow: 0 24px 48px -16px rgba(15, 60, 110, 0.35);
+  --ls-tent: #e8743b;
+  --ls-tent-shade: #c2552a;
+  --ls-tent-door: #6b2d14;
+  --ls-log: #5b3a22;
+  --ls-stone: #8a8f99;
+  --ls-smoke: #c9d2dc;
+  --ls-fire-glow: 0.2;
+
+  /*
+   * Form theo buổi — card kính sáng ban ngày / bình minh, kính tối lúc hoàng hôn / đêm.
+   * Màu nhấn lấy từ cảnh: xanh rừng (ngày), vàng lửa trại (đêm). Đổi màu chỉ ở các biến --lf-*.
+   */
+  --lf-card-bg: rgba(255, 255, 255, 0.88);
+  --lf-card-border: rgba(255, 255, 255, 0.6);
+  --lf-text: #1e293b;
+  --lf-muted: #475569;
+  --lf-input-bg: #fff;
+  --lf-input-border: #e2e8f0;
+  --lf-input-border-hover: #cbd5e1;
+  --lf-input-text: #1e293b;
+  --lf-placeholder: #64748b;   // 4.8:1 trên nền trắng
+  --lf-accent: #2f6b4a;        // xanh rừng
+  --lf-accent-hover: #255a3c;
+  --lf-accent-fg: #fff;
+  --lf-ring: rgba(47, 107, 74, 0.2);
+  --lf-error-bg: #fef2f2;
+  --lf-error-text: #991b1b;
+  --lf-msg-bg: #f0fdf4;
+  --lf-msg-text: #166534;
+  --lf-toggle-bg: rgba(15, 23, 42, 0.05);
+  --lf-toggle-border: rgba(15, 23, 42, 0.1);
+
   font-family: var(--laca-font) !important;
   font-size: 1rem;
   display: flex;
@@ -13,7 +57,285 @@ body.login {
   margin: 0;
   overflow-x: hidden;
 
-  /* Night Sky Effect */
+  &.login-phase-dawn {
+    --ls-sky-top: #6577c9;
+    --ls-sky-mid: #f0a08c;
+    --ls-sky-bottom: #fcdcbc;
+    --ls-far: #c7a6b8;
+    --ls-near: #3f4f63;
+    --ls-forest: #2c3a4e;
+    --ls-mist: #fbe2d0;
+    --ls-cloud: #fde6d8;
+    --ls-cloud-alpha: 0.9;
+    --ls-stars: 0.3;
+    --ls-tent: #b95e38;
+    --ls-tent-shade: #8e4225;
+    --ls-tent-door: #3f1a0c;
+    --ls-smoke: #b9a9b4;
+    --ls-fire-glow: 0.35;
+  }
+
+  &.login-phase-dusk {
+    --ls-sky-top: #3a4a86;
+    --ls-sky-mid: #e07d62;
+    --ls-sky-bottom: #f6c088;
+    --ls-far: #a07e98;
+    --ls-near: #2a3850;
+    --ls-forest: #1d283c;
+    --ls-mist: #f2c3a0;
+    --ls-cloud: #f4c6b2;
+    --ls-cloud-alpha: 0.85;
+    --ls-stars: 0.35;
+    --ls-tent: #a8502f;
+    --ls-tent-shade: #7a3720;
+    --ls-tent-door: #ffb45e;
+    --ls-log: #46301d;
+    --ls-stone: #5d6273;
+    --ls-smoke: #9c8f9c;
+    --ls-fire-glow: 0.45;
+    --ls-card-shadow: 0 25px 60px -12px rgba(20, 15, 40, 0.5);
+  }
+
+  &.login-phase-night {
+    --ls-sky-top: #070d24;
+    --ls-sky-mid: #15224a;
+    --ls-sky-bottom: #2a4478;
+    --ls-far: #33497a;
+    --ls-near: #0c1630;
+    --ls-forest: #070e22;
+    --ls-mist: #3b5689;
+    --ls-cloud: #5a6f9e;
+    --ls-cloud-alpha: 0.45;
+    --ls-stars: 1;
+    --ls-tent: #7c3f29;
+    --ls-tent-shade: #4f2617;
+    --ls-tent-door: #ffb45e;   // trong lều có đèn
+    --ls-log: #36241a;
+    --ls-stone: #3d4558;
+    --ls-smoke: #6f7f9e;
+    --ls-fire-glow: 0.6;
+    --ls-card-shadow: 0 25px 60px -12px rgba(0, 0, 0, 0.6);
+  }
+
+  .login-scene {
+    position: fixed;
+    inset: 0;
+    overflow: hidden;
+    background: linear-gradient(180deg, var(--ls-sky-top) 0%, var(--ls-sky-mid) 55%, var(--ls-sky-bottom) 100%);
+    z-index: -1;
+
+    .alp-stars {
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      pointer-events: none;
+      opacity: var(--ls-stars);
+    }
+
+    .alp-star {
+      position: absolute;
+      border-radius: 50%;
+      background: #fff;
+      box-shadow: 0 0 4px 1px rgba(255, 255, 255, 0.8);
+      animation: alpTwinkle var(--d, 3s) ease-in-out infinite;
+      opacity: 0.15;
+    }
+
+    // Mặt trời / mặt trăng — toạ độ do PHP + JS đặt qua --orb-x, --orb-y
+    .ls-orb {
+      position: absolute;
+      left: var(--orb-x, 80%);
+      top: var(--orb-y, 15%);
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+      transition: left 60s linear, top 60s linear;
+      z-index: 2;
+
+      &.is-sun {
+        background: radial-gradient(circle, #fffbe6 0%, #ffe27a 55%, #ffc93c 100%);
+        box-shadow:
+          0 0 40px 12px rgba(255, 220, 110, 0.55),
+          0 0 120px 50px rgba(255, 236, 160, 0.35);
+        animation: alpSunGlow 6s ease-in-out infinite;
+      }
+
+      &.is-moon {
+        width: 56px;
+        height: 56px;
+        background: radial-gradient(circle at 40% 38%, #fff 0%, #eef2ff 55%, #c7d2fe 100%);
+        box-shadow:
+          0 0 24px 6px rgba(224, 231, 255, 0.45),
+          0 0 80px 30px rgba(165, 180, 252, 0.2);
+      }
+    }
+
+    .alp-clouds {
+      position: absolute;
+      inset: 0;
+      z-index: 3;
+      pointer-events: none;
+    }
+
+    // Mây = một path SVG liền (không ghép hình tròn) → mờ cả khối, không lộ đường nối
+    .alp-cloud {
+      position: absolute;
+      left: 0;
+      width: 190px;
+      height: 60px;
+      overflow: visible;
+      fill: var(--ls-cloud);
+      opacity: calc(var(--o, 0.9) * var(--ls-cloud-alpha, 1));
+      filter: blur(0.6px);
+      transform: translateX(var(--x, 0)) scale(var(--s, 1)); // vị trí khi không có animation
+      transform-origin: left center;
+      animation-name: alpCloudDrift;
+      animation-timing-function: linear;
+      animation-iteration-count: infinite;
+    }
+
+    .ls-mist-stop { stop-color: var(--ls-mist); }
+
+    .ls-defs {
+      position: absolute;
+      width: 0;
+      height: 0;
+      overflow: hidden;
+    }
+
+    // 5 lớp núi đồi trùng điệp: xa nhạt (ngả màu trời) → gần đậm; che mặt trời/trăng khi lặn
+    .ls-land {
+      position: absolute;
+      left: 0;
+      bottom: 0;
+      width: 100%;
+      height: 58vh;
+      min-height: 260px;
+      z-index: 4;
+
+      .ls-mist { opacity: 0.55; }
+      .ls-forest-far { fill: color-mix(in srgb, var(--ls-near) 85%, var(--ls-far)); }
+      .ls-forest-near { fill: var(--ls-forest); }
+
+      @for $i from 0 through 4 {
+        .ls-ridge-#{$i} {
+          fill: color-mix(in srgb, var(--ls-near) #{$i * 25%}, var(--ls-far));
+        }
+      }
+    }
+
+    // Khu cắm trại góc dưới trái — nằm trước lớp núi rừng
+    .ls-camp {
+      position: absolute;
+      left: clamp(8px, 5vw, 96px);
+      bottom: 2vh;
+      width: clamp(170px, 17vw, 260px);
+      aspect-ratio: 2 / 1;
+      z-index: 5;
+      pointer-events: none;
+    }
+
+    .ls-camp-art {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      overflow: visible;
+
+      .ls-grass { fill: color-mix(in srgb, var(--ls-forest) 70%, var(--ls-near)); }
+      .ls-rope { stroke: color-mix(in srgb, var(--ls-tent-shade) 60%, #000); stroke-width: 1; }
+      .ls-pole { stroke: var(--ls-log); stroke-width: 2.5; stroke-linecap: round; }
+      .ls-tent-body { fill: var(--ls-tent); }
+      .ls-tent-shade { fill: var(--ls-tent-shade); }
+      .ls-tent-door { fill: var(--ls-tent-door); }
+      .ls-tent-flap { fill: var(--ls-tent-shade); }
+      .ls-stone { fill: var(--ls-stone); }
+      .ls-log { fill: var(--ls-log); }
+
+      .ls-flame {
+        transform-box: fill-box;
+        transform-origin: 50% 100%;
+        animation: lsFlicker 0.6s ease-in-out infinite alternate;
+      }
+
+      .ls-flame-1 { fill: #ff7a1a; }
+      .ls-flame-2 { fill: #ffb22e; animation-duration: 0.45s; animation-delay: -0.2s; }
+      .ls-flame-3 { fill: #fff1b0; animation-duration: 0.35s; animation-delay: -0.1s; }
+    }
+
+    // Quầng sáng lửa hắt xuống đất (đậm hơn về đêm)
+    .ls-fire-glow {
+      position: absolute;
+      left: 77%;
+      bottom: -18%;
+      width: 130%;
+      aspect-ratio: 1;
+      transform: translateX(-50%);
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(255, 150, 60, var(--ls-fire-glow)) 0%, rgba(255, 120, 40, 0) 60%);
+      animation: lsGlow 2.4s ease-in-out infinite;
+    }
+
+    // Tia lửa bay lên từ đỉnh ngọn lửa
+    .ls-sparks span {
+      position: absolute;
+      left: 77%;
+      bottom: 22%;
+      width: 3px;
+      height: 3px;
+      border-radius: 50%;
+      background: #ffd27a;
+      box-shadow: 0 0 6px 2px rgba(255, 170, 60, 0.8);
+      opacity: 0;
+      animation: lsSpark 1.8s ease-out infinite;
+    }
+
+    // Khói bốc lên, nở dần rồi tan
+    .ls-smoke span {
+      position: absolute;
+      left: calc(77% - 10px);
+      bottom: 46%;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: var(--ls-smoke);
+      filter: blur(5px);
+      opacity: 0;
+      animation: lsSmoke 5.2s ease-out infinite;
+    }
+  }
+
+
+  &.login-phase-dusk,
+  &.login-phase-night {
+    --lf-card-bg: rgba(12, 20, 44, 0.82);   // đủ đục để chữ đạt 4.5:1 cả khi sau lưng là trời hoàng hôn
+    --lf-card-border: rgba(255, 255, 255, 0.08);
+    --lf-text: #e2e8f0;
+    --lf-muted: #a9b6cc;
+    --lf-input-bg: rgba(255, 255, 255, 0.06);
+    --lf-input-border: rgba(255, 255, 255, 0.14);
+    --lf-input-border-hover: rgba(255, 255, 255, 0.24);
+    --lf-input-text: #f1f5f9;
+    --lf-placeholder: #a3b1c6;
+    --lf-accent: #f59e0b;        // vàng lửa trại
+    --lf-accent-hover: #fbbf24;
+    --lf-accent-fg: #1c1917;
+    --lf-ring: rgba(245, 158, 11, 0.25);
+    --lf-error-bg: rgba(239, 68, 68, 0.14);
+    --lf-error-text: #fecaca;
+    --lf-msg-bg: rgba(34, 197, 94, 0.14);
+    --lf-msg-text: #bbf7d0;
+    --lf-toggle-bg: rgba(255, 255, 255, 0.06);
+    --lf-toggle-border: rgba(255, 255, 255, 0.12);
+
+    // Logo trắng trên card tối (logo tuỳ chỉnh trong Theme Options vẫn thắng vì có !important)
+    #login h1 a {
+      background-image: url("~@images/dev/moomsdev-white.png");
+    }
+  }
+
+  // Tương thích parent PHP < 3.7 (chưa có khung cảnh mới): nền sao + trăng cũ
   .login-night-sky {
     position: fixed;
     inset: 0;
@@ -63,41 +385,39 @@ body.login {
       width: auto;
     }
 
-    label, 
+    label,
     select,
-    .button { 
-      display: none !important; 
+    .button {
+      display: none !important;
     }
 
     .alp-lang-toggle {
       display: flex;
-      background: rgba(13, 13, 33, 0.05);
+      background: var(--lf-toggle-bg);
       padding: 0.25rem;
       border-radius: 6.25rem;
-      border: 1px solid rgba(13, 13, 33, 0.1);
-      box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
+      border: 1px solid var(--lf-toggle-border);
 
       button {
         padding: 0.375rem 1.25rem;
         border-radius: 6.25rem;
         border: none;
         background: transparent;
-        color: #64748b;
+        color: var(--lf-muted);
         font-size: 0.6875rem;
         font-weight: 800;
         cursor: pointer;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        transition: color 0.2s ease, background-color 0.2s ease;
         text-transform: uppercase;
         letter-spacing: 0.1em;
 
         &:hover {
-          color: #1a2a4e;
+          color: var(--lf-text);
         }
 
         &.active {
-          background: #1a2a4e;
-          color: #fff;
-          box-shadow: 0 4px 12px rgba(26, 42, 78, 0.2);
+          background: var(--lf-accent);
+          color: var(--lf-accent-fg);
         }
       }
     }
@@ -106,25 +426,29 @@ body.login {
   #login {
     margin: 2.5rem 0;
     padding: 0 !important;
-    width: 27.5rem;
-    max-width: 90%;
-    background: rgba(255, 255, 255, 0.98);
-    backdrop-filter: blur(10px);
-    border-radius: 1.75rem;
-    box-shadow: 0 25px 60px -12px rgba(0, 0, 0, 0.6);
+    width: 25rem;
+    max-width: calc(100% - 2rem);
+    background: var(--lf-card-bg);
+    border: 1px solid var(--lf-card-border);
+    -webkit-backdrop-filter: blur(14px) saturate(140%);
+    backdrop-filter: blur(14px) saturate(140%);
+    border-radius: 1rem;
+    box-shadow: var(--ls-card-shadow);
     overflow: hidden;
     position: relative;
     z-index: 5;
+    color: var(--lf-text);
+    transition: background-color 0.6s ease, border-color 0.6s ease;
 
     h1 {
       margin: 0;
-      padding: 3.125rem 2.5rem 1.25rem;
+      padding: 2.25rem 2rem 1rem;
       text-align: center;
-        
+
       a {
         display: inline-block;
-        width: 15rem;
-        height: 3.75rem;
+        width: 10rem;
+        height: 2.5rem;
         background-image: url("~@images/dev/moomsdev-black.png");
         background-size: contain;
         background-position: center;
@@ -136,13 +460,14 @@ body.login {
 
     .welcome {
       margin: 0;
-      padding: 0 2.5rem 1.875rem;
-      font-size: 1.125rem;
+      padding: 0 2rem 1.5rem;
+      font-size: 1rem;
+      line-height: 1.5;
       text-align: center;
       font-weight: 500;
-      color: #64748b;
+      color: var(--lf-muted);
       letter-spacing: -0.01em;
-      min-height: 3.125rem; // Prevent layout jump
+      min-height: 3rem; // Prevent layout jump
       display: flex;
       align-items: center;
       justify-content: center;
@@ -150,7 +475,7 @@ body.login {
       &::after {
         content: "|";
         margin-left: 0.3125rem;
-        color: #53e3a6;
+        color: var(--lf-accent);
         animation: blink 0.8s infinite;
       }
 
@@ -164,81 +489,97 @@ body.login {
     .message,
     .success {
       border: none;
-      border-left: 5px solid #53e3a6;
+      border-left: 4px solid var(--lf-accent);
       box-shadow: none !important;
-      margin: 0 2.5rem 1.5625rem;
-      padding: 0.9375rem 1.125rem;
-      background-color: #f0fdf4 !important;
-      color: #166534 !important;
-      border-radius: 0.75rem;
+      margin: 0 2rem 1.25rem;
+      padding: 0.75rem 1rem;
+      background-color: var(--lf-msg-bg) !important;
+      color: var(--lf-msg-text) !important;
+      border-radius: 0.5rem;
       font-size: 0.875rem;
       line-height: 1.5;
+
+      a {
+        color: inherit;
+      }
     }
 
     #login_error {
       border-left-color: #ef4444;
-      background-color: #fef2f2 !important;
-      color: #991b1b !important;
+      background-color: var(--lf-error-bg) !important;
+      color: var(--lf-error-text) !important;
     }
 
     form#loginform {
-      padding: 0 2.5rem 2.5rem;
+      padding: 0 2rem 1.75rem;
       background: transparent;
       border: none;
       box-shadow: none;
       margin: 0;
 
       p {
-        margin-bottom: 1.375rem;
+        margin-bottom: 1.125rem;
         float: none !important;
         clear: both;
       }
 
       label {
         display: block;
-        margin-bottom: 0.5rem;
+        margin-bottom: 0.375rem;
         font-family: $themeFont;
         font-weight: 600;
-        color: #1e293b;
+        color: var(--lf-text);
         font-size: 0.875rem;
       }
 
-      /* ULTIMATE SELECTOR FOR ALL INPUTS */
       input[type="text"],
       input[type="password"],
       input[type="email"],
       #user_login,
       #user_pass {
         width: 100% !important;
-        height: 3.5rem !important;
-        padding: 0 1.25rem !important;
+        height: 3rem !important;
+        padding: 0 1rem !important;
         font-size: 1rem !important;
         font-family: var(--laca-font) !important;
-        color: #1e293b !important;
-        background-color: #f1f5f9 !important;
-        border: 2px solid #e2e8f0 !important;
-        border-radius: 0.75rem !important;
-        transition: all 0.25s ease !important;
+        color: var(--lf-input-text) !important;
+        background-color: var(--lf-input-bg) !important;
+        border: 1px solid var(--lf-input-border) !important;
+        border-radius: 0.625rem !important;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease !important;
         box-shadow: none !important;
         box-sizing: border-box !important;
         margin: 0 !important;
 
+        &:hover {
+          border-color: var(--lf-input-border-hover) !important;
+        }
+
         &:focus {
-          background-color: #fff !important;
-          border-color: #53e3a6 !important;
+          border-color: var(--lf-accent) !important;
           outline: none !important;
-          box-shadow: 0 0 0 4px rgba(83, 227, 166, 0.1) !important;
+          box-shadow: 0 0 0 3px var(--lf-ring) !important;
         }
 
         &::placeholder {
-          color: #94a3b8 !important;
+          color: var(--lf-placeholder) !important;
           opacity: 1;
+        }
+
+        // Autofill của trình duyệt đè nền vàng/xanh — giữ đúng màu card
+        &:-webkit-autofill {
+          -webkit-text-fill-color: var(--lf-input-text) !important;
+          caret-color: var(--lf-input-text);
+          transition: background-color 9999s ease-out 0s !important;
         }
       }
 
-      /* Fix WordPress Password Wrapper specific mess */
+      #user_pass {
+        padding-right: 3rem !important;
+      }
+
       .user-pass-wrap {
-        margin-bottom: 1.375rem;
+        margin-bottom: 1.125rem;
 
         .wp-pwd {
           position: relative;
@@ -246,7 +587,7 @@ body.login {
 
           .wp-hide-pw {
             position: absolute;
-            right: 0.625rem;
+            right: 0.25rem;
             top: 50%;
             transform: translateY(-50%);
             background: transparent !important;
@@ -257,13 +598,13 @@ body.login {
             display: flex;
             align-items: center;
             justify-content: center;
-            color: #94a3b8 !important;
+            color: var(--lf-placeholder) !important;
             padding: 0;
             cursor: pointer;
             z-index: 10;
-                  
-            &:hover { color: #53e3a6 !important; }
-                  
+
+            &:hover { color: var(--lf-accent) !important; }
+
             .dashicons {
               font-size: 20px;
               width: 20px;
@@ -275,69 +616,103 @@ body.login {
       }
 
       .google-login-container {
-        margin-bottom: 1.5625rem;
+        margin-bottom: 1.25rem;
         text-align: center;
-          
+
         .google-login-button {
           display: flex !important;
           align-items: center !important;
           justify-content: center !important;
-          gap: 0.875rem !important;
+          gap: 0.75rem !important;
           width: 100% !important;
-          background: #fff !important;
-          border: 2px solid #e2e8f0 !important;
-          border-radius: 0.75rem !important;
-          color: #475569 !important;
-          font-size: 1rem !important;
+          height: 3rem !important;
+          background: var(--lf-input-bg) !important;
+          border: 1px solid var(--lf-input-border) !important;
+          border-radius: 0.625rem !important;
+          color: var(--lf-text) !important;
+          font-size: 0.9375rem !important;
           font-weight: 600 !important;
           text-decoration: none !important;
-          transition: all 0.2s ease !important;
-          box-shadow: 0 1px 2px rgba(0,0,0,0.05) !important;
+          transition: border-color 0.2s ease !important;
+          box-shadow: none !important;
           padding: 0 !important;
           float: none !important;
 
           &:hover {
-            background: #f8fafc !important;
-            border-color: #cbd5e1 !important;
-            color: #1e293b !important;
+            border-color: var(--lf-input-border-hover) !important;
           }
         }
       }
 
-      /* Remember Me Checkbox */
+      /* Remember Me — WP in ra <input> rồi <label> cạnh nhau */
       .forgetmenot {
-        margin: 0 0 1.5625rem 0 !important;
+        margin: 0 0 1.25rem 0 !important;
         float: none !important;
-        display: block !important;
+        display: flex !important;
+        align-items: center;
+        gap: 0.5rem;
 
         label {
-          display: inline-flex !important;
-          align-items: center !important;
-          gap: 0.625rem;
+          display: inline !important;
           margin: 0 !important;
           font-weight: 500 !important;
-          color: #64748b !important;
+          color: var(--lf-muted) !important;
           cursor: pointer;
           white-space: nowrap;
           font-size: 0.875rem !important;
-          
-          input#rememberme {
-            width: 1.25rem !important;
-            height: 1.25rem !important;
-            margin: 0 !important;
-            border-radius: 0.375rem !important;
-            border: 2px solid #cbd5e1 !important;
-            background: #fff !important;
-            cursor: pointer;
-            position: relative;
-            float: none !important;
-            appearance: checkbox !important;
-              
-            &:checked {
-              background-color: #53e3a6 !important;
-              border-color: #53e3a6 !important;
+        }
+
+        #rememberme {
+          appearance: none !important;
+          position: relative;
+          flex: none;
+          width: 1.125rem !important;
+          height: 1.125rem !important;
+          min-width: 0 !important;
+          margin: 0 !important;
+          border-radius: 0.3125rem !important;
+          border: 1.5px solid var(--lf-input-border-hover) !important;
+          background: var(--lf-input-bg) !important;
+          box-shadow: none !important;
+          cursor: pointer;
+          float: none !important;
+          transition: background-color 0.15s ease, border-color 0.15s ease;
+
+          &::before {
+            content: none !important; // bỏ dấu tick mặc định của WP
+          }
+
+          &::after {
+            content: "";
+            position: absolute;
+            left: 50%;
+            top: 45%;
+            width: 0.3rem;
+            height: 0.55rem;
+            border: solid var(--lf-accent-fg);
+            border-width: 0 2px 2px 0;
+            transform: translate(-50%, -50%) rotate(45deg) scale(0);
+            transition: transform 0.15s ease;
+          }
+
+          &:checked {
+            background: var(--lf-accent) !important;
+            border-color: var(--lf-accent) !important;
+
+            &::after {
+              transform: translate(-50%, -50%) rotate(45deg) scale(1);
             }
           }
+
+          &:focus-visible {
+            outline: none;
+            box-shadow: 0 0 0 3px var(--lf-ring) !important;
+          }
+        }
+
+        // Nút "?" của WP core cạnh Remember Me
+        .wp-tooltip__toggle {
+          color: var(--lf-muted);
         }
       }
 
@@ -345,30 +720,30 @@ body.login {
         margin: 0;
         float: none !important;
         clear: both;
-          
+
         input#wp-submit {
           width: 100% !important;
-          height: 3.625rem !important;
+          height: 3rem !important;
           padding: 0 !important;
-          font-size: 1.0625rem !important;
+          font-size: 1rem !important;
           font-weight: 700 !important;
-          background: var(--laca-accent) !important;
-          color: var(--laca-bg) !important;
+          background: var(--lf-accent) !important;
+          color: var(--lf-accent-fg) !important;
           border: none !important;
-          border-radius: 0.875rem !important;
+          border-radius: 0.625rem !important;
           cursor: pointer !important;
-          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+          transition: background-color 0.2s ease, box-shadow 0.2s ease !important;
           text-shadow: none !important;
+          box-shadow: none !important;
           float: none !important;
 
           &:hover {
-            background: var(--laca-accent-hover) !important;
-            transform: translateY(-2px) !important;
-            box-shadow: 0 12px 24px -6px rgba(37, 99, 235, 0.4) !important;
+            background: var(--lf-accent-hover) !important;
           }
 
-          &:active {
-            transform: translateY(0) !important;
+          &:focus-visible {
+            outline: none !important;
+            box-shadow: 0 0 0 3px var(--lf-ring) !important;
           }
         }
       }
@@ -378,8 +753,8 @@ body.login {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 0 2.5rem 3.125rem;
-      margin-top: -0.625rem;
+      gap: 1rem;
+      padding: 0 2rem 1.75rem;
 
       #nav,
       #backtoblog {
@@ -387,16 +762,16 @@ body.login {
         padding: 0 !important;
         float: none !important;
         text-align: center;
-        
+
         a {
           font-size: 0.8125rem;
-          color: #64748b;
+          color: var(--lf-muted);
           text-decoration: none;
           font-weight: 600;
-          transition: all 0.2s ease;
+          transition: color 0.2s ease;
 
           &:hover {
-            color: #1a2a4e;
+            color: var(--lf-accent);
             text-decoration: underline;
           }
         }
@@ -412,6 +787,60 @@ body.login {
   @keyframes alpTwinkle {
     0%, 100% { opacity: 0.2; transform: scale(0.8); }
     50% { opacity: 0.8; transform: scale(1.2); }
+  }
+
+  @keyframes alpCloudDrift {
+    from { transform: translateX(-260px) scale(var(--s, 1)); }
+    to { transform: translateX(calc(100vw + 60px)) scale(var(--s, 1)); }
+  }
+
+  @keyframes alpSunGlow {
+    0%, 100% { transform: translate(-50%, -50%) scale(1); }
+    50% { transform: translate(-50%, -50%) scale(1.06); }
+  }
+
+  @keyframes lsFlicker {
+    0% { transform: scale(1, 1) skewX(0deg); }
+    35% { transform: scale(0.94, 1.08) skewX(3deg); }
+    70% { transform: scale(1.04, 0.93) skewX(-2deg); }
+    100% { transform: scale(0.97, 1.05) skewX(1deg); }
+  }
+
+  @keyframes lsGlow {
+    0%, 100% { opacity: 1; transform: translateX(-50%) scale(1); }
+    50% { opacity: 0.8; transform: translateX(-50%) scale(0.94); }
+  }
+
+  @keyframes lsSpark {
+    0% { opacity: 0; transform: translate(0, 0); }
+    10% { opacity: 1; }
+    100% { opacity: 0; transform: translate(var(--dx, 0), calc(var(--rise, 70px) * -1)); }
+  }
+
+  @keyframes lsSmoke {
+    0% { opacity: 0; transform: translate(0, 0) scale(0.5); }
+    15% { opacity: 0.55; }
+    100% { opacity: 0; transform: translate(var(--dx, 0), -120px) scale(2.6); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .alp-cloud,
+    .ls-orb,
+    .alp-star,
+    .ls-flame,
+    .ls-fire-glow {
+      animation: none !important;
+    }
+
+    // Tia lửa, khói chỉ có nghĩa khi chuyển động
+    .ls-sparks,
+    .ls-smoke {
+      display: none;
+    }
+
+    .ls-orb {
+      transition: none;
+    }
   }
 }
 

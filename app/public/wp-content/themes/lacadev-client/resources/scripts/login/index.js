@@ -1,8 +1,11 @@
 /* eslint-disable no-console, no-unused-vars, no-alert */
 // eslint-disable-next-line no-unused-vars
 import '@styles/login';
+import { initLoginSky } from './sky';
 
 document.addEventListener( 'DOMContentLoaded', () => {
+	initLoginSky();
+
 	const dynamicConfig = window.loginI18n || {};
 	const loginHeaderLink = document.querySelector( '#login h1 a' );
 	if ( loginHeaderLink ) {
@@ -15,95 +18,43 @@ document.addEventListener( 'DOMContentLoaded', () => {
 		}
 	}
 
-	// 1. DUAL TRANSLATIONS
-	const configuredLocales = dynamicConfig.locales || {};
-	const locales = {
-		vi: {
-			userLabel:
-				( configuredLocales.vi && configuredLocales.vi.userLabel ) ||
-				dynamicConfig.userLabel ||
-				'Ai đang ghé trạm?',
-			userPlaceholder:
-				( configuredLocales.vi && configuredLocales.vi.userPlaceholder ) ||
-				dynamicConfig.userPlaceholder ||
-				'Điền tên hoặc email vào đây nhé',
-			passLabel:
-				( configuredLocales.vi && configuredLocales.vi.passLabel ) ||
-				dynamicConfig.passLabel ||
-				'Chìa khóa',
-			passPlaceholder:
-				( configuredLocales.vi && configuredLocales.vi.passPlaceholder ) ||
-				dynamicConfig.passPlaceholder ||
-				'Nhập chìa khóa mở cửa',
-			welcomeText:
-				( configuredLocales.vi && configuredLocales.vi.welcomeText ) ||
-				dynamicConfig.welcomeText ||
-				'Chào mừng về Trạm Laca!<br/>Cắm sạc, pha trà và bắt đầu nào!',
-			forgetPwd:
-				( configuredLocales.vi && configuredLocales.vi.forgetPwd ) ||
-				dynamicConfig.forgetPwd ||
-				'Rớt chìa khoá?',
-			backToBlog:
-				( configuredLocales.vi && configuredLocales.vi.backToBlog ) ||
-				dynamicConfig.backToBlog ||
-				'← Rời khỏi Trạm',
-		},
-		en: {
-			userLabel:
-				( configuredLocales.en && configuredLocales.en.userLabel ) ||
-				"Who's visiting the station?",
-			userPlaceholder:
-				( configuredLocales.en && configuredLocales.en.userPlaceholder ) ||
-				'Enter name or email here',
-			passLabel:
-				( configuredLocales.en && configuredLocales.en.passLabel ) ||
-				'The Key',
-			passPlaceholder:
-				( configuredLocales.en && configuredLocales.en.passPlaceholder ) ||
-				'Enter your key to open',
-			welcomeText:
-				( configuredLocales.en && configuredLocales.en.welcomeText ) ||
-				"Welcome to Laca Station!<br/>Charge up, brew some tea and let's go!",
-			forgetPwd:
-				( configuredLocales.en && configuredLocales.en.forgetPwd ) ||
-				'Lost your key?',
-			backToBlog:
-				( configuredLocales.en && configuredLocales.en.backToBlog ) ||
-				'← Leave the Station',
-		},
-	};
-
+	// 1. CÂU CHỮ — lấy từ PHP (__() + .po, có thể ghi đè ở Theme Options), không ghi cứng ở JS
 	const currentLang = document.documentElement.lang.includes( 'en' )
 		? 'en'
 		: 'vi';
-	const i18n = locales[ currentLang ];
+	// Parent PHP < 3.7 chưa có `strings` → đọc `locales[lang]` kiểu cũ (câu chào dạng HTML có <br />)
+	const legacyLocale = ( dynamicConfig.locales || {} )[ currentLang ];
+	const i18n = dynamicConfig.strings || { ...( legacyLocale || {} ) };
+	if ( ! dynamicConfig.strings && i18n.welcomeText ) {
+		i18n.welcomeText = i18n.welcomeText.replace( /<br\s*\/?>/gi, '' );
+	}
 
 	const userLabel = document.querySelector( 'label[for="user_login"]' );
-	if ( userLabel ) {
+	if ( userLabel && i18n.userLabel ) {
 		userLabel.childNodes[ 0 ].textContent = i18n.userLabel;
 	}
 	const userLogin = document.getElementById( 'user_login' );
-	if ( userLogin ) {
+	if ( userLogin && i18n.userPlaceholder ) {
 		userLogin.setAttribute( 'placeholder', i18n.userPlaceholder );
 	}
 
 	const passLabel = document.querySelector( 'label[for="user_pass"]' );
-	if ( passLabel ) {
+	if ( passLabel && i18n.passLabel ) {
 		passLabel.childNodes[ 0 ].textContent = i18n.passLabel;
 	}
 	const userPass = document.getElementById( 'user_pass' );
-	if ( userPass ) {
+	if ( userPass && i18n.passPlaceholder ) {
 		userPass.setAttribute( 'placeholder', i18n.passPlaceholder );
 	}
 
 	// Rename footer links
 	const navLink = document.querySelector( '#nav a' );
-	if ( navLink ) {
+	if ( navLink && i18n.forgetPwd ) {
 		navLink.textContent = i18n.forgetPwd;
 	}
 
 	const backLink = document.querySelector( '#backtoblog a' );
-	if ( backLink ) {
+	if ( backLink && i18n.backToBlog ) {
 		backLink.textContent = i18n.backToBlog;
 	}
 
@@ -135,14 +86,19 @@ document.addEventListener( 'DOMContentLoaded', () => {
 			const langWrapper = document.createElement( 'div' );
 			langWrapper.className = 'alp-lang-toggle';
 
-			langWrapper.innerHTML = `
-				<button type="button" data-lang="vi" class="${
-					currentLang === 'vi' ? 'active' : ''
-				}">Vie</button>
-				<button type="button" data-lang="en_US" class="${
-					currentLang === 'en' ? 'active' : ''
-				}">Eng</button>
-			`;
+			[
+				[ 'vi', 'vi', i18n.langVi ],
+				[ 'en_US', 'en', i18n.langEn ],
+			].forEach( ( [ value, code, label ] ) => {
+				const btn = document.createElement( 'button' );
+				btn.type = 'button';
+				btn.dataset.lang = value;
+				btn.textContent = label || code;
+				if ( currentLang === code ) {
+					btn.classList.add( 'active' );
+				}
+				langWrapper.appendChild( btn );
+			} );
 
 			switcherForm.appendChild( langWrapper );
 
@@ -167,27 +123,19 @@ document.addEventListener( 'DOMContentLoaded', () => {
 		logo.insertAdjacentElement( 'afterend', welcomeDiv );
 	}
 
-	const welcomeText = i18n.welcomeText;
+	const welcomeText = i18n.welcomeText || '';
 	let charIndex = 0;
 
+	// Gõ từng ký tự bằng text node; '\n' thành <br> — không dùng innerHTML
 	function typeWriter() {
 		if ( charIndex < welcomeText.length ) {
-			if ( welcomeText.charAt( charIndex ) === '<' ) {
-				const tagEnd = welcomeText.indexOf( '>', charIndex );
-				if ( tagEnd !== -1 ) {
-					welcomeDiv.innerHTML += welcomeText.substring(
-						charIndex,
-						tagEnd + 1
-					);
-					charIndex = tagEnd + 1;
-				} else {
-					welcomeDiv.innerHTML += welcomeText.charAt( charIndex );
-					charIndex++;
-				}
-			} else {
-				welcomeDiv.innerHTML += welcomeText.charAt( charIndex );
-				charIndex++;
+			const ch = welcomeText.charAt( charIndex );
+			if ( ch === '\n' ) {
+				welcomeDiv.appendChild( document.createElement( 'br' ) );
+			} else if ( ch !== '\r' ) {
+				welcomeDiv.appendChild( document.createTextNode( ch ) );
 			}
+			charIndex++;
 
 			const speed = Math.random() * ( 150 - 50 ) + 50;
 			setTimeout( typeWriter, speed );
