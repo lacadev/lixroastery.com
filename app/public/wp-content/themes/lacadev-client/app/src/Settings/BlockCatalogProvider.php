@@ -41,7 +41,19 @@ class BlockCatalogProvider
             'permission_callback' => '__return_true', // Auth được xử lý trong callback
         ]);
 
-        register_rest_route(self::NAMESPACE, '/' . self::ROUTE . '/(?P<block>[a-zA-Z0-9_-]+)/files', [
+        // Route chuẩn: /wp-json/lacadev/v1/blocks-catalog/{block}/files
+        // Hỗ trợ block phẳng hoặc bucketed (bucket/block, kể cả rawurlencode %2F)
+        register_rest_route(self::NAMESPACE, '/' . self::ROUTE . '/(?P<block>[a-zA-Z0-9_\-\/%]+)/files', [
+            'methods'             => \WP_REST_Server::READABLE,
+            'callback'            => [$this, 'getBlockFiles'],
+            'permission_callback' => '__return_true',
+            'args'                => [
+                'block' => ['required' => true],
+            ],
+        ]);
+
+        // Route tương thích ngược cho hub cũ: /wp-json/lacadev/v1/blocks-catalog/files?block=X
+        register_rest_route(self::NAMESPACE, '/' . self::ROUTE . '/files', [
             'methods'             => \WP_REST_Server::READABLE,
             'callback'            => [$this, 'getBlockFiles'],
             'permission_callback' => '__return_true',
@@ -99,8 +111,19 @@ class BlockCatalogProvider
             return new \WP_REST_Response(['success' => false, 'message' => 'Catalog Key không hợp lệ.'], 401);
         }
 
-        $blockName = sanitize_key($request->get_param('block') ?? '');
-        $blockDir  = $this->findBlockDir($blockName);
+        $rawBlock = rawurldecode((string) ($request->get_param('block') ?? ''));
+        // Chống path traversal: không cho phép .. hoặc bắt đầu bằng / hoặc null bytes
+        if (str_contains($rawBlock, '..') || str_starts_with($rawBlock, '/') || str_contains($rawBlock, "\0")) {
+            return new \WP_REST_Response(['success' => false, 'message' => 'Tên block không hợp lệ.'], 400);
+        }
+
+        // Cho phép chữ cái, chữ số, gạch dưới, gạch ngang và dấu gạch chéo cho bucket/block
+        $blockName = trim(preg_replace('/[^a-zA-Z0-9_\-\/]/', '', $rawBlock), '/');
+        if (empty($blockName) || str_contains($blockName, '//')) {
+            return new \WP_REST_Response(['success' => false, 'message' => 'Tên block không hợp lệ.'], 400);
+        }
+
+        $blockDir = $this->findBlockDir($blockName);
 
         if (!$blockDir) {
             return new \WP_REST_Response(['success' => false, 'message' => 'Không tìm thấy block.'], 404);
@@ -134,8 +157,21 @@ class BlockCatalogProvider
 
     private function authenticate(\WP_REST_Request $request): bool
     {
-        $storedKey  = get_option(self::KEY_OPTION, '');
-        $requestKey = $request->get_header('X-Laca-Catalog-Key') ?? '';
+        $catalogKey = LacaDevTrackerClient::getCatalogKey();
+        if (empty($catalogKey)) {
+            $catalogKey = (string) get_option(self::KEY_OPTION, '');
+        }
+
+        $sigHeader = $request->get_header('X-Laca-Signature');
+        if (!empty($sigHeader) && !empty($catalogKey)) {
+            $verify = \App\Security\RequestSigner::verify($request, $catalogKey);
+            if ($verify['valid']) {
+                return true;
+            }
+        }
+
+        $storedKey  = (string) (get_option(self::KEY_OPTION, '') ?: $catalogKey);
+        $requestKey = (string) ($request->get_header('X-Laca-Catalog-Key') ?? $request->get_header('X-Laca-Key') ?? '');
 
         if (empty($storedKey) || empty($requestKey)) {
             return false;
@@ -169,9 +205,11 @@ class BlockCatalogProvider
     {
         // Quét theo thứ tự con trước (ưu tiên bản con nếu trùng tên ở cả 2 nơi)
         foreach (array_reverse($this->resolveBlockDirs()) as $dir) {
-            $candidate = "{$dir}/{$blockName}";
-            if (is_dir($candidate) && file_exists("{$candidate}/block.json")) {
-                return $candidate;
+            $candidate     = "{$dir}/{$blockName}";
+            $realCandidate = realpath($candidate);
+            $realDir       = realpath($dir);
+            if ($realCandidate && $realDir && str_starts_with($realCandidate, $realDir) && is_dir($realCandidate) && file_exists("{$realCandidate}/block.json")) {
+                return $realCandidate;
             }
         }
 

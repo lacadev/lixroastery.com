@@ -18,7 +18,7 @@ class UrlParser
     public function fromUrl(string $url): array|WP_Error
     {
         if (!current_user_can('manage_options')) {
-            return new WP_Error('rest_forbidden', __('Bạn không có quyền thực hiện thao tác này.', 'lacadev'), ['status' => 403]);
+            return new WP_Error('rest_forbidden', __('Bạn không có quyền thực hiện thao tác này.', 'laca'), ['status' => 403]);
         }
 
         $parsedUrl = parse_url($url);
@@ -30,7 +30,7 @@ class UrlParser
             $ip = gethostbyname($targetHost);
             if ($ip && filter_var($ip, FILTER_VALIDATE_IP)) {
                 if (!filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE)) {
-                    return new WP_Error('blocked_ip', __('Không được phép truy cập địa chỉ IP nội bộ hoặc loopback.', 'lacadev'));
+                    return new WP_Error('blocked_ip', __('Không được phép truy cập địa chỉ IP nội bộ hoặc loopback.', 'laca'));
                 }
             }
         }
@@ -47,7 +47,7 @@ class UrlParser
 
         $body = wp_remote_retrieve_body($response);
         if (empty($body)) {
-            return new WP_Error('body_not_found', __('Không tìm thấy nội dung HTML.', 'lacadev'));
+            return new WP_Error('body_not_found', __('Không tìm thấy nội dung HTML.', 'laca'));
         }
 
         return $this->fromHtml($body);

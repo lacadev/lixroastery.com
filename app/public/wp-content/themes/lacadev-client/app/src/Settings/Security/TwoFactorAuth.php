@@ -246,7 +246,7 @@ class TwoFactorAuth
         $otpauth  = 'otpauth://totp/' . $label . '?secret=' . ($secret ?: '') . '&issuer=' . rawurlencode($issuer);
         ?>
         <div id="laca-2fa-profile" class="laca-2fa-profile">
-            <h2 style="margin:0 0 6px;font-size:17px;">🔐 Xác thực 2 bước (2FA)</h2>
+            <h2 style="margin:0 0 6px;font-size:17px;">Xác thực 2 bước (2FA)</h2>
             <p class="description" style="margin:0 0 20px;">Bảo vệ tài khoản bằng mã OTP từ Google/Microsoft Authenticator.</p>
 
             <?php if ($verified && $enabled): ?>

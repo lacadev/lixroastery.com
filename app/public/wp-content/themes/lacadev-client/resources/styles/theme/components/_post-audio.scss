@@ -1,0 +1,172 @@
+@use "../abstracts/variables.scss" as *;
+@use "../abstracts/mixin.scss" as *;
+
+// Parent theme không có biến màu thương hiệu tĩnh: màu lấy từ --primary-color / --bg-color
+// (child theme in ra :root từ Theme Options). Khi option trống, header in ra "--primary-color: ;"
+// — fallback của var() không chạy với giá trị rỗng, nên đăng ký @property: giá trị rỗng/sai
+// sẽ rơi về initial-value (màu chữ hiện tại / màu nền hệ thống).
+// Màu nền/viền phụ pha từ màu chính bằng color-mix để tự hợp với mọi site.
+@property --laca-audio-accent {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: currentcolor;
+}
+
+@property --laca-audio-on-accent {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: Canvas;
+}
+
+$audioAccent: var(--laca-audio-accent);
+$audioOnAccent: var(--laca-audio-on-accent);
+
+.laca-post-audio {
+  --laca-audio-accent: var(--primary-color);
+  --laca-audio-on-accent: var(--bg-color);
+
+  display: flex;
+  flex-direction: column;
+  gap: rem(12);
+  margin-bottom: rem(32);
+  padding: rem(16) rem(20);
+  border: rem(1) solid color-mix(in srgb, $audioAccent 20%, transparent);
+  border-radius: $rLg;
+  background: color-mix(in srgb, $audioAccent 5%, transparent);
+
+  &[hidden] {
+    display: none;
+  }
+
+  &__header {
+    display: flex;
+    align-items: center;
+    gap: rem(8);
+    color: $audioAccent;
+    font-weight: $semiBold;
+    @include resFont(rem(13), rem(14));
+  }
+
+  &__icon {
+    flex-shrink: 0;
+    width: rem(20);
+    height: rem(20);
+  }
+
+  &__controls {
+    display: flex;
+    align-items: center;
+    gap: rem(12);
+
+    @include maxWidth($xs) {
+      flex-wrap: wrap;
+      gap: rem(8);
+    }
+  }
+
+  &__play {
+    display: inline-flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    width: rem(40);
+    height: rem(40);
+    padding: 0;
+    border: 0;
+    border-radius: $rPill;
+    background-color: $audioAccent;
+    color: $audioOnAccent;
+    cursor: pointer;
+    transition: opacity 0.2s ease;
+
+    svg {
+      width: rem(18);
+      height: rem(18);
+    }
+
+    &:hover {
+      opacity: 0.9;
+    }
+
+    &:focus-visible {
+      outline: rem(2) solid $audioAccent;
+      outline-offset: rem(2);
+    }
+  }
+
+  &__icon-pause,
+  &.is-playing &__icon-play {
+    display: none;
+  }
+
+  &.is-playing &__icon-pause {
+    display: block;
+  }
+
+  &__progress {
+    position: relative;
+    flex: 1;
+    min-width: rem(120);
+    height: rem(6);
+    overflow: hidden;
+    border-radius: $rPill;
+    background: color-mix(in srgb, $audioAccent 20%, transparent);
+    cursor: pointer;
+
+    &:focus-visible {
+      outline: rem(2) solid $audioAccent;
+      outline-offset: rem(3);
+    }
+
+    @include maxWidth($xs) {
+      order: 3;
+      flex-basis: 100%;
+    }
+  }
+
+  &__progress-bar {
+    display: block;
+    width: 0;
+    height: 100%;
+    background: $audioAccent;
+  }
+
+  &__time,
+  &__status {
+    opacity: 0.75;
+    @include resFont(rem(12), rem(13));
+  }
+
+  &__time {
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+
+  &__status {
+    flex: 1;
+  }
+
+  &__speed {
+    flex-shrink: 0;
+    min-width: rem(44);
+    min-height: rem(32);
+    padding: rem(4) rem(8);
+    border: rem(1) solid color-mix(in srgb, $audioAccent 30%, transparent);
+    border-radius: $rSm;
+    background: transparent;
+    color: inherit;
+    font-weight: $semiBold;
+    font-variant-numeric: tabular-nums;
+    cursor: pointer;
+
+    &:hover {
+      background: color-mix(in srgb, $audioAccent 10%, transparent);
+    }
+
+    &:focus-visible {
+      outline: rem(2) solid $audioAccent;
+      outline-offset: rem(2);
+    }
+    @include resFont(rem(12), rem(13));
+  }
+}

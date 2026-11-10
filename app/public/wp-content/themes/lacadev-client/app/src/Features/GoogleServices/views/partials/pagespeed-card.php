@@ -61,9 +61,9 @@ $extReportUrl = 'https://pagespeed.web.dev/report?url=' . rawurlencode($siteUrl)
         <div class="laca-google-psi__title-wrap">
             <span class="dashicons dashicons-performance laca-google-psi__icon" aria-hidden="true"></span>
             <h3 class="laca-google-psi__title">
-                <?php esc_html_e('Tốc độ Trang & Trải nghiệm Người dùng (PageSpeed Insights)', 'lacadev'); ?>
+                <?php esc_html_e('Tốc độ Trang & Trải nghiệm Người dùng (PageSpeed Insights)', 'laca'); ?>
             </h3>
-            <div class="laca-google-psi__strategy-tabs" role="tablist" aria-label="<?php esc_attr_e('Thiết bị kiểm tra', 'lacadev'); ?>">
+            <div class="laca-google-psi__strategy-tabs" role="tablist" aria-label="<?php esc_attr_e('Thiết bị kiểm tra', 'laca'); ?>">
                 <button
                     type="button"
                     role="tab"
@@ -76,7 +76,7 @@ $extReportUrl = 'https://pagespeed.web.dev/report?url=' . rawurlencode($siteUrl)
                     tabindex="<?php echo !$isDesktop ? '0' : '-1'; ?>"
                 >
                     <span class="dashicons dashicons-smartphone" aria-hidden="true"></span>
-                    <span><?php esc_html_e('Di động', 'lacadev'); ?></span>
+                    <span><?php esc_html_e('Di động', 'laca'); ?></span>
                 </button>
                 <button
                     type="button"
@@ -90,17 +90,17 @@ $extReportUrl = 'https://pagespeed.web.dev/report?url=' . rawurlencode($siteUrl)
                     tabindex="<?php echo $isDesktop ? '0' : '-1'; ?>"
                 >
                     <span class="dashicons dashicons-desktop" aria-hidden="true"></span>
-                    <span><?php esc_html_e('Máy tính', 'lacadev'); ?></span>
+                    <span><?php esc_html_e('Máy tính', 'laca'); ?></span>
                 </button>
             </div>
         </div>
         <div class="laca-google-psi__actions">
-            <span class="laca-google-psi__strategy-label screen-reader-text" id="laca-psi-strategy-label"><?php echo $isDesktop ? esc_html__('Máy tính', 'lacadev') : esc_html__('Di động', 'lacadev'); ?></span>
+            <span class="laca-google-psi__strategy-label screen-reader-text" id="laca-psi-strategy-label"><?php echo $isDesktop ? esc_html__('Máy tính', 'laca') : esc_html__('Di động', 'laca'); ?></span>
             <span class="laca-google-psi__url">
                 URL: <code><?php echo esc_html($siteUrl); ?></code>
             </span>
             <a href="<?php echo esc_url($extReportUrl); ?>" target="_blank" rel="noopener noreferrer" class="button button-secondary button-small laca-google-psi__ext-link" id="laca-psi-ext-link">
-                <span><?php esc_html_e('Chi tiết', 'lacadev'); ?></span>
+                <span><?php esc_html_e('Chi tiết', 'laca'); ?></span>
                 <span class="dashicons dashicons-external" aria-hidden="true"></span>
             </a>
         </div>

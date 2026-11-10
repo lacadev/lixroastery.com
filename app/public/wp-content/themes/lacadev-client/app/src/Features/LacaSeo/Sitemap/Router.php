@@ -73,6 +73,8 @@ class Router
         })->send($output);
     }
 
+    public const REWRITE_VERSION = '1.0.0';
+
     public function registerRewriteRules(): void
     {
         global $wp;
@@ -87,25 +89,33 @@ class Router
             add_rewrite_rule($base . '([^/]+?)-sitemap([0-9]+)?\\.xml$', 'index.php?laca_sitemap=$matches[1]&laca_sitemap_n=$matches[2]', 'top');
             add_rewrite_rule($base . '([a-z]+)?-?sitemap\\.xsl$', 'index.php?laca_xsl=$matches[1]', 'top');
             add_rewrite_rule($base . 'main-sitemap\\.xsl$', 'index.php?laca_xsl=main', 'top');
-            add_action('wp_loaded', [$this, 'maybeFlushRewriteRules']);
+            add_action('init', [$this, 'maybeFlushRewriteRules'], 999);
         }
     }
 
     /**
-     * Tắt Rank Math không tự flush rewrite ⇒ rule của Laca chưa được lưu và sitemap_index.xml trả 404
-     * (đã xảy ra trên production). Tự flush 1 lần khi thiếu rule, khoá bằng transient để không flush mỗi request.
+     * Tự động flush rewrite rules khi version Laca SEO (hoặc theme) thay đổi:
+     * So sánh option laca_seo_rewrite_version, nếu khác thì flush_rewrite_rules(false) 1 lần duy nhất trên init muộn.
      */
     public function maybeFlushRewriteRules(): void
     {
+        $currentVersion = self::REWRITE_VERSION;
+        $savedVersion = (string) get_option('laca_seo_rewrite_version', '');
+
+        if ($savedVersion !== $currentVersion) {
+            update_option('laca_seo_rewrite_version', $currentVersion);
+            flush_rewrite_rules(false);
+            return;
+        }
+
+        // Dự phòng: nếu rule sitemap_index chưa có trong rewrite_rules
         $rules = get_option('rewrite_rules');
-        if (!is_array($rules) || isset($rules[self::getSitemapBase() . 'sitemap_index\\.xml$'])) {
-            return;
+        if (!is_array($rules) || !isset($rules[self::getSitemapBase() . 'sitemap_index\\.xml$'])) {
+            if (!get_transient('laca_seo_sitemap_rewrite_flushed')) {
+                set_transient('laca_seo_sitemap_rewrite_flushed', 1, HOUR_IN_SECONDS);
+                flush_rewrite_rules(false);
+            }
         }
-        if (get_transient('laca_seo_sitemap_rewrite_flushed')) {
-            return;
-        }
-        set_transient('laca_seo_sitemap_rewrite_flushed', 1, HOUR_IN_SECONDS);
-        flush_rewrite_rules(false);
     }
 
     /**

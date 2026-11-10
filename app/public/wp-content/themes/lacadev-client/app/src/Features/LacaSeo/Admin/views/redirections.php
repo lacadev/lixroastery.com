@@ -68,7 +68,7 @@ if (!empty($_POST['laca_seo_redir_save'])) {
         $endDate   = sanitize_text_field($_POST['end_date'] ?? '');
         Schedule::setSchedule($savedId, $startDate, $endDate);
 
-        $notice = '<div class="notice notice-success is-dismissible"><p>' . esc_html__('Đã lưu quy tắc chuyển hướng thành công.', 'lacadev') . '</p></div>';
+        $notice = '<div class="notice notice-success is-dismissible"><p>' . esc_html__('Đã lưu quy tắc chuyển hướng thành công.', 'laca') . '</p></div>';
     }
 }
 
@@ -80,13 +80,13 @@ if (!empty($_GET['action']) && !empty($_GET['id'])) {
 
     if ($act === 'trash') {
         DB::changeStatus($id, 'trashed');
-        $notice = '<div class="notice notice-success is-dismissible"><p>' . esc_html__('Đã chuyển vào thùng rác.', 'lacadev') . '</p></div>';
+        $notice = '<div class="notice notice-success is-dismissible"><p>' . esc_html__('Đã chuyển vào thùng rác.', 'laca') . '</p></div>';
     } elseif ($act === 'restore') {
         DB::changeStatus($id, 'active');
-        $notice = '<div class="notice notice-success is-dismissible"><p>' . esc_html__('Đã khôi phục quy tắc.', 'lacadev') . '</p></div>';
+        $notice = '<div class="notice notice-success is-dismissible"><p>' . esc_html__('Đã khôi phục quy tắc.', 'laca') . '</p></div>';
     } elseif ($act === 'delete') {
         DB::delete($id);
-        $notice = '<div class="notice notice-success is-dismissible"><p>' . esc_html__('Đã xoá vĩnh viễn quy tắc.', 'lacadev') . '</p></div>';
+        $notice = '<div class="notice notice-success is-dismissible"><p>' . esc_html__('Đã xoá vĩnh viễn quy tắc.', 'laca') . '</p></div>';
     } elseif ($act === 'activate') {
         DB::changeStatus($id, 'active');
     } elseif ($act === 'deactivate') {
@@ -302,7 +302,7 @@ $isAddNew = isset($_GET['action']) && $_GET['action'] === 'new';
     <?php if ($totalPages > 1): ?>
         <div class="tablenav bottom laca-mt-3">
             <div class="tablenav-pages">
-                <span class="displaying-num"><?php printf(esc_html__('%d mục', 'lacadev'), $total); ?></span>
+                <span class="displaying-num"><?php printf(esc_html__('%d mục', 'laca'), $total); ?></span>
                 <?php for ($p = 1; $p <= $totalPages; $p++): ?>
                     <a href="<?php echo esc_url(add_query_arg(['paged' => $p])); ?>" class="button laca-btn-page <?php echo $paged === $p ? 'button-primary' : ''; ?>"><?php echo $p; ?></a>
                 <?php endfor; ?>

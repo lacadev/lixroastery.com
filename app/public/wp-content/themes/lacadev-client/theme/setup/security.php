@@ -53,7 +53,17 @@ add_action('send_headers', function() {
         $csp .= "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net; ";
         $csp .= "font-src 'self' https://fonts.gstatic.com data:; ";
         $csp .= "connect-src 'self' https://www.google.com https://www.gstatic.com https://www.youtube.com https://www.google-analytics.com https://stats.g.doubleclick.net https://apis.google.com ws: wss:; ";
-        $csp .= "frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com https://player.vimeo.com https://docs.google.com https://www.google.com https://www.gstatic.com; ";
+        $default_frame_hosts = [
+            'https://www.youtube.com',
+            'https://www.youtube-nocookie.com',
+            'https://player.vimeo.com',
+            'https://docs.google.com',
+            'https://www.google.com',
+            'https://www.gstatic.com',
+        ];
+        $frame_hosts = apply_filters('laca_csp_frame_src', $default_frame_hosts);
+        $frame_src_str = implode(' ', array_unique(array_filter((array) $frame_hosts)));
+        $csp .= "frame-src 'self' {$frame_src_str}; ";
         $csp .= "media-src 'self' https://www.youtube.com https://www.youtube-nocookie.com https://player.vimeo.com; ";
         $csp .= "img-src 'self' data: https: http:; ";
         $csp .= "worker-src 'self' blob:; ";

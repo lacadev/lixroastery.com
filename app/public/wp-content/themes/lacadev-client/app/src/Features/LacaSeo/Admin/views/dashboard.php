@@ -30,15 +30,15 @@ $notFoundStats = \App\Features\LacaSeo\Modules\NotFoundMonitor\DB::getStats();
     <div class="laca-seo-card" style="margin-bottom: 24px;">
         <div class="laca-seo-card__header laca-seo-header-flex">
             <div>
-                <h2 class="laca-seo-card__title"><?php esc_html_e('Báo cáo Google Search Console & Google Analytics 4', 'lacadev'); ?></h2>
-                <p class="laca-seo-card__subtitle"><?php esc_html_e('Báo cáo chi tiết GSC & GA4 hiện hiển thị độc lập tại Bảng điều khiển WordPress và cài đặt tại menu Dịch vụ Google.', 'lacadev'); ?></p>
+                <h2 class="laca-seo-card__title"><?php esc_html_e('Báo cáo Google Search Console & Google Analytics 4', 'laca'); ?></h2>
+                <p class="laca-seo-card__subtitle"><?php esc_html_e('Báo cáo chi tiết GSC & GA4 hiện hiển thị độc lập tại Bảng điều khiển WordPress và cài đặt tại menu Dịch vụ Google.', 'laca'); ?></p>
             </div>
             <div style="display: flex; gap: 8px; flex-wrap: wrap;">
                 <a href="<?php echo esc_url(admin_url('index.php#laca-google-report')); ?>" class="button button-primary">
-                    <span class="dashicons dashicons-chart-area" style="margin-top: 3px;"></span> <?php esc_html_e('Xem Báo cáo trên Bảng điều khiển', 'lacadev'); ?>
+                    <span class="dashicons dashicons-chart-area" style="margin-top: 3px;"></span> <?php esc_html_e('Xem Báo cáo trên Bảng điều khiển', 'laca'); ?>
                 </a>
                 <a href="<?php echo esc_url(admin_url('admin.php?page=laca-google-search-console')); ?>" class="button button-secondary">
-                    <span class="dashicons dashicons-google" style="margin-top: 3px;"></span> <?php esc_html_e('Cấu hình Dịch vụ Google', 'lacadev'); ?>
+                    <span class="dashicons dashicons-google" style="margin-top: 3px;"></span> <?php esc_html_e('Cấu hình Dịch vụ Google', 'laca'); ?>
                 </a>
             </div>
         </div>
@@ -51,9 +51,9 @@ $notFoundStats = \App\Features\LacaSeo\Modules\NotFoundMonitor\DB::getStats();
                 <span class="dashicons <?php echo $blog_public ? 'dashicons-visibility' : 'dashicons-hidden'; ?>"></span>
             </div>
             <div class="laca-seo-stat-card__info">
-                <span class="laca-seo-stat-card__label"><?php esc_html_e('Hiển thị tìm kiếm', 'lacadev'); ?></span>
-                <strong class="laca-seo-stat-card__value"><?php echo $blog_public ? esc_html__('Công khai', 'lacadev') : esc_html__('Bị chặn', 'lacadev'); ?></strong>
-                <small><?php echo $blog_public ? esc_html__('Googlebot được phép crawl', 'lacadev') : esc_html__('Đang bật noindex toàn site', 'lacadev'); ?></small>
+                <span class="laca-seo-stat-card__label"><?php esc_html_e('Hiển thị tìm kiếm', 'laca'); ?></span>
+                <strong class="laca-seo-stat-card__value"><?php echo $blog_public ? esc_html__('Công khai', 'laca') : esc_html__('Bị chặn', 'laca'); ?></strong>
+                <small><?php echo $blog_public ? esc_html__('Googlebot được phép crawl', 'laca') : esc_html__('Đang bật noindex toàn site', 'laca'); ?></small>
             </div>
         </div>
 
@@ -63,8 +63,8 @@ $notFoundStats = \App\Features\LacaSeo\Modules\NotFoundMonitor\DB::getStats();
             </div>
             <div class="laca-seo-stat-card__info">
                 <span class="laca-seo-stat-card__label">Rank Math SEO</span>
-                <strong class="laca-seo-stat-card__value"><?php echo $rm_active ? esc_html__('Đang chạy', 'lacadev') : esc_html__('Đã thay thế', 'lacadev'); ?></strong>
-                <small><?php echo $rm_active ? esc_html__('Laca SEO tắt frontend', 'lacadev') : esc_html__('Laca SEO điều khiển 100%', 'lacadev'); ?></small>
+                <strong class="laca-seo-stat-card__value"><?php echo $rm_active ? esc_html__('Đang chạy', 'laca') : esc_html__('Đã thay thế', 'laca'); ?></strong>
+                <small><?php echo $rm_active ? esc_html__('Laca SEO tắt frontend', 'laca') : esc_html__('Laca SEO điều khiển 100%', 'laca'); ?></small>
             </div>
         </div>
 
@@ -73,14 +73,14 @@ $notFoundStats = \App\Features\LacaSeo\Modules\NotFoundMonitor\DB::getStats();
                 <span class="dashicons dashicons-networking"></span>
             </div>
             <div class="laca-seo-stat-card__info">
-                <span class="laca-seo-stat-card__label"><?php esc_html_e('Sơ đồ Sitemap XML', 'lacadev'); ?></span>
+                <span class="laca-seo-stat-card__label"><?php esc_html_e('Sơ đồ Sitemap XML', 'laca'); ?></span>
                 <?php $laca_sitemap_on = Modules::isActive('sitemap'); ?>
                 <strong class="laca-seo-stat-card__value"><?php echo esc_html($rm_active ? 'Rank Math' : ($laca_sitemap_on ? 'Đang hoạt động' : 'Đang tắt')); ?></strong>
                 <small>
                     <?php if ($rm_active || $laca_sitemap_on): ?>
                         <a href="<?php echo esc_url(home_url('/sitemap_index.xml')); ?>" target="_blank" rel="noopener"><?php echo esc_html($rm_active ? 'Đang dùng sitemap Rank Math' : 'Xem sitemap_index.xml'); ?> &rarr;</a>
                     <?php else: ?>
-                        <?php esc_html_e('Bật module Sơ đồ trang XML bên dưới', 'lacadev'); ?>
+                        <?php esc_html_e('Bật module Sơ đồ trang XML bên dưới', 'laca'); ?>
                     <?php endif; ?>
                 </small>
             </div>
@@ -91,9 +91,9 @@ $notFoundStats = \App\Features\LacaSeo\Modules\NotFoundMonitor\DB::getStats();
                 <span class="dashicons dashicons-edit"></span>
             </div>
             <div class="laca-seo-stat-card__info">
-                <span class="laca-seo-stat-card__label"><?php esc_html_e('Bài thiếu Meta Desc', 'lacadev'); ?></span>
-                <strong class="laca-seo-stat-card__value"><?php echo esc_html((string) $missing_count); ?> <?php esc_html_e('bài', 'lacadev'); ?></strong>
-                <small><?php echo $missing_count > 0 ? esc_html__('Cần bổ sung mô tả SEO', 'lacadev') : esc_html__('Tất cả bài viết đều đủ', 'lacadev'); ?></small>
+                <span class="laca-seo-stat-card__label"><?php esc_html_e('Bài thiếu Meta Desc', 'laca'); ?></span>
+                <strong class="laca-seo-stat-card__value"><?php echo esc_html((string) $missing_count); ?> <?php esc_html_e('bài', 'laca'); ?></strong>
+                <small><?php echo $missing_count > 0 ? esc_html__('Cần bổ sung mô tả SEO', 'laca') : esc_html__('Tất cả bài viết đều đủ', 'laca'); ?></small>
             </div>
         </div>
 
@@ -102,9 +102,9 @@ $notFoundStats = \App\Features\LacaSeo\Modules\NotFoundMonitor\DB::getStats();
                 <span class="dashicons dashicons-randomize"></span>
             </div>
             <div class="laca-seo-stat-card__info">
-                <span class="laca-seo-stat-card__label"><?php esc_html_e('Chuyển hướng hoạt động', 'lacadev'); ?></span>
-                <strong class="laca-seo-stat-card__value"><?php echo esc_html((string) ($redirStats->total ?? 0)); ?> <?php esc_html_e('quy tắc', 'lacadev'); ?></strong>
-                <small><?php echo esc_html((string) ($redirStats->hits ?? 0)); ?> <?php esc_html_e('lượt chuyển hướng', 'lacadev'); ?></small>
+                <span class="laca-seo-stat-card__label"><?php esc_html_e('Chuyển hướng hoạt động', 'laca'); ?></span>
+                <strong class="laca-seo-stat-card__value"><?php echo esc_html((string) ($redirStats->total ?? 0)); ?> <?php esc_html_e('quy tắc', 'laca'); ?></strong>
+                <small><?php echo esc_html((string) ($redirStats->hits ?? 0)); ?> <?php esc_html_e('lượt chuyển hướng', 'laca'); ?></small>
             </div>
         </div>
 
@@ -113,9 +113,9 @@ $notFoundStats = \App\Features\LacaSeo\Modules\NotFoundMonitor\DB::getStats();
                 <span class="dashicons dashicons-dismiss"></span>
             </div>
             <div class="laca-seo-stat-card__info">
-                <span class="laca-seo-stat-card__label"><?php esc_html_e('Lỗi 404 ghi nhận', 'lacadev'); ?></span>
+                <span class="laca-seo-stat-card__label"><?php esc_html_e('Lỗi 404 ghi nhận', 'laca'); ?></span>
                 <strong class="laca-seo-stat-card__value"><?php echo esc_html((string) ($notFoundStats->total ?? 0)); ?> URL</strong>
-                <small><?php echo esc_html((string) ($notFoundStats->hits ?? 0)); ?> <?php esc_html_e('lượt truy cập lỗi', 'lacadev'); ?></small>
+                <small><?php echo esc_html((string) ($notFoundStats->hits ?? 0)); ?> <?php esc_html_e('lượt truy cập lỗi', 'laca'); ?></small>
             </div>
         </div>
     </div>
@@ -123,8 +123,8 @@ $notFoundStats = \App\Features\LacaSeo\Modules\NotFoundMonitor\DB::getStats();
     <!-- Khối Modules & Tính năng Laca SEO -->
     <div class="laca-seo-card">
         <div class="laca-seo-card__header">
-            <h2 class="laca-seo-card__title"><?php esc_html_e('Các tính năng & Module SEO', 'lacadev'); ?></h2>
-            <p class="laca-seo-card__subtitle"><?php esc_html_e('Bật tắt các module tính năng phù hợp với nhu cầu tối ưu của website.', 'lacadev'); ?></p>
+            <h2 class="laca-seo-card__title"><?php esc_html_e('Các tính năng & Module SEO', 'laca'); ?></h2>
+            <p class="laca-seo-card__subtitle"><?php esc_html_e('Bật tắt các module tính năng phù hợp với nhu cầu tối ưu của website.', 'laca'); ?></p>
         </div>
 
         <div class="laca-seo-modules-grid">
@@ -137,7 +137,7 @@ $notFoundStats = \App\Features\LacaSeo\Modules\NotFoundMonitor\DB::getStats();
                     <div class="laca-seo-module-card__header">
                         <h3 class="laca-seo-module-card__title"><?php echo esc_html($mod['title']); ?></h3>
                         <?php if ($is_core): ?>
-                            <span class="laca-seo-badge laca-seo-badge--core"><?php esc_html_e('Cốt lõi', 'lacadev'); ?></span>
+                            <span class="laca-seo-badge laca-seo-badge--core"><?php esc_html_e('Cốt lõi', 'laca'); ?></span>
                         <?php else: ?>
                             <label class="laca-seo-switch">
                                 <input

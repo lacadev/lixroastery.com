@@ -153,3 +153,61 @@ WordPress mặc định chỉ chạy cron khi có người truy cập site (pseu
 7. **Test theo dõi đổi theme (Giai đoạn 3, Đợt 1)**: trên site test, đổi sang 1 theme khác rồi đổi lại. Kiểm tra: `ProjectLog` loại `note` với nội dung "🎨 Đổi theme..." xuất hiện bên hub (tab Updates) — **không** có alert/email (đúng thiết kế, chỉ ghi log).
 8. **Test FIM sâu (Giai đoạn 3, Đợt 1, tùy chọn)**: bật checkbox "Bật kiểm tra sâu mã nguồn (FIM)" ở trang 📡 Tracker, Save. "Run Now" cho `laca_tracker_daily_digest` lần đầu (chỉ để tạo baseline, chưa có gì để báo). Sửa nội dung 1 file `.php` bất kỳ trong theme đang active (thêm 1 dòng comment vô hại), "Run Now" lần 2 — kỳ vọng: alert `security` mức `critical` với nội dung "🔎 [FIM sâu]..." xuất hiện bên hub kèm email, và **không** thấy file nào trong `wp-content/uploads` bị quét nhầm vào (kiểm tra nội dung log không liệt kê đường dẫn `uploads/...`).
 9. **Xác nhận hệ tracker cũ đã gỡ sạch (Giai đoạn 3, Đợt 2)**: kiểm tra cron không còn `laca_fim_scan` trong WP Crontrol (nếu vẫn còn do site đã chạy trước khi update code, hook sẽ tự dọn ở lần load `init` kế tiếp — refresh lại trang bất kỳ trong wp-admin rồi kiểm tra lại). Kiểm tra file `app/src/Features/ClientTracker/Tracker.php` không còn tồn tại trên server.
+
+---
+
+## GIAI ĐOẠN 7 — Tách khóa theo mục đích & Ký xác thực HMAC-SHA256 (Đề xuất 2) ✅
+
+### Bối cảnh & Mục tiêu
+Trước Giai đoạn 7, hệ thống Hub ↔ Client dùng chung duy nhất 1 chuỗi `_tracker_secret_key` cho 4 mục đích hoàn toàn khác nhau: (1) Client gửi log lên Hub, (2) Client xem danh mục Block Catalog, (3) Hub gửi lệnh cập nhật từ xa vào Client, và (4) Khách hàng mở Client Portal. Đồng thời xác thực truyền thẳng chuỗi secret trong URL hoặc body JSON, dễ bị lộ qua log web server và có nguy cơ bị replay attack.
+
+Giai đoạn 7 giải quyết triệt để vấn đề này theo kiến trúc:
+1. **Tách 4 khóa độc lập theo mục đích** lưu trữ mã hóa AES-256-CBC bằng `App\Helpers\Crypto`.
+2. **Ký xác thực HMAC-SHA256** qua class dùng chung `App\Security\RequestSigner` (code giống hệt nhau 100% giữa Hub và Client).
+3. **Chống tấn công phát lại (Replay Attack)** qua transient nonce 600s và giới hạn trôi thời gian (time drift) 300s.
+4. **Tương thích ngược an toàn (Legacy Auth)**: Option `laca_allow_legacy_auth` mặc định bật với thời gian đệm 30 ngày, hiển thị badge cảnh báo "⚠️ Client chưa nâng cấp" cho các site chưa cập nhật cấu hình mới.
+
+### Bảng phân định khóa & Route
+
+| Khóa | Tên trong code | Chiều giao tiếp | Route REST | Header / Tham số |
+|---|---|---|---|---|
+| **Tracker Key** | `_laca_key_tracker` | Client → Hub | `POST /wp-json/laca/v1/tracker/log` | `X-Laca-Project`, `X-Laca-Timestamp`, `X-Laca-Signature` |
+| **Catalog Key** | `_laca_key_catalog` | Client ⇄ Hub | `GET /wp-json/laca/v1/blocks-catalog`<br>`POST /wp-json/laca/v1/blocks-sync/push` | `X-Laca-Project`, `X-Laca-Timestamp`, `X-Laca-Signature`<br>Fallback: `X-Laca-Key` |
+| **Remote Update Key** | `_laca_key_remote` | Hub → Client | `POST /wp-json/laca/v1/remote-update` | `X-Laca-Project`, `X-Laca-Timestamp`, `X-Laca-Signature`<br>Fallback body: `secret_key` |
+| **Portal Key** | `_laca_key_portal` | Khách → Hub | Template Client Portal | Tham số URL `?key=<portal_key>` hoặc `?key=<portal_alias>`. Độc lập 100% với tracker key. |
+
+### Chuẩn ký chữ ký HMAC (`RequestSigner`)
+- **Canonical String**:
+  ```
+  METHOD\n
+  PATH\n
+  TIMESTAMP\n
+  BODY_HASH
+  ```
+  Trong đó:
+  - `METHOD`: Viết hoa (`GET`, `POST`, `PUT`, `DELETE`).
+  - `PATH`: Chuẩn hóa URL route (xử lý cả `?rest_route=`, bỏ prefix `/index.php`, bỏ query string, bỏ trailing slash). Ví dụ: `/wp-json/laca/v1/tracker/log`.
+  - `TIMESTAMP`: Số nguyên UTC (`time()`).
+  - `BODY_HASH`: `hash('sha256', $bodyRaw)`. Nếu body rỗng (`GET`), `hash('sha256', '')` = `e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855`.
+- **Signature**: `hash_hmac('sha256', $canonical, $secretKey)`.
+- **Headers đính kèm**:
+  - `X-Laca-Project`: Public Project ID (dạng `prj_xxxxxxx`).
+  - `X-Laca-Timestamp`: Chuỗi timestamp.
+  - `X-Laca-Signature`: Chuỗi hex chữ ký.
+- **Xác thực & Chống Replay**:
+  - Kiểm tra độ lệch thời gian: `abs(time() - $timestamp) <= 300` (5 phút).
+  - Kiểm tra Replay Attack: Key transient `laca_sig_{md5($signature)}` sống trong 600 giây. Nếu transient đã tồn tại → từ chối 401.
+
+### Quy trình di chuyển & Nâng cấp Client (Migration Matrix)
+1. **Trên Hub (Laca CMS)**:
+   - Vào Workspace của Project tương ứng.
+   - Bấm **"⚡ Sao chép toàn bộ cấu hình (JSON)"**.
+2. **Trên Client (Theme lacadev-client)**:
+   - Vào `Laca Admin → 📡 Tracker`.
+   - Dán chuỗi JSON vừa sao chép vào ô **"Dán cấu hình JSON từ Hub"**.
+   - Script tự động bóc tách và điền Public ID, Tracker Key, Catalog Key, Remote Key.
+   - Bấm "Save Settings".
+3. **Tắt Legacy Auth (khi tất cả client đã nâng cấp)**:
+   - Vào Hub `Laca Admin → Security`.
+   - Bỏ tích ô **"Cho phép xác thực Legacy (secret_key không ký)"** và lưu lại.
+

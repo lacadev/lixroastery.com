@@ -66,7 +66,7 @@ class ExitIntentPopup
         $msg = sanitize_key($_GET['laca_msg'] ?? '');
         ?>
         <div class="wrap">
-            <h1>💬 Exit Intent Popup</h1>
+            <h1>Exit Intent Popup</h1>
             <?php if ($msg === 'saved'): ?>
                 <div class="notice notice-success is-dismissible"><p>Đã lưu cài đặt.</p></div>
             <?php endif; ?>

@@ -58,7 +58,7 @@ class DateRange
             'endDate'       => $endDate,
             'prevStartDate' => $prevStartDate,
             'prevEndDate'   => $prevEndDate,
-            'label'         => $labels[$canonicalRange] ?? sprintf(__('%d ngày qua', 'lacadev'), $days),
+            'label'         => $labels[$canonicalRange] ?? sprintf(__('%d ngày qua', 'laca'), $days),
             'dataDate'      => date('d/m', strtotime($endDate)),
         ];
     }
@@ -82,10 +82,10 @@ class DateRange
     public static function getRangeLabels(): array
     {
         return [
-            '7d'  => __('7 ngày qua', 'lacadev'),
-            '14d' => __('14 ngày qua', 'lacadev'),
-            '28d' => __('28 ngày qua', 'lacadev'),
-            '90d' => __('90 ngày qua', 'lacadev'),
+            '7d'  => __('7 ngày qua', 'laca'),
+            '14d' => __('14 ngày qua', 'laca'),
+            '28d' => __('28 ngày qua', 'laca'),
+            '90d' => __('90 ngày qua', 'laca'),
         ];
     }
 

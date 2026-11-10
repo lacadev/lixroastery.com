@@ -6,7 +6,7 @@ defined('ABSPATH') || exit;
 
 use App\Features\LacaSeo\Core\Settings;
 
-$title = !empty($attributes['title']) ? $attributes['title'] : Settings::get('general.toc_block_title', __('Mục lục', 'lacadev'));
+$title = !empty($attributes['title']) ? $attributes['title'] : Settings::get('general.toc_block_title', __('Mục lục', 'laca'));
 $titleWrapper = !empty($attributes['titleWrapper']) ? tag_escape($attributes['titleWrapper']) : 'h2';
 $listStyle = !empty($attributes['listStyle']) ? $attributes['listStyle'] : Settings::get('general.toc_block_list_style', 'ul');
 $listTag = ($listStyle === 'ol') ? 'ol' : 'ul';

@@ -59,7 +59,7 @@ class Links
 
     public function addColumns(array $columns): array
     {
-        $columns['laca_seo_links'] = __('Liên kết', 'lacadev');
+        $columns['laca_seo_links'] = __('Liên kết', 'laca');
         return $columns;
     }
 
@@ -79,11 +79,11 @@ class Links
 
         printf(
             '<span title="%s"><strong>%d</strong> int</span> | <span title="%s"><strong>%d</strong> ext</span> | <span title="%s"><strong>%d</strong> inc</span>',
-            esc_attr__('Liên kết nội bộ trỏ đi', 'lacadev'),
+            esc_attr__('Liên kết nội bộ trỏ đi', 'laca'),
             $internal,
-            esc_attr__('Liên kết ngoài trỏ đi', 'lacadev'),
+            esc_attr__('Liên kết ngoài trỏ đi', 'laca'),
             $external,
-            esc_attr__('Liên kết nội bộ trỏ tới bài này', 'lacadev'),
+            esc_attr__('Liên kết nội bộ trỏ tới bài này', 'laca'),
             $incoming
         );
     }

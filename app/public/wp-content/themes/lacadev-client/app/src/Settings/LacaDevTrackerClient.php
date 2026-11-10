@@ -23,16 +23,22 @@ if (!defined('ABSPATH')) {
 class LacaDevTrackerClient
 {
     // Carbon Fields field names (dùng với carbon_get_theme_option)
-    const CF_ENDPOINT = 'laca_tracker_endpoint';
-    const CF_SECRET   = 'laca_tracker_secret_key';
+    const CF_ENDPOINT   = 'laca_tracker_endpoint';
+    const CF_SECRET     = 'laca_tracker_secret_key';
+    const CF_PROJECT_ID = 'laca_project_id';
+    const CF_KEY_TRACKER = 'laca_key_tracker';
+    const CF_KEY_CATALOG = 'laca_key_catalog';
+    const CF_KEY_REMOTE  = 'laca_key_remote';
 
     // WP Cron hook names
-    const CRON_HOURLY  = 'laca_tracker_hourly_scan';
-    const CRON_DAILY   = 'laca_tracker_daily_digest';
+    const CRON_HOURLY    = 'laca_tracker_hourly_scan';
+    const CRON_DAILY     = 'laca_tracker_daily_digest';
+    const CRON_HEARTBEAT = 'laca_tracker_heartbeat';
 
     /** Option lưu timestamp lần chạy gần nhất của mỗi cron — phát hiện cron bị trễ. */
-    const OPT_LAST_RUN_HOURLY = '_laca_cron_last_run_hourly';
-    const OPT_LAST_RUN_DAILY  = '_laca_cron_last_run_daily';
+    const OPT_LAST_RUN_HOURLY    = '_laca_cron_last_run_hourly';
+    const OPT_LAST_RUN_DAILY     = '_laca_cron_last_run_daily';
+    const OPT_LAST_RUN_HEARTBEAT = '_laca_cron_last_run_heartbeat';
 
     /**
      * Thư mục cần quét file lạ (relative to ABSPATH)
@@ -109,10 +115,16 @@ class LacaDevTrackerClient
             $nextRun = strtotime('tomorrow 01:00:00 UTC');
             wp_schedule_event($nextRun, 'daily', self::CRON_DAILY);
         }
+
+        // --- Cron 2 lần / ngày (twicedaily): gửi heartbeat về hub ---
+        add_action(self::CRON_HEARTBEAT, [$this, 'sendHeartbeat']);
+        if (!wp_next_scheduled(self::CRON_HEARTBEAT)) {
+            wp_schedule_event(time(), 'twicedaily', self::CRON_HEARTBEAT);
+        }
     }
 
     /**
-     * Cảnh báo trong wp-admin nếu 1 trong 2 cron (hourly/daily) đã trễ quá xa
+     * Cảnh báo trong wp-admin nếu cron (hourly/daily/heartbeat) đã trễ quá xa
      * so với chu kỳ lên lịch — dấu hiệu WordPress pseudo-cron không tự chạy
      * đều vì site ít traffic. Bỏ qua nếu chưa từng có baseline (site mới cài).
      */
@@ -123,8 +135,9 @@ class LacaDevTrackerClient
         }
 
         $checks = [
-            self::CRON_HOURLY => ['option' => self::OPT_LAST_RUN_HOURLY, 'grace' => 6 * HOUR_IN_SECONDS, 'label' => 'quét file khả nghi hàng giờ'],
-            self::CRON_DAILY  => ['option' => self::OPT_LAST_RUN_DAILY,  'grace' => 3 * DAY_IN_SECONDS,  'label' => 'digest hàng ngày'],
+            self::CRON_HOURLY    => ['option' => self::OPT_LAST_RUN_HOURLY,    'grace' => 6 * HOUR_IN_SECONDS,  'label' => 'quét file khả nghi hàng giờ'],
+            self::CRON_DAILY     => ['option' => self::OPT_LAST_RUN_DAILY,     'grace' => 3 * DAY_IN_SECONDS,   'label' => 'digest hàng ngày'],
+            self::CRON_HEARTBEAT => ['option' => self::OPT_LAST_RUN_HEARTBEAT, 'grace' => 24 * HOUR_IN_SECONDS, 'label' => 'heartbeat định kỳ'],
         ];
 
         foreach ($checks as $hook => $check) {
@@ -192,6 +205,16 @@ class LacaDevTrackerClient
                 'type'    => 'update_pending',
                 'content' => "⚠️ Plugin cần update: {$name}\n  Phiên bản hiện tại: {$current} → Bản mới: {$newVersion}",
                 'level'   => 'warning',
+                'plugins' => [
+                    [
+                        'slug'            => $pluginFile,
+                        'name'            => $name,
+                        'current'         => $current,
+                        'current_version' => $current,
+                        'new'             => $newVersion,
+                        'new_version'     => $newVersion,
+                    ],
+                ],
             ];
 
             set_transient($dedupeKey, 1, 6 * HOUR_IN_SECONDS);
@@ -511,6 +534,11 @@ class LacaDevTrackerClient
     {
         update_option(self::OPT_LAST_RUN_DAILY, time(), false);
 
+        // Vào ngày 1 hàng tháng, tự động tổng hợp và gửi báo cáo tháng về Hub
+        if ((int) gmdate('j') === 1) {
+            $this->sendMonthlySummary();
+        }
+
         // Tách 2 nhóm gửi độc lập (update-pending vs. file-integrity) và chỉ
         // chốt state cục bộ của từng nhóm khi gửi thành công (blocking +
         // kiểm tra response) — để 1 lần hub gián đoạn không làm mất vĩnh
@@ -531,6 +559,14 @@ class LacaDevTrackerClient
                 'type'    => 'update_pending',
                 'content' => "Plugin mới chờ update (" . count($newPlugins) . "):\n{$list}",
                 'level'   => 'warning',
+                'plugins' => array_values(array_map(fn($p) => [
+                    'slug'            => $p['slug'] ?? '',
+                    'name'            => $p['name'] ?? $p['slug'] ?? '',
+                    'current'         => $p['current'] ?? '?',
+                    'current_version' => $p['current'] ?? '?',
+                    'new'             => $p['new'] ?? '?',
+                    'new_version'     => $p['new'] ?? '?',
+                ], $newPlugins)),
             ];
         }
 
@@ -606,6 +642,253 @@ class LacaDevTrackerClient
                 update_option(self::OPT_DEEP_FIM_BASELINE, $deepFim['baseline'], false);
             }
         }
+    }
+
+    // =========================================================================
+    // CRON TWICEDAILY — heartbeat
+    // =========================================================================
+
+    /**
+     * Gửi heartbeat về hub: site_url, wp_version, php_version, theme versions parent/child
+     */
+    public function sendHeartbeat(): void
+    {
+        update_option(self::OPT_LAST_RUN_HEARTBEAT, time(), false);
+
+        global $wp_version;
+        $parentTheme = wp_get_theme(get_template());
+        $childTheme  = wp_get_theme(get_stylesheet());
+
+        $parentVersion = $parentTheme->exists() ? (string) $parentTheme->get('Version') : '';
+        $childVersion  = $childTheme->exists() ? (string) $childTheme->get('Version') : '';
+
+        $backupInfo     = $this->detectBackupStatus();
+        $pendingPlugins = $this->getPendingPluginUpdates();
+
+        $meta = [
+            'site_url'               => home_url(),
+            'wp_version'             => (string) ($wp_version ?? ''),
+            'php_version'            => PHP_VERSION,
+            'theme_version_parent'   => $parentVersion,
+            'theme_version_child'    => $childVersion,
+            'backup'                 => $backupInfo,
+            'plugins_pending_update' => count($pendingPlugins),
+            'tracker_health'         => [
+                'failed' => 0,
+                'retry'  => 0,
+            ],
+        ];
+
+        $content = sprintf(
+            'Heartbeat từ %s (WP %s, PHP %s, Parent %s, Child %s)',
+            home_url(),
+            $wp_version,
+            PHP_VERSION,
+            $parentVersion,
+            $childVersion
+        );
+
+        $logs = [[
+            'type'    => 'heartbeat',
+            'content' => $content,
+            'level'   => 'info',
+            'meta'    => $meta,
+        ]];
+
+        $this->sendLogs($logs, blocking: true);
+    }
+
+    /**
+     * Tự động phát hiện plugin sao lưu và thời điểm sao lưu gần nhất.
+     * Hỗ trợ: UpdraftPlus, BackWPup, WPvivid, All-in-One WP Migration, Duplicator.
+     * Cho phép hook laca_tracker_backup_status để site tự khai báo thêm (vd: backup tầng hosting).
+     *
+     * @return array{plugin: string, last_backup_at: string, status: string}
+     */
+    public function detectBackupStatus(): array
+    {
+        $backup = [
+            'plugin'         => 'none',
+            'last_backup_at' => '',
+            'status'         => 'unknown',
+        ];
+
+        // 1. UpdraftPlus
+        $updraftLast = get_option('updraft_last_backup');
+        if (!empty($updraftLast) && is_numeric($updraftLast) && (int) $updraftLast > 0) {
+            $backup = [
+                'plugin'         => 'UpdraftPlus',
+                'last_backup_at' => gmdate('c', (int) $updraftLast),
+                'status'         => 'success',
+            ];
+        } elseif (defined('UPDRAFTPLUS_DIR') || class_exists('UpdraftPlus')) {
+            $backup = [
+                'plugin'         => 'UpdraftPlus',
+                'last_backup_at' => '',
+                'status'         => 'unknown',
+            ];
+        }
+
+        // 2. BackWPup (nếu chưa tìm thấy UpdraftPlus)
+        if ($backup['plugin'] === 'none') {
+            $jobs = get_option('backwpup_jobs');
+            if (is_array($jobs)) {
+                $latest = 0;
+                foreach ($jobs as $job) {
+                    if (!empty($job['lastrun']) && is_numeric($job['lastrun']) && (int) $job['lastrun'] > $latest) {
+                        $latest = (int) $job['lastrun'];
+                    }
+                }
+                if ($latest > 0) {
+                    $backup = [
+                        'plugin'         => 'BackWPup',
+                        'last_backup_at' => gmdate('c', $latest),
+                        'status'         => 'success',
+                    ];
+                } elseif (defined('BACKWPUP_PLUGIN_DIR') || class_exists('BackWPup')) {
+                    $backup = [
+                        'plugin'         => 'BackWPup',
+                        'last_backup_at' => '',
+                        'status'         => 'unknown',
+                    ];
+                }
+            }
+        }
+
+        // 3. WPvivid (nếu chưa tìm thấy plugin khác)
+        if ($backup['plugin'] === 'none') {
+            $vividList = get_option('wpvivid_backup_list');
+            if (is_array($vividList) && !empty($vividList)) {
+                $latest = 0;
+                foreach ($vividList as $item) {
+                    $t = 0;
+                    if (!empty($item['create_time'])) {
+                        $t = is_numeric($item['create_time']) ? (int) $item['create_time'] : strtotime((string) $item['create_time']);
+                    } elseif (!empty($item['backup_time'])) {
+                        $t = is_numeric($item['backup_time']) ? (int) $item['backup_time'] : strtotime((string) $item['backup_time']);
+                    }
+                    if ($t > $latest) {
+                        $latest = $t;
+                    }
+                }
+                if ($latest > 0) {
+                    $backup = [
+                        'plugin'         => 'WPvivid',
+                        'last_backup_at' => gmdate('c', $latest),
+                        'status'         => 'success',
+                    ];
+                }
+            }
+
+            if ($backup['plugin'] === 'none' && defined('WP_CONTENT_DIR')) {
+                $vividDir = WP_CONTENT_DIR . '/wpvividbackups';
+                if (is_dir($vividDir)) {
+                    $files = glob($vividDir . '/*.zip');
+                    if (!empty($files)) {
+                        $newest = 0;
+                        foreach ($files as $f) {
+                            $mt = @filemtime($f);
+                            if ($mt > $newest) {
+                                $newest = $mt;
+                            }
+                        }
+                        if ($newest > 0) {
+                            $backup = [
+                                'plugin'         => 'WPvivid',
+                                'last_backup_at' => gmdate('c', $newest),
+                                'status'         => 'success',
+                            ];
+                        }
+                    }
+                }
+            }
+
+            if ($backup['plugin'] === 'none' && (defined('WPVIVID_PLUGIN_DIR') || class_exists('WPvivid'))) {
+                $backup = [
+                    'plugin'         => 'WPvivid',
+                    'last_backup_at' => '',
+                    'status'         => 'unknown',
+                ];
+            }
+        }
+
+        // 4. All-in-One WP Migration
+        if ($backup['plugin'] === 'none' && defined('WP_CONTENT_DIR')) {
+            $ai1Dir = WP_CONTENT_DIR . '/ai1wm-backups';
+            if (is_dir($ai1Dir)) {
+                $files = glob($ai1Dir . '/*.wpress');
+                if (!empty($files)) {
+                    $newest = 0;
+                    foreach ($files as $f) {
+                        $mt = @filemtime($f);
+                        if ($mt > $newest) {
+                            $newest = $mt;
+                        }
+                    }
+                    if ($newest > 0) {
+                        $backup = [
+                            'plugin'         => 'All-in-One WP Migration',
+                            'last_backup_at' => gmdate('c', $newest),
+                            'status'         => 'success',
+                        ];
+                    }
+                }
+            }
+            if ($backup['plugin'] === 'none' && (defined('AI1WM_PLUGIN_NAME') || class_exists('Ai1wm_Main'))) {
+                $backup = [
+                    'plugin'         => 'All-in-One WP Migration',
+                    'last_backup_at' => '',
+                    'status'         => 'unknown',
+                ];
+            }
+        }
+
+        // 5. Duplicator
+        if ($backup['plugin'] === 'none' && defined('WP_CONTENT_DIR')) {
+            $dupDir = WP_CONTENT_DIR . '/backups-dup-lite';
+            if (is_dir($dupDir)) {
+                $files = glob($dupDir . '/*.zip');
+                if (!empty($files)) {
+                    $newest = 0;
+                    foreach ($files as $f) {
+                        $mt = @filemtime($f);
+                        if ($mt > $newest) {
+                            $newest = $mt;
+                        }
+                    }
+                    if ($newest > 0) {
+                        $backup = [
+                            'plugin'         => 'Duplicator',
+                            'last_backup_at' => gmdate('c', $newest),
+                            'status'         => 'success',
+                        ];
+                    }
+                }
+            }
+            if ($backup['plugin'] === 'none' && (defined('DUPLICATOR_VERSION') || class_exists('DUP_PRO_U') || class_exists('DUP_Util'))) {
+                $backup = [
+                    'plugin'         => 'Duplicator',
+                    'last_backup_at' => '',
+                    'status'         => 'unknown',
+                ];
+            }
+        }
+
+        /**
+         * Filter cho phép website tự khai báo trạng thái sao lưu tùy biến
+         *
+         * @param array{plugin: string, last_backup_at: string, status: string} $backup
+         */
+        $filtered = apply_filters('laca_tracker_backup_status', $backup);
+        if (is_array($filtered)) {
+            $backup = [
+                'plugin'         => sanitize_text_field((string) ($filtered['plugin'] ?? $backup['plugin'])),
+                'last_backup_at' => sanitize_text_field((string) ($filtered['last_backup_at'] ?? $backup['last_backup_at'])),
+                'status'         => sanitize_text_field((string) ($filtered['status'] ?? $backup['status'])),
+            ];
+        }
+
+        return $backup;
     }
 
     /**
@@ -854,22 +1137,34 @@ class LacaDevTrackerClient
      */
     private function sendLogs(array $logs, bool $blocking = false): bool
     {
-        $endpoint  = self::getEndpoint();
-        $secretKey = self::getSecretKey();
+        $endpoint   = self::getEndpoint();
+        $trackerKey = self::getTrackerKey();
+        $secretKey  = self::getSecretKey();
 
-        if (empty($endpoint) || empty($secretKey) || empty($logs)) {
+        if (empty($endpoint) || (empty($trackerKey) && empty($secretKey)) || empty($logs)) {
             return false;
         }
 
-        $siteUrl = get_bloginfo('url');
+        $siteUrl   = get_bloginfo('url');
+        $projectId = self::getProjectId();
+
+        $bodyJson = wp_json_encode([
+            'secret_key' => $secretKey ?: $trackerKey,
+            'site_url'   => $siteUrl,
+            'logs'       => $logs,
+        ], JSON_UNESCAPED_UNICODE);
+
+        if (!$bodyJson) {
+            return false;
+        }
+
+        $keyForSigning = $trackerKey ?: $secretKey;
+        $headers       = \App\Security\RequestSigner::sign('POST', $endpoint, $bodyJson, $keyForSigning, $projectId);
+        $headers['Content-Type'] = 'application/json';
 
         $response = wp_remote_post($endpoint, [
-            'body'    => wp_json_encode([
-                'secret_key' => $secretKey,
-                'site_url'   => $siteUrl,
-                'logs'       => $logs,
-            ], JSON_UNESCAPED_UNICODE),
-            'headers'  => ['Content-Type' => 'application/json'],
+            'body'     => $bodyJson,
+            'headers'  => $headers,
             'timeout'  => $blocking ? 15 : 8,
             'blocking' => $blocking,
         ]);
@@ -903,9 +1198,61 @@ class LacaDevTrackerClient
         return (string) get_option('_' . self::CF_SECRET, '');
     }
 
+    public static function getProjectId(): string
+    {
+        if (function_exists('carbon_get_theme_option')) {
+            $val = (string) (carbon_get_theme_option(self::CF_PROJECT_ID) ?: '');
+            if ($val !== '') {
+                return $val;
+            }
+        }
+        return (string) get_option('_' . self::CF_PROJECT_ID, '');
+    }
+
+    public static function getTrackerKey(): string
+    {
+        if (function_exists('carbon_get_theme_option')) {
+            $val = (string) (carbon_get_theme_option(self::CF_KEY_TRACKER) ?: '');
+            if ($val !== '') {
+                return $val;
+            }
+        }
+        $val = (string) get_option('_' . self::CF_KEY_TRACKER, '');
+        if ($val !== '') {
+            return $val;
+        }
+        return self::getSecretKey();
+    }
+
+    public static function getCatalogKey(): string
+    {
+        if (function_exists('carbon_get_theme_option')) {
+            $val = (string) (carbon_get_theme_option(self::CF_KEY_CATALOG) ?: '');
+            if ($val !== '') {
+                return $val;
+            }
+        }
+        $val = (string) get_option('_' . self::CF_KEY_CATALOG, '');
+        if ($val !== '') {
+            return $val;
+        }
+        return self::getSecretKey();
+    }
+
+    public static function getRemoteKey(): string
+    {
+        if (function_exists('carbon_get_theme_option')) {
+            $val = (string) (carbon_get_theme_option(self::CF_KEY_REMOTE) ?: '');
+            if ($val !== '') {
+                return $val;
+            }
+        }
+        return (string) get_option('_' . self::CF_KEY_REMOTE, '');
+    }
+
     public static function isConfigured(): bool
     {
-        return !empty(self::getEndpoint()) && !empty(self::getSecretKey());
+        return !empty(self::getEndpoint()) && (!empty(self::getTrackerKey()) || !empty(self::getSecretKey()));
     }
 
     /**
@@ -985,15 +1332,27 @@ class LacaDevTrackerClient
     public function handleRemoteUpdate(\WP_REST_Request $request): \WP_REST_Response
     {
         $params    = $request->get_json_params() ?: [];
-        $secretKey = sanitize_text_field($params['secret_key'] ?? '');
         $action    = sanitize_key($params['action'] ?? '');
         $slug      = sanitize_text_field($params['slug'] ?? '');
 
-        // 1) Xác thực secret key (so sánh constant-time, chặn cả trường hợp
-        // secret chưa được cấu hình để tránh hash_equals('', '') === true)
-        $storedSecret = self::getSecretKey();
-        if (empty($secretKey) || empty($storedSecret) || !hash_equals($storedSecret, $secretKey)) {
-            return new \WP_REST_Response(['success' => false, 'message' => 'Unauthorized'], 401);
+        // 1) Xác thực:
+        $remoteKey = self::getRemoteKey();
+        if (!empty($remoteKey)) {
+            // Client mới: đã cấu hình remote key -> BẮT BUỘC chữ ký hợp lệ (bất kể body có secret_key hay không)
+            $verify = \App\Security\RequestSigner::verify($request, $remoteKey);
+            if (!$verify['valid']) {
+                return new \WP_REST_Response([
+                    'success' => false,
+                    'message' => $verify['message'] ?: 'Chữ ký HMAC không hợp lệ hoặc thiếu.',
+                ], 401);
+            }
+        } else {
+            // Client cũ: chưa cấu hình remote key -> fallback so sánh body.secret_key với tracker key (legacy)
+            $trackerKey   = self::getTrackerKey() ?: self::getSecretKey();
+            $secretKey    = sanitize_text_field($params['secret_key'] ?? '');
+            if (empty($secretKey) || empty($trackerKey) || !hash_equals($trackerKey, $secretKey)) {
+                return new \WP_REST_Response(['success' => false, 'message' => 'Unauthorized'], 401);
+            }
         }
 
         // 2) Validate action
@@ -1073,5 +1432,131 @@ class LacaDevTrackerClient
             'success' => true,
             'message' => $successMsg,
         ]);
+    }
+
+    /**
+     * Tổng hợp và gửi báo cáo tháng (monthly_summary) có ký HMAC về Hub
+     *
+     * @param bool $force Bỏ qua kiểm tra đã gửi trong tháng
+     * @param string $targetMonth Tháng cần gửi (format Y-m, rỗng = tháng trước)
+     */
+    public function sendMonthlySummary(bool $force = false, string $targetMonth = ''): bool
+    {
+        if (empty($targetMonth)) {
+            $targetMonth = gmdate('Y-m', strtotime('first day of last month'));
+        }
+
+        $sentKey = '_laca_monthly_summary_sent_' . $targetMonth;
+        if (!$force && get_option($sentKey)) {
+            return true;
+        }
+
+        $endpoint   = self::getEndpoint();
+        $trackerKey = self::getTrackerKey();
+        $projectId  = self::getProjectId();
+
+        if (empty($endpoint) || empty($trackerKey)) {
+            return false;
+        }
+
+        global $wpdb;
+        $startDate = gmdate('Y-m-01 00:00:00', strtotime("first day of {$targetMonth}"));
+        $endDate   = gmdate('Y-m-01 00:00:00', strtotime("first day of {$targetMonth} +1 month"));
+
+        // 1. Đếm bài viết và trang mới trong tháng
+        $postsNew = (int) $wpdb->get_var($wpdb->prepare(
+            "SELECT COUNT(*) FROM {$wpdb->posts}
+             WHERE post_type = 'post' AND post_status = 'publish'
+               AND post_date >= %s AND post_date < %s",
+            $startDate, $endDate
+        ));
+
+        $pagesNew = (int) $wpdb->get_var($wpdb->prepare(
+            "SELECT COUNT(*) FROM {$wpdb->posts}
+             WHERE post_type = 'page' AND post_status = 'publish'
+               AND post_date >= %s AND post_date < %s",
+            $startDate, $endDate
+        ));
+
+        // 2. Đếm sự kiện bảo mật trong tháng
+        $secEvents = 0;
+        if (class_exists(\App\Features\DiscordHub\Databases\ActivityLogTable::class)) {
+            $secTable  = \App\Features\DiscordHub\Databases\ActivityLogTable::getTableName();
+            $secEvents = (int) $wpdb->get_var($wpdb->prepare(
+                "SELECT COUNT(*) FROM {$secTable} WHERE created_at >= %s AND created_at < %s",
+                $startDate, $endDate
+            ));
+        }
+
+        // 3. Số liệu GoogleServices (GA4/GSC) nếu đã kết nối
+        $ga4 = null;
+        $gsc = null;
+        if (class_exists('\App\Features\GoogleServices\GoogleServices')) {
+            try {
+                if (class_exists('\App\Features\GoogleServices\GaClient') && method_exists('\App\Features\GoogleServices\GaClient', 'isConnected') && \App\Features\GoogleServices\GaClient::isConnected()) {
+                    $gaData = \App\Features\GoogleServices\GaClient::getSummaryForMonth($targetMonth);
+                    if (is_array($gaData)) {
+                        $ga4 = [
+                            'sessions' => (int) ($gaData['sessions'] ?? 0),
+                            'users'    => (int) ($gaData['users'] ?? 0),
+                        ];
+                    }
+                }
+            } catch (\Throwable $e) {
+                // Không lỗi nếu API Google trục trặc
+            }
+
+            try {
+                if (class_exists('\App\Features\GoogleServices\GscOAuth') && method_exists('\App\Features\GoogleServices\GscOAuth', 'isConnected') && \App\Features\GoogleServices\GscOAuth::isConnected()) {
+                    $gscData = \App\Features\GoogleServices\GscClient::getSummaryForMonth($targetMonth);
+                    if (is_array($gscData)) {
+                        $gsc = [
+                            'clicks'      => (int) ($gscData['clicks'] ?? 0),
+                            'impressions' => (int) ($gscData['impressions'] ?? 0),
+                            'top_pages'   => (array) ($gscData['top_pages'] ?? []),
+                        ];
+                    }
+                }
+            } catch (\Throwable $e) {
+                // Không lỗi
+            }
+        }
+
+        $payload = [
+            'month'                 => $targetMonth,
+            'posts_new_count'       => $postsNew,
+            'pages_new_count'       => $pagesNew,
+            'security_events_count' => $secEvents,
+            'ga4'                   => $ga4,
+            'gsc'                   => $gsc,
+        ];
+
+        // Bóc tách base URL của Hub từ endpoint
+        $parsed = parse_url($endpoint);
+        $scheme = $parsed['scheme'] ?? 'http';
+        $host   = $parsed['host'] ?? 'localhost';
+        $port   = isset($parsed['port']) ? ':' . $parsed['port'] : '';
+        $hubUrl = "{$scheme}://{$host}{$port}";
+
+        $targetUrl = rtrim($hubUrl, '/') . '/wp-json/laca/v1/client/monthly-summary';
+        $bodyJson  = wp_json_encode(array_merge(['secret_key' => $trackerKey], $payload), JSON_UNESCAPED_UNICODE);
+
+        $headers = \App\Security\RequestSigner::sign('POST', $targetUrl, $bodyJson, $trackerKey, $projectId);
+        $headers['Content-Type'] = 'application/json; charset=utf-8';
+
+        $response = wp_remote_post($targetUrl, [
+            'body'     => $bodyJson,
+            'headers'  => $headers,
+            'timeout'  => 20,
+            'blocking' => true,
+        ]);
+
+        $success = !is_wp_error($response) && wp_remote_retrieve_response_code($response) >= 200 && wp_remote_retrieve_response_code($response) < 300;
+
+        if ($success) {
+            update_option($sentKey, time(), false);
+        }
+
+        return $success;
     }
 }

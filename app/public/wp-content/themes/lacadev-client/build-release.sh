@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
 # =============================================================================
+# DEPRECATED — Script này đã bị thay thế bởi GitHub Actions workflow:
+#   .github/workflows/publish-theme-updates.yml
+# Không sử dụng script này để build/release thủ công nữa.
+# =============================================================================
 # build-release.sh — Build & release lacadev-client theme
 #
 # Cách dùng:
@@ -18,7 +22,7 @@ set -euo pipefail
 # ── Cấu hình ──────────────────────────────────────────────────────────────────
 THEME_SLUG="lacadev-client"
 THEME_DIR="$(cd "$(dirname "$0")" && pwd)"
-BUILD_DIR="/tmp/${THEME_SLUG}-build"
+BUILD_DIR="/tmp/${THEME_SLUG}"
 OUTPUT_DIR="${THEME_DIR}/releases"
 
 # ── Đọc tham số ───────────────────────────────────────────────────────────────
@@ -48,7 +52,7 @@ rm -f "${STYLE_CSS}.bak"
 # ── Bước 2: Cập nhật info.json ────────────────────────────────────────────────
 echo "📝 Cập nhật lacadev-client.json"
 
-DOWNLOAD_URL="https://lacadev.com/theme-updates/${ZIP_FILENAME}"
+DOWNLOAD_URL="https://clients.lacadev.com/theme-updates/${ZIP_FILENAME}"
 CHANGELOG_HTML="<h4>${NEW_VERSION} (${TODAY})</h4><ul><li>${CHANGELOG}</li></ul>"
 
 # Đọc changelog cũ và prepend
@@ -90,15 +94,42 @@ rm -rf \
     "${BUILD_DIR}/releases" \
     "${BUILD_DIR}/build-release.sh" \
     "${BUILD_DIR}/theme-server" \
+    "${BUILD_DIR}/doc" \
     "${BUILD_DIR}/node_modules" \
+    "${BUILD_DIR}/phpstan"*.neon \
+    "${BUILD_DIR}/composer.json" \
+    "${BUILD_DIR}/composer.lock" \
+    "${BUILD_DIR}/.editorconfig" \
+    "${BUILD_DIR}/.gitignore" \
+    "${BUILD_DIR}/config.json.dist" \
     "${BUILD_DIR}/.DS_Store"
 
 find "$BUILD_DIR" -name ".DS_Store" -delete
 find "$BUILD_DIR" -name "*.map" -delete
 
+# Kiểm tra các thành phần cốt lõi trước khi zip
+if [[ ! -f "${BUILD_DIR}/theme/style.css" ]]; then
+    echo "❌ Lỗi: Thiếu theme/style.css trong build"
+    exit 1
+fi
+if [[ ! -f "${BUILD_DIR}/vendor/autoload.php" ]]; then
+    echo "❌ Lỗi: Thiếu vendor/autoload.php trong build"
+    exit 1
+fi
+if [[ ! -d "${BUILD_DIR}/app" ]]; then
+    echo "❌ Lỗi: Thiếu thư mục app trong build"
+    exit 1
+fi
+
 # Tạo zip với tên thư mục đúng
-(cd /tmp && zip -r "$ZIP_PATH" "${THEME_SLUG}-build/" -x "*.git*" -x "__MACOSX*")
+(cd /tmp && zip -qr "$ZIP_PATH" "${THEME_SLUG}/" -x "*.git*" -x "__MACOSX*")
 rm -rf "$BUILD_DIR"
+
+# Xác thực lại cấu trúc bên trong zip
+unzip -l "$ZIP_PATH" | grep -E "${THEME_SLUG}/(theme/style.css|vendor/autoload.php|app/)" >/dev/null || {
+    echo "❌ Lỗi xác thực nội dung zip: thiếu các file cốt lõi"
+    exit 1
+}
 
 ZIP_SIZE=$(du -sh "$ZIP_PATH" | cut -f1)
 echo "   ✅ Đã tạo: ${ZIP_PATH} (${ZIP_SIZE})"
@@ -106,17 +137,17 @@ echo "   ✅ Đã tạo: ${ZIP_PATH} (${ZIP_SIZE})"
 # ── Bước 4: Hướng dẫn upload ─────────────────────────────────────────────────
 echo ""
 echo "════════════════════════════════════════════════════════"
-echo "✅ Build xong! Tiếp theo upload lên lacadev.com:"
+echo "✅ Build xong! Tiếp theo upload lên clients.lacadev.com:"
 echo "════════════════════════════════════════════════════════"
 echo ""
 echo "1. Upload ZIP:"
-echo "   scp '${ZIP_PATH}' user@lacadev.com:/path/to/public_html/theme-updates/"
+echo "   scp '${ZIP_PATH}' user@clients.lacadev.com:/path/to/public_html/theme-updates/"
 echo ""
 echo "2. Upload JSON (cập nhật thông tin version mới):"
-echo "   scp '${JSON_FILE}' user@lacadev.com:/path/to/public_html/theme-updates/lacadev-client.json"
+echo "   scp '${JSON_FILE}' user@clients.lacadev.com:/path/to/public_html/theme-updates/lacadev-client.json"
 echo ""
 echo "3. Kiểm tra URL sau khi upload:"
-echo "   curl https://lacadev.com/theme-updates/lacadev-client.json"
+echo "   curl https://clients.lacadev.com/theme-updates/lacadev-client.json"
 echo ""
 echo "📦 File zip: ${ZIP_PATH}"
 echo "📋 File JSON: ${JSON_FILE}"

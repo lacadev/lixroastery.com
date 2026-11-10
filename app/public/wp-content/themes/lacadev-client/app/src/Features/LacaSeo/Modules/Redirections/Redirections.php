@@ -17,6 +17,9 @@ class Redirections
         Categories::register();
 
         if (is_admin()) {
+            // Tạo bảng redirections + 404 logs cho site mới (trước đây chỉ tạo
+            // khi import Rank Math). Có kiểm tra version nên chỉ chạy dbDelta 1 lần.
+            Installer::createTables();
             (new Watcher())->register();
         }
 

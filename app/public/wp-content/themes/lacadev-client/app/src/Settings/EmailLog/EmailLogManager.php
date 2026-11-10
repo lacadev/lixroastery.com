@@ -123,12 +123,8 @@ class EmailLogManager
         $pageUrl = admin_url('themes.php?page=' . self::MENU_SLUG);
         ?>
         <div class="wrap">
-            <h1>📨 Email Log <span class="title-count"><?php echo esc_html($total); ?></span></h1>
-            <div class="laca-alert laca-alert--info laca-mb-3">
-                <div class="laca-alert__title">🔧 Nhật ký email</div>
-                <div class="laca-alert__desc">Trang này ghi lại các email mà website đã gửi (ví dụ: email liên hệ, thông báo đơn hàng). Dùng để kiểm tra khi khách hàng báo không nhận được email — xem email đã thực sự được gửi đi từ site hay chưa.</div>
-            </div>
-            <p class="laca-fg-muted">Log mọi email gửi đi trong 90 ngày gần nhất. Tự động xoá sau 90 ngày.</p>
+            <h1>Email Log <span class="title-count"><?php echo esc_html($total); ?></span></h1>
+            <p class="laca-page-intro">Trang này ghi lại các email mà website đã gửi (ví dụ: email liên hệ, thông báo đơn hàng). Dùng để kiểm tra khi khách hàng báo không nhận được email — xem email đã thực sự được gửi đi từ site hay chưa. Log mọi email gửi đi trong 90 ngày gần nhất. Tự động xoá sau 90 ngày.</p>
 
             <!-- Filter -->
             <ul class="subsubsub laca-mb-3">

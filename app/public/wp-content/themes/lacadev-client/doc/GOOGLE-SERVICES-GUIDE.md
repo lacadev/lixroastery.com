@@ -1,7 +1,7 @@
 # Hướng dẫn kết nối Google Search Console + Google Analytics 4 (Laca Admin → Dịch vụ Google)
 
 > Nguồn nội dung cho khối hướng dẫn trên 2 trang `admin.php?page=laca-google-search-console` và `admin.php?page=laca-google-analytics`.
-> Dùng chung cho mọi site dùng theme lacadev-client. `{SITE}` = `home_url()` của site (vd `https://lixroastery.com`).
+> Dùng chung cho mọi site dùng theme lacadev-client. `{SITE}` = `home_url()` của site (vd `{SITE}`).
 
 ## 0. Nguyên tắc vàng (đọc trước)
 - **Một tài khoản Google duy nhất** cho cả 3 nơi: Search Console, Google Analytics, Google Cloud — nên là **email của khách hàng** (chủ website), không dùng email cá nhân của dev.
@@ -11,7 +11,7 @@
 ## 1. Google Search Console — thêm và xác minh website
 1. Mở https://search.google.com/search-console (đăng nhập email khách).
 2. Bấm ô chọn property góc trái → **Thêm sản phẩm (Add property)**:
-   - **Miền (Domain)**: nhập `lixroastery.com` → thêm bản ghi **TXT** Google đưa vào DNS ở nơi quản lý tên miền (gom cả www/http/https). DNS có thể mất vài phút–vài giờ.
+   - **Miền (Domain)**: nhập `example.com` → thêm bản ghi **TXT** Google đưa vào DNS ở nơi quản lý tên miền (gom cả www/http/https). DNS có thể mất vài phút–vài giờ.
    - **Tiền tố URL (URL prefix)**: nhập đúng `{SITE}/` → chọn xác minh **Thẻ HTML** → copy phần `content="…"` → dán vào **Laca SEO → Cài đặt chung → Webmaster Tools → Google**
      → Lưu → xoá cache (LiteSpeed) → quay lại bấm **Xác minh**.
 3. Nếu website **đã được xác minh ở tài khoản khác** (vd email dev): đăng nhập tài khoản đó → https://search.google.com/search-console/users
@@ -27,7 +27,7 @@
    (vd `purchase`, `add_to_cart`, `generate_lead`). Sau đó ghi vào ô "Mục tiêu chuyển đổi" mỗi dòng `tên_sự_kiện|Nhãn hiển thị` — tên phải **giống hệt** tên trong GA.
 
 ## 3. Google Cloud — tạo kết nối OAuth (để xem báo cáo trong WordPress)
-1. Tạo project (đăng nhập email khách): https://console.cloud.google.com/projectcreate → đặt tên (vd `LIX Roastery Website`) → Tạo.
+1. Tạo project (đăng nhập email khách): https://console.cloud.google.com/projectcreate → đặt tên (vd `Website`) → Tạo.
    Kiểm tra **tên project đang chọn ở thanh trên cùng** trước mọi bước sau.
 2. Bật 3 API (bấm **Bật / Enable** ở từng trang):
    - https://console.cloud.google.com/apis/library/searchconsole.googleapis.com — Google Search Console API

@@ -4,7 +4,8 @@
 @use "./base/fonts.scss" as *;
 @use "./base/wordpress.scss" as *;
 
-@use "./components/share-post.scss";
+@use "./components/share-post";
+@use "./components/post-audio";
 
 @use "./layout/general.scss" as *;
 

@@ -34,13 +34,13 @@ class StoreLocator
 
                 <div class="rank-math-form-field">
                     <input type="text" name="rank-math-search-address" id="rank-math-search-address"
-                           placeholder="<?php esc_attr_e('Address, Suburb, Region, Zip or Landmark', 'lacadev'); ?>"
+                           placeholder="<?php esc_attr_e('Address, Suburb, Region, Zip or Landmark', 'laca'); ?>"
                            value="<?php echo esc_attr($address); ?>" />
                     <input type="hidden" name="lat" id="rank-math-lat" value="<?php echo esc_attr($_POST['lat'] ?? ''); ?>" />
                     <input type="hidden" name="lng" id="rank-math-lng" value="<?php echo esc_attr($_POST['lng'] ?? ''); ?>" />
                 </div>
                 <div class="rank-math-form-field">
-                    <button type="submit" name="rank-math-submit" value="search"><?php esc_html_e('Search', 'lacadev'); ?></button>
+                    <button type="submit" name="rank-math-submit" value="search"><?php esc_html_e('Search', 'laca'); ?></button>
                 </div>
             </form>
             <?php
@@ -120,7 +120,7 @@ class StoreLocator
 
         $results = $this->searchNearby($latitude, $longitude, $radius, $unit, $category);
         if (empty($results)) {
-            return esc_html__('Sorry, no locations were found.', 'lacadev');
+            return esc_html__('Sorry, no locations were found.', 'laca');
         }
 
         $addressRenderer = new Address();

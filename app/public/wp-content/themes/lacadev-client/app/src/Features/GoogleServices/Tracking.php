@@ -315,7 +315,7 @@ class Tracking
                 'duplicateIds'  => [],
                 'externalIds'   => [],
                 'hasWarnings'   => true,
-                'message'       => sprintf(__('Không thể kiểm tra website: %s', 'lacadev'), $response->get_error_message()),
+                'message'       => sprintf(__('Không thể kiểm tra website: %s', 'laca'), $response->get_error_message()),
             ];
         }
 
@@ -345,8 +345,8 @@ class Tracking
 
         $hasWarnings = !empty($externalIds) || !empty($duplicateIds);
         $msg = $hasWarnings
-            ? __('Phát hiện mã Google bên ngoài hoặc bị chèn trùng lặp.', 'lacadev')
-            : __('Không phát hiện mã trùng lặp hoặc mã ngoại lai.', 'lacadev');
+            ? __('Phát hiện mã Google bên ngoài hoặc bị chèn trùng lặp.', 'laca')
+            : __('Không phát hiện mã trùng lặp hoặc mã ngoại lai.', 'laca');
 
         return [
             'url'           => $url,

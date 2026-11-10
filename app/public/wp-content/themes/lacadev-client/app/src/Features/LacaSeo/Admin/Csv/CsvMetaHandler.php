@@ -46,7 +46,7 @@ class CsvMetaHandler
     public function handleExport(): void
     {
         if (!current_user_can('manage_options')) {
-            wp_die(esc_html__('Unauthorized', 'lacadev'));
+            wp_die(esc_html__('Unauthorized', 'laca'));
         }
 
         check_admin_referer('laca_seo_csv_export_action', 'laca_seo_csv_export_nonce');

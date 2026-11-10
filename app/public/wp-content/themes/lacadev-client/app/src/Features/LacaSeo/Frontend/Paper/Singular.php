@@ -62,7 +62,27 @@ class Singular implements IPaper
         // 3. Option template
         $pt = $post->post_type;
         $desc = Paper::get_from_options("pt_{$pt}_description", $post, '');
-        return $desc;
+        if ($desc !== '') {
+            return $desc;
+        }
+
+        // 4. Fallback: 155 chars of content
+        if (!post_password_required($post->ID) && !empty($post->post_content)) {
+            $content = wp_strip_all_tags(strip_shortcodes($post->post_content));
+            $content = preg_replace('/\s+/', ' ', $content);
+            $trimmed = mb_substr(trim($content), 0, 155);
+            if ($trimmed !== '') {
+                return $trimmed;
+            }
+        }
+
+        // 5. Post type specific fallback
+        if ($pt === 'project') {
+            /* translators: 1: Project title, 2: Site name */
+            return sprintf(__('Dự án %1$s – %2$s', 'laca'), get_the_title($post), get_bloginfo('name'));
+        }
+
+        return '';
     }
 
     public function robots(): array

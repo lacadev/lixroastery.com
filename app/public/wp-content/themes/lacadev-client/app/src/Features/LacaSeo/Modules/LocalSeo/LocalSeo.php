@@ -25,8 +25,8 @@ class LocalSeo
         // Register CPT laca_seo_locations
         $singular = (string) Settings::get('titles.locations_post_type_label', 'Location');
         if ($singular === 'RM Locations' || $singular === 'RM Location' || $singular === 'Location') {
-            $singular = __('Địa điểm', 'lacadev');
-            $plural = __('Địa điểm', 'lacadev');
+            $singular = __('Địa điểm', 'laca');
+            $plural = __('Địa điểm', 'laca');
         } else {
             $plural = $singular . 's';
         }
@@ -35,14 +35,14 @@ class LocalSeo
             'labels' => [
                 'name'               => $plural,
                 'singular_name'      => $singular,
-                'add_new'            => __('Add New', 'lacadev'),
-                'add_new_item'       => sprintf(__('Add New %s', 'lacadev'), $singular),
-                'edit_item'          => sprintf(__('Edit %s', 'lacadev'), $singular),
-                'new_item'           => sprintf(__('New %s', 'lacadev'), $singular),
-                'view_item'          => sprintf(__('View %s', 'lacadev'), $singular),
-                'search_items'       => sprintf(__('Search %s', 'lacadev'), $plural),
-                'not_found'          => sprintf(__('No %s found', 'lacadev'), $plural),
-                'not_found_in_trash' => sprintf(__('No %s found in Trash', 'lacadev'), $plural),
+                'add_new'            => __('Add New', 'laca'),
+                'add_new_item'       => sprintf(__('Add New %s', 'laca'), $singular),
+                'edit_item'          => sprintf(__('Edit %s', 'laca'), $singular),
+                'new_item'           => sprintf(__('New %s', 'laca'), $singular),
+                'view_item'          => sprintf(__('View %s', 'laca'), $singular),
+                'search_items'       => sprintf(__('Search %s', 'laca'), $plural),
+                'not_found'          => sprintf(__('No %s found', 'laca'), $plural),
+                'not_found_in_trash' => sprintf(__('No %s found in Trash', 'laca'), $plural),
             ],
             'public'       => $useMulti,
             'show_ui'      => $useMulti,
@@ -55,8 +55,8 @@ class LocalSeo
         register_taxonomy('laca_seo_location_category', ['laca_seo_locations', 'rank_math_locations'], [
             'hierarchical'      => true,
             'labels'            => [
-                'name'          => __('Location Categories', 'lacadev'),
-                'singular_name' => __('Location Category', 'lacadev'),
+                'name'          => __('Location Categories', 'laca'),
+                'singular_name' => __('Location Category', 'laca'),
             ],
             'show_ui'           => $useMulti,
             'show_admin_column' => $useMulti,

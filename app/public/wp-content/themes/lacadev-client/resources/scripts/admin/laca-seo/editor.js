@@ -430,7 +430,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Fallback: replace basic %title%, %sep%, %sitename% locally
-    const siteTitle = dataConfig.parentDomain || 'LIX ROASTERY';
+    const siteTitle = dataConfig.siteName || dataConfig.parentDomain || (typeof document !== 'undefined' ? document.title : '') || '';
     return template
       .replace(/%title%/gi, editorState.title || '')
       .replace(/%term%/gi, editorState.title || '')

@@ -246,7 +246,7 @@ class ImageSeo
             return $avatar;
         }
 
-        $attrs['alt'] = sprintf(__('Avatar of %s', 'lacadev'), $newAlt);
+        $attrs['alt'] = sprintf(__('Avatar of %s', 'laca'), $newAlt);
         $newTag = '<img' . self::attributesToString($attrs) . '>';
 
         $altCase = (string) Settings::get('general.img_alt_change_case', '');

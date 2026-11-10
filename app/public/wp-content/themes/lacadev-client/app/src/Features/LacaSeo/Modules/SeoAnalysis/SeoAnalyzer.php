@@ -81,20 +81,20 @@ class SeoAnalyzer
         if (empty($desc)) {
             return [
                 'status'  => 'warning',
-                'message' => __('Bạn chưa nhập slogan cho trang web.', 'lacadev'),
+                'message' => __('Bạn chưa nhập slogan cho trang web.', 'laca'),
             ];
         }
 
         if ($desc === 'Just another WordPress site' || $desc === translate('Just another WordPress site')) {
             return [
                 'status'  => 'fail',
-                'message' => __('Khẩu hiệu trang web đang để mặc định "Just another WordPress site".', 'lacadev'),
+                'message' => __('Khẩu hiệu trang web đang để mặc định "Just another WordPress site".', 'laca'),
             ];
         }
 
         return [
             'status'  => 'ok',
-            'message' => __('Khẩu hiệu trang web đã được tùy biến.', 'lacadev'),
+            'message' => __('Khẩu hiệu trang web đã được tùy biến.', 'laca'),
         ];
     }
 
@@ -104,8 +104,8 @@ class SeoAnalyzer
         return [
             'status'  => $public ? 'ok' : 'fail',
             'message' => $public
-                ? __('Trang web hiển thị công khai với các công cụ tìm kiếm.', 'lacadev')
-                : __('Chú ý: Trang web đang chặn công cụ tìm kiếm lập chỉ mục.', 'lacadev'),
+                ? __('Trang web hiển thị công khai với các công cụ tìm kiếm.', 'laca')
+                : __('Chú ý: Trang web đang chặn công cụ tìm kiếm lập chỉ mục.', 'laca'),
         ];
     }
 
@@ -115,20 +115,20 @@ class SeoAnalyzer
         if (empty($structure)) {
             return [
                 'status'  => 'fail',
-                'message' => __('Đường dẫn tĩnh đang ở chế độ mặc định (chưa bật Pretty Permalinks).', 'lacadev'),
+                'message' => __('Đường dẫn tĩnh đang ở chế độ mặc định (chưa bật Pretty Permalinks).', 'laca'),
             ];
         }
 
         if (strpos($structure, '%postname%') === false) {
             return [
                 'status'  => 'fail',
-                'message' => __('Đường dẫn tĩnh chưa chứa %postname%.', 'lacadev'),
+                'message' => __('Đường dẫn tĩnh chưa chứa %postname%.', 'laca'),
             ];
         }
 
         return [
             'status'  => 'ok',
-            'message' => sprintf(__('Cấu trúc đường dẫn tĩnh là %s.', 'lacadev'), '<code>' . esc_html($structure) . '</code>'),
+            'message' => sprintf(__('Cấu trúc đường dẫn tĩnh là %s.', 'laca'), '<code>' . esc_html($structure) . '</code>'),
         ];
     }
 
@@ -138,8 +138,8 @@ class SeoAnalyzer
         return [
             'status'  => $active ? 'ok' : 'fail',
             'message' => $active
-                ? __('Trang web có một hoặc nhiều sơ đồ trang XML.', 'lacadev')
-                : __('Không tìm thấy sơ đồ trang XML.', 'lacadev'),
+                ? __('Trang web có một hoặc nhiều sơ đồ trang XML.', 'laca')
+                : __('Không tìm thấy sơ đồ trang XML.', 'laca'),
         ];
     }
 
@@ -149,8 +149,8 @@ class SeoAnalyzer
         return [
             'status'  => $enabled ? 'ok' : 'warning',
             'message' => $enabled
-                ? __('Tùy chọn tự động cập nhật đang được bật.', 'lacadev')
-                : __('Tùy chọn tự động cập nhật chưa được bật.', 'lacadev'),
+                ? __('Tùy chọn tự động cập nhật đang được bật.', 'laca')
+                : __('Tùy chọn tự động cập nhật chưa được bật.', 'laca'),
         ];
     }
 
@@ -160,8 +160,8 @@ class SeoAnalyzer
         return [
             'status'  => $isHttps ? 'ok' : 'fail',
             'message' => $isHttps
-                ? __('Trang web đang sử dụng chứng chỉ bảo mật HTTPS/SSL.', 'lacadev')
-                : __('Trang web chưa sử dụng HTTPS.', 'lacadev'),
+                ? __('Trang web đang sử dụng chứng chỉ bảo mật HTTPS/SSL.', 'laca')
+                : __('Trang web chưa sử dụng HTTPS.', 'laca'),
         ];
     }
 
@@ -170,7 +170,7 @@ class SeoAnalyzer
         $url = home_url('/robots.txt');
         return [
             'status'  => 'ok',
-            'message' => __('Tệp robots.txt đang hoạt động.', 'lacadev'),
+            'message' => __('Tệp robots.txt đang hoạt động.', 'laca'),
         ];
     }
 
@@ -180,7 +180,7 @@ class SeoAnalyzer
         if (!$titles || $titles->length === 0) {
             return [
                 'status'  => 'fail',
-                'message' => __('Không tìm thấy thẻ tiêu đề <title> trên trang chủ.', 'lacadev'),
+                'message' => __('Không tìm thấy thẻ tiêu đề <title> trên trang chủ.', 'laca'),
             ];
         }
 
@@ -190,13 +190,13 @@ class SeoAnalyzer
         if ($len < 10 || $len > 70) {
             return [
                 'status'  => 'warning',
-                'message' => sprintf(__('Độ dài tiêu đề là %d ký tự (khuyến nghị 40-60 ký tự).', 'lacadev'), $len),
+                'message' => sprintf(__('Độ dài tiêu đề là %d ký tự (khuyến nghị 40-60 ký tự).', 'laca'), $len),
             ];
         }
 
         return [
             'status'  => 'ok',
-            'message' => sprintf(__('Thẻ tiêu đề trang chủ có độ dài hợp lệ (%d ký tự).', 'lacadev'), $len),
+            'message' => sprintf(__('Thẻ tiêu đề trang chủ có độ dài hợp lệ (%d ký tự).', 'laca'), $len),
         ];
     }
 
@@ -206,7 +206,7 @@ class SeoAnalyzer
         if (!$metas || $metas->length === 0) {
             return [
                 'status'  => 'fail',
-                'message' => __('Không tìm thấy thẻ meta description trên trang chủ.', 'lacadev'),
+                'message' => __('Không tìm thấy thẻ meta description trên trang chủ.', 'laca'),
             ];
         }
 
@@ -216,13 +216,13 @@ class SeoAnalyzer
         if ($len < 50 || $len > 160) {
             return [
                 'status'  => 'warning',
-                'message' => sprintf(__('Độ dài mô tả meta là %d ký tự (khuyến nghị 120-160 ký tự).', 'lacadev'), $len),
+                'message' => sprintf(__('Độ dài mô tả meta là %d ký tự (khuyến nghị 120-160 ký tự).', 'laca'), $len),
             ];
         }
 
         return [
             'status'  => 'ok',
-            'message' => sprintf(__('Thẻ meta description có độ dài tốt (%d ký tự).', 'lacadev'), $len),
+            'message' => sprintf(__('Thẻ meta description có độ dài tốt (%d ký tự).', 'laca'), $len),
         ];
     }
 
@@ -234,20 +234,20 @@ class SeoAnalyzer
         if ($count === 0) {
             return [
                 'status'  => 'fail',
-                'message' => __('Không tìm thấy thẻ tiêu đề <h1> trên trang chủ.', 'lacadev'),
+                'message' => __('Không tìm thấy thẻ tiêu đề <h1> trên trang chủ.', 'laca'),
             ];
         }
 
         if ($count > 1) {
             return [
                 'status'  => 'warning',
-                'message' => sprintf(__('Trang chủ có %d thẻ <h1> (khuyến nghị duy nhất 1 thẻ <h1>).', 'lacadev'), $count),
+                'message' => sprintf(__('Trang chủ có %d thẻ <h1> (khuyến nghị duy nhất 1 thẻ <h1>).', 'laca'), $count),
             ];
         }
 
         return [
             'status'  => 'ok',
-            'message' => __('Trang chủ có đúng 1 thẻ <h1>.', 'lacadev'),
+            'message' => __('Trang chủ có đúng 1 thẻ <h1>.', 'laca'),
         ];
     }
 
@@ -259,13 +259,13 @@ class SeoAnalyzer
         if ($count === 0) {
             return [
                 'status'  => 'warning',
-                'message' => __('Không tìm thấy thẻ tiêu đề <h2> nào trên trang chủ.', 'lacadev'),
+                'message' => __('Không tìm thấy thẻ tiêu đề <h2> nào trên trang chủ.', 'laca'),
             ];
         }
 
         return [
             'status'  => 'ok',
-            'message' => sprintf(__('Trang chủ có %d thẻ tiêu đề <h2>.', 'lacadev'), $count),
+            'message' => sprintf(__('Trang chủ có %d thẻ tiêu đề <h2>.', 'laca'), $count),
         ];
     }
 
@@ -275,7 +275,7 @@ class SeoAnalyzer
         if (!$imgs || $imgs->length === 0) {
             return [
                 'status'  => 'ok',
-                'message' => __('Không tìm thấy hình ảnh nào trên trang chủ.', 'lacadev'),
+                'message' => __('Không tìm thấy hình ảnh nào trên trang chủ.', 'laca'),
             ];
         }
 
@@ -290,13 +290,13 @@ class SeoAnalyzer
         if ($missing > 0) {
             return [
                 'status'  => 'warning',
-                'message' => sprintf(__('Có %d hình ảnh trên trang chủ thiếu thuộc tính alt.', 'lacadev'), $missing),
+                'message' => sprintf(__('Có %d hình ảnh trên trang chủ thiếu thuộc tính alt.', 'laca'), $missing),
             ];
         }
 
         return [
             'status'  => 'ok',
-            'message' => __('Tất cả hình ảnh trên trang chủ đều có thẻ alt.', 'lacadev'),
+            'message' => __('Tất cả hình ảnh trên trang chủ đều có thẻ alt.', 'laca'),
         ];
     }
 }

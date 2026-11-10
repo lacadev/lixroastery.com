@@ -671,7 +671,7 @@ class Variables
         $total = (int) self::getPageTotal();
 
         if ($total > 1 && $page > 1) {
-            return sprintf($sep . ' ' . __('Page %1$d of %2$d', 'lacadev'), $page, $total);
+            return sprintf($sep . ' ' . __('Page %1$d of %2$d', 'laca'), $page, $total);
         }
 
         return '';
@@ -720,34 +720,34 @@ class Variables
     public static function getAvailableList(): array
     {
         return [
-            ['id' => 'title', 'name' => 'Tiêu đề bài viết', 'desc' => 'Tiêu đề của bài viết hoặc trang hiện tại', 'example' => 'Cà phê Robusta'],
-            ['id' => 'seo_title', 'name' => 'Tiêu đề SEO', 'desc' => 'Tiêu đề SEO tuỳ chỉnh hoặc mặc định của trang/bài viết', 'example' => 'Cà phê Robusta - Lix Roastery'],
+            ['id' => 'title', 'name' => 'Tiêu đề bài viết', 'desc' => 'Tiêu đề của bài viết hoặc trang hiện tại', 'example' => 'Dịch vụ thiết kế website'],
+            ['id' => 'seo_title', 'name' => 'Tiêu đề SEO', 'desc' => 'Tiêu đề SEO tuỳ chỉnh hoặc mặc định của trang/bài viết', 'example' => 'Dịch vụ thiết kế website - Tên website'],
             ['id' => 'sep', 'name' => 'Ký tự phân cách', 'desc' => 'Ký tự phân cách cài trong Titles & Meta', 'example' => '-'],
-            ['id' => 'sitename', 'name' => 'Tên website', 'desc' => 'Tên trang web cài trong Cài đặt chung', 'example' => 'Lix Roastery'],
-            ['id' => 'sitedesc', 'name' => 'Khẩu hiệu website', 'desc' => 'Khẩu hiệu của trang web', 'example' => 'Xưởng rang cà phê chất lượng cao'],
+            ['id' => 'sitename', 'name' => 'Tên website', 'desc' => 'Tên trang web cài trong Cài đặt chung', 'example' => 'Tên website'],
+            ['id' => 'sitedesc', 'name' => 'Khẩu hiệu website', 'desc' => 'Khẩu hiệu của trang web', 'example' => 'Dịch vụ chuyên nghiệp chất lượng cao'],
             ['id' => 'page', 'name' => 'Số trang hiện tại', 'desc' => 'Hiển thị "Trang 2 của 4" khi có phân trang', 'example' => '- Page 2 of 4'],
-            ['id' => 'excerpt', 'name' => 'Đoạn trích tóm tắt', 'desc' => 'Tự động trích đoạn đầu bài viết', 'example' => 'Hạt cà phê chín mọng được thu hái thủ công...'],
-            ['id' => 'seo_description', 'name' => 'Mô tả SEO', 'desc' => 'Mô tả SEO tuỳ chỉnh hoặc trích đoạn tự sinh', 'example' => 'Hạt cà phê chín mọng được thu hái thủ công...'],
+            ['id' => 'excerpt', 'name' => 'Đoạn trích tóm tắt', 'desc' => 'Tự động trích đoạn đầu bài viết', 'example' => 'Đoạn trích tóm tắt nội dung bài viết...'],
+            ['id' => 'seo_description', 'name' => 'Mô tả SEO', 'desc' => 'Mô tả SEO tuỳ chỉnh hoặc trích đoạn tự sinh', 'example' => 'Đoạn mô tả tóm tắt nội dung trang web...'],
             ['id' => 'date', 'name' => 'Ngày xuất bản', 'desc' => 'Ngày xuất bản của bài viết', 'example' => '20/10/2026'],
             ['id' => 'modified', 'name' => 'Ngày cập nhật', 'desc' => 'Ngày sửa đổi gần nhất của bài', 'example' => '20/10/2026'],
             ['id' => 'category', 'name' => 'Chuyên mục chính', 'desc' => 'Tên chuyên mục đầu tiên của bài', 'example' => 'Tin Tức'],
             ['id' => 'categories', 'name' => 'Tất cả chuyên mục', 'desc' => 'Danh sách chuyên mục cách nhau dấu phẩy', 'example' => 'Tin Tức, Cẩm Nang'],
-            ['id' => 'tag', 'name' => 'Thẻ bài viết đầu tiên', 'desc' => 'Tên thẻ tag đầu tiên', 'example' => 'Robusta'],
-            ['id' => 'tags', 'name' => 'Tất cả thẻ tags', 'desc' => 'Danh sách tag cách nhau dấu phẩy', 'example' => 'Robusta, Arabica'],
+            ['id' => 'tag', 'name' => 'Thẻ bài viết đầu tiên', 'desc' => 'Tên thẻ tag đầu tiên', 'example' => 'Website'],
+            ['id' => 'tags', 'name' => 'Tất cả thẻ tags', 'desc' => 'Danh sách tag cách nhau dấu phẩy', 'example' => 'Website, SEO'],
             ['id' => 'name', 'name' => 'Tên tác giả', 'desc' => 'Tên hiển thị của tác giả bài viết', 'example' => 'Admin'],
-            ['id' => 'term', 'name' => 'Tên chuyên mục / term', 'desc' => 'Tên của danh mục đang xem', 'example' => 'Hạt Cà Phê'],
-            ['id' => 'term_description', 'name' => 'Mô tả chuyên mục', 'desc' => 'Đoạn mô tả của danh mục đang xem', 'example' => 'Tổng hợp các loại hạt cà phê hảo hạng.'],
-            ['id' => 'parent_title', 'name' => 'Tiêu đề trang cha', 'desc' => 'Tiêu đề của trang cấp cha nếu có', 'example' => 'Sản Phẩm'],
-            ['id' => 'primary_taxonomy_terms', 'name' => 'Terms taxonomy chính', 'desc' => 'Các terms thuộc taxonomy chính của post type', 'example' => 'Cà phê hạt'],
-            ['id' => 'focuskw', 'name' => 'Từ khoá chính', 'desc' => 'Từ khoá SEO trọng tâm đầu tiên', 'example' => 'cà phê nguyên chất'],
-            ['id' => 'keywords', 'name' => 'Tất cả từ khoá', 'desc' => 'Toàn bộ từ khoá SEO', 'example' => 'cà phê, hạt arabica'],
-            ['id' => 'org_name', 'name' => 'Tên tổ chức / doanh nghiệp', 'desc' => 'Tên cài trong Local SEO', 'example' => 'Lix Roastery'],
+            ['id' => 'term', 'name' => 'Tên chuyên mục / term', 'desc' => 'Tên của danh mục đang xem', 'example' => 'Thiết Kế Web'],
+            ['id' => 'term_description', 'name' => 'Mô tả chuyên mục', 'desc' => 'Đoạn mô tả của danh mục đang xem', 'example' => 'Tổng hợp các bài viết và dịch vụ chuyên ngành.'],
+            ['id' => 'parent_title', 'name' => 'Tiêu đề trang cha', 'desc' => 'Tiêu đề của trang cấp cha nếu có', 'example' => 'Dịch Vụ'],
+            ['id' => 'primary_taxonomy_terms', 'name' => 'Terms taxonomy chính', 'desc' => 'Các terms thuộc taxonomy chính của post type', 'example' => 'Dịch vụ web'],
+            ['id' => 'focuskw', 'name' => 'Từ khoá chính', 'desc' => 'Từ khoá SEO trọng tâm đầu tiên', 'example' => 'thiết kế website'],
+            ['id' => 'keywords', 'name' => 'Tất cả từ khoá', 'desc' => 'Toàn bộ từ khoá SEO', 'example' => 'thiết kế web, seo'],
+            ['id' => 'org_name', 'name' => 'Tên tổ chức / doanh nghiệp', 'desc' => 'Tên cài trong Local SEO', 'example' => 'Tên công ty'],
             ['id' => 'org_logo', 'name' => 'Logo tổ chức', 'desc' => 'URL logo cài trong Local SEO', 'example' => 'http://example.com/logo.png'],
-            ['id' => 'search_query', 'name' => 'Từ khoá tìm kiếm', 'desc' => 'Từ khoá người dùng nhập khi tìm kiếm', 'example' => 'Cà phê Arabica'],
+            ['id' => 'search_query', 'name' => 'Từ khoá tìm kiếm', 'desc' => 'Từ khoá người dùng nhập khi tìm kiếm', 'example' => 'Thiết kế website'],
             ['id' => 'wc_price', 'name' => 'Giá sản phẩm (WooCommerce)', 'desc' => 'Giá bán hiện tại của sản phẩm', 'example' => '150000'],
-            ['id' => 'wc_sku', 'name' => 'Mã SKU sản phẩm', 'desc' => 'Mã quản lý kho SKU sản phẩm', 'example' => 'LIX-ROB-01'],
-            ['id' => 'wc_shortdesc', 'name' => 'Mô tả ngắn sản phẩm', 'desc' => 'Mô tả ngắn của sản phẩm WooCommerce', 'example' => 'Hương thơm hoa quả phong phú...'],
-            ['id' => 'wc_brand', 'name' => 'Thương hiệu sản phẩm', 'desc' => 'Thương hiệu của sản phẩm WooCommerce', 'example' => 'Lix Roastery'],
+            ['id' => 'wc_sku', 'name' => 'Mã SKU sản phẩm', 'desc' => 'Mã quản lý kho SKU sản phẩm', 'example' => 'SKU-001'],
+            ['id' => 'wc_shortdesc', 'name' => 'Mô tả ngắn sản phẩm', 'desc' => 'Mô tả ngắn của sản phẩm WooCommerce', 'example' => 'Mô tả ngắn gọn về sản phẩm...'],
+            ['id' => 'wc_brand', 'name' => 'Thương hiệu sản phẩm', 'desc' => 'Thương hiệu của sản phẩm WooCommerce', 'example' => 'Tên thương hiệu'],
         ];
     }
 }

@@ -1107,6 +1107,18 @@ final class ReleaseChecklist
                 </p>
             </header>
 
+            <?php // Thu gọn mặc định để form cài đặt của trang không bị đẩy xuống; mở lại khi vừa tick 1 mục. ?>
+            <details class="laca-rc__more" <?php echo '' !== $openId ? 'open' : ''; ?>>
+                <summary class="laca-rc__more-head">
+                    <span>
+                        <?php
+                        /* translators: %d: số nhóm trong checklist phát hành */
+                        echo esc_html(sprintf(__('Xem chi tiết %d nhóm', 'laca'), count($r['groups'])));
+                        ?>
+                    </span>
+                    <?php echo self::icon('chevron'); // phpcs:ignore WordPress.Security.EscapeOutput ?>
+                </summary>
+
             <?php foreach ($r['groups'] as $group) :
                 $gDone = count(array_filter($group['items'], static fn ($i) => 'done' === $i['status']));
                 $gTotal = count(array_filter($group['items'], static fn ($i) => 'skipped' !== $i['status']));
@@ -1127,6 +1139,7 @@ final class ReleaseChecklist
                     </ul>
                 </details>
             <?php endforeach; ?>
+            </details>
         </section>
         <?php
     }

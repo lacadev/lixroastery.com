@@ -21,17 +21,17 @@ if (is_wp_error($sitemaps)) {
 }
 
 $rangeLabels = [
-    '7d'  => __('7 ngày qua', 'lacadev'),
-    '28d' => __('28 ngày qua', 'lacadev'),
-    '90d' => __('90 ngày qua', 'lacadev'),
+    '7d'  => __('7 ngày qua', 'laca'),
+    '28d' => __('28 ngày qua', 'laca'),
+    '90d' => __('90 ngày qua', 'laca'),
 ];
 ?>
 <div class="laca-seo-view-search-console">
     <?php if (isset($_GET['connected'])): ?>
-        <div class="notice notice-success is-dismissible"><p><?php esc_html_e('Đã kết nối Google Search Console thành công!', 'lacadev'); ?></p></div>
+        <div class="notice notice-success is-dismissible"><p><?php esc_html_e('Đã kết nối Google Search Console thành công!', 'laca'); ?></p></div>
     <?php endif; ?>
     <?php if (isset($_GET['disconnected'])): ?>
-        <div class="notice notice-info is-dismissible"><p><?php esc_html_e('Đã ngắt kết nối Google Search Console.', 'lacadev'); ?></p></div>
+        <div class="notice notice-info is-dismissible"><p><?php esc_html_e('Đã ngắt kết nối Google Search Console.', 'laca'); ?></p></div>
     <?php endif; ?>
     <?php if (!empty($_GET['error'])): ?>
         <div class="notice notice-error is-dismissible"><p><?php echo esc_html(urldecode((string) $_GET['error'])); ?></p></div>
@@ -41,16 +41,16 @@ $rangeLabels = [
         <!-- Not Connected: Setup Prompt -->
         <div class="laca-seo-card">
             <div class="laca-seo-card__header">
-                <h2 class="laca-seo-card__title"><?php esc_html_e('Google Search Console (OAuth 2.0)', 'lacadev'); ?></h2>
-                <p class="laca-seo-card__subtitle"><?php esc_html_e('Chưa kết nối tài khoản Google Search Console để xem báo cáo hiệu suất tìm kiếm.', 'lacadev'); ?></p>
+                <h2 class="laca-seo-card__title"><?php esc_html_e('Google Search Console (OAuth 2.0)', 'laca'); ?></h2>
+                <p class="laca-seo-card__subtitle"><?php esc_html_e('Chưa kết nối tài khoản Google Search Console để xem báo cáo hiệu suất tìm kiếm.', 'laca'); ?></p>
             </div>
             <div class="laca-seo-fields-container" style="padding: 24px;">
                 <p style="font-size: 14px; color: var(--laca-fg-muted); margin-bottom: 16px;">
-                    <?php esc_html_e('Cấu hình kết nối Google OAuth và chọn property Search Console đã được chuyển sang trang quản lý tập trung:', 'lacadev'); ?>
+                    <?php esc_html_e('Cấu hình kết nối Google OAuth và chọn property Search Console đã được chuyển sang trang quản lý tập trung:', 'laca'); ?>
                 </p>
                 <a href="<?php echo esc_url(admin_url('admin.php?page=laca-google-search-console')); ?>" class="button button-primary button-large">
                     <span class="dashicons dashicons-admin-generic" style="margin-top: 3px;" aria-hidden="true"></span>
-                    <?php esc_html_e('Cài đặt kết nối Search Console', 'lacadev'); ?>
+                    <?php esc_html_e('Cài đặt kết nối Search Console', 'laca'); ?>
                 </a>
             </div>
         </div>
@@ -59,13 +59,13 @@ $rangeLabels = [
         <div class="laca-seo-card">
             <div class="laca-seo-card__header laca-seo-header-flex">
                 <div>
-                    <h2 class="laca-seo-card__title"><?php esc_html_e('Hiệu suất tìm kiếm', 'lacadev'); ?></h2>
-                    <p class="laca-seo-card__subtitle"><?php printf(esc_html__('Property: %s', 'lacadev'), '<code>' . esc_html($siteUrl) . '</code>'); ?></p>
+                    <h2 class="laca-seo-card__title"><?php esc_html_e('Hiệu suất tìm kiếm', 'laca'); ?></h2>
+                    <p class="laca-seo-card__subtitle"><?php printf(esc_html__('Property: %s', 'laca'), '<code>' . esc_html($siteUrl) . '</code>'); ?></p>
                 </div>
                 <div class="laca-seo-header-actions" style="display: flex; gap: 8px; align-items: center;">
                     <a href="<?php echo esc_url(admin_url('admin.php?page=laca-google-search-console')); ?>" class="button button-secondary">
                         <span class="dashicons dashicons-admin-generic" style="margin-top: 3px;" aria-hidden="true"></span>
-                        <?php esc_html_e('Chọn property khác', 'lacadev'); ?>
+                        <?php esc_html_e('Chọn property khác', 'laca'); ?>
                     </a>
                 </div>
             </div>
@@ -77,9 +77,9 @@ $rangeLabels = [
                             <h3 style="margin: 0 0 6px 0; font-size: 15px; font-weight: 600; color: var(--laca-fg);">
                                 <?php
                                 if (!empty($gsc['status'])) {
-                                    printf(esc_html__('Lỗi kết nối Google Search Console (HTTP %d)', 'lacadev'), (int) $gsc['status']);
+                                    printf(esc_html__('Lỗi kết nối Google Search Console (HTTP %d)', 'laca'), (int) $gsc['status']);
                                 } else {
-                                    esc_html_e('Không thể tải dữ liệu Search Console', 'lacadev');
+                                    esc_html_e('Không thể tải dữ liệu Search Console', 'laca');
                                 }
                                 ?>
                             </h3>
@@ -88,7 +88,7 @@ $rangeLabels = [
                             </p>
                             <a href="<?php echo esc_url($gsc['setup_url'] ?? admin_url('admin.php?page=laca-google-search-console')); ?>" class="button button-secondary">
                                 <span class="dashicons dashicons-admin-generic" style="margin-top: 3px;"></span>
-                                <?php esc_html_e('Chọn property khác', 'lacadev'); ?> &rarr;
+                                <?php esc_html_e('Chọn property khác', 'laca'); ?> &rarr;
                             </a>
                         </div>
                     </div>
@@ -100,11 +100,11 @@ $rangeLabels = [
         <div class="laca-seo-card">
             <div class="laca-seo-card__header laca-seo-header-flex">
                 <div>
-                    <h2 class="laca-seo-card__title"><?php printf(esc_html__('Hiệu suất tìm kiếm (%s)', 'lacadev'), esc_html($rangeLabels[$range] ?? '28 ngày qua')); ?></h2>
-                    <p class="laca-seo-card__subtitle"><?php printf(esc_html__('Dữ liệu từ tài khoản Google Search Console cho trang web %s', 'lacadev'), esc_html($siteUrl)); ?></p>
+                    <h2 class="laca-seo-card__title"><?php printf(esc_html__('Hiệu suất tìm kiếm (%s)', 'laca'), esc_html($rangeLabels[$range] ?? '28 ngày qua')); ?></h2>
+                    <p class="laca-seo-card__subtitle"><?php printf(esc_html__('Dữ liệu từ tài khoản Google Search Console cho trang web %s', 'laca'), esc_html($siteUrl)); ?></p>
                 </div>
                 <div class="laca-seo-header-actions" style="display: flex; gap: 8px; align-items: center;">
-                    <div class="button-group" role="group" aria-label="<?php esc_attr_e('Khoảng thời gian', 'lacadev'); ?>">
+                    <div class="button-group" role="group" aria-label="<?php esc_attr_e('Khoảng thời gian', 'laca'); ?>">
                         <?php foreach ($rangeLabels as $rKey => $rLabel): ?>
                             <a
                                 href="<?php echo esc_url(add_query_arg(['page' => 'laca-seo', 'view' => 'search-console', 'range' => $rKey], admin_url('admin.php'))); ?>"
@@ -118,20 +118,20 @@ $rangeLabels = [
                     <a
                         href="<?php echo esc_url(add_query_arg(['page' => 'laca-seo', 'view' => 'search-console', 'range' => $range, 'refresh' => '1'], admin_url('admin.php'))); ?>"
                         class="button button-secondary"
-                        title="<?php esc_attr_e('Làm mới dữ liệu từ Google (bỏ qua bộ nhớ tạm)', 'lacadev'); ?>"
+                        title="<?php esc_attr_e('Làm mới dữ liệu từ Google (bỏ qua bộ nhớ tạm)', 'laca'); ?>"
                         style="font-size: 12px; height: 30px; line-height: 28px;"
                     >
                         <span class="dashicons dashicons-update" style="margin-top: 3px; font-size: 15px; width: 15px; height: 15px;"></span>
-                        <?php esc_html_e('Làm mới', 'lacadev'); ?>
+                        <?php esc_html_e('Làm mới', 'laca'); ?>
                     </a>
                     <a href="<?php echo esc_url(admin_url('admin.php?page=laca-google-search-console')); ?>" class="button button-secondary">
                         <span class="dashicons dashicons-admin-generic" style="margin-top: 3px;" aria-hidden="true"></span>
-                        <?php esc_html_e('Cài đặt & Property', 'lacadev'); ?>
+                        <?php esc_html_e('Cài đặt & Property', 'laca'); ?>
                     </a>
                     <form method="post" class="laca-seo-form-inline">
                         <?php wp_nonce_field('laca_gsc_disconnect_action'); ?>
                         <button type="submit" name="laca_gsc_disconnect" class="button button-secondary" onclick="return confirm('Bạn có chắc muốn ngắt kết nối Google Search Console không?');">
-                            <?php esc_html_e('Ngắt kết nối', 'lacadev'); ?>
+                            <?php esc_html_e('Ngắt kết nối', 'laca'); ?>
                         </button>
                     </form>
                 </div>
@@ -142,7 +142,7 @@ $rangeLabels = [
                 <div class="laca-seo-stat-card">
                     <div class="laca-seo-stat-card__icon is-info"><span class="dashicons dashicons-chart-area"></span></div>
                     <div class="laca-seo-stat-card__info">
-                        <span class="laca-seo-stat-card__label"><?php esc_html_e('Tổng lượt click', 'lacadev'); ?></span>
+                        <span class="laca-seo-stat-card__label"><?php esc_html_e('Tổng lượt click', 'laca'); ?></span>
                         <strong class="laca-seo-stat-card__value"><?php echo esc_html(number_format_i18n((int) ($gsc['clicks'] ?? 0))); ?></strong>
                         <small style="color: var(--laca-fg-muted);"><?php echo esc_html((string) ($gsc['clicks_delta'] ?? '—')); ?> so với kỳ trước</small>
                     </div>
@@ -150,7 +150,7 @@ $rangeLabels = [
                 <div class="laca-seo-stat-card">
                     <div class="laca-seo-stat-card__icon is-info"><span class="dashicons dashicons-visibility"></span></div>
                     <div class="laca-seo-stat-card__info">
-                        <span class="laca-seo-stat-card__label"><?php esc_html_e('Tổng lượt hiển thị', 'lacadev'); ?></span>
+                        <span class="laca-seo-stat-card__label"><?php esc_html_e('Tổng lượt hiển thị', 'laca'); ?></span>
                         <strong class="laca-seo-stat-card__value"><?php echo esc_html(number_format_i18n((int) ($gsc['impressions'] ?? 0))); ?></strong>
                         <small style="color: var(--laca-fg-muted);"><?php echo esc_html((string) ($gsc['impressions_delta'] ?? '—')); ?> so với kỳ trước</small>
                     </div>
@@ -158,7 +158,7 @@ $rangeLabels = [
                 <div class="laca-seo-stat-card">
                     <div class="laca-seo-stat-card__icon is-success"><span class="dashicons dashicons-percent"></span></div>
                     <div class="laca-seo-stat-card__info">
-                        <span class="laca-seo-stat-card__label"><?php esc_html_e('CTR trung bình', 'lacadev'); ?></span>
+                        <span class="laca-seo-stat-card__label"><?php esc_html_e('CTR trung bình', 'laca'); ?></span>
                         <strong class="laca-seo-stat-card__value"><?php echo esc_html((string) ($gsc['ctr'] ?? 0)); ?>%</strong>
                         <small style="color: var(--laca-fg-muted);"><?php echo esc_html((string) ($gsc['ctr_delta'] ?? '—')); ?> so với kỳ trước</small>
                     </div>
@@ -166,7 +166,7 @@ $rangeLabels = [
                 <div class="laca-seo-stat-card">
                     <div class="laca-seo-stat-card__icon is-success"><span class="dashicons dashicons-performance"></span></div>
                     <div class="laca-seo-stat-card__info">
-                        <span class="laca-seo-stat-card__label"><?php esc_html_e('Vị trí trung bình', 'lacadev'); ?></span>
+                        <span class="laca-seo-stat-card__label"><?php esc_html_e('Vị trí trung bình', 'laca'); ?></span>
                         <strong class="laca-seo-stat-card__value">#<?php echo esc_html((string) ($gsc['position'] ?? 0)); ?></strong>
                         <small style="color: var(--laca-fg-muted);"><?php echo esc_html((string) ($gsc['position_delta'] ?? '—')); ?> so với kỳ trước</small>
                     </div>
@@ -178,16 +178,16 @@ $rangeLabels = [
             $displayQueries = $gsc['queries'] ?? ($gsc['rows'] ?? []);
             if (!empty($displayQueries)):
             ?>
-                <h3 class="laca-seo-card__title laca-seo-title-spaced"><?php esc_html_e('Top từ khóa tìm kiếm hàng đầu', 'lacadev'); ?></h3>
+                <h3 class="laca-seo-card__title laca-seo-title-spaced"><?php esc_html_e('Top từ khóa tìm kiếm hàng đầu', 'laca'); ?></h3>
                 <div class="laca-seo-table-responsive">
                 <table class="wp-list-table widefat striped">
                     <thead>
                         <tr>
-                            <th><?php esc_html_e('Từ khóa truy vấn', 'lacadev'); ?></th>
-                            <th class="col-click"><?php esc_html_e('Clicks', 'lacadev'); ?></th>
-                            <th class="col-imp"><?php esc_html_e('Hiển thị', 'lacadev'); ?></th>
-                            <th class="col-ctr"><?php esc_html_e('CTR', 'lacadev'); ?></th>
-                            <th class="col-pos"><?php esc_html_e('Vị trí', 'lacadev'); ?></th>
+                            <th><?php esc_html_e('Từ khóa truy vấn', 'laca'); ?></th>
+                            <th class="col-click"><?php esc_html_e('Clicks', 'laca'); ?></th>
+                            <th class="col-imp"><?php esc_html_e('Hiển thị', 'laca'); ?></th>
+                            <th class="col-ctr"><?php esc_html_e('CTR', 'laca'); ?></th>
+                            <th class="col-pos"><?php esc_html_e('Vị trí', 'laca'); ?></th>
                         </tr>
                     </thead>
                     <tbody>
@@ -210,16 +210,16 @@ $rangeLabels = [
 
             <!-- Sitemaps Table -->
             <?php if (!empty($sitemaps['sitemaps'])): ?>
-                <h3 class="laca-seo-card__title laca-seo-title-spaced"><?php esc_html_e('Sitemaps đã gửi', 'lacadev'); ?></h3>
+                <h3 class="laca-seo-card__title laca-seo-title-spaced"><?php esc_html_e('Sitemaps đã gửi', 'laca'); ?></h3>
                 <div class="laca-seo-table-responsive">
                 <table class="wp-list-table widefat striped">
                     <thead>
                         <tr>
-                            <th><?php esc_html_e('URL Sitemap', 'lacadev'); ?></th>
-                            <th><?php esc_html_e('Loại', 'lacadev'); ?></th>
-                            <th><?php esc_html_e('Gửi lần cuối', 'lacadev'); ?></th>
-                            <th><?php esc_html_e('Đã gửi', 'lacadev'); ?></th>
-                            <th><?php esc_html_e('Đã index', 'lacadev'); ?></th>
+                            <th><?php esc_html_e('URL Sitemap', 'laca'); ?></th>
+                            <th><?php esc_html_e('Loại', 'laca'); ?></th>
+                            <th><?php esc_html_e('Gửi lần cuối', 'laca'); ?></th>
+                            <th><?php esc_html_e('Đã gửi', 'laca'); ?></th>
+                            <th><?php esc_html_e('Đã index', 'laca'); ?></th>
                         </tr>
                     </thead>
                     <tbody>

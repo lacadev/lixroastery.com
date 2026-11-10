@@ -114,6 +114,15 @@ class ListTableEnhancements
             return $columns;
         });
 
+        // Bảng bài viết có ~14 cột nên phải cuộn ngang: ẩn sẵn cột ít dùng,
+        // người dùng vẫn bật lại được ở Screen Options (chỉ áp khi họ chưa tự chỉnh).
+        add_filter('default_hidden_columns', function ($hidden, $screen) {
+            if ($screen instanceof \WP_Screen && $screen->id === 'edit-post') {
+                $hidden = array_merge((array) $hidden, ['post_id_val', 'laca_seo_links', 'comments']);
+            }
+            return $hidden;
+        }, 10, 2);
+
         add_action('manage_post_posts_custom_column', function ($column, $post_id) {
             if ($column === 'post_id_val') {
                 echo '<span style="color: #999;">' . esc_html($post_id) . '</span>';

@@ -15,6 +15,36 @@ class AdminUxService
         add_action('admin_menu', [$this, 'registerUnattachedMediaMenu']);
         add_action('admin_notices', [$this, 'renderUnattachedMediaNotice']);
         $this->simplifyMerchantAdmin();
+        add_filter('get_user_metadata', [$this, 'defaultAdminLocale'], 10, 4);
+    }
+
+    /**
+     * Admin mặc định tiếng Việt cho user CHƯA tự chọn ngôn ngữ (meta "locale" rỗng).
+     *
+     * Chỉ chạm ngôn ngữ giao diện admin của user — không đổi Site Language nên
+     * frontend giữ nguyên. Không có gói ngôn ngữ "vi" thì bỏ qua để WP khỏi nạp
+     * locale không tồn tại.
+     *
+     * @param mixed  $value
+     * @return mixed
+     */
+    public function defaultAdminLocale($value, $objectId, $metaKey, $single)
+    {
+        static $checking = false;
+        if ($metaKey !== 'locale' || $value !== null || $checking) {
+            return $value;
+        }
+
+        $checking = true;
+        $stored = get_user_meta((int) $objectId, 'locale', true);
+        $checking = false;
+
+        if ($stored !== '' || !in_array('vi', get_available_languages(), true)) {
+            return $value;
+        }
+
+        // get_metadata_raw() tự lấy phần tử đầu khi $single.
+        return ['vi'];
     }
 
     /**
@@ -47,7 +77,7 @@ class AdminUxService
         }
 
         echo '<div class="laca-alert laca-alert--info laca-mb-3">'
-            . '<p class="laca-alert__title">🔧 Media Không Dùng</p>'
+            . '<p class="laca-alert__title">Media Không Dùng</p>'
             . '<p class="laca-alert__description">Danh sách này liệt kê các file ảnh/video đã tải lên nhưng chưa được gắn vào bài viết, trang hoặc sản phẩm nào. Bạn có thể xoá bớt để giải phóng dung lượng lưu trữ trên site.</p>'
             . '</div>';
     }
@@ -83,18 +113,23 @@ class AdminUxService
         $email   = carbon_get_theme_option('help_support_email')   ?: (defined('AUTHOR') ? AUTHOR['email'] : '');
         $website = carbon_get_theme_option('help_support_website') ?: (defined('AUTHOR') ? AUTHOR['website'] : '');
         // Styles extracted to resources/styles/admin/_admin-help.scss
+        $has_custom_guide = has_action('laca_help_page_before_blocks');
         ?>
 
         <div class="wrap laca-help-wrap">
+            <?php if (!$has_custom_guide) : ?>
             <div class="laca-alert laca-alert--info laca-mb-3">
-                <p class="laca-alert__title">🔧 Trang trợ giúp dành cho bạn</p>
+                <p class="laca-alert__title">Trang trợ giúp dành cho bạn</p>
                 <p class="laca-alert__description">Đây là trang hướng dẫn sử dụng website dành cho khách hàng. Nội dung bên dưới do quản trị viên cấu hình riêng cho từng dự án tại <strong>Laca Admin &gt; Quản trị &amp; HD Sử dụng</strong>.</p>
             </div>
+            <?php endif; ?>
             <h1 class="laca-help-header">
                 <span>📖</span>
                 <?php echo esc_html($page_title); ?>
             </h1>
             <p class="laca-help-intro"><?php echo nl2br(esc_html($page_intro)); ?></p>
+
+            <?php do_action('laca_help_page_before_blocks'); ?>
 
             <div class="laca-help-grid">
                 <?php if (!empty($blocks)) : ?>
@@ -106,7 +141,7 @@ class AdminUxService
                             </div>
                         </div>
                     <?php endforeach; ?>
-                <?php else : ?>
+                <?php elseif (!$has_custom_guide) : ?>
                     <div class="laca-help-card">
                         <h3>📝 Hướng dẫn mặc định</h3>
                         <p>Vui lòng vào <strong>Laca Admin &gt; Quản trị &amp; HD Sử dụng</strong> để cập nhật nội dung hướng dẫn cho khách hàng.</p>

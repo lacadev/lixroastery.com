@@ -13,6 +13,7 @@ import { loadSwal } from './swal-lazy.js';
 
 import { initHeaderScroll, resetHeaderState }           from './components/header.js';
 import { initMobileMenu, closeMobileMenu }             from './components/mobile-menu.js';
+import { initPostAudio }                               from './components/post-audio.js';
 import { initContactPage }                             from './pages/contact.js';
 import { initCommentForm }                             from './pages/comments.js';
 import { initScrollReveal, initCounters, initRippleEffect } from './micro-interactions.js';
@@ -54,6 +55,7 @@ function initPageFeatures() {
 
 	initContactPage();
 	initCommentForm();
+	initPostAudio();
 }
 
 // ─── Bootstrap ───────────────────────────────────────────────────────────────

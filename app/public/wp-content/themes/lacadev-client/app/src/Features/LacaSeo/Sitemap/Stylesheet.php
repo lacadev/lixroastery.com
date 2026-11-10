@@ -20,13 +20,13 @@ class Stylesheet extends AbstractXml
             'Etag'          => md5($expires . $type),
         ], true);
 
-        $title = sprintf(__('XML Sitemap %1$s %2$s', 'lacadev'), '-', get_bloginfo('name', 'display'));
+        $title = sprintf(__('XML Sitemap %1$s %2$s', 'laca'), '-', get_bloginfo('name', 'display'));
         if ($type === 'news') {
-            $title = sprintf(__('News Sitemap %1$s %2$s', 'lacadev'), '-', get_bloginfo('name', 'display'));
+            $title = sprintf(__('News Sitemap %1$s %2$s', 'laca'), '-', get_bloginfo('name', 'display'));
         } elseif ($type === 'video') {
-            $title = sprintf(__('Video Sitemap %1$s %2$s', 'lacadev'), '-', get_bloginfo('name', 'display'));
+            $title = sprintf(__('Video Sitemap %1$s %2$s', 'laca'), '-', get_bloginfo('name', 'display'));
         }
-        $kml_title = sprintf(__('Locations Sitemap %1$s %2$s', 'lacadev'), '-', get_bloginfo('name', 'display'));
+        $kml_title = sprintf(__('Locations Sitemap %1$s %2$s', 'laca'), '-', get_bloginfo('name', 'display'));
 
         require_once __DIR__ . '/sitemap-xsl.php';
         exit;

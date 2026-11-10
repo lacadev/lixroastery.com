@@ -30,7 +30,7 @@ class SaveHandler
 
         if ($isAjax) {
             if (!check_ajax_referer('laca_seo_save_action', 'laca_seo_nonce', false) && !wp_verify_nonce($_POST['laca_seo_nonce'] ?? '', 'laca_seo_save_action')) {
-                wp_send_json_error(['message' => __('Phiên làm việc đã hết hạn. Vui lòng tải lại trang.', 'lacadev')], 403);
+                wp_send_json_error(['message' => __('Phiên làm việc đã hết hạn. Vui lòng tải lại trang.', 'laca')], 403);
             }
         } else {
             check_admin_referer('laca_seo_save_action', 'laca_seo_nonce');
@@ -38,9 +38,9 @@ class SaveHandler
 
         if (!current_user_can('manage_options')) {
             if ($isAjax) {
-                wp_send_json_error(['message' => __('Bạn không có quyền thực hiện thao tác này.', 'lacadev')], 403);
+                wp_send_json_error(['message' => __('Bạn không có quyền thực hiện thao tác này.', 'laca')], 403);
             }
-            wp_die(esc_html__('Bạn không có quyền thực hiện thao tác này.', 'lacadev'));
+            wp_die(esc_html__('Bạn không có quyền thực hiện thao tác này.', 'laca'));
         }
 
         $group = sanitize_key($_POST['option_group'] ?? 'general');
@@ -100,7 +100,7 @@ class SaveHandler
 
         if ($isAjax) {
             wp_send_json_success([
-                'message'   => __('Đã tự động lưu cài đặt Laca SEO.', 'lacadev'),
+                'message'   => __('Đã tự động lưu cài đặt Laca SEO.', 'laca'),
                 'timestamp' => current_time('H:i:s'),
             ]);
         }
@@ -132,7 +132,7 @@ class SaveHandler
         check_admin_referer('laca_seo_reset_action', 'laca_seo_nonce');
 
         if (!current_user_can('manage_options')) {
-            wp_die(esc_html__('Bạn không có quyền thực hiện thao tác này.', 'lacadev'));
+            wp_die(esc_html__('Bạn không có quyền thực hiện thao tác này.', 'laca'));
         }
 
         $group = sanitize_key($_POST['option_group'] ?? 'general');
@@ -187,12 +187,12 @@ class SaveHandler
 
         // Must contain WordPress rewrite block
         if (!str_contains($content, '# BEGIN WordPress')) {
-            wp_die(esc_html__('Lỗi an toàn: Tệp .htaccess bắt buộc phải có khối # BEGIN WordPress để tránh sập website.', 'lacadev'));
+            wp_die(esc_html__('Lỗi an toàn: Tệp .htaccess bắt buộc phải có khối # BEGIN WordPress để tránh sập website.', 'laca'));
         }
 
         $htaccess_path = ABSPATH . '.htaccess';
         if (!file_exists($htaccess_path) || !is_writable($htaccess_path)) {
-            wp_die(esc_html__('Lỗi: Tệp .htaccess không tồn tại hoặc không thể ghi (thiếu quyền ghi).', 'lacadev'));
+            wp_die(esc_html__('Lỗi: Tệp .htaccess không tồn tại hoặc không thể ghi (thiếu quyền ghi).', 'laca'));
         }
 
         $current_content = (string) file_get_contents($htaccess_path);
@@ -219,7 +219,7 @@ class SaveHandler
             if (file_exists($backup_path)) {
                 @copy($backup_path, $htaccess_path);
             }
-            wp_die(esc_html__('Lỗi: Ghi tệp .htaccess thất bại hoặc nội dung sau khi ghi không khớp. Đã khôi phục bản lưu trước đó.', 'lacadev'));
+            wp_die(esc_html__('Lỗi: Ghi tệp .htaccess thất bại hoặc nội dung sau khi ghi không khớp. Đã khôi phục bản lưu trước đó.', 'laca'));
         }
     }
 }

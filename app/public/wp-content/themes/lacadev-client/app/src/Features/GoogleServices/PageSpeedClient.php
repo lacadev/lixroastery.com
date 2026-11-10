@@ -72,7 +72,7 @@ class PageSpeedClient
         $data = json_decode($body, true);
 
         if ($code < 200 || $code >= 300 || !is_array($data) || !empty($data['error'])) {
-            $rawMsg = is_array($data) && isset($data['error']['message']) ? (string) $data['error']['message'] : sprintf(__('Lỗi PageSpeed Insights (HTTP %d)', 'lacadev'), $code);
+            $rawMsg = is_array($data) && isset($data['error']['message']) ? (string) $data['error']['message'] : sprintf(__('Lỗi PageSpeed Insights (HTTP %d)', 'laca'), $code);
             $translatedMsg = self::translateErrorMessage($code, $rawMsg, is_array($data) ? $data : []);
 
             $errorData = [
@@ -80,7 +80,7 @@ class PageSpeedClient
                 'raw_message' => $rawMsg,
                 'data'        => $data,
                 'actionUrl'   => admin_url('admin.php?page=laca-google-search-console#laca-psi-key'),
-                'actionLabel' => __('Thêm API key', 'lacadev'),
+                'actionLabel' => __('Thêm API key', 'laca'),
                 'link'        => admin_url('admin.php?page=laca-google-search-console#laca-psi-key'),
             ];
 
@@ -113,25 +113,25 @@ class PageSpeedClient
 
         // 429 / Quota exceeded
         if ($code === 429 || str_contains($rawLower, 'quota exceeded') || str_contains($rawLower, 'resource_exhausted')) {
-            return __('Đã hết hạn mức miễn phí của Google cho hôm nay. Thêm PageSpeed API key để có hạn mức riêng.', 'lacadev');
+            return __('Đã hết hạn mức miễn phí của Google cho hôm nay. Thêm PageSpeed API key để có hạn mức riêng.', 'laca');
         }
 
         // 400 API key invalid
         if (str_contains($rawLower, 'api key not valid') || str_contains($rawLower, 'api_key_invalid') || str_contains($rawLower, 'keyinvalid')) {
-            return __('API key không hợp lệ — kiểm tra lại key.', 'lacadev');
+            return __('API key không hợp lệ — kiểm tra lại key.', 'laca');
         }
 
         // 403 API not enabled or wrong restriction
         if ($code === 403 || str_contains($rawLower, 'has not been used in project') || str_contains($rawLower, 'service_disabled') || str_contains($rawLower, 'permission_denied') || str_contains($rawLower, 'access_token_scope_insufficient')) {
-            return __('PageSpeed Insights API chưa được bật trong project Google Cloud của key, hoặc key bị giới hạn sai API.', 'lacadev');
+            return __('PageSpeed Insights API chưa được bật trong project Google Cloud của key, hoặc key bị giới hạn sai API.', 'laca');
         }
 
         // 400 failed document request
         if (str_contains($rawLower, 'failed_document_request') || str_contains($rawLower, 'errored_document_request') || str_contains($rawLower, 'could not be loaded') || str_contains($rawLower, 'dns failure') || str_contains($rawLower, 'connect error')) {
-            return __('Google không tải được trang này (trang lỗi hoặc chặn bot).', 'lacadev');
+            return __('Google không tải được trang này (trang lỗi hoặc chặn bot).', 'laca');
         }
 
-        return sprintf(__('Lỗi PageSpeed Insights (HTTP %d)', 'lacadev'), $code);
+        return sprintf(__('Lỗi PageSpeed Insights (HTTP %d)', 'laca'), $code);
     }
 
     /**
@@ -161,7 +161,7 @@ class PageSpeedClient
                 $m = $cruxMetrics['LARGEST_CONTENTFUL_PAINT_MS'];
                 $valSec = round(($m['percentile'] ?? 0) / 1000, 2);
                 $field['metrics']['lcp'] = [
-                    'label'         => __('LCP (Nội dung lớn nhất)', 'lacadev'),
+                    'label'         => __('LCP (Nội dung lớn nhất)', 'laca'),
                     'value'         => $valSec . 's',
                     'numericValue'  => $valSec,
                     'category'      => self::translateCategory($m['category'] ?? ''),
@@ -174,7 +174,7 @@ class PageSpeedClient
                 $m = $cruxMetrics['INTERACTION_TO_NEXT_PAINT'];
                 $valMs = (int) ($m['percentile'] ?? 0);
                 $field['metrics']['inp'] = [
-                    'label'         => __('INP (Tương tác đến phản hồi)', 'lacadev'),
+                    'label'         => __('INP (Tương tác đến phản hồi)', 'laca'),
                     'value'         => $valMs . 'ms',
                     'numericValue'  => $valMs,
                     'category'      => self::translateCategory($m['category'] ?? ''),
@@ -187,7 +187,7 @@ class PageSpeedClient
                 $m = $cruxMetrics['CUMULATIVE_LAYOUT_SHIFT_SCORE'];
                 $valScore = round(($m['percentile'] ?? 0) / 100, 2);
                 $field['metrics']['cls'] = [
-                    'label'         => __('CLS (Dịch chuyển bố cục)', 'lacadev'),
+                    'label'         => __('CLS (Dịch chuyển bố cục)', 'laca'),
                     'value'         => (string) $valScore,
                     'numericValue'  => $valScore,
                     'category'      => self::translateCategory($m['category'] ?? ''),
@@ -204,7 +204,7 @@ class PageSpeedClient
 
         $lab = [
             'score'         => $perfScore,
-            'scoreCategory' => $perfScore >= 90 ? __('Tốt', 'lacadev') : ($perfScore >= 50 ? __('Cần cải thiện', 'lacadev') : __('Kém', 'lacadev')),
+            'scoreCategory' => $perfScore >= 90 ? __('Tốt', 'laca') : ($perfScore >= 50 ? __('Cần cải thiện', 'laca') : __('Kém', 'laca')),
             'scoreClass'    => $perfScore >= 90 ? 'good' : ($perfScore >= 50 ? 'average' : 'poor'),
             'metrics'       => [],
         ];
@@ -212,7 +212,7 @@ class PageSpeedClient
         // LCP Lab
         if (isset($audits['largest-contentful-paint'])) {
             $lab['metrics']['lcp'] = [
-                'label'        => __('LCP (Nội dung lớn nhất)', 'lacadev'),
+                'label'        => __('LCP (Nội dung lớn nhất)', 'laca'),
                 'displayValue' => (string) ($audits['largest-contentful-paint']['displayValue'] ?? ''),
                 'score'        => (float) ($audits['largest-contentful-paint']['score'] ?? 0),
             ];
@@ -221,7 +221,7 @@ class PageSpeedClient
         // CLS Lab
         if (isset($audits['cumulative-layout-shift'])) {
             $lab['metrics']['cls'] = [
-                'label'        => __('CLS (Dịch chuyển bố cục)', 'lacadev'),
+                'label'        => __('CLS (Dịch chuyển bố cục)', 'laca'),
                 'displayValue' => (string) ($audits['cumulative-layout-shift']['displayValue'] ?? ''),
                 'score'        => (float) ($audits['cumulative-layout-shift']['score'] ?? 0),
             ];
@@ -230,7 +230,7 @@ class PageSpeedClient
         // TBT Lab
         if (isset($audits['total-blocking-time'])) {
             $lab['metrics']['tbt'] = [
-                'label'        => __('TBT (Thời gian chặn)', 'lacadev'),
+                'label'        => __('TBT (Thời gian chặn)', 'laca'),
                 'displayValue' => (string) ($audits['total-blocking-time']['displayValue'] ?? ''),
                 'score'        => (float) ($audits['total-blocking-time']['score'] ?? 0),
             ];
@@ -239,7 +239,7 @@ class PageSpeedClient
         // FCP Lab
         if (isset($audits['first-contentful-paint'])) {
             $lab['metrics']['fcp'] = [
-                'label'        => __('FCP (Nội dung đầu tiên)', 'lacadev'),
+                'label'        => __('FCP (Nội dung đầu tiên)', 'laca'),
                 'displayValue' => (string) ($audits['first-contentful-paint']['displayValue'] ?? ''),
                 'score'        => (float) ($audits['first-contentful-paint']['score'] ?? 0),
             ];
@@ -261,10 +261,10 @@ class PageSpeedClient
     public static function translateCategory(string $category): string
     {
         return match (strtoupper($category)) {
-            'FAST'    => __('Tốt', 'lacadev'),
-            'AVERAGE' => __('Cần cải thiện', 'lacadev'),
-            'SLOW'    => __('Kém', 'lacadev'),
-            default   => __('Không rõ', 'lacadev'),
+            'FAST'    => __('Tốt', 'laca'),
+            'AVERAGE' => __('Cần cải thiện', 'laca'),
+            'SLOW'    => __('Kém', 'laca'),
+            default   => __('Không rõ', 'laca'),
         };
     }
 
@@ -344,53 +344,53 @@ class PageSpeedClient
             'testedDate' => current_time('d/m/Y H:i'),
             'field'      => [
                 'hasData'         => true,
-                'overallCategory' => __('Tốt', 'lacadev'),
+                'overallCategory' => __('Tốt', 'laca'),
                 'metrics'         => [
                     'lcp' => [
-                        'label'         => __('LCP (Nội dung lớn nhất)', 'lacadev'),
+                        'label'         => __('LCP (Nội dung lớn nhất)', 'laca'),
                         'value'         => $isDesktop ? '1.2s' : '1.8s',
                         'numericValue'  => $isDesktop ? 1.2 : 1.8,
-                        'category'      => __('Tốt', 'lacadev'),
+                        'category'      => __('Tốt', 'laca'),
                         'categoryClass' => 'good',
                     ],
                     'inp' => [
-                        'label'         => __('INP (Tương tác đến phản hồi)', 'lacadev'),
+                        'label'         => __('INP (Tương tác đến phản hồi)', 'laca'),
                         'value'         => $isDesktop ? '45ms' : '85ms',
                         'numericValue'  => $isDesktop ? 45 : 85,
-                        'category'      => __('Tốt', 'lacadev'),
+                        'category'      => __('Tốt', 'laca'),
                         'categoryClass' => 'good',
                     ],
                     'cls' => [
-                        'label'         => __('CLS (Dịch chuyển bố cục)', 'lacadev'),
+                        'label'         => __('CLS (Dịch chuyển bố cục)', 'laca'),
                         'value'         => '0.02',
                         'numericValue'  => 0.02,
-                        'category'      => __('Tốt', 'lacadev'),
+                        'category'      => __('Tốt', 'laca'),
                         'categoryClass' => 'good',
                     ],
                 ],
             ],
             'lab'        => [
                 'score'         => $isDesktop ? 96 : 88,
-                'scoreCategory' => $isDesktop ? __('Tốt', 'lacadev') : __('Cần cải thiện', 'lacadev'),
+                'scoreCategory' => $isDesktop ? __('Tốt', 'laca') : __('Cần cải thiện', 'laca'),
                 'scoreClass'    => $isDesktop ? 'good' : 'average',
                 'metrics'       => [
                     'lcp' => [
-                        'label'        => __('LCP (Nội dung lớn nhất)', 'lacadev'),
+                        'label'        => __('LCP (Nội dung lớn nhất)', 'laca'),
                         'displayValue' => $isDesktop ? '1.4 s' : '2.1 s',
                         'score'        => $isDesktop ? 0.98 : 0.88,
                     ],
                     'cls' => [
-                        'label'        => __('CLS (Dịch chuyển bố cục)', 'lacadev'),
+                        'label'        => __('CLS (Dịch chuyển bố cục)', 'laca'),
                         'displayValue' => '0.02',
                         'score'        => 0.99,
                     ],
                     'tbt' => [
-                        'label'        => __('TBT (Thời gian chặn)', 'lacadev'),
+                        'label'        => __('TBT (Thời gian chặn)', 'laca'),
                         'displayValue' => $isDesktop ? '40 ms' : '120 ms',
                         'score'        => $isDesktop ? 0.99 : 0.89,
                     ],
                     'fcp' => [
-                        'label'        => __('FCP (Nội dung đầu tiên)', 'lacadev'),
+                        'label'        => __('FCP (Nội dung đầu tiên)', 'laca'),
                         'displayValue' => $isDesktop ? '0.8 s' : '1.2 s',
                         'score'        => $isDesktop ? 0.99 : 0.94,
                     ],

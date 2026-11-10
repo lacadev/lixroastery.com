@@ -92,12 +92,8 @@ class LoginLogManager
         $errorCodes = LoginLogTable::getDistinctErrorCodes();
         ?>
         <div class="wrap">
-            <h1>🔐 Login Log <span class="title-count"><?php echo esc_html($total); ?></span></h1>
-            <div class="laca-alert laca-alert--info laca-mb-3">
-                <div class="laca-alert__title">🔧 Nhật ký đăng nhập thất bại</div>
-                <div class="laca-alert__desc">Trang đăng nhập chỉ hiện 1 câu thông báo chung cho người dùng (để tránh dò tên đăng nhập hợp lệ), nhưng lý do thật vẫn được ghi lại ở đây — dùng để kiểm tra khi có người báo không đăng nhập được.</div>
-            </div>
-            <p class="laca-fg-muted">Log mọi lần đăng nhập thất bại trong 90 ngày gần nhất. Tự động xoá sau 90 ngày.</p>
+            <h1>Login Log <span class="title-count"><?php echo esc_html($total); ?></span></h1>
+            <p class="laca-page-intro">Trang đăng nhập chỉ hiện 1 câu thông báo chung cho người dùng (để tránh dò tên đăng nhập hợp lệ), nhưng lý do thật vẫn được ghi lại ở đây — dùng để kiểm tra khi có người báo không đăng nhập được. Log mọi lần đăng nhập thất bại trong 90 ngày gần nhất. Tự động xoá sau 90 ngày.</p>
 
             <!-- Filter -->
             <ul class="subsubsub laca-mb-3">

@@ -33,7 +33,7 @@ class GaClient
 
         $token = GscOAuth::getValidAccessToken();
         if (!$token) {
-            return new \WP_Error('no_token', __('Chưa kết nối tài khoản Google.', 'lacadev'));
+            return new \WP_Error('no_token', __('Chưa kết nối tài khoản Google.', 'laca'));
         }
 
         $url = self::ADMIN_API_BASE . '/accountSummaries';
@@ -56,9 +56,9 @@ class GaClient
         if ($code < 200 || $code >= 300) {
             $rawMsg = is_array($data) && isset($data['error']['message']) ? $data['error']['message'] : '';
             if ($code === 403) {
-                $msg = __('Tài khoản Google chưa có quyền truy cập Google Analytics hoặc chưa bật Google Analytics Admin API.', 'lacadev');
+                $msg = __('Tài khoản Google chưa có quyền truy cập Google Analytics hoặc chưa bật Google Analytics Admin API.', 'laca');
             } else {
-                $msg = sprintf(__('Lỗi Google Analytics Admin (%d)%s', 'lacadev'), $code, $rawMsg ? ': ' . $rawMsg : '');
+                $msg = sprintf(__('Lỗi Google Analytics Admin (%d)%s', 'laca'), $code, $rawMsg ? ': ' . $rawMsg : '');
             }
 
             return new \WP_Error('http_' . $code, $msg, [
@@ -124,7 +124,7 @@ class GaClient
     {
         $propertyId = preg_replace('/\D/', '', $propertyId);
         if ($propertyId === '') {
-            return new \WP_Error('invalid_property', __('Mã Property ID không hợp lệ.', 'lacadev'));
+            return new \WP_Error('invalid_property', __('Mã Property ID không hợp lệ.', 'laca'));
         }
 
         $cacheKey = 'laca_ga_streams_' . $propertyId;
@@ -137,7 +137,7 @@ class GaClient
 
         $token = GscOAuth::getValidAccessToken();
         if (!$token) {
-            return new \WP_Error('no_token', __('Chưa kết nối tài khoản Google.', 'lacadev'));
+            return new \WP_Error('no_token', __('Chưa kết nối tài khoản Google.', 'laca'));
         }
 
         $url = self::ADMIN_API_BASE . '/properties/' . $propertyId . '/dataStreams';
@@ -159,7 +159,7 @@ class GaClient
 
         if ($code < 200 || $code >= 300) {
             $rawMsg = is_array($data) && isset($data['error']['message']) ? $data['error']['message'] : '';
-            return new \WP_Error('http_' . $code, sprintf(__('Lỗi lấy luồng dữ liệu GA4 (%d): %s', 'lacadev'), $code, $rawMsg), [
+            return new \WP_Error('http_' . $code, sprintf(__('Lỗi lấy luồng dữ liệu GA4 (%d): %s', 'laca'), $code, $rawMsg), [
                 'status' => $code,
                 'data'   => $data,
             ]);
@@ -258,7 +258,7 @@ class GaClient
     {
         $propertyId = preg_replace('/\D/', '', $propertyId);
         if ($propertyId === '') {
-            return new \WP_Error('invalid_property', __('Chưa chọn Property ID của Google Analytics 4.', 'lacadev'));
+            return new \WP_Error('invalid_property', __('Chưa chọn Property ID của Google Analytics 4.', 'laca'));
         }
 
         if (empty($requests)) {
@@ -276,12 +276,12 @@ class GaClient
         }
 
         if (get_transient('laca_ga_429_limit')) {
-            return new \WP_Error('rate_limit_exceeded', __('Google đang giới hạn truy vấn, thử lại sau ít phút.', 'lacadev'), ['status' => 429]);
+            return new \WP_Error('rate_limit_exceeded', __('Google đang giới hạn truy vấn, thử lại sau ít phút.', 'laca'), ['status' => 429]);
         }
 
         $token = GscOAuth::getValidAccessToken();
         if (!$token) {
-            return new \WP_Error('no_token', __('Chưa kết nối tài khoản Google hoặc phiên đã hết hạn.', 'lacadev'));
+            return new \WP_Error('no_token', __('Chưa kết nối tài khoản Google hoặc phiên đã hết hạn.', 'laca'));
         }
 
         $url = self::DATA_API_BASE . '/properties/' . $propertyId . ':batchRunReports';
@@ -304,7 +304,7 @@ class GaClient
 
         if ($code === 429) {
             set_transient('laca_ga_429_limit', 1, 10 * MINUTE_IN_SECONDS);
-            return new \WP_Error('http_429', __('Google đang giới hạn truy vấn, thử lại sau ít phút.', 'lacadev'), ['status' => 429]);
+            return new \WP_Error('http_429', __('Google đang giới hạn truy vấn, thử lại sau ít phút.', 'laca'), ['status' => 429]);
         }
 
         if ($code < 200 || $code >= 300) {
@@ -312,7 +312,7 @@ class GaClient
                 set_transient('laca_ga_last_error_code', $code, 12 * HOUR_IN_SECONDS);
             }
             $rawMsg = is_array($data) && isset($data['error']['message']) ? $data['error']['message'] : '';
-            return new \WP_Error('http_' . $code, sprintf(__('Lỗi Google Analytics (%d)%s', 'lacadev'), $code, $rawMsg ? ': ' . $rawMsg : ''), [
+            return new \WP_Error('http_' . $code, sprintf(__('Lỗi Google Analytics (%d)%s', 'laca'), $code, $rawMsg ? ': ' . $rawMsg : ''), [
                 'status' => $code,
                 'data'   => $data,
             ]);
@@ -322,7 +322,7 @@ class GaClient
 
         $reports = $data['reports'] ?? [];
         if (!is_array($reports)) {
-            return new \WP_Error('invalid_response', __('Phản hồi từ Google Analytics không hợp lệ.', 'lacadev'));
+            return new \WP_Error('invalid_response', __('Phản hồi từ Google Analytics không hợp lệ.', 'laca'));
         }
 
         set_transient($cacheKey, $reports, HOUR_IN_SECONDS);
@@ -342,7 +342,7 @@ class GaClient
     {
         $propertyId = preg_replace('/\D/', '', $propertyId);
         if ($propertyId === '') {
-            return new \WP_Error('invalid_property', __('Chưa chọn Property ID của Google Analytics 4.', 'lacadev'));
+            return new \WP_Error('invalid_property', __('Chưa chọn Property ID của Google Analytics 4.', 'laca'));
         }
 
         $rangeInfo   = DateRange::get($range);
@@ -438,7 +438,7 @@ class GaClient
         }
 
         if (empty($reports) || !isset($reports[0])) {
-            return new \WP_Error('empty_reports', __('Không nhận được dữ liệu báo cáo batch từ GA4.', 'lacadev'));
+            return new \WP_Error('empty_reports', __('Không nhận được dữ liệu báo cáo batch từ GA4.', 'laca'));
         }
 
         $parsed = self::parseReportResponse($reports[0]);
@@ -475,7 +475,7 @@ class GaClient
     {
         $propertyId = preg_replace('/\D/', '', $propertyId);
         if ($propertyId === '') {
-            return new \WP_Error('invalid_property', __('Chưa chọn Property ID của Google Analytics 4.', 'lacadev'));
+            return new \WP_Error('invalid_property', __('Chưa chọn Property ID của Google Analytics 4.', 'laca'));
         }
 
         $rangeInfo   = DateRange::get($range);
@@ -616,11 +616,11 @@ class GaClient
             $newPct = (int) round(($newUsers / $totUsers) * 100);
             $retPct = 100 - $newPct;
             $nvrVal = "{$newPct}% / {$retPct}%";
-            $nvrSub = sprintf(__('%s mới • %s quay lại', 'lacadev'), number_format_i18n($newUsers), number_format_i18n($retUsers));
+            $nvrSub = sprintf(__('%s mới • %s quay lại', 'laca'), number_format_i18n($newUsers), number_format_i18n($retUsers));
             $nvrAvail = true;
         } else {
             $nvrVal = '—';
-            $nvrSub = __('Chưa có dữ liệu người dùng', 'lacadev');
+            $nvrSub = __('Chưa có dữ liệu người dùng', 'laca');
             $nvrAvail = false;
         }
 
@@ -635,9 +635,9 @@ class GaClient
                 $topSourceVal = $srcName;
                 if ($totalSessions > 0) {
                     $pct = (int) round(($srcSessions / $totalSessions) * 100);
-                    $topSourceSub = sprintf(__('%d%% tổng lượt truy cập', 'lacadev'), $pct);
+                    $topSourceSub = sprintf(__('%d%% tổng lượt truy cập', 'laca'), $pct);
                 } else {
-                    $topSourceSub = sprintf(__('%s lượt truy cập', 'lacadev'), number_format_i18n($srcSessions));
+                    $topSourceSub = sprintf(__('%s lượt truy cập', 'laca'), number_format_i18n($srcSessions));
                 }
                 $topSourceAvail = true;
             }
@@ -669,11 +669,11 @@ class GaClient
                 $ciPct   = $cityUsersTot > 0 ? (int) round(($ciUsers['users'] / $cityUsersTot) * 100) : 0;
                 $subParts[] = sprintf('%s (%d%%)', $ciUsers['name'], $ciPct);
             }
-            $topCitiesSub   = !empty($subParts) ? implode(' • ', $subParts) : sprintf(__('%s người dùng', 'lacadev'), number_format_i18n($c1['users']));
+            $topCitiesSub   = !empty($subParts) ? implode(' • ', $subParts) : sprintf(__('%s người dùng', 'laca'), number_format_i18n($c1['users']));
             $topCitiesAvail = true;
         } else {
             $topCitiesVal   = '—';
-            $topCitiesSub   = __('Chưa có dữ liệu thành phố', 'lacadev');
+            $topCitiesSub   = __('Chưa có dữ liệu thành phố', 'laca');
             $topCitiesAvail = false;
         }
 
@@ -695,7 +695,7 @@ class GaClient
             if ($currPps > 0) {
                 $ppsVal   = number_format($currPps, 2);
                 $deltaPps = GoogleDashboardService::calcPointDelta($currPps, $prevPps);
-                $ppsSub   = ($deltaPps !== '—' ? ($deltaPps . ' ') : '') . __('so kỳ trước', 'lacadev');
+                $ppsSub   = ($deltaPps !== '—' ? ($deltaPps . ' ') : '') . __('so kỳ trước', 'laca');
                 $ppsAvail = true;
             }
 
@@ -704,7 +704,7 @@ class GaClient
                 $prevSec = $prevSd !== null ? (int) round($prevSd) : null;
                 $sdVal   = GoogleDashboardService::formatDuration($avgSec);
                 $deltaSd = GoogleDashboardService::calcDurationDelta($avgSec, $prevSec);
-                $sdSub   = ($deltaSd !== '—' ? ($deltaSd . ' ') : '') . __('so kỳ trước', 'lacadev');
+                $sdSub   = ($deltaSd !== '—' ? ($deltaSd . ' ') : '') . __('so kỳ trước', 'laca');
                 $sdAvail = true;
             }
         }
@@ -720,7 +720,7 @@ class GaClient
             if ($pTitle !== '') {
                 $cleanTitle = preg_replace('/(\s*[-|–—]\s*[^—–|-]+)$/u', '', $pTitle);
                 $prodVal    = trim((string) $cleanTitle) ?: $pTitle;
-                $prodSub    = sprintf(__('%s lượt xem', 'lacadev'), number_format_i18n($pViews));
+                $prodSub    = sprintf(__('%s lượt xem', 'laca'), number_format_i18n($pViews));
                 $prodAvail  = true;
             }
         }
@@ -731,7 +731,7 @@ class GaClient
         $bcsAvail = false;
         if (!empty($topSourceVal) && $topSourceVal !== '—') {
             $bcsVal   = $topSourceVal;
-            $bcsSub   = __('Nguồn chuyển đổi mục tiêu hàng đầu', 'lacadev');
+            $bcsSub   = __('Nguồn chuyển đổi mục tiêu hàng đầu', 'laca');
             $bcsAvail = true;
         }
 
@@ -741,61 +741,61 @@ class GaClient
         $atcAvail = false;
         if (!empty($topSourceVal) && $topSourceVal !== '—') {
             $atcVal   = $topSourceVal;
-            $atcSub   = __('Sự kiện thêm giỏ / mua hàng', 'lacadev');
+            $atcSub   = __('Sự kiện thêm giỏ / mua hàng', 'laca');
             $atcAvail = true;
         }
 
         $res = [
             'newVsReturning' => [
-                'title'     => __('Khách mới / Quay lại', 'lacadev'),
+                'title'     => __('Khách mới / Quay lại', 'laca'),
                 'value'     => $nvrVal,
                 'sub'       => $nvrSub,
                 'available' => $nvrAvail,
             ],
             'topTrafficSource' => [
-                'title'     => __('Nguồn truy cập hàng đầu', 'lacadev'),
+                'title'     => __('Nguồn truy cập hàng đầu', 'laca'),
                 'value'     => $topSourceVal,
                 'sub'       => $topSourceSub,
                 'available' => $topSourceAvail,
             ],
             'topCities' => [
-                'title'     => __('Top 3 thành phố', 'lacadev'),
+                'title'     => __('Top 3 thành phố', 'laca'),
                 'value'     => $topCitiesVal,
                 'sub'       => $topCitiesSub,
                 'available' => $topCitiesAvail,
             ],
             'pagesPerSession' => [
-                'title'     => __('Số trang / Lượt', 'lacadev'),
+                'title'     => __('Số trang / Lượt', 'laca'),
                 'value'     => $ppsVal,
                 'sub'       => $ppsSub,
                 'available' => $ppsAvail,
             ],
             'sessionDuration' => [
-                'title'     => __('Thời lượng trung bình', 'lacadev'),
+                'title'     => __('Thời lượng trung bình', 'laca'),
                 'value'     => $sdVal,
                 'sub'       => $sdSub,
                 'available' => $sdAvail,
             ],
             'topProducts' => [
-                'title'     => __('Sản phẩm xem nhiều nhất', 'lacadev'),
+                'title'     => __('Sản phẩm xem nhiều nhất', 'laca'),
                 'value'     => $prodVal,
                 'sub'       => $prodSub,
                 'available' => $prodAvail && $hasProductPostType,
-                'reason'    => !$hasProductPostType ? __('Chưa kích hoạt WooCommerce hoặc CPT Sản phẩm', 'lacadev') : null,
+                'reason'    => !$hasProductPostType ? __('Chưa kích hoạt WooCommerce hoặc CPT Sản phẩm', 'laca') : null,
             ],
             'bestConversionSource' => [
-                'title'     => __('Nguồn chuyển đổi tốt nhất', 'lacadev'),
+                'title'     => __('Nguồn chuyển đổi tốt nhất', 'laca'),
                 'value'     => $bcsVal,
                 'sub'       => $bcsSub,
                 'available' => $bcsAvail,
-                'reason'    => !$bcsAvail ? __('Chưa ghi nhận sự kiện chuyển đổi (Key Event)', 'lacadev') : null,
+                'reason'    => !$bcsAvail ? __('Chưa ghi nhận sự kiện chuyển đổi (Key Event)', 'laca') : null,
             ],
             'addToCartSource' => [
-                'title'     => __('Nguồn thêm giỏ / mua hàng', 'lacadev'),
+                'title'     => __('Nguồn thêm giỏ / mua hàng', 'laca'),
                 'value'     => $atcVal,
                 'sub'       => $atcSub,
                 'available' => $atcAvail,
-                'reason'    => !$atcAvail ? __('Chưa ghi nhận sự kiện thêm giỏ hoặc mua hàng', 'lacadev') : null,
+                'reason'    => !$atcAvail ? __('Chưa ghi nhận sự kiện thêm giỏ hoặc mua hàng', 'laca') : null,
             ],
         ];
 
@@ -891,8 +891,8 @@ class GaClient
                     'rows'             => [
                         [
                             'dimensionValues' => [
-                                ['value' => '/product/ca-phe-arabica-cau-dat/'],
-                                ['value' => 'Cà phê Arabica Cầu Đất — LIX Roastery'],
+                                ['value' => '/san-pham/san-pham-tieu-bieu/'],
+                                ['value' => 'Sản phẩm tiêu biểu — ' . get_bloginfo('name')],
                             ],
                             'metricValues'    => [['value' => '1420']],
                         ],
@@ -911,14 +911,14 @@ class GaClient
     {
         $hasProduct = post_type_exists('product');
         $res = [
-            'newVsReturning'       => ['title' => __('Khách mới / Quay lại', 'lacadev'), 'value' => '—', 'sub' => '', 'available' => true],
-            'topTrafficSource'     => ['title' => __('Nguồn truy cập hàng đầu', 'lacadev'), 'value' => '—', 'sub' => '', 'available' => true],
-            'topCities'            => ['title' => __('Top 3 thành phố', 'lacadev'), 'value' => '—', 'sub' => '', 'available' => true],
-            'pagesPerSession'      => ['title' => __('Số trang / Lượt', 'lacadev'), 'value' => '—', 'sub' => '', 'available' => true],
-            'sessionDuration'      => ['title' => __('Thời lượng trung bình', 'lacadev'), 'value' => '—', 'sub' => '', 'available' => true],
-            'topProducts'          => ['title' => __('Sản phẩm xem nhiều nhất', 'lacadev'), 'value' => '—', 'sub' => '', 'available' => $hasProduct],
-            'bestConversionSource' => ['title' => __('Nguồn chuyển đổi tốt nhất', 'lacadev'), 'value' => '—', 'sub' => '', 'available' => false],
-            'addToCartSource'      => ['title' => __('Nguồn thêm giỏ / mua hàng', 'lacadev'), 'value' => '—', 'sub' => '', 'available' => false],
+            'newVsReturning'       => ['title' => __('Khách mới / Quay lại', 'laca'), 'value' => '—', 'sub' => '', 'available' => true],
+            'topTrafficSource'     => ['title' => __('Nguồn truy cập hàng đầu', 'laca'), 'value' => '—', 'sub' => '', 'available' => true],
+            'topCities'            => ['title' => __('Top 3 thành phố', 'laca'), 'value' => '—', 'sub' => '', 'available' => true],
+            'pagesPerSession'      => ['title' => __('Số trang / Lượt', 'laca'), 'value' => '—', 'sub' => '', 'available' => true],
+            'sessionDuration'      => ['title' => __('Thời lượng trung bình', 'laca'), 'value' => '—', 'sub' => '', 'available' => true],
+            'topProducts'          => ['title' => __('Sản phẩm xem nhiều nhất', 'laca'), 'value' => '—', 'sub' => '', 'available' => $hasProduct],
+            'bestConversionSource' => ['title' => __('Nguồn chuyển đổi tốt nhất', 'laca'), 'value' => '—', 'sub' => '', 'available' => false],
+            'addToCartSource'      => ['title' => __('Nguồn thêm giỏ / mua hàng', 'laca'), 'value' => '—', 'sub' => '', 'available' => false],
         ];
         $res['topSource']             = $res['topTrafficSource'];
         $res['topProduct']            = $res['topProducts'];
@@ -999,12 +999,12 @@ class GaClient
     {
         $propertyId = preg_replace('/\D/', '', $propertyId);
         if ($propertyId === '') {
-            return new \WP_Error('invalid_property', __('Chưa chọn Property ID của Google Analytics 4.', 'lacadev'));
+            return new \WP_Error('invalid_property', __('Chưa chọn Property ID của Google Analytics 4.', 'laca'));
         }
 
         $token = GscOAuth::getValidAccessToken();
         if (!$token) {
-            return new \WP_Error('no_token', __('Chưa kết nối tài khoản Google Analytics.', 'lacadev'));
+            return new \WP_Error('no_token', __('Chưa kết nối tài khoản Google Analytics.', 'laca'));
         }
 
         $url = self::DATA_API_BASE . '/properties/' . $propertyId . ':runReport';
@@ -1027,7 +1027,7 @@ class GaClient
 
         if ($code < 200 || $code >= 300) {
             $rawMsg = is_array($data) && isset($data['error']['message']) ? $data['error']['message'] : '';
-            return new \WP_Error('http_' . $code, sprintf(__('Lỗi truy vấn GA4 (%d): %s', 'lacadev'), $code, $rawMsg));
+            return new \WP_Error('http_' . $code, sprintf(__('Lỗi truy vấn GA4 (%d): %s', 'laca'), $code, $rawMsg));
         }
 
         return is_array($data) ? $data : [];
@@ -1045,7 +1045,7 @@ class GaClient
     {
         $propertyId = preg_replace('/\D/', '', $propertyId);
         if ($propertyId === '') {
-            return new \WP_Error('invalid_property', __('Chưa chọn Property ID của Google Analytics 4.', 'lacadev'));
+            return new \WP_Error('invalid_property', __('Chưa chọn Property ID của Google Analytics 4.', 'laca'));
         }
 
         $cacheKey = 'laca_ga_rep_' . md5($propertyId . '_' . $range);
@@ -1057,12 +1057,12 @@ class GaClient
         }
 
         if (get_transient('laca_ga_429_limit')) {
-            return new \WP_Error('rate_limit_exceeded', __('Google đang giới hạn truy vấn, thử lại sau ít phút.', 'lacadev'), ['status' => 429]);
+            return new \WP_Error('rate_limit_exceeded', __('Google đang giới hạn truy vấn, thử lại sau ít phút.', 'laca'), ['status' => 429]);
         }
 
         $token = GscOAuth::getValidAccessToken();
         if (!$token) {
-            return new \WP_Error('no_token', __('Chưa kết nối tài khoản Google hoặc phiên đã hết hạn.', 'lacadev'));
+            return new \WP_Error('no_token', __('Chưa kết nối tài khoản Google hoặc phiên đã hết hạn.', 'laca'));
         }
 
         $rangeInfo   = DateRange::get($range);
@@ -1118,7 +1118,7 @@ class GaClient
 
         if ($code === 429) {
             set_transient('laca_ga_429_limit', 1, 10 * MINUTE_IN_SECONDS);
-            return new \WP_Error('http_429', __('Google đang giới hạn truy vấn, thử lại sau ít phút.', 'lacadev'), ['status' => 429]);
+            return new \WP_Error('http_429', __('Google đang giới hạn truy vấn, thử lại sau ít phút.', 'laca'), ['status' => 429]);
         }
 
         if ($code < 200 || $code >= 300) {
@@ -1127,11 +1127,11 @@ class GaClient
             }
             $rawMsg = is_array($data) && isset($data['error']['message']) ? $data['error']['message'] : '';
             if ($code === 403) {
-                $msg = __('Tài khoản Google chưa có quyền truy cập Property này hoặc chưa bật Google Analytics Data API.', 'lacadev');
+                $msg = __('Tài khoản Google chưa có quyền truy cập Property này hoặc chưa bật Google Analytics Data API.', 'laca');
             } elseif ($code === 404) {
-                $msg = __('Không tìm thấy GA4 Property. Vui lòng chọn lại property.', 'lacadev');
+                $msg = __('Không tìm thấy GA4 Property. Vui lòng chọn lại property.', 'laca');
             } else {
-                $msg = sprintf(__('Lỗi Google Analytics (%d)%s', 'lacadev'), $code, $rawMsg ? ': ' . $rawMsg : '');
+                $msg = sprintf(__('Lỗi Google Analytics (%d)%s', 'laca'), $code, $rawMsg ? ': ' . $rawMsg : '');
             }
 
             return new \WP_Error('http_' . $code, $msg, [
@@ -1143,7 +1143,7 @@ class GaClient
         delete_transient('laca_ga_last_error_code');
 
         if (!is_array($data)) {
-            return new \WP_Error('invalid_response', __('Phản hồi từ Google Analytics không hợp lệ.', 'lacadev'));
+            return new \WP_Error('invalid_response', __('Phản hồi từ Google Analytics không hợp lệ.', 'laca'));
         }
 
         $parsed = self::parseReportResponse($data);
@@ -1553,7 +1553,7 @@ class GaClient
 
         $token = GscOAuth::getValidAccessToken();
         if (!$token) {
-            return new \WP_Error('no_token', __('Chưa kết nối tài khoản Google hoặc phiên đã hết hạn.', 'lacadev'));
+            return new \WP_Error('no_token', __('Chưa kết nối tài khoản Google hoặc phiên đã hết hạn.', 'laca'));
         }
 
         $prevDays    = 2 * $days;
@@ -1602,11 +1602,11 @@ class GaClient
 
         if ($code < 200 || $code >= 300) {
             $rawMsg = is_array($data) && isset($data['error']['message']) ? $data['error']['message'] : '';
-            return new \WP_Error('http_' . $code, sprintf(__('Lỗi truy vấn sự kiện mục tiêu GA4 (%d): %s', 'lacadev'), $code, $rawMsg));
+            return new \WP_Error('http_' . $code, sprintf(__('Lỗi truy vấn sự kiện mục tiêu GA4 (%d): %s', 'laca'), $code, $rawMsg));
         }
 
         if (!is_array($data)) {
-            return new \WP_Error('invalid_response', __('Phản hồi sự kiện GA4 không hợp lệ.', 'lacadev'));
+            return new \WP_Error('invalid_response', __('Phản hồi sự kiện GA4 không hợp lệ.', 'laca'));
         }
 
         $dateRangeIdx = null;
@@ -1697,7 +1697,7 @@ class GaClient
     {
         $propertyId = preg_replace('/\D/', '', $propertyId);
         if ($propertyId === '') {
-            return new \WP_Error('invalid_property', __('Chưa chọn Property ID của Google Analytics 4.', 'lacadev'));
+            return new \WP_Error('invalid_property', __('Chưa chọn Property ID của Google Analytics 4.', 'laca'));
         }
 
         $cacheKey = 'laca_ga_realtime_' . $propertyId;
@@ -1710,7 +1710,7 @@ class GaClient
 
         $token = GscOAuth::getValidAccessToken();
         if (!$token) {
-            return new \WP_Error('no_token', __('Chưa kết nối tài khoản Google.', 'lacadev'));
+            return new \WP_Error('no_token', __('Chưa kết nối tài khoản Google.', 'laca'));
         }
 
         $url = self::DATA_API_BASE . '/properties/' . $propertyId . ':runRealtimeReport';
@@ -1736,7 +1736,7 @@ class GaClient
         $data = json_decode($body, true);
 
         if ($code < 200 || $code >= 300) {
-            return new \WP_Error('http_' . $code, sprintf(__('Lỗi Google Analytics Realtime (%d)', 'lacadev'), $code), [
+            return new \WP_Error('http_' . $code, sprintf(__('Lỗi Google Analytics Realtime (%d)', 'laca'), $code), [
                 'status' => $code,
                 'data'   => $data,
             ]);

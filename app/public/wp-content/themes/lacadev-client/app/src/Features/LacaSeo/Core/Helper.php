@@ -132,12 +132,12 @@ class Helper
     public static function choicesRobots(): array
     {
         return [
-            'index'        => __('Index', 'lacadev'),
-            'noindex'      => __('Noindex', 'lacadev'),
-            'nofollow'     => __('Nofollow', 'lacadev'),
-            'noarchive'    => __('Noarchive', 'lacadev'),
-            'noimageindex' => __('No Image Index', 'lacadev'),
-            'nosnippet'    => __('Nosnippet', 'lacadev'),
+            'index'        => __('Index', 'laca'),
+            'noindex'      => __('Noindex', 'laca'),
+            'nofollow'     => __('Nofollow', 'laca'),
+            'noarchive'    => __('Noarchive', 'laca'),
+            'noimageindex' => __('No Image Index', 'laca'),
+            'nosnippet'    => __('Nosnippet', 'laca'),
         ];
     }
 
@@ -149,11 +149,11 @@ class Helper
     public static function choicesRedirectionTypes(): array
     {
         return [
-            '301' => __('301 Chuyển hướng vĩnh viễn (Permanent Move)', 'lacadev'),
-            '302' => __('302 Chuyển hướng tạm thời (Temporary Move)', 'lacadev'),
-            '307' => __('307 Chuyển hướng tạm thời chuẩn mới (Temporary Redirect)', 'lacadev'),
-            '410' => __('410 Nội dung đã bị xoá vĩnh viễn (Content Deleted)', 'lacadev'),
-            '451' => __('451 Nội dung không khả dụng vì lý do pháp lý (Unavailable For Legal Reasons)', 'lacadev'),
+            '301' => __('301 Chuyển hướng vĩnh viễn (Permanent Move)', 'laca'),
+            '302' => __('302 Chuyển hướng tạm thời (Temporary Move)', 'laca'),
+            '307' => __('307 Chuyển hướng tạm thời chuẩn mới (Temporary Redirect)', 'laca'),
+            '410' => __('410 Nội dung đã bị xoá vĩnh viễn (Content Deleted)', 'laca'),
+            '451' => __('451 Nội dung không khả dụng vì lý do pháp lý (Unavailable For Legal Reasons)', 'laca'),
         ];
     }
 
@@ -165,11 +165,11 @@ class Helper
     public static function choicesComparisonTypes(): array
     {
         return [
-            'exact'    => __('Chính xác (Exact)', 'lacadev'),
-            'contains' => __('Chứa (Contains)', 'lacadev'),
-            'start'    => __('Bắt đầu bằng (Starts With)', 'lacadev'),
-            'end'      => __('Kết thúc bằng (End With)', 'lacadev'),
-            'regex'    => __('Biểu thức chính quy (Regex)', 'lacadev'),
+            'exact'    => __('Chính xác (Exact)', 'laca'),
+            'contains' => __('Chứa (Contains)', 'laca'),
+            'start'    => __('Bắt đầu bằng (Starts With)', 'laca'),
+            'end'      => __('Kết thúc bằng (End With)', 'laca'),
+            'regex'    => __('Biểu thức chính quy (Regex)', 'laca'),
         ];
     }
 
@@ -181,17 +181,17 @@ class Helper
     public static function choicesPhoneTypes(): array
     {
         return [
-            'customer_support'    => __('Hỗ trợ khách hàng (Customer Support)', 'lacadev'),
-            'technical_support'   => __('Hỗ trợ kỹ thuật (Technical Support)', 'lacadev'),
-            'billing_support'     => __('Thanh toán (Billing)', 'lacadev'),
-            'bill_payment'        => __('Chi trả (Bill Payment)', 'lacadev'),
-            'sales'               => __('Kinh doanh (Sales)', 'lacadev'),
-            'reservations'        => __('Đặt chỗ (Reservations)', 'lacadev'),
-            'credit_card_support' => __('Thẻ tín dụng (Credit Card Support)', 'lacadev'),
-            'emergency'           => __('Khẩn cấp (Emergency)', 'lacadev'),
-            'baggage_tracking'    => __('Hành lý (Baggage Tracking)', 'lacadev'),
-            'roadside_assistance' => __('Cứu hộ (Roadside Assistance)', 'lacadev'),
-            'package_tracking'    => __('Tra cứu đơn (Package Tracking)', 'lacadev'),
+            'customer_support'    => __('Hỗ trợ khách hàng (Customer Support)', 'laca'),
+            'technical_support'   => __('Hỗ trợ kỹ thuật (Technical Support)', 'laca'),
+            'billing_support'     => __('Thanh toán (Billing)', 'laca'),
+            'bill_payment'        => __('Chi trả (Bill Payment)', 'laca'),
+            'sales'               => __('Kinh doanh (Sales)', 'laca'),
+            'reservations'        => __('Đặt chỗ (Reservations)', 'laca'),
+            'credit_card_support' => __('Thẻ tín dụng (Credit Card Support)', 'laca'),
+            'emergency'           => __('Khẩn cấp (Emergency)', 'laca'),
+            'baggage_tracking'    => __('Hành lý (Baggage Tracking)', 'laca'),
+            'roadside_assistance' => __('Cứu hộ (Roadside Assistance)', 'laca'),
+            'package_tracking'    => __('Tra cứu đơn (Package Tracking)', 'laca'),
         ];
     }
 
@@ -203,17 +203,17 @@ class Helper
     public static function choicesAdditionalOrgInfo(): array
     {
         return [
-            ''              => __('— Chọn loại thông tin —', 'lacadev'),
-            'taxID'         => __('Mã số thuế (Tax ID / VAT)', 'lacadev'),
-            'vatID'         => __('Mã VAT (VAT ID)', 'lacadev'),
-            'iso6523Code'   => __('Mã ISO 6523', 'lacadev'),
-            'duns'          => __('Mã D-U-N-S', 'lacadev'),
-            'leiCode'       => __('Mã LEI', 'lacadev'),
-            'naics'         => __('Mã NAICS', 'lacadev'),
-            'founder'       => __('Người sáng lập (Founder)', 'lacadev'),
-            'foundingDate'  => __('Ngày thành lập (Founding Date - YYYY-MM-DD)', 'lacadev'),
-            'dissolutionDate'=> __('Ngày giải thể (Dissolution Date)', 'lacadev'),
-            'parentOrganization' => __('Công ty mẹ (Parent Organization URL/Name)', 'lacadev'),
+            ''              => __('— Chọn loại thông tin —', 'laca'),
+            'taxID'         => __('Mã số thuế (Tax ID / VAT)', 'laca'),
+            'vatID'         => __('Mã VAT (VAT ID)', 'laca'),
+            'iso6523Code'   => __('Mã ISO 6523', 'laca'),
+            'duns'          => __('Mã D-U-N-S', 'laca'),
+            'leiCode'       => __('Mã LEI', 'laca'),
+            'naics'         => __('Mã NAICS', 'laca'),
+            'founder'       => __('Người sáng lập (Founder)', 'laca'),
+            'foundingDate'  => __('Ngày thành lập (Founding Date - YYYY-MM-DD)', 'laca'),
+            'dissolutionDate'=> __('Ngày giải thể (Dissolution Date)', 'laca'),
+            'parentOrganization' => __('Công ty mẹ (Parent Organization URL/Name)', 'laca'),
         ];
     }
 
@@ -225,20 +225,21 @@ class Helper
     public static function choicesRichSnippetTypes(): array
     {
         return [
-            'off'         => __('None', 'lacadev'),
-            'article'     => __('Article', 'lacadev'),
-            'book'        => __('Book', 'lacadev'),
-            'course'      => __('Course', 'lacadev'),
-            'event'       => __('Event', 'lacadev'),
-            'jobposting'  => __('Job Posting', 'lacadev'),
-            'music'       => __('Music', 'lacadev'),
-            'product'     => __('Product', 'lacadev'),
-            'recipe'      => __('Recipe', 'lacadev'),
-            'restaurant'  => __('Restaurant', 'lacadev'),
-            'video'       => __('Video', 'lacadev'),
-            'person'      => __('Person', 'lacadev'),
-            'service'     => __('Service', 'lacadev'),
-            'software'    => __('Software Application', 'lacadev'),
+            'off'         => __('None', 'laca'),
+            'article'     => __('Article', 'laca'),
+            'book'        => __('Book', 'laca'),
+            'course'       => __('Course', 'laca'),
+            'creativework' => __('CreativeWork', 'laca'),
+            'event'        => __('Event', 'laca'),
+            'jobposting'  => __('Job Posting', 'laca'),
+            'music'       => __('Music', 'laca'),
+            'product'     => __('Product', 'laca'),
+            'recipe'      => __('Recipe', 'laca'),
+            'restaurant'  => __('Restaurant', 'laca'),
+            'video'       => __('Video', 'laca'),
+            'person'      => __('Person', 'laca'),
+            'service'     => __('Service', 'laca'),
+            'software'    => __('Software Application', 'laca'),
         ];
     }
 
@@ -250,50 +251,50 @@ class Helper
     public static function choicesBusinessTypes(): array
     {
         return [
-            'Organization'           => __('Organization (Chung)', 'lacadev'),
-            'LocalBusiness'          => __('LocalBusiness (Doanh nghiệp địa phương)', 'lacadev'),
-            'AnimalShelter'          => __('Animal Shelter', 'lacadev'),
-            'ArchiveOrganization'    => __('Archive Organization', 'lacadev'),
-            'AutomotiveBusiness'     => __('Automotive Business', 'lacadev'),
-            'ChildCare'              => __('Child Care', 'lacadev'),
-            'Dentist'                => __('Dentist / Phòng khám nha khoa', 'lacadev'),
-            'DryCleaningOrLaundry'   => __('Dry Cleaning or Laundry', 'lacadev'),
-            'EmergencyService'       => __('Emergency Service', 'lacadev'),
-            'EmploymentAgency'       => __('Employment Agency', 'lacadev'),
-            'EntertainmentBusiness'  => __('Entertainment Business', 'lacadev'),
-            'FinancialService'       => __('Financial Service', 'lacadev'),
-            'FoodEstablishment'      => __('Food Establishment / Quán ăn - Nhà hàng', 'lacadev'),
-            'Bakery'                 => __('Bakery / Tiệm bánh', 'lacadev'),
-            'BarOrPub'               => __('Bar or Pub', 'lacadev'),
-            'Brewery'                => __('Brewery / Xưởng bia', 'lacadev'),
-            'CafeOrCoffeeShop'       => __('Cafe or Coffee Shop / Quán Cà phê - Xưởng rang', 'lacadev'),
-            'FastFoodRestaurant'     => __('Fast Food Restaurant', 'lacadev'),
-            'Restaurant'             => __('Restaurant / Nhà hàng', 'lacadev'),
-            'Winery'                 => __('Winery / Hầm rượu', 'lacadev'),
-            'GovernmentOffice'       => __('Government Office', 'lacadev'),
-            'HealthAndBeautyBusiness'=> __('Health and Beauty Business / Spa - Thẩm mỹ', 'lacadev'),
-            'BeautySalon'            => __('Beauty Salon', 'lacadev'),
-            'DaySpa'                 => __('Day Spa', 'lacadev'),
-            'HairSalon'              => __('Hair Salon', 'lacadev'),
-            'HomeAndConstructionBusiness' => __('Home and Construction Business / Xây dựng', 'lacadev'),
-            'InternetCafe'           => __('Internet Cafe', 'lacadev'),
-            'LegalService'           => __('Legal Service / Luật sư', 'lacadev'),
-            'Library'                => __('Library / Thư viện', 'lacadev'),
-            'LodgingBusiness'        => __('Lodging Business / Khách sạn - Homestay', 'lacadev'),
-            'Hotel'                  => __('Hotel', 'lacadev'),
-            'Motel'                  => __('Motel', 'lacadev'),
-            'MedicalBusiness'        => __('Medical Business / Y tế', 'lacadev'),
-            'ProfessionalService'    => __('Professional Service / Dịch vụ chuyên nghiệp', 'lacadev'),
-            'RadioStation'           => __('Radio Station', 'lacadev'),
-            'RealEstateAgent'        => __('Real Estate Agent / Bất động sản', 'lacadev'),
-            'RecyclingCenter'        => __('Recycling Center', 'lacadev'),
-            'SelfStorage'            => __('Self Storage', 'lacadev'),
-            'ShoppingCenter'         => __('Shopping Center', 'lacadev'),
-            'SportsActivityLocation' => __('Sports Activity Location', 'lacadev'),
-            'Store'                  => __('Store / Cửa hàng bán lẻ', 'lacadev'),
-            'CoffeeStore'            => __('Coffee Store / Cửa hàng cà phê', 'lacadev'),
-            'TelevisionStation'      => __('Television Station', 'lacadev'),
-            'TouristInformationCenter' => __('Tourist Information Center', 'lacadev'),
+            'Organization'           => __('Organization (Chung)', 'laca'),
+            'LocalBusiness'          => __('LocalBusiness (Doanh nghiệp địa phương)', 'laca'),
+            'AnimalShelter'          => __('Animal Shelter', 'laca'),
+            'ArchiveOrganization'    => __('Archive Organization', 'laca'),
+            'AutomotiveBusiness'     => __('Automotive Business', 'laca'),
+            'ChildCare'              => __('Child Care', 'laca'),
+            'Dentist'                => __('Dentist / Phòng khám nha khoa', 'laca'),
+            'DryCleaningOrLaundry'   => __('Dry Cleaning or Laundry', 'laca'),
+            'EmergencyService'       => __('Emergency Service', 'laca'),
+            'EmploymentAgency'       => __('Employment Agency', 'laca'),
+            'EntertainmentBusiness'  => __('Entertainment Business', 'laca'),
+            'FinancialService'       => __('Financial Service', 'laca'),
+            'FoodEstablishment'      => __('Food Establishment / Quán ăn - Nhà hàng', 'laca'),
+            'Bakery'                 => __('Bakery / Tiệm bánh', 'laca'),
+            'BarOrPub'               => __('Bar or Pub', 'laca'),
+            'Brewery'                => __('Brewery / Xưởng bia', 'laca'),
+            'CafeOrCoffeeShop'       => __('Cafe or Coffee Shop / Quán Cà phê - Xưởng rang', 'laca'),
+            'FastFoodRestaurant'     => __('Fast Food Restaurant', 'laca'),
+            'Restaurant'             => __('Restaurant / Nhà hàng', 'laca'),
+            'Winery'                 => __('Winery / Hầm rượu', 'laca'),
+            'GovernmentOffice'       => __('Government Office', 'laca'),
+            'HealthAndBeautyBusiness'=> __('Health and Beauty Business / Spa - Thẩm mỹ', 'laca'),
+            'BeautySalon'            => __('Beauty Salon', 'laca'),
+            'DaySpa'                 => __('Day Spa', 'laca'),
+            'HairSalon'              => __('Hair Salon', 'laca'),
+            'HomeAndConstructionBusiness' => __('Home and Construction Business / Xây dựng', 'laca'),
+            'InternetCafe'           => __('Internet Cafe', 'laca'),
+            'LegalService'           => __('Legal Service / Luật sư', 'laca'),
+            'Library'                => __('Library / Thư viện', 'laca'),
+            'LodgingBusiness'        => __('Lodging Business / Khách sạn - Homestay', 'laca'),
+            'Hotel'                  => __('Hotel', 'laca'),
+            'Motel'                  => __('Motel', 'laca'),
+            'MedicalBusiness'        => __('Medical Business / Y tế', 'laca'),
+            'ProfessionalService'    => __('Professional Service / Dịch vụ chuyên nghiệp', 'laca'),
+            'RadioStation'           => __('Radio Station', 'laca'),
+            'RealEstateAgent'        => __('Real Estate Agent / Bất động sản', 'laca'),
+            'RecyclingCenter'        => __('Recycling Center', 'laca'),
+            'SelfStorage'            => __('Self Storage', 'laca'),
+            'ShoppingCenter'         => __('Shopping Center', 'laca'),
+            'SportsActivityLocation' => __('Sports Activity Location', 'laca'),
+            'Store'                  => __('Store / Cửa hàng bán lẻ', 'laca'),
+            'CoffeeStore'            => __('Coffee Store / Cửa hàng cà phê', 'laca'),
+            'TelevisionStation'      => __('Television Station', 'laca'),
+            'TouristInformationCenter' => __('Tourist Information Center', 'laca'),
         ];
     }
 

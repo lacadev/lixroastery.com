@@ -36,8 +36,8 @@ class GoogleServicesPage
     {
         add_submenu_page(
             'laca-admin',
-            __('Google Analytics & GTM', 'lacadev'),
-            __('Google Analytics', 'lacadev'),
+            __('Google Analytics & GTM', 'laca'),
+            __('Google Analytics', 'laca'),
             'manage_options',
             self::PAGE_ANALYTICS,
             [$this, 'renderAnalyticsPage']
@@ -45,8 +45,8 @@ class GoogleServicesPage
 
         add_submenu_page(
             'laca-admin',
-            __('Google Search Console', 'lacadev'),
-            __('Search Console', 'lacadev'),
+            __('Google Search Console', 'laca'),
+            __('Search Console', 'laca'),
             'manage_options',
             self::PAGE_SEARCH_CONSOLE,
             [$this, 'renderSearchConsolePage']
@@ -97,9 +97,9 @@ class GoogleServicesPage
                 'nonce'     => wp_create_nonce('laca_seo_admin_nonce'),
                 'variables' => [],
                 'i18n'      => [
-                    'confirmReset' => __('Bạn có chắc chắn muốn khôi phục mặc định toàn bộ cài đặt không?', 'lacadev'),
-                    'saved'        => __('Đã lưu cài đặt thành công.', 'lacadev'),
-                    'copied'       => __('Đã sao chép vào bộ nhớ tạm!', 'lacadev'),
+                    'confirmReset' => __('Bạn có chắc chắn muốn khôi phục mặc định toàn bộ cài đặt không?', 'laca'),
+                    'saved'        => __('Đã lưu cài đặt thành công.', 'laca'),
+                    'copied'       => __('Đã sao chép vào bộ nhớ tạm!', 'laca'),
                 ],
             ]);
         }
@@ -127,7 +127,7 @@ class GoogleServicesPage
             }
 
             if ($clientId === '' || $clientSecret === '') {
-                wp_safe_redirect(add_query_arg(['error' => urlencode(__('Vui lòng nhập đầy đủ Client ID và Client Secret.', 'lacadev'))], admin_url('admin.php?page=' . $returnTo)));
+                wp_safe_redirect(add_query_arg(['error' => urlencode(__('Vui lòng nhập đầy đủ Client ID và Client Secret.', 'laca'))], admin_url('admin.php?page=' . $returnTo)));
                 exit;
             }
 
@@ -148,7 +148,7 @@ class GoogleServicesPage
             $returnTo     = sanitize_text_field(wp_unslash($_POST['return_to'] ?? self::PAGE_SEARCH_CONSOLE));
 
             if (empty($clientId) || empty($clientSecret)) {
-                wp_safe_redirect(add_query_arg(['error' => urlencode(__('Chưa có thông tin Client ID. Vui lòng kết nối trước.', 'lacadev'))], admin_url('admin.php?page=' . $returnTo)));
+                wp_safe_redirect(add_query_arg(['error' => urlencode(__('Chưa có thông tin Client ID. Vui lòng kết nối trước.', 'laca'))], admin_url('admin.php?page=' . $returnTo)));
                 exit;
             }
 
@@ -169,7 +169,7 @@ class GoogleServicesPage
             $returnTo     = sanitize_text_field(wp_unslash($_POST['return_to'] ?? self::PAGE_ANALYTICS));
 
             if (empty($clientId) || empty($clientSecret)) {
-                wp_safe_redirect(add_query_arg(['error' => urlencode(__('Chưa có thông tin Client ID. Vui lòng kết nối tài khoản Google trước.', 'lacadev'))], admin_url('admin.php?page=' . $returnTo)));
+                wp_safe_redirect(add_query_arg(['error' => urlencode(__('Chưa có thông tin Client ID. Vui lòng kết nối tài khoản Google trước.', 'laca'))], admin_url('admin.php?page=' . $returnTo)));
                 exit;
             }
 
@@ -212,7 +212,7 @@ class GoogleServicesPage
                 check_admin_referer('laca_refresh_gsc_sites_action');
             }
             if (!current_user_can('manage_options')) {
-                wp_die(__('Bạn không có quyền thực hiện thao tác này.', 'lacadev'));
+                wp_die(__('Bạn không có quyền thực hiện thao tác này.', 'laca'));
             }
             delete_transient('laca_gsc_sites_list');
             wp_safe_redirect(add_query_arg(['refreshed' => '1'], admin_url('admin.php?page=' . self::PAGE_SEARCH_CONSOLE)));
@@ -243,7 +243,7 @@ class GoogleServicesPage
             }
 
             if (!current_user_can('manage_options')) {
-                wp_die(__('Bạn không có quyền thực hiện thao tác này.', 'lacadev'));
+                wp_die(__('Bạn không có quyền thực hiện thao tác này.', 'laca'));
             }
 
             GaClient::clearPropertiesCache();
@@ -297,7 +297,7 @@ class GoogleServicesPage
         if (isset($_POST['laca_check_duplicate_tags'])) {
             check_admin_referer('laca_check_duplicate_tags_action');
             if (!current_user_can('manage_options')) {
-                wp_die(__('Bạn không có quyền thực hiện thao tác này.', 'lacadev'));
+                wp_die(__('Bạn không có quyền thực hiện thao tác này.', 'laca'));
             }
 
             $res = Tracking::checkDuplicateTags();
@@ -311,7 +311,7 @@ class GoogleServicesPage
         if (isset($_POST['laca_save_pagespeed_api_key'])) {
             check_admin_referer('laca_save_pagespeed_api_key_action');
             if (!current_user_can('manage_options')) {
-                wp_die(__('Bạn không có quyền thực hiện thao tác này.', 'lacadev'));
+                wp_die(__('Bạn không có quyền thực hiện thao tác này.', 'laca'));
             }
 
             $key = sanitize_text_field(wp_unslash($_POST['pagespeed_api_key'] ?? ''));
@@ -331,7 +331,7 @@ class GoogleServicesPage
         if (isset($_POST['laca_clear_pagespeed_api_key'])) {
             check_admin_referer('laca_save_pagespeed_api_key_action');
             if (!current_user_can('manage_options')) {
-                wp_die(__('Bạn không có quyền thực hiện thao tác này.', 'lacadev'));
+                wp_die(__('Bạn không có quyền thực hiện thao tác này.', 'laca'));
             }
 
             PageSpeedClient::setApiKey('');
@@ -376,7 +376,7 @@ class GoogleServicesPage
                 }
 
                 if ($clientId === '' || $clientSecret === '') {
-                    wp_safe_redirect(add_query_arg(['error' => urlencode(__('Vui lòng nhập đầy đủ Client ID và Client Secret.', 'lacadev'))], admin_url('admin.php?page=' . self::PAGE_SEARCH_CONSOLE)));
+                    wp_safe_redirect(add_query_arg(['error' => urlencode(__('Vui lòng nhập đầy đủ Client ID và Client Secret.', 'laca'))], admin_url('admin.php?page=' . self::PAGE_SEARCH_CONSOLE)));
                     exit;
                 }
 
@@ -395,7 +395,7 @@ class GoogleServicesPage
 
         if (isset($_GET['error'])) {
             if (!GscOAuth::verifyState($state)) {
-                $connectError = __('Mã trạng thái bảo mật (State Nonce) không hợp lệ.', 'lacadev');
+                $connectError = __('Mã trạng thái bảo mật (State Nonce) không hợp lệ.', 'laca');
             } else {
                 delete_option('laca_google_pending');
                 delete_option('laca_seo_gsc_pending');
@@ -403,10 +403,10 @@ class GoogleServicesPage
                 $errorDesc = sanitize_text_field(wp_unslash($_GET['error_description'] ?? ''));
 
                 if ($errorCode === 'access_denied') {
-                    $connectError = __('Google từ chối quyền truy cập. Nếu ứng dụng OAuth đang ở chế độ Testing, hãy thêm email của bạn vào Test users (Google Cloud → Google Auth Platform → Audience) hoặc bấm Publish app, rồi thử lại.', 'lacadev');
+                    $connectError = __('Google từ chối quyền truy cập. Nếu ứng dụng OAuth đang ở chế độ Testing, hãy thêm email của bạn vào Test users (Google Cloud → Google Auth Platform → Audience) hoặc bấm Publish app, rồi thử lại.', 'laca');
                 } else {
                     $connectError = sprintf(
-                        __('Lỗi kết nối từ Google (%s)%s.', 'lacadev'),
+                        __('Lỗi kết nối từ Google (%s)%s.', 'laca'),
                         esc_html($errorCode),
                         $errorDesc !== '' ? ': ' . esc_html($errorDesc) : ''
                     );
@@ -419,7 +419,7 @@ class GoogleServicesPage
         if (isset($_GET['code'])) {
             $code = sanitize_text_field(wp_unslash($_GET['code']));
             if (!GscOAuth::verifyState($state)) {
-                $connectError = __('Mã trạng thái bảo mật (State Nonce) không hợp lệ.', 'lacadev');
+                $connectError = __('Mã trạng thái bảo mật (State Nonce) không hợp lệ.', 'laca');
                 wp_safe_redirect(add_query_arg(['error' => urlencode($connectError)], admin_url($returnTo)));
                 exit;
             }
@@ -438,12 +438,12 @@ class GoogleServicesPage
                     exit;
                 }
 
-                $connectError = $exchange['error'] ?? __('Lỗi xác thực OAuth từ Google.', 'lacadev');
+                $connectError = $exchange['error'] ?? __('Lỗi xác thực OAuth từ Google.', 'laca');
                 wp_safe_redirect(add_query_arg(['error' => urlencode($connectError)], admin_url($returnTo)));
                 exit;
             }
 
-            $connectError = __('Không tìm thấy Client ID hoặc Client Secret đang chờ xác thực.', 'lacadev');
+            $connectError = __('Không tìm thấy Client ID hoặc Client Secret đang chờ xác thực.', 'laca');
             wp_safe_redirect(add_query_arg(['error' => urlencode($connectError)], admin_url($returnTo)));
             exit;
         }
@@ -530,7 +530,7 @@ class GoogleServicesPage
 
                 if (!$containsHost) {
                     $hostMismatchWarning = sprintf(
-                        __("Mã đo lường đang nằm trong property '%s', kiểm tra lại có đúng website này không.", 'lacadev'),
+                        __("Mã đo lường đang nằm trong property '%s', kiểm tra lại có đúng website này không.", 'laca'),
                         $propDisplayName
                     );
                 }
@@ -539,7 +539,7 @@ class GoogleServicesPage
 
         ?>
         <div class="wrap laca-seo-wrap laca-admin-page laca-seo-view-general">
-            <h1><?php echo esc_html__('Google Analytics & Tag Manager', 'lacadev'); ?></h1>
+            <h1><?php echo esc_html__('Google Analytics & Tag Manager', 'laca'); ?></h1>
 
             <?php $this->renderNotices(); ?>
             <?php $this->renderSetupStepper(self::PAGE_ANALYTICS); ?>
@@ -548,10 +548,10 @@ class GoogleServicesPage
             <?php if (!empty($manualIds)): ?>
                 <div class="notice notice-warning inline" style="margin: 16px 0; padding: 12px 16px; border-left-color: #f59e0b;">
                     <p style="margin: 0; font-size: 13.5px; line-height: 1.6;">
-                        <strong>⚠️ <?php esc_html_e('Cảnh báo phát hiện mã theo dõi thủ công:', 'lacadev'); ?></strong><br>
+                        <strong>⚠️ <?php esc_html_e('Cảnh báo phát hiện mã theo dõi thủ công:', 'laca'); ?></strong><br>
                         <?php
                         printf(
-                            esc_html__('Đang có mã %s được chèn thủ công ở Laca Theme → Scripts (Header/Footer). Hệ thống sẽ tự động bỏ qua (không xuất thêm) nếu Measurement ID hoặc Container ID bên dưới trùng khớp để tránh đếm 2 lần.', 'lacadev'),
+                            esc_html__('Đang có mã %s được chèn thủ công ở Laca Theme → Scripts (Header/Footer). Hệ thống sẽ tự động bỏ qua (không xuất thêm) nếu Measurement ID hoặc Container ID bên dưới trùng khớp để tránh đếm 2 lần.', 'laca'),
                             '<code>' . esc_html(implode(', ', $manualIds)) . '</code>'
                         );
                         ?>
@@ -563,13 +563,13 @@ class GoogleServicesPage
             <div class="laca-seo-card" style="margin-bottom: 24px;">
                 <div class="laca-seo-card__header laca-seo-header-flex">
                     <div>
-                        <h2 class="laca-seo-card__title"><?php esc_html_e('Kiểm tra mã Google trên website (Tag Scanner)', 'lacadev'); ?></h2>
-                        <p class="laca-seo-card__subtitle"><?php esc_html_e('Quét toàn bộ mã nguồn trang chủ để phát hiện mã trùng lặp, mã ngoại lai từ plugin khác hoặc mã sót trong theme.', 'lacadev'); ?></p>
+                        <h2 class="laca-seo-card__title"><?php esc_html_e('Kiểm tra mã Google trên website (Tag Scanner)', 'laca'); ?></h2>
+                        <p class="laca-seo-card__subtitle"><?php esc_html_e('Quét toàn bộ mã nguồn trang chủ để phát hiện mã trùng lặp, mã ngoại lai từ plugin khác hoặc mã sót trong theme.', 'laca'); ?></p>
                     </div>
                     <form method="post" style="margin: 0;">
                         <?php wp_nonce_field('laca_check_duplicate_tags_action'); ?>
                         <button type="submit" name="laca_check_duplicate_tags" class="button button-secondary">
-                            <span class="dashicons dashicons-search" style="margin-top: 3px;"></span> <?php esc_html_e('Kiểm tra mã trên website', 'lacadev'); ?>
+                            <span class="dashicons dashicons-search" style="margin-top: 3px;"></span> <?php esc_html_e('Kiểm tra mã trên website', 'laca'); ?>
                         </button>
                     </form>
                 </div>
@@ -579,21 +579,21 @@ class GoogleServicesPage
                             <?php echo !empty($tagCheck['hasWarnings']) ? '⚠️ ' . esc_html($tagCheck['message']) : '✓ ' . esc_html($tagCheck['message']); ?>
                         </div>
                         <div style="font-size: 13px; color: var(--laca-fg, #18181b);">
-                            <strong><?php esc_html_e('Các mã tìm thấy:', 'lacadev'); ?></strong>
+                            <strong><?php esc_html_e('Các mã tìm thấy:', 'laca'); ?></strong>
                             <?php if (!empty($tagCheck['foundIds'])): ?>
                                 <code><?php echo esc_html(implode(', ', $tagCheck['foundIds'])); ?></code>
                             <?php else: ?>
-                                <em><?php esc_html_e('Không tìm thấy mã nào.', 'lacadev'); ?></em>
+                                <em><?php esc_html_e('Không tìm thấy mã nào.', 'laca'); ?></em>
                             <?php endif; ?>
                             <?php if (!empty($tagCheck['externalIds'])): ?>
                                 <div style="margin-top: 6px; color: #dc2626;">
-                                    <strong><?php esc_html_e('Mã ngoại lai (chưa khai báo trong cấu hình):', 'lacadev'); ?></strong>
+                                    <strong><?php esc_html_e('Mã ngoại lai (chưa khai báo trong cấu hình):', 'laca'); ?></strong>
                                     <code><?php echo esc_html(implode(', ', $tagCheck['externalIds'])); ?></code>
                                 </div>
                             <?php endif; ?>
                             <?php if (!empty($tagCheck['duplicateIds'])): ?>
                                 <div style="margin-top: 6px; color: #dc2626;">
-                                    <strong><?php esc_html_e('Mã bị chèn lặp lại:', 'lacadev'); ?></strong>
+                                    <strong><?php esc_html_e('Mã bị chèn lặp lại:', 'laca'); ?></strong>
                                     <code><?php echo esc_html(implode(', ', $tagCheck['duplicateIds'])); ?></code>
                                 </div>
                             <?php endif; ?>
@@ -609,27 +609,27 @@ class GoogleServicesPage
             <div class="laca-seo-card" style="margin-bottom: 24px;">
                 <div class="laca-seo-card__header laca-seo-header-flex">
                     <div>
-                        <h2 class="laca-seo-card__title"><?php esc_html_e('Đồng bộ Google Analytics 4 (Google Cloud OAuth)', 'lacadev'); ?></h2>
-                        <p class="laca-seo-card__subtitle"><?php esc_html_e('Kết nối OAuth để tự động lấy số liệu lượt truy cập, người dùng hoạt động và xem báo cáo trực tiếp trên Dashboard.', 'lacadev'); ?></p>
+                        <h2 class="laca-seo-card__title"><?php esc_html_e('Đồng bộ Google Analytics 4 (Google Cloud OAuth)', 'laca'); ?></h2>
+                        <p class="laca-seo-card__subtitle"><?php esc_html_e('Kết nối OAuth để tự động lấy số liệu lượt truy cập, người dùng hoạt động và xem báo cáo trực tiếp trên Dashboard.', 'laca'); ?></p>
                     </div>
                     <?php if ($isConnected): ?>
                         <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
                             <span class="laca-badge" style="background: #10b981; color: #fff; padding: 4px 10px; border-radius: 9999px; font-weight: 500; font-size: 12px; display: inline-flex; align-items: center; gap: 4px;">
                                 <span class="dashicons dashicons-yes-alt" style="font-size: 14px; width: 14px; height: 14px; line-height: 1;"></span>
-                                <?php echo esc_html($connectedEmail ? sprintf(__('Đã kết nối OAuth: %s', 'lacadev'), $connectedEmail) : __('Đã kết nối OAuth', 'lacadev')); ?>
+                                <?php echo esc_html($connectedEmail ? sprintf(__('Đã kết nối OAuth: %s', 'laca'), $connectedEmail) : __('Đã kết nối OAuth', 'laca')); ?>
                             </span>
                             <form method="post" style="margin: 0; display: inline-block;">
                                 <?php wp_nonce_field('laca_google_switch_account_action'); ?>
                                 <input type="hidden" name="return_to" value="<?php echo esc_attr(self::PAGE_ANALYTICS); ?>">
                                 <button type="submit" name="laca_google_switch_account" class="button button-secondary">
-                                    <span class="dashicons dashicons-randomize" style="margin-top: 2px;"></span> <?php esc_html_e('Đổi tài khoản Google', 'lacadev'); ?>
+                                    <span class="dashicons dashicons-randomize" style="margin-top: 2px;"></span> <?php esc_html_e('Đổi tài khoản Google', 'laca'); ?>
                                 </button>
                             </form>
                             <form method="post" style="margin: 0; display: inline-block;">
                                 <?php wp_nonce_field('laca_google_disconnect_action'); ?>
                                 <input type="hidden" name="return_to" value="<?php echo esc_attr(self::PAGE_ANALYTICS); ?>">
                                 <button type="submit" name="laca_google_disconnect" class="button button-secondary" onclick="return confirm('Bạn có chắc muốn ngắt kết nối Google OAuth không?');">
-                                    <?php esc_html_e('Ngắt kết nối', 'lacadev'); ?>
+                                    <?php esc_html_e('Ngắt kết nối', 'laca'); ?>
                                 </button>
                             </form>
                         </div>
@@ -640,23 +640,23 @@ class GoogleServicesPage
                     <?php if (!$isConnected): ?>
                         <div style="background: var(--laca-bg-subtle, #f4f4f5); padding: 16px; border-radius: 6px;">
                             <p style="margin: 0 0 12px 0; font-size: 13.5px;">
-                                <?php esc_html_e('Chưa kết nối tài khoản Google Cloud OAuth. Vui lòng thiết lập Client ID và Client Secret tại trang Search Console hoặc bấm nút bên dưới:', 'lacadev'); ?>
+                                <?php esc_html_e('Chưa kết nối tài khoản Google Cloud OAuth. Vui lòng thiết lập Client ID và Client Secret tại trang Search Console hoặc bấm nút bên dưới:', 'laca'); ?>
                             </p>
                             <a href="<?php echo esc_url(admin_url('admin.php?page=' . self::PAGE_SEARCH_CONSOLE)); ?>" class="button button-secondary">
-                                <span class="dashicons dashicons-google" style="margin-top: 3px;"></span> <?php esc_html_e('Cấu hình kết nối Google OAuth', 'lacadev'); ?>
+                                <span class="dashicons dashicons-google" style="margin-top: 3px;"></span> <?php esc_html_e('Cấu hình kết nối Google OAuth', 'laca'); ?>
                             </a>
                         </div>
                     <?php elseif (!$hasGaScope): ?>
                         <div style="background: #eff6ff; border: 1px solid #bfdbfe; padding: 16px; border-radius: 6px;">
                             <p style="margin: 0 0 12px 0; font-size: 13.5px; color: #1e40af;">
-                                <strong><?php esc_html_e('Tài khoản Google đã kết nối nhưng chưa có quyền đọc Google Analytics.', 'lacadev'); ?></strong><br>
-                                <?php esc_html_e('Vui lòng cấp thêm quyền Google Analytics (scope: analytics.readonly) để lấy dữ liệu báo cáo.', 'lacadev'); ?>
+                                <strong><?php esc_html_e('Tài khoản Google đã kết nối nhưng chưa có quyền đọc Google Analytics.', 'laca'); ?></strong><br>
+                                <?php esc_html_e('Vui lòng cấp thêm quyền Google Analytics (scope: analytics.readonly) để lấy dữ liệu báo cáo.', 'laca'); ?>
                             </p>
                             <form method="post">
                                 <?php wp_nonce_field('laca_google_grant_scope_action'); ?>
                                 <input type="hidden" name="return_to" value="<?php echo esc_attr(self::PAGE_ANALYTICS); ?>">
                                 <button type="submit" name="laca_google_grant_scope" class="button button-primary">
-                                    <span class="dashicons dashicons-shield" style="margin-top: 3px;"></span> <?php esc_html_e('Cấp thêm quyền Google Analytics', 'lacadev'); ?>
+                                    <span class="dashicons dashicons-shield" style="margin-top: 3px;"></span> <?php esc_html_e('Cấp thêm quyền Google Analytics', 'laca'); ?>
                                 </button>
                             </form>
                         </div>
@@ -675,14 +675,14 @@ class GoogleServicesPage
                             <?php wp_nonce_field('laca_save_ga4_property_action'); ?>
                             <div style="flex: 1; min-width: 320px;">
                                 <label for="ga4_property_select" style="display: block; font-weight: 600; margin-bottom: 6px;">
-                                    <?php esc_html_e('Thuộc tính GA4 (Property) được chọn để lấy báo cáo:', 'lacadev'); ?>
+                                    <?php esc_html_e('Thuộc tính GA4 (Property) được chọn để lấy báo cáo:', 'laca'); ?>
                                 </label>
                                 <?php if (empty($gaProperties)): ?>
                                     <input type="text" name="ga4_property_id" id="ga4_property_select" class="regular-text" value="<?php echo esc_attr($currentPropId); ?>" placeholder="Ví dụ: 123456789">
-                                    <p class="description"><?php esc_html_e('Nhập ID thuộc tính GA4 (dãy số dạng 123456789).', 'lacadev'); ?></p>
+                                    <p class="description"><?php esc_html_e('Nhập ID thuộc tính GA4 (dãy số dạng 123456789).', 'laca'); ?></p>
                                 <?php else: ?>
                                     <select name="ga4_property_id" id="ga4_property_select" style="width: 100%; max-width: 560px;">
-                                        <option value=""><?php esc_html_e('-- Chọn thuộc tính GA4 --', 'lacadev'); ?></option>
+                                        <option value=""><?php esc_html_e('-- Chọn thuộc tính GA4 --', 'laca'); ?></option>
                                         <?php foreach ($gaProperties as $prop): ?>
                                             <?php
                                             $pid = (string) ($prop['propertyId'] ?? $prop['id'] ?? '');
@@ -719,10 +719,10 @@ class GoogleServicesPage
                                 <?php endif; ?>
                             </div>
                             <button type="submit" name="laca_save_ga4_property" class="button button-secondary">
-                                <?php esc_html_e('Lưu thuộc tính GA4', 'lacadev'); ?>
+                                <?php esc_html_e('Lưu thuộc tính GA4', 'laca'); ?>
                             </button>
-                            <button type="submit" name="laca_refresh_ga_properties" class="button button-secondary" title="<?php esc_attr_e('Tải lại danh sách thuộc tính từ Google Analytics', 'lacadev'); ?>">
-                                <span class="dashicons dashicons-update" style="margin-top: 3px;"></span> <?php esc_html_e('Tải lại danh sách', 'lacadev'); ?>
+                            <button type="submit" name="laca_refresh_ga_properties" class="button button-secondary" title="<?php esc_attr_e('Tải lại danh sách thuộc tính từ Google Analytics', 'laca'); ?>">
+                                <span class="dashicons dashicons-update" style="margin-top: 3px;"></span> <?php esc_html_e('Tải lại danh sách', 'laca'); ?>
                             </button>
                         </form>
                     <?php endif; ?>
@@ -736,8 +736,8 @@ class GoogleServicesPage
 
                 <div class="laca-seo-card">
                     <div class="laca-seo-card__header">
-                        <h2 class="laca-seo-card__title"><?php esc_html_e('Cấu hình mã đo lường & Script chèn', 'lacadev'); ?></h2>
-                        <p class="laca-seo-card__subtitle"><?php esc_html_e('Dữ liệu cấu hình Google Analytics và Tag Manager độc lập, tự động tối ưu hóa và chống đếm lặp.', 'lacadev'); ?></p>
+                        <h2 class="laca-seo-card__title"><?php esc_html_e('Cấu hình mã đo lường & Script chèn', 'laca'); ?></h2>
+                        <p class="laca-seo-card__subtitle"><?php esc_html_e('Dữ liệu cấu hình Google Analytics và Tag Manager độc lập, tự động tối ưu hóa và chống đếm lặp.', 'laca'); ?></p>
                     </div>
 
                     <div class="laca-seo-fields-container" style="padding: 0 20px;">
@@ -745,13 +745,13 @@ class GoogleServicesPage
                         <div class="laca-seo-field-row">
                             <div class="laca-seo-field-row__label-col">
                                 <label for="ga4_measurement_id" style="font-weight: 600; color: var(--laca-fg);">
-                                    <?php esc_html_e('Google Analytics 4 Measurement ID', 'lacadev'); ?>
+                                    <?php esc_html_e('Google Analytics 4 Measurement ID', 'laca'); ?>
                                 </label>
                             </div>
                             <div class="laca-seo-field-row__control-col">
                                 <input type="text" name="ga4_measurement_id" id="ga4_measurement_id" class="regular-text laca-seo-input" value="<?php echo esc_attr($currentMsId); ?>" placeholder="G-XXXXXXXXXX" style="width: 100%; max-width: 560px;">
                                 <p class="description laca-seo-field-desc">
-                                    <?php esc_html_e('Mã đo lường GA4 (bắt đầu bằng "G-"). Hệ thống sẽ tự động chèn gtag.js và cấu hình đo lường.', 'lacadev'); ?>
+                                    <?php esc_html_e('Mã đo lường GA4 (bắt đầu bằng "G-"). Hệ thống sẽ tự động chèn gtag.js và cấu hình đo lường.', 'laca'); ?>
                                 </p>
                             </div>
                         </div>
@@ -760,13 +760,13 @@ class GoogleServicesPage
                         <div class="laca-seo-field-row">
                             <div class="laca-seo-field-row__label-col">
                                 <label for="gtm_container_id" style="font-weight: 600; color: var(--laca-fg);">
-                                    <?php esc_html_e('Google Tag Manager Container ID', 'lacadev'); ?>
+                                    <?php esc_html_e('Google Tag Manager Container ID', 'laca'); ?>
                                 </label>
                             </div>
                             <div class="laca-seo-field-row__control-col">
                                 <input type="text" name="gtm_container_id" id="gtm_container_id" class="regular-text laca-seo-input" value="<?php echo esc_attr($gtmId); ?>" placeholder="GTM-XXXXXXX" style="width: 100%; max-width: 560px;">
                                 <p class="description laca-seo-field-desc">
-                                    <?php esc_html_e('Mã vùng chứa Google Tag Manager (bắt đầu bằng "GTM-"). Hệ thống sẽ chèn đoạn mã trong <head> và iframe noscript trong <body>.', 'lacadev'); ?>
+                                    <?php esc_html_e('Mã vùng chứa Google Tag Manager (bắt đầu bằng "GTM-"). Hệ thống sẽ chèn đoạn mã trong <head> và iframe noscript trong <body>.', 'laca'); ?>
                                 </p>
                             </div>
                         </div>
@@ -775,7 +775,7 @@ class GoogleServicesPage
                         <div class="laca-seo-field-row">
                             <div class="laca-seo-field-row__label-col">
                                 <label for="ga_anonymize_ip" style="font-weight: 600; color: var(--laca-fg);">
-                                    <?php esc_html_e('Ẩn danh địa chỉ IP', 'lacadev'); ?>
+                                    <?php esc_html_e('Ẩn danh địa chỉ IP', 'laca'); ?>
                                 </label>
                             </div>
                             <div class="laca-seo-field-row__control-col">
@@ -785,7 +785,7 @@ class GoogleServicesPage
                                     <span class="laca-seo-switch__slider"></span>
                                 </label>
                                 <p class="description laca-seo-field-desc">
-                                    <?php esc_html_e('Ẩn octet cuối của địa chỉ IP người dùng trước khi gửi đến Google Analytics (khuyến nghị bật để tuân thủ quyền riêng tư / GDPR).', 'lacadev'); ?>
+                                    <?php esc_html_e('Ẩn octet cuối của địa chỉ IP người dùng trước khi gửi đến Google Analytics (khuyến nghị bật để tuân thủ quyền riêng tư / GDPR).', 'laca'); ?>
                                 </p>
                             </div>
                         </div>
@@ -794,7 +794,7 @@ class GoogleServicesPage
                         <div class="laca-seo-field-row">
                             <div class="laca-seo-field-row__label-col">
                                 <label for="ga_exclude_loggedin" style="font-weight: 600; color: var(--laca-fg);">
-                                    <?php esc_html_e('Bỏ qua người dùng đăng nhập', 'lacadev'); ?>
+                                    <?php esc_html_e('Bỏ qua người dùng đăng nhập', 'laca'); ?>
                                 </label>
                             </div>
                             <div class="laca-seo-field-row__control-col">
@@ -806,15 +806,15 @@ class GoogleServicesPage
                                 <div style="margin-top: 10px; display: flex; gap: 16px;">
                                     <label style="display: inline-flex; align-items: center; gap: 6px; font-size: 13px;">
                                         <input type="radio" name="ga_exclude_role" value="admin" <?php checked($excludeRole, 'admin'); ?>>
-                                        <?php esc_html_e('Chỉ Quản trị viên (Administrator, mặc định)', 'lacadev'); ?>
+                                        <?php esc_html_e('Chỉ Quản trị viên (Administrator, mặc định)', 'laca'); ?>
                                     </label>
                                     <label style="display: inline-flex; align-items: center; gap: 6px; font-size: 13px;">
                                         <input type="radio" name="ga_exclude_role" value="all" <?php checked($excludeRole, 'all'); ?>>
-                                        <?php esc_html_e('Mọi người dùng đã đăng nhập', 'lacadev'); ?>
+                                        <?php esc_html_e('Mọi người dùng đã đăng nhập', 'laca'); ?>
                                     </label>
                                 </div>
                                 <p class="description laca-seo-field-desc">
-                                    <?php esc_html_e('Chuẩn Site Kit: Tự động gắn window[\'ga-disable-<ID>\'] = true để không ghi nhận truy cập mà vẫn giữ nguyên thẻ script cho các công cụ xác minh.', 'lacadev'); ?>
+                                    <?php esc_html_e('Chuẩn Site Kit: Tự động gắn window[\'ga-disable-<ID>\'] = true để không ghi nhận truy cập mà vẫn giữ nguyên thẻ script cho các công cụ xác minh.', 'laca'); ?>
                                 </p>
                             </div>
                         </div>
@@ -823,7 +823,7 @@ class GoogleServicesPage
                         <div class="laca-seo-field-row">
                             <div class="laca-seo-field-row__label-col">
                                 <label for="ga_omit_on_404" style="font-weight: 600; color: var(--laca-fg);">
-                                    <?php esc_html_e('Bảo vệ trang 404 (Tag Guard)', 'lacadev'); ?>
+                                    <?php esc_html_e('Bảo vệ trang 404 (Tag Guard)', 'laca'); ?>
                                 </label>
                             </div>
                             <div class="laca-seo-field-row__control-col">
@@ -833,7 +833,7 @@ class GoogleServicesPage
                                     <span class="laca-seo-switch__slider"></span>
                                 </label>
                                 <p class="description laca-seo-field-desc">
-                                    <?php esc_html_e('Không xuất mã đo lường ở các trang lỗi 404 để tránh làm loãng dữ liệu phiên truy cập và giảm thiểu request vô ích.', 'lacadev'); ?>
+                                    <?php esc_html_e('Không xuất mã đo lường ở các trang lỗi 404 để tránh làm loãng dữ liệu phiên truy cập và giảm thiểu request vô ích.', 'laca'); ?>
                                 </p>
                             </div>
                         </div>
@@ -842,7 +842,7 @@ class GoogleServicesPage
                         <div class="laca-seo-field-row">
                             <div class="laca-seo-field-row__label-col">
                                 <label for="ga_ecommerce_events" style="font-weight: 600; color: var(--laca-fg);">
-                                    <?php esc_html_e('Sự kiện WooCommerce', 'lacadev'); ?>
+                                    <?php esc_html_e('Sự kiện WooCommerce', 'laca'); ?>
                                 </label>
                             </div>
                             <div class="laca-seo-field-row__control-col">
@@ -852,7 +852,7 @@ class GoogleServicesPage
                                     <span class="laca-seo-switch__slider"></span>
                                 </label>
                                 <p class="description laca-seo-field-desc">
-                                    <?php esc_html_e('Tự động gửi sự kiện thêm vào giỏ hàng (add_to_cart) và mua hàng thành công (purchase) với cơ chế chống gửi lặp khi tải lại trang cảm ơn.', 'lacadev'); ?>
+                                    <?php esc_html_e('Tự động gửi sự kiện thêm vào giỏ hàng (add_to_cart) và mua hàng thành công (purchase) với cơ chế chống gửi lặp khi tải lại trang cảm ơn.', 'laca'); ?>
                                 </p>
                             </div>
                         </div>
@@ -861,13 +861,13 @@ class GoogleServicesPage
                         <div class="laca-seo-field-row">
                             <div class="laca-seo-field-row__label-col">
                                 <label for="ga4_goal_events" style="font-weight: 600; color: var(--laca-fg);">
-                                    <?php esc_html_e('Mục tiêu chuyển đổi (Key Events)', 'lacadev'); ?>
+                                    <?php esc_html_e('Mục tiêu chuyển đổi (Key Events)', 'laca'); ?>
                                 </label>
                             </div>
                             <div class="laca-seo-field-row__control-col">
                                 <textarea name="ga4_goal_events" id="ga4_goal_events" rows="4" class="regular-text laca-seo-input" style="width: 100%; max-width: 560px; font-family: monospace; font-size: 13px;"><?php echo esc_textarea($goalEvents); ?></textarea>
                                 <p class="description laca-seo-field-desc">
-                                    <?php esc_html_e('Mỗi dòng một mục tiêu theo định dạng: event_name|Nhãn hiển thị. Ví dụ:', 'lacadev'); ?><br>
+                                    <?php esc_html_e('Mỗi dòng một mục tiêu theo định dạng: event_name|Nhãn hiển thị. Ví dụ:', 'laca'); ?><br>
                                     <code>purchase|Đơn hàng</code><br>
                                     <code>generate_lead|Đăng ký tư vấn</code>
                                 </p>
@@ -885,54 +885,54 @@ class GoogleServicesPage
 
                 $allMetrics = [
                     'new_vs_returning' => [
-                        'label'     => __('Khách mới / Quay lại (newVsReturning)', 'lacadev'),
-                        'desc'      => __('Tỷ lệ phần trăm và số lượng người dùng mới so với người dùng quay lại.', 'lacadev'),
+                        'label'     => __('Khách mới / Quay lại (newVsReturning)', 'laca'),
+                        'desc'      => __('Tỷ lệ phần trăm và số lượng người dùng mới so với người dùng quay lại.', 'laca'),
                         'available' => true,
                     ],
                     'top_traffic_source' => [
-                        'label'     => __('Nguồn hàng đầu (Top Traffic Source)', 'lacadev'),
-                        'desc'      => __('Kênh mang lại lượng phiên truy cập cao nhất cho website.', 'lacadev'),
+                        'label'     => __('Nguồn hàng đầu (Top Traffic Source)', 'laca'),
+                        'desc'      => __('Kênh mang lại lượng phiên truy cập cao nhất cho website.', 'laca'),
                         'available' => true,
                     ],
                     'top_cities' => [
-                        'label'     => __('Thành phố top 3 (Top Cities)', 'lacadev'),
-                        'desc'      => __('3 khu vực / thành phố có lượt truy cập nhiều nhất.', 'lacadev'),
+                        'label'     => __('Thành phố top 3 (Top Cities)', 'laca'),
+                        'desc'      => __('3 khu vực / thành phố có lượt truy cập nhiều nhất.', 'laca'),
                         'available' => true,
                     ],
                     'pages_per_session' => [
-                        'label'     => __('Trang / Lượt (screenPageViewsPerSession)', 'lacadev'),
-                        'desc'      => __('Số trang trung bình người dùng xem trong mỗi phiên truy cập.', 'lacadev'),
+                        'label'     => __('Trang / Lượt (screenPageViewsPerSession)', 'laca'),
+                        'desc'      => __('Số trang trung bình người dùng xem trong mỗi phiên truy cập.', 'laca'),
                         'available' => true,
                     ],
                     'session_duration' => [
-                        'label'     => __('Thời lượng trung bình (averageSessionDuration)', 'lacadev'),
-                        'desc'      => __('Thời gian trung bình người dùng tương tác trên website.', 'lacadev'),
+                        'label'     => __('Thời lượng trung bình (averageSessionDuration)', 'laca'),
+                        'desc'      => __('Thời gian trung bình người dùng tương tác trên website.', 'laca'),
                         'available' => true,
                     ],
                     'top_products' => [
-                        'label'     => __('Sản phẩm xem nhiều (Top Viewed Products)', 'lacadev'),
-                        'desc'      => __('Trang sản phẩm có lượt xem cao nhất (đường dẫn /product/ hoặc /san-pham/).', 'lacadev'),
+                        'label'     => __('Sản phẩm xem nhiều (Top Viewed Products)', 'laca'),
+                        'desc'      => __('Trang sản phẩm có lượt xem cao nhất (đường dẫn /product/ hoặc /san-pham/).', 'laca'),
                         'available' => $hasProductPostType,
-                        'reason'    => __('Yêu cầu website có post type sản phẩm (product)', 'lacadev'),
+                        'reason'    => __('Yêu cầu website có post type sản phẩm (product)', 'laca'),
                     ],
                     'best_conversion_source' => [
-                        'label'     => __('Nguồn chuyển đổi tốt nhất (Best Conversion Source)', 'lacadev'),
-                        'desc'      => __('Kênh truy cập có tỷ lệ kích hoạt sự kiện mục tiêu cao nhất.', 'lacadev'),
+                        'label'     => __('Nguồn chuyển đổi tốt nhất (Best Conversion Source)', 'laca'),
+                        'desc'      => __('Kênh truy cập có tỷ lệ kích hoạt sự kiện mục tiêu cao nhất.', 'laca'),
                         'available' => $hasKeyEvents,
-                        'reason'    => __('Yêu cầu cấu hình ít nhất 1 Mục tiêu chuyển đổi (Key Event)', 'lacadev'),
+                        'reason'    => __('Yêu cầu cấu hình ít nhất 1 Mục tiêu chuyển đổi (Key Event)', 'laca'),
                     ],
                     'cart_or_purchase_source' => [
-                        'label'     => __('Nguồn thêm giỏ / Mua hàng (Cart & Purchase Source)', 'lacadev'),
-                        'desc'      => __('Kênh mang lại nhiều lượt thêm vào giỏ hàng hoặc mua hàng nhất.', 'lacadev'),
+                        'label'     => __('Nguồn thêm giỏ / Mua hàng (Cart & Purchase Source)', 'laca'),
+                        'desc'      => __('Kênh mang lại nhiều lượt thêm vào giỏ hàng hoặc mua hàng nhất.', 'laca'),
                         'available' => $hasEcommerce,
-                        'reason'    => __('Yêu cầu bật Theo dõi Sự kiện WooCommerce hoặc có sự kiện trong 90 ngày', 'lacadev'),
+                        'reason'    => __('Yêu cầu bật Theo dõi Sự kiện WooCommerce hoặc có sự kiện trong 90 ngày', 'laca'),
                     ],
                 ];
                 ?>
                 <div class="laca-seo-card" style="margin-top: 24px;">
                     <div class="laca-seo-card__header">
-                        <h2 class="laca-seo-card__title"><?php esc_html_e('Chỉ số chính cho Cửa hàng (Key Metrics)', 'lacadev'); ?></h2>
-                        <p class="laca-seo-card__subtitle"><?php esc_html_e('Tùy chọn hiển thị 8 ô chỉ số trọng điểm trên báo cáo Google Analytics. Các ô thiếu điều kiện dữ liệu sẽ tự động ẩn trên Dashboard.', 'lacadev'); ?></p>
+                        <h2 class="laca-seo-card__title"><?php esc_html_e('Chỉ số chính cho Cửa hàng (Key Metrics)', 'laca'); ?></h2>
+                        <p class="laca-seo-card__subtitle"><?php esc_html_e('Tùy chọn hiển thị 8 ô chỉ số trọng điểm trên báo cáo Google Analytics. Các ô thiếu điều kiện dữ liệu sẽ tự động ẩn trên Dashboard.', 'laca'); ?></p>
                     </div>
 
                     <div class="laca-seo-fields-container" style="padding: 0 20px;">
@@ -947,7 +947,7 @@ class GoogleServicesPage
                                 <div class="laca-seo-field-row__control-col">
                                     <label style="display: inline-flex; align-items: center; gap: 8px; cursor: pointer;">
                                         <input type="checkbox" name="key_metrics[]" id="metric_<?php echo esc_attr($mKey); ?>" value="<?php echo esc_attr($mKey); ?>" <?php checked($isChecked); ?>>
-                                        <span><?php esc_html_e('Bật hiển thị ô chỉ số này', 'lacadev'); ?></span>
+                                        <span><?php esc_html_e('Bật hiển thị ô chỉ số này', 'laca'); ?></span>
                                     </label>
                                     <p class="description laca-seo-field-desc" style="margin: 4px 0 0 0;">
                                         <?php echo esc_html($mInfo['desc']); ?>
@@ -966,7 +966,7 @@ class GoogleServicesPage
                 <div class="laca-seo-sticky-footer" style="margin-top: 24px;">
                     <div class="laca-seo-sticky-footer__inner">
                         <button type="submit" class="button button-primary button-hero laca-seo-save-btn">
-                            <span class="dashicons dashicons-saved"></span> <?php esc_html_e('Lưu thay đổi', 'lacadev'); ?>
+                            <span class="dashicons dashicons-saved"></span> <?php esc_html_e('Lưu thay đổi', 'laca'); ?>
                         </button>
                     </div>
                 </div>
@@ -1011,7 +1011,7 @@ class GoogleServicesPage
 
         ?>
         <div class="wrap laca-seo-wrap laca-admin-page laca-seo-view-search-console">
-            <h1><?php echo esc_html__('Google Search Console', 'lacadev'); ?></h1>
+            <h1><?php echo esc_html__('Google Search Console', 'laca'); ?></h1>
 
             <?php $this->renderNotices(); ?>
             <?php $this->renderSetupStepper(self::PAGE_SEARCH_CONSOLE); ?>
@@ -1020,27 +1020,27 @@ class GoogleServicesPage
             <div class="laca-seo-card" style="margin-bottom: 24px;">
                 <div class="laca-seo-card__header laca-seo-header-flex">
                     <div>
-                        <h2 class="laca-seo-card__title"><?php esc_html_e('Kết nối Google OAuth 2.0', 'lacadev'); ?></h2>
-                        <p class="laca-seo-card__subtitle"><?php esc_html_e('Kết nối dùng chung cho cả Google Search Console và Google Analytics 4.', 'lacadev'); ?></p>
+                        <h2 class="laca-seo-card__title"><?php esc_html_e('Kết nối Google OAuth 2.0', 'laca'); ?></h2>
+                        <p class="laca-seo-card__subtitle"><?php esc_html_e('Kết nối dùng chung cho cả Google Search Console và Google Analytics 4.', 'laca'); ?></p>
                     </div>
                     <?php if ($isConnected): ?>
                         <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
                             <span class="laca-badge" style="background: #10b981; color: #fff; padding: 4px 10px; border-radius: 9999px; font-weight: 500; font-size: 12px; display: inline-flex; align-items: center; gap: 4px;">
                                 <span class="dashicons dashicons-yes-alt" style="font-size: 14px; width: 14px; height: 14px; line-height: 1;"></span>
-                                <?php echo esc_html($connectedEmail ? sprintf(__('Đã kết nối OAuth: %s', 'lacadev'), $connectedEmail) : __('Đã kết nối OAuth', 'lacadev')); ?>
+                                <?php echo esc_html($connectedEmail ? sprintf(__('Đã kết nối OAuth: %s', 'laca'), $connectedEmail) : __('Đã kết nối OAuth', 'laca')); ?>
                             </span>
                             <form method="post" style="margin: 0; display: inline-block;">
                                 <?php wp_nonce_field('laca_google_switch_account_action'); ?>
                                 <input type="hidden" name="return_to" value="<?php echo esc_attr(self::PAGE_SEARCH_CONSOLE); ?>">
                                 <button type="submit" name="laca_google_switch_account" class="button button-secondary">
-                                    <span class="dashicons dashicons-randomize" style="margin-top: 2px;"></span> <?php esc_html_e('Đổi tài khoản Google', 'lacadev'); ?>
+                                    <span class="dashicons dashicons-randomize" style="margin-top: 2px;"></span> <?php esc_html_e('Đổi tài khoản Google', 'laca'); ?>
                                 </button>
                             </form>
                             <form method="post" style="margin: 0; display: inline-block;">
                                 <?php wp_nonce_field('laca_google_disconnect_action'); ?>
                                 <input type="hidden" name="return_to" value="<?php echo esc_attr(self::PAGE_SEARCH_CONSOLE); ?>">
                                 <button type="submit" name="laca_google_disconnect" class="button button-secondary" onclick="return confirm('Bạn có chắc muốn ngắt kết nối Google OAuth không?');">
-                                    <?php esc_html_e('Ngắt kết nối', 'lacadev'); ?>
+                                    <?php esc_html_e('Ngắt kết nối', 'laca'); ?>
                                 </button>
                             </form>
                         </div>
@@ -1056,18 +1056,18 @@ class GoogleServicesPage
                             <input type="hidden" name="return_to" value="<?php echo esc_attr(self::PAGE_SEARCH_CONSOLE); ?>">
 
                             <div class="laca-seo-field-group" style="margin-bottom: 16px;">
-                                <label for="laca_google_client_id"><strong><?php esc_html_e('Google Client ID', 'lacadev'); ?></strong></label>
+                                <label for="laca_google_client_id"><strong><?php esc_html_e('Google Client ID', 'laca'); ?></strong></label>
                                 <input type="text" name="client_id" id="laca_google_client_id" class="large-text" required placeholder="xxxx.apps.googleusercontent.com" value="<?php echo esc_attr($creds['client_id'] ?? ''); ?>" style="max-width: 560px;">
                             </div>
 
                             <div class="laca-seo-field-group" style="margin-bottom: 20px;">
-                                <label for="laca_google_client_secret"><strong><?php esc_html_e('Google Client Secret', 'lacadev'); ?></strong></label>
+                                <label for="laca_google_client_secret"><strong><?php esc_html_e('Google Client Secret', 'laca'); ?></strong></label>
                                 <?php // Không in secret ra HTML; để trống = giữ secret đã lưu. ?>
-                                <input type="password" name="client_secret" id="laca_google_client_secret" class="large-text" autocomplete="new-password" <?php echo empty($creds['client_secret']) ? 'required placeholder="GOCSPX-xxxx"' : 'placeholder="' . esc_attr__('Đã lưu — để trống để giữ nguyên', 'lacadev') . '"'; ?> style="max-width: 560px;">
+                                <input type="password" name="client_secret" id="laca_google_client_secret" class="large-text" autocomplete="new-password" <?php echo empty($creds['client_secret']) ? 'required placeholder="GOCSPX-xxxx"' : 'placeholder="' . esc_attr__('Đã lưu — để trống để giữ nguyên', 'laca') . '"'; ?> style="max-width: 560px;">
                             </div>
 
                             <button type="submit" name="laca_google_connect_init" class="button button-primary button-large">
-                                <span class="dashicons dashicons-google" aria-hidden="true" style="margin-top: 3px;"></span> <?php esc_html_e('Đăng nhập & Cấp quyền với Google', 'lacadev'); ?>
+                                <span class="dashicons dashicons-google" aria-hidden="true" style="margin-top: 3px;"></span> <?php esc_html_e('Đăng nhập & Cấp quyền với Google', 'laca'); ?>
                             </button>
                         </form>
                     <?php else: ?>
@@ -1081,7 +1081,7 @@ class GoogleServicesPage
                                             <?php
                                              $accText = !empty($connectedEmail) ? ' ' . esc_html($connectedEmail) : '';
                                              printf(
-                                                 esc_html__('Tài khoản Google%s chưa có property nào trong Search Console — thêm site tại %s rồi bấm Tải lại.', 'lacadev'),
+                                                 esc_html__('Tài khoản Google%s chưa có property nào trong Search Console — thêm site tại %s rồi bấm Tải lại.', 'laca'),
                                                  $accText,
                                                  '<a href="https://search.google.com/search-console" target="_blank" rel="noopener">search.google.com/search-console</a>'
                                              );
@@ -1090,7 +1090,7 @@ class GoogleServicesPage
                                         <form method="post" style="margin: 0; display: inline-block;">
                                             <?php wp_nonce_field('laca_refresh_gsc_sites_action'); ?>
                                             <button type="submit" name="laca_refresh_gsc_sites" class="button button-secondary button-small">
-                                                <span class="dashicons dashicons-update" style="margin-top: 2px;"></span> <?php esc_html_e('Tải lại danh sách', 'lacadev'); ?>
+                                                <span class="dashicons dashicons-update" style="margin-top: 2px;"></span> <?php esc_html_e('Tải lại danh sách', 'laca'); ?>
                                             </button>
                                         </form>
                                     </div>
@@ -1100,7 +1100,7 @@ class GoogleServicesPage
                                     <?php wp_nonce_field('laca_save_gsc_site_url_action'); ?>
                                     <div style="flex: 1; min-width: 320px;">
                                         <label for="gsc_site_url_select" style="display: block; font-weight: 600; margin-bottom: 6px;">
-                                            <?php esc_html_e('Trang web / Property Search Console được chọn:', 'lacadev'); ?>
+                                            <?php esc_html_e('Trang web / Property Search Console được chọn:', 'laca'); ?>
                                         </label>
                                         <select name="gsc_site_url" id="gsc_site_url_select" style="width: 100%; max-width: 560px;">
                                             <?php foreach ($sites as $siteEntry): ?>
@@ -1108,7 +1108,7 @@ class GoogleServicesPage
                                                 $optUrl = is_array($siteEntry) ? ($siteEntry['siteUrl'] ?? '') : (string) $siteEntry;
                                                 $perm   = is_array($siteEntry) ? ($siteEntry['permissionLevel'] ?? 'siteOwner') : 'siteOwner';
                                                 $isUnverified = ($perm === 'siteUnverifiedUser');
-                                                $label  = $optUrl . ($isUnverified ? ' (' . __('chưa xác minh', 'lacadev') . ')' : '');
+                                                $label  = $optUrl . ($isUnverified ? ' (' . __('chưa xác minh', 'laca') . ')' : '');
                                                 ?>
                                                 <option value="<?php echo esc_attr($optUrl); ?>" <?php selected($siteUrl, $optUrl); ?> <?php disabled($isUnverified); ?>>
                                                     <?php echo esc_html($label); ?>
@@ -1117,10 +1117,10 @@ class GoogleServicesPage
                                         </select>
                                     </div>
                                     <button type="submit" name="laca_save_gsc_site_url" class="button button-secondary">
-                                        <?php esc_html_e('Lưu Property', 'lacadev'); ?>
+                                        <?php esc_html_e('Lưu Property', 'laca'); ?>
                                     </button>
-                                    <button type="submit" name="laca_refresh_gsc_sites" class="button button-secondary" title="<?php esc_attr_e('Tải lại danh sách property từ Google', 'lacadev'); ?>">
-                                        <span class="dashicons dashicons-update" style="margin-top: 3px;"></span> <?php esc_html_e('Tải lại danh sách', 'lacadev'); ?>
+                                    <button type="submit" name="laca_refresh_gsc_sites" class="button button-secondary" title="<?php esc_attr_e('Tải lại danh sách property từ Google', 'laca'); ?>">
+                                        <span class="dashicons dashicons-update" style="margin-top: 3px;"></span> <?php esc_html_e('Tải lại danh sách', 'laca'); ?>
                                     </button>
                                 </form>
                             <?php endif; ?>
@@ -1129,13 +1129,13 @@ class GoogleServicesPage
                         <!-- Link sang báo cáo Dashboard -->
                         <div style="margin-top: 24px; padding: 16px; background: var(--laca-bg-subtle, #f4f4f5); border-radius: 6px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
                             <div>
-                                <strong style="font-size: 14px;"><?php esc_html_e('Báo cáo Search Console & GA4', 'lacadev'); ?></strong>
+                                <strong style="font-size: 14px;"><?php esc_html_e('Báo cáo Search Console & GA4', 'laca'); ?></strong>
                                 <p style="margin: 4px 0 0 0; color: var(--laca-fg-muted, #71717a); font-size: 13px;">
-                                    <?php printf(esc_html__('Báo cáo đầy đủ với biểu đồ lượt click, hiển thị, CTR và top từ khóa cho %s hiển thị tại Bảng điều khiển WordPress.', 'lacadev'), '<code>' . esc_html($siteUrl) . '</code>'); ?>
+                                    <?php printf(esc_html__('Báo cáo đầy đủ với biểu đồ lượt click, hiển thị, CTR và top từ khóa cho %s hiển thị tại Bảng điều khiển WordPress.', 'laca'), '<code>' . esc_html($siteUrl) . '</code>'); ?>
                                 </p>
                             </div>
                             <a href="<?php echo esc_url(admin_url('index.php#laca-google-report')); ?>" class="button button-primary">
-                                <span class="dashicons dashicons-chart-area" style="margin-top: 3px;"></span> <?php esc_html_e('Xem Báo cáo trên Bảng điều khiển', 'lacadev'); ?>
+                                <span class="dashicons dashicons-chart-area" style="margin-top: 3px;"></span> <?php esc_html_e('Xem Báo cáo trên Bảng điều khiển', 'laca'); ?>
                             </a>
                         </div>
                     <?php endif; ?>
@@ -1147,33 +1147,33 @@ class GoogleServicesPage
                 <div class="laca-card__header">
                     <h2 class="laca-card__title" style="display: flex; align-items: center; gap: 8px;">
                         <span class="dashicons dashicons-performance" style="font-size: 20px; width: 20px; height: 20px; color: var(--laca-fg, #18181b);" aria-hidden="true"></span>
-                        <?php esc_html_e('Google PageSpeed Insights API Key (Tùy chọn)', 'lacadev'); ?>
+                        <?php esc_html_e('Google PageSpeed Insights API Key (Tùy chọn)', 'laca'); ?>
                     </h2>
                 </div>
                 <div class="laca-card__body">
                     <p style="color: var(--laca-fg-muted, #71717a); font-size: 13px; margin: 0 0 16px 0;">
-                        <?php esc_html_e('Không bắt buộc: PageSpeed Insights API v5 có thể kiểm tra hiệu suất ẩn danh. Thêm API Key từ Google Cloud Console để tăng giới hạn truy vấn (quota). Khóa API được lưu mã hóa an toàn và không bao giờ in trực tiếp ra mã HTML.', 'lacadev'); ?>
+                        <?php esc_html_e('Không bắt buộc: PageSpeed Insights API v5 có thể kiểm tra hiệu suất ẩn danh. Thêm API Key từ Google Cloud Console để tăng giới hạn truy vấn (quota). Khóa API được lưu mã hóa an toàn và không bao giờ in trực tiếp ra mã HTML.', 'laca'); ?>
                     </p>
                     <form method="post" style="display: flex; gap: 12px; align-items: flex-end; flex-wrap: wrap;">
                         <?php wp_nonce_field('laca_save_pagespeed_api_key_action'); ?>
                         <input type="hidden" name="return_to" value="<?php echo esc_attr(self::PAGE_SEARCH_CONSOLE); ?>">
                         <div style="flex: 1; min-width: 320px;">
                             <label for="pagespeed_api_key_input" style="display: block; font-weight: 600; margin-bottom: 6px;">
-                                <?php esc_html_e('PageSpeed Insights API Key:', 'lacadev'); ?>
+                                <?php esc_html_e('PageSpeed Insights API Key:', 'laca'); ?>
                                 <?php if (PageSpeedClient::hasApiKey()): ?>
                                     <span class="laca-badge laca-badge--success" style="margin-left: 8px; font-weight: normal; font-size: 11px;">
-                                        ✓ <?php esc_html_e('Đã cấu hình & mã hóa an toàn', 'lacadev'); ?>
+                                        ✓ <?php esc_html_e('Đã cấu hình & mã hóa an toàn', 'laca'); ?>
                                     </span>
                                 <?php endif; ?>
                             </label>
-                            <input type="password" id="pagespeed_api_key_input" name="pagespeed_api_key" value="" placeholder="<?php echo PageSpeedClient::hasApiKey() ? '••••••••••••••••••••••••••••••••' : esc_attr__('AIzaSy...', 'lacadev'); ?>" autocomplete="off" style="width: 100%; max-width: 560px;">
+                            <input type="password" id="pagespeed_api_key_input" name="pagespeed_api_key" value="" placeholder="<?php echo PageSpeedClient::hasApiKey() ? '••••••••••••••••••••••••••••••••' : esc_attr__('AIzaSy...', 'laca'); ?>" autocomplete="off" style="width: 100%; max-width: 560px;">
                         </div>
                         <button type="submit" name="laca_save_pagespeed_api_key" class="button button-secondary">
-                            <?php echo PageSpeedClient::hasApiKey() ? esc_html__('Cập nhật khóa mới', 'lacadev') : esc_html__('Lưu API Key', 'lacadev'); ?>
+                            <?php echo PageSpeedClient::hasApiKey() ? esc_html__('Cập nhật khóa mới', 'laca') : esc_html__('Lưu API Key', 'laca'); ?>
                         </button>
                         <?php if (PageSpeedClient::hasApiKey()): ?>
-                            <button type="submit" name="laca_clear_pagespeed_api_key" class="button button-link-delete" style="color: #b32d2e; text-decoration: none; padding: 4px 8px;" onclick="return confirm('<?php echo esc_js(__('Bạn có chắc chắn muốn xóa khóa PageSpeed API?', 'lacadev')); ?>');">
-                                <?php esc_html_e('Xóa khóa API', 'lacadev'); ?>
+                            <button type="submit" name="laca_clear_pagespeed_api_key" class="button button-link-delete" style="color: #b32d2e; text-decoration: none; padding: 4px 8px;" onclick="return confirm('<?php echo esc_js(__('Bạn có chắc chắn muốn xóa khóa PageSpeed API?', 'laca')); ?>');">
+                                <?php esc_html_e('Xóa khóa API', 'laca'); ?>
                             </button>
                         <?php endif; ?>
                     </form>
@@ -1186,28 +1186,28 @@ class GoogleServicesPage
     private function renderNotices(): void
     {
         if (isset($_GET['connected'])) {
-            echo '<div class="notice notice-success is-dismissible"><p>' . esc_html__('Đã kết nối tài khoản Google thành công!', 'lacadev') . '</p></div>';
+            echo '<div class="notice notice-success is-dismissible"><p>' . esc_html__('Đã kết nối tài khoản Google thành công!', 'laca') . '</p></div>';
         }
         if (isset($_GET['disconnected'])) {
-            echo '<div class="notice notice-info is-dismissible"><p>' . esc_html__('Đã ngắt kết nối tài khoản Google.', 'lacadev') . '</p></div>';
+            echo '<div class="notice notice-info is-dismissible"><p>' . esc_html__('Đã ngắt kết nối tài khoản Google.', 'laca') . '</p></div>';
         }
         if (isset($_GET['updated'])) {
-            echo '<div class="notice notice-success is-dismissible"><p>' . esc_html__('Đã lưu cài đặt thành công.', 'lacadev') . '</p></div>';
+            echo '<div class="notice notice-success is-dismissible"><p>' . esc_html__('Đã lưu cài đặt thành công.', 'laca') . '</p></div>';
         }
         if (isset($_GET['psi_updated'])) {
-            echo '<div class="notice notice-success is-dismissible"><p>' . esc_html__('Đã lưu khóa API PageSpeed Insights (đã mã hóa an toàn).', 'lacadev') . '</p></div>';
+            echo '<div class="notice notice-success is-dismissible"><p>' . esc_html__('Đã lưu khóa API PageSpeed Insights (đã mã hóa an toàn).', 'laca') . '</p></div>';
         }
         if (isset($_GET['psi_cleared'])) {
-            echo '<div class="notice notice-success is-dismissible"><p>' . esc_html__('Đã xóa khóa API PageSpeed Insights.', 'lacadev') . '</p></div>';
+            echo '<div class="notice notice-success is-dismissible"><p>' . esc_html__('Đã xóa khóa API PageSpeed Insights.', 'laca') . '</p></div>';
         }
         if (isset($_GET['refreshed'])) {
-            echo '<div class="notice notice-success is-dismissible"><p>' . esc_html__('Đã làm mới danh sách property từ Google Search Console.', 'lacadev') . '</p></div>';
+            echo '<div class="notice notice-success is-dismissible"><p>' . esc_html__('Đã làm mới danh sách property từ Google Search Console.', 'laca') . '</p></div>';
         }
         if (isset($_GET['refreshed_ga_props'])) {
-            echo '<div class="notice notice-success is-dismissible"><p>' . esc_html__('Đã làm mới danh sách thuộc tính.', 'lacadev') . '</p></div>';
+            echo '<div class="notice notice-success is-dismissible"><p>' . esc_html__('Đã làm mới danh sách thuộc tính.', 'laca') . '</p></div>';
         }
         if (isset($_GET['tag_checked'])) {
-            echo '<div class="notice notice-info is-dismissible"><p>' . esc_html__('Đã hoàn thành kiểm tra mã Google trên website.', 'lacadev') . '</p></div>';
+            echo '<div class="notice notice-info is-dismissible"><p>' . esc_html__('Đã hoàn thành kiểm tra mã Google trên website.', 'laca') . '</p></div>';
         }
         if (!empty($_GET['error'])) {
             echo '<div class="notice notice-error is-dismissible"><p>' . esc_html(wp_unslash($_GET['error'])) . '</p></div>';
@@ -1233,24 +1233,24 @@ class GoogleServicesPage
                 <div>
                     <h3 style="margin: 0; font-size: 15px; font-weight: 600; color: var(--laca-fg, #18181b); display: flex; align-items: center; gap: 8px;">
                         <span class="dashicons dashicons-forms" style="font-size: 18px; width: 18px; height: 18px; color: var(--laca-accent, #2563eb);"></span>
-                        <?php esc_html_e('Trạng thái thiết lập Dịch vụ Google', 'lacadev'); ?>
+                        <?php esc_html_e('Trạng thái thiết lập Dịch vụ Google', 'laca'); ?>
                     </h3>
                     <p style="margin: 2px 0 0 0; font-size: 12.5px; color: var(--laca-fg-muted, #71717a);">
-                        <?php esc_html_e('Hoàn tất 4 bước bên dưới để kích hoạt báo cáo Search Console và Google Analytics 4 trên Bảng điều khiển WordPress.', 'lacadev'); ?>
+                        <?php esc_html_e('Hoàn tất 4 bước bên dưới để kích hoạt báo cáo Search Console và Google Analytics 4 trên Bảng điều khiển WordPress.', 'laca'); ?>
                     </p>
                 </div>
                 <div>
                     <?php if (!empty($state['is_all_complete'])): ?>
                         <span class="laca-badge" style="background: #10b981; color: #fff; padding: 4px 10px; border-radius: 9999px; font-size: 12px; font-weight: 500;">
-                            ✓ <?php esc_html_e('Đã thiết lập đầy đủ', 'lacadev'); ?>
+                            ✓ <?php esc_html_e('Đã thiết lập đầy đủ', 'laca'); ?>
                         </span>
                     <?php elseif (!empty($state['is_any_complete'])): ?>
                         <span class="laca-badge" style="background: #f59e0b; color: #fff; padding: 4px 10px; border-radius: 9999px; font-size: 12px; font-weight: 500;">
-                            ! <?php esc_html_e('Đã kết nối một phần', 'lacadev'); ?>
+                            ! <?php esc_html_e('Đã kết nối một phần', 'laca'); ?>
                         </span>
                     <?php else: ?>
                         <span class="laca-badge" style="background: var(--laca-bg-subtle, #f4f4f5); color: var(--laca-fg-muted, #71717a); padding: 4px 10px; border-radius: 9999px; font-size: 12px; font-weight: 500; border: 1px solid var(--laca-border, #e4e4e7);">
-                            <?php esc_html_e('Chưa thiết lập', 'lacadev'); ?>
+                            <?php esc_html_e('Chưa thiết lập', 'laca'); ?>
                         </span>
                     <?php endif; ?>
                 </div>
@@ -1261,18 +1261,18 @@ class GoogleServicesPage
                 <div style="padding: 14px; border: 1px solid <?php echo $step1Complete ? '#bbf7d0' : '#fed7aa'; ?>; background: <?php echo $step1Complete ? '#f0fdf4' : '#fffbeb'; ?>; border-radius: 8px;">
                     <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
                         <span style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: <?php echo $step1Complete ? '#166534' : '#9a3412'; ?>;">
-                            <?php esc_html_e('Bước 1', 'lacadev'); ?>
+                            <?php esc_html_e('Bước 1', 'laca'); ?>
                         </span>
                         <span class="dashicons <?php echo $step1Complete ? 'dashicons-yes-alt' : 'dashicons-warning'; ?>" style="font-size: 16px; width: 16px; height: 16px; color: <?php echo $step1Complete ? '#10b981' : '#f59e0b'; ?>;"></span>
                     </div>
                     <strong style="display: block; font-size: 13.5px; color: #18181b; margin-bottom: 4px;">
-                        <?php esc_html_e('Kết nối Google (OAuth)', 'lacadev'); ?>
+                        <?php esc_html_e('Kết nối Google (OAuth)', 'laca'); ?>
                     </strong>
                     <p style="margin: 0 0 10px 0; font-size: 12px; color: <?php echo $step1Complete ? '#15803d' : '#71717a'; ?>; min-height: 36px;">
                         <?php if ($step1Complete): ?>
-                            <?php echo esc_html($state['email'] ? $state['email'] : __('Đã kết nối OAuth', 'lacadev')); ?>
+                            <?php echo esc_html($state['email'] ? $state['email'] : __('Đã kết nối OAuth', 'laca')); ?>
                         <?php else: ?>
-                            <?php esc_html_e('Chưa kết nối tài khoản Google Cloud OAuth.', 'lacadev'); ?>
+                            <?php esc_html_e('Chưa kết nối tài khoản Google Cloud OAuth.', 'laca'); ?>
                         <?php endif; ?>
                     </p>
                     <?php if ($step1Complete): ?>
@@ -1280,12 +1280,12 @@ class GoogleServicesPage
                             <?php wp_nonce_field('laca_google_switch_account_action'); ?>
                             <input type="hidden" name="return_to" value="<?php echo esc_attr($activePage); ?>">
                             <button type="submit" name="laca_google_switch_account" class="button button-small" style="font-size: 11.5px;">
-                                <?php esc_html_e('Đổi tài khoản', 'lacadev'); ?>
+                                <?php esc_html_e('Đổi tài khoản', 'laca'); ?>
                             </button>
                         </form>
                     <?php else: ?>
                         <a href="<?php echo esc_url(admin_url('admin.php?page=' . self::PAGE_SEARCH_CONSOLE . '#laca-oauth-card')); ?>" class="button button-small button-primary" style="font-size: 11.5px;">
-                            <?php esc_html_e('Kết nối ngay', 'lacadev'); ?> &rarr;
+                            <?php esc_html_e('Kết nối ngay', 'laca'); ?> &rarr;
                         </a>
                     <?php endif; ?>
                 </div>
@@ -1294,22 +1294,22 @@ class GoogleServicesPage
                 <div style="padding: 14px; border: 1px solid <?php echo $step2Complete ? '#bbf7d0' : (($state['gsc']['status'] ?? '') === 'error' ? '#fecaca' : '#e4e4e7'); ?>; background: <?php echo $step2Complete ? '#f0fdf4' : (($state['gsc']['status'] ?? '') === 'error' ? '#fef2f2' : '#fafafa'); ?>; border-radius: 8px;">
                     <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
                         <span style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: <?php echo $step2Complete ? '#166534' : '#52525b'; ?>;">
-                            <?php esc_html_e('Bước 2', 'lacadev'); ?>
+                            <?php esc_html_e('Bước 2', 'laca'); ?>
                         </span>
                         <span class="dashicons <?php echo $step2Complete ? 'dashicons-yes-alt' : (($state['gsc']['status'] ?? '') === 'error' ? 'dashicons-dismiss' : 'dashicons-marker'); ?>" style="font-size: 16px; width: 16px; height: 16px; color: <?php echo $step2Complete ? '#10b981' : (($state['gsc']['status'] ?? '') === 'error' ? '#ef4444' : '#a1a1aa'); ?>;"></span>
                     </div>
                     <strong style="display: block; font-size: 13.5px; color: #18181b; margin-bottom: 4px;">
-                        <?php esc_html_e('Search Console Property', 'lacadev'); ?>
+                        <?php esc_html_e('Search Console Property', 'laca'); ?>
                     </strong>
                     <p style="margin: 0 0 10px 0; font-size: 12px; color: <?php echo $step2Complete ? '#15803d' : '#71717a'; ?>; min-height: 36px; word-break: break-all;">
                         <?php if ($step2Complete): ?>
                             <code><?php echo esc_html($state['gsc']['property'] ?? ''); ?></code>
                         <?php else: ?>
-                            <?php echo esc_html($state['gsc']['reason'] ?? __('Chưa chọn property Search Console.', 'lacadev')); ?>
+                            <?php echo esc_html($state['gsc']['reason'] ?? __('Chưa chọn property Search Console.', 'laca')); ?>
                         <?php endif; ?>
                     </p>
                     <a href="<?php echo esc_url(admin_url('admin.php?page=' . self::PAGE_SEARCH_CONSOLE)); ?>" class="button button-small <?php echo $step2Complete ? '' : 'button-primary'; ?>" style="font-size: 11.5px;">
-                        <?php echo $step2Complete ? esc_html__('Đổi property', 'lacadev') : esc_html__('Chọn property', 'lacadev') . ' &rarr;'; ?>
+                        <?php echo $step2Complete ? esc_html__('Đổi property', 'laca') : esc_html__('Chọn property', 'laca') . ' &rarr;'; ?>
                     </a>
                 </div>
 
@@ -1317,23 +1317,23 @@ class GoogleServicesPage
                 <div style="padding: 14px; border: 1px solid <?php echo $step3Complete ? '#bbf7d0' : (($state['ga']['status'] ?? '') === 'error' ? '#fecaca' : '#e4e4e7'); ?>; background: <?php echo $step3Complete ? '#f0fdf4' : (($state['ga']['status'] ?? '') === 'error' ? '#fef2f2' : '#fafafa'); ?>; border-radius: 8px;">
                     <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
                         <span style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: <?php echo $step3Complete ? '#166534' : '#52525b'; ?>;">
-                            <?php esc_html_e('Bước 3', 'lacadev'); ?>
+                            <?php esc_html_e('Bước 3', 'laca'); ?>
                         </span>
                         <span class="dashicons <?php echo $step3Complete ? 'dashicons-yes-alt' : (($state['ga']['status'] ?? '') === 'error' ? 'dashicons-dismiss' : 'dashicons-marker'); ?>" style="font-size: 16px; width: 16px; height: 16px; color: <?php echo $step3Complete ? '#10b981' : (($state['ga']['status'] ?? '') === 'error' ? '#ef4444' : '#a1a1aa'); ?>;"></span>
                     </div>
                     <strong style="display: block; font-size: 13.5px; color: #18181b; margin-bottom: 4px;">
-                        <?php esc_html_e('GA4 & Khớp mã đo lường', 'lacadev'); ?>
+                        <?php esc_html_e('GA4 & Khớp mã đo lường', 'laca'); ?>
                     </strong>
                     <p style="margin: 0 0 10px 0; font-size: 12px; color: <?php echo $step3Complete ? '#15803d' : '#71717a'; ?>; min-height: 36px; word-break: break-all;">
                         <?php if ($step3Complete): ?>
                             ID: <code><?php echo esc_html($state['ga']['property_id'] ?? ''); ?></code><br>
                             Luồng: <code><?php echo esc_html($state['ga']['measurement_id'] ?? ''); ?></code>
                         <?php else: ?>
-                            <?php echo esc_html($state['ga']['reason'] ?? __('Chưa cấu hình thuộc tính GA4.', 'lacadev')); ?>
+                            <?php echo esc_html($state['ga']['reason'] ?? __('Chưa cấu hình thuộc tính GA4.', 'laca')); ?>
                         <?php endif; ?>
                     </p>
                     <a href="<?php echo esc_url(admin_url('admin.php?page=' . self::PAGE_ANALYTICS)); ?>" class="button button-small <?php echo $step3Complete ? '' : 'button-primary'; ?>" style="font-size: 11.5px;">
-                        <?php echo $step3Complete ? esc_html__('Đổi thuộc tính', 'lacadev') : esc_html__('Cấu hình GA4', 'lacadev') . ' &rarr;'; ?>
+                        <?php echo $step3Complete ? esc_html__('Đổi thuộc tính', 'laca') : esc_html__('Cấu hình GA4', 'laca') . ' &rarr;'; ?>
                     </a>
                 </div>
 
@@ -1341,30 +1341,30 @@ class GoogleServicesPage
                 <div style="padding: 14px; border: 1px solid <?php echo $step4Complete ? '#bbf7d0' : ($step4Collecting ? '#bfdbfe' : '#e4e4e7'); ?>; background: <?php echo $step4Complete ? '#f0fdf4' : ($step4Collecting ? '#eff6ff' : '#fafafa'); ?>; border-radius: 8px;">
                     <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
                         <span style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: <?php echo $step4Complete ? '#166534' : ($step4Collecting ? '#1e40af' : '#71717a'); ?>;">
-                            <?php esc_html_e('Bước 4', 'lacadev'); ?>
+                            <?php esc_html_e('Bước 4', 'laca'); ?>
                         </span>
                         <span class="dashicons <?php echo $step4Complete ? 'dashicons-yes-alt' : ($step4Collecting ? 'dashicons-update' : 'dashicons-clock'); ?>" style="font-size: 16px; width: 16px; height: 16px; color: <?php echo $step4Complete ? '#10b981' : ($step4Collecting ? '#3b82f6' : '#a1a1aa'); ?>;"></span>
                     </div>
                     <strong style="display: block; font-size: 13.5px; color: #18181b; margin-bottom: 4px;">
-                        <?php esc_html_e('Dữ liệu báo cáo', 'lacadev'); ?>
+                        <?php esc_html_e('Dữ liệu báo cáo', 'laca'); ?>
                     </strong>
                     <p style="margin: 0 0 10px 0; font-size: 12px; color: <?php echo $step4Complete ? '#15803d' : ($step4Collecting ? '#1e40af' : '#71717a'); ?>; min-height: 36px;">
                         <?php if ($step4Complete): ?>
-                            <?php esc_html_e('Đã có dữ liệu báo cáo từ Google.', 'lacadev'); ?>
+                            <?php esc_html_e('Đã có dữ liệu báo cáo từ Google.', 'laca'); ?>
                         <?php elseif ($step4Collecting): ?>
-                            <?php esc_html_e('Đang thu thập dữ liệu (Google cần 24–48 giờ).', 'lacadev'); ?>
+                            <?php esc_html_e('Đang thu thập dữ liệu (Google cần 24–48 giờ).', 'laca'); ?>
                         <?php else: ?>
-                            <?php esc_html_e('Chờ hoàn tất cấu hình các bước trước.', 'lacadev'); ?>
+                            <?php esc_html_e('Chờ hoàn tất cấu hình các bước trước.', 'laca'); ?>
                         <?php endif; ?>
                     </p>
                     <?php if (!empty($state['is_any_complete'])): ?>
                         <a href="<?php echo esc_url(admin_url('index.php#laca-google-report')); ?>" class="button button-small" style="font-size: 11.5px;">
                             <span class="dashicons dashicons-chart-area" style="font-size: 14px; width: 14px; height: 14px; margin-top: 3px;"></span>
-                            <?php esc_html_e('Xem trên Dashboard', 'lacadev'); ?>
+                            <?php esc_html_e('Xem trên Dashboard', 'laca'); ?>
                         </a>
                     <?php else: ?>
                         <button type="button" class="button button-small" disabled style="font-size: 11.5px;">
-                            <?php esc_html_e('Chưa sẵn sàng', 'lacadev'); ?>
+                            <?php esc_html_e('Chưa sẵn sàng', 'laca'); ?>
                         </button>
                     <?php endif; ?>
                 </div>

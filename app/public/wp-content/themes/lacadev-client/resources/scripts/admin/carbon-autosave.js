@@ -23,7 +23,14 @@ export function initCarbonFieldsAutoSave() {
 			<span class="laca-autosave-icon" aria-hidden="true"></span>
 			<span class="laca-autosave-text"></span>
 		`;
-		document.body.appendChild( indicator );
+		// Có thanh lưu (card Actions) thì đặt trạng thái ngay cạnh nút Lưu.
+		const actionBar = document.getElementById( 'major-publishing-actions' );
+		if ( actionBar ) {
+			indicator.classList.add( 'is-inline' );
+			actionBar.prepend( indicator );
+		} else {
+			document.body.appendChild( indicator );
+		}
 	}
 
 	const iconEl = indicator.querySelector( '.laca-autosave-icon' );
@@ -32,7 +39,8 @@ export function initCarbonFieldsAutoSave() {
 
 	function setStatus( status, message ) {
 		clearTimeout( hideTimer );
-		indicator.className = `laca-autosave-indicator is-${ status }`;
+		const inline = indicator.classList.contains( 'is-inline' );
+		indicator.className = `laca-autosave-indicator is-${ status }${ inline ? ' is-inline' : '' }`;
 
 		if ( textEl ) {
 			textEl.textContent = message;

@@ -130,8 +130,8 @@ class Slack
         }
 
         $data = [];
-        $data[__('Price', 'lacadev')] = $this->getProductPrice($product);
-        $data[__('Availability', 'lacadev')] = $this->getProductAvailability($product);
+        $data[__('Price', 'laca')] = $this->getProductPrice($product);
+        $data[__('Availability', 'laca')] = $this->getProductAvailability($product);
 
         return $data;
     }
@@ -140,7 +140,7 @@ class Slack
     {
         $avail = $product->get_availability();
         $text = $avail['availability'] ?? '';
-        return !empty($text) ? $text : __('In stock', 'lacadev');
+        return !empty($text) ? $text : __('In stock', 'laca');
     }
 
     private function getProductPrice(object $product): string
@@ -172,11 +172,11 @@ class Slack
         }
 
         if (!empty($author)) {
-            $data[__('Written by', 'lacadev')] = $author;
+            $data[__('Written by', 'laca')] = $author;
         }
 
         if ($post && !post_password_required($post)) {
-            $data[__('Time to read', 'lacadev')] = $this->calculateTimeToRead($post);
+            $data[__('Time to read', 'laca')] = $this->calculateTimeToRead($post);
         }
 
         return $data;
@@ -191,7 +191,7 @@ class Slack
         $data = [];
 
         if ($post && !post_password_required($post)) {
-            $data[__('Time to read', 'lacadev')] = $this->calculateTimeToRead($post);
+            $data[__('Time to read', 'laca')] = $this->calculateTimeToRead($post);
         }
 
         return $data;
@@ -207,12 +207,12 @@ class Slack
 
         if ($minutes > 0) {
             return sprintf(
-                _n('%d minute', '%d minutes', (int) $minutes, 'lacadev'),
+                _n('%d minute', '%d minutes', (int) $minutes, 'laca'),
                 (int) $minutes
             );
         }
 
-        return __('Less than a minute', 'lacadev');
+        return __('Less than a minute', 'laca');
     }
 
     /**
@@ -228,7 +228,7 @@ class Slack
             return $data;
         }
 
-        $label = __('Items', 'lacadev');
+        $label = __('Items', 'laca');
         $post_type_object = get_post_type_object(get_post_type());
         if (is_object($post_type_object) && isset($post_type_object->labels->name)) {
             $label = $post_type_object->labels->name;
@@ -258,8 +258,8 @@ class Slack
             return $data;
         }
 
-        $data[__('Name', 'lacadev')] = $author->display_name;
-        $data[__('Posts', 'lacadev')] = count_user_posts($author->ID);
+        $data[__('Name', 'laca')] = $author->display_name;
+        $data[__('Posts', 'laca')] = count_user_posts($author->ID);
 
         return $data;
     }

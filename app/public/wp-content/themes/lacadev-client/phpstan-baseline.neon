@@ -1,0 +1,379 @@
+parameters:
+	ignoreErrors:
+		-
+			message: '#^Callback expects 0 parameters, \$accepted_args is set to 2\.$#'
+			identifier: arguments.count
+			count: 1
+			path: app/src/Abstracts/AbstractPostType.php
+
+		-
+			message: '#^Callback expects 1 parameter, \$accepted_args is set to 9900\.$#'
+			identifier: arguments.count
+			count: 1
+			path: app/src/Abstracts/AbstractPostType.php
+
+		-
+			message: '#^Callback expects 1 parameter, \$accepted_args is set to 9999\.$#'
+			identifier: arguments.count
+			count: 1
+			path: app/src/Abstracts/AbstractPostType.php
+
+		-
+			message: '#^Function insertArrayAtPosition not found\.$#'
+			identifier: function.notFound
+			count: 1
+			path: app/src/Abstracts/AbstractPostType.php
+
+		-
+			message: '#^Call to static method enqueue\(\) on an unknown class Laca_Recaptcha\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/src/Features/ContactForm/ContactFormAjaxHandler.php
+
+		-
+			message: '#^Call to static method error\(\) on an unknown class WP_CLI\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/src/Features/DiscordHub/CliCommand.php
+
+		-
+			message: '#^Call to static method log\(\) on an unknown class WP_CLI\.$#'
+			identifier: class.notFound
+			count: 7
+			path: app/src/Features/DiscordHub/CliCommand.php
+
+		-
+			message: '#^Call to static method success\(\) on an unknown class WP_CLI\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/src/Features/DiscordHub/CliCommand.php
+
+		-
+			message: '#^Call to static method add_command\(\) on an unknown class WP_CLI\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/src/Features/DiscordHub/DiscordHub.php
+
+		-
+			message: '#^Constant DB_NAME not found\.$#'
+			identifier: constant.notFound
+			count: 1
+			path: app/src/Features/DiscordHub/Dispatcher.php
+
+		-
+			message: '#^Action callback returns array\{status\: string, files\: int, added\: int, modified\: int, deleted\: int, seconds\: float\} but should not return anything\.$#'
+			identifier: return.void
+			count: 1
+			path: app/src/Features/DiscordHub/FileWatch/Scanner.php
+
+		-
+			message: '#^Constant DB_NAME not found\.$#'
+			identifier: constant.notFound
+			count: 1
+			path: app/src/Features/DiscordHub/FileWatch/Scanner.php
+
+		-
+			message: '#^Constant WPINC not found\.$#'
+			identifier: constant.notFound
+			count: 1
+			path: app/src/Features/DiscordHub/Monitors/FileEditorMonitor.php
+
+		-
+			message: '#^Function insertArrayAtPosition not found\.$#'
+			identifier: function.notFound
+			count: 1
+			path: app/src/Features/DynamicCPT/DynamicCptManager.php
+
+		-
+			message: '#^Variable \$words on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.variable
+			count: 1
+			path: app/src/Features/FrontendChatbot/FrontendChatbotHandler.php
+
+		-
+			message: '#^Variable \$gaPropId in empty\(\) always exists and is not falsy\.$#'
+			identifier: empty.variable
+			count: 1
+			path: app/src/Features/GoogleServices/GoogleServices.php
+
+		-
+			message: '#^Variable \$siteMap in empty\(\) always exists and is not falsy\.$#'
+			identifier: empty.variable
+			count: 1
+			path: app/src/Features/GoogleServices/GscClient.php
+
+		-
+			message: '#^Variable \$range on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.variable
+			count: 1
+			path: app/src/Features/GoogleServices/views/partials/google-report.php
+
+		-
+			message: '#^Variable \$rangeLabels on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.variable
+			count: 1
+			path: app/src/Features/GoogleServices/views/partials/google-report.php
+
+		-
+			message: '#^Variable \$strategy on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.variable
+			count: 1
+			path: app/src/Features/GoogleServices/views/partials/pagespeed-panel.php
+
+		-
+			message: '#^Filter callback return statement is missing\.$#'
+			identifier: return.missing
+			count: 1
+			path: app/src/Features/LacaSeo/Admin/ListScreens/PostList.php
+
+		-
+			message: '#^Function pll_register_string not found\.$#'
+			identifier: function.notFound
+			count: 1
+			path: app/src/Features/LacaSeo/Compat/Polylang.php
+
+		-
+			message: '#^Function wc_price not found\.$#'
+			identifier: function.notFound
+			count: 1
+			path: app/src/Features/LacaSeo/Core/Variables.php
+
+		-
+			message: '#^Variable \$replacements in empty\(\) always exists and is not falsy\.$#'
+			identifier: empty.variable
+			count: 1
+			path: app/src/Features/LacaSeo/Core/Variables.php
+
+		-
+			message: '#^Variable \$term in empty\(\) always exists and is not falsy\.$#'
+			identifier: empty.variable
+			count: 1
+			path: app/src/Features/LacaSeo/Frontend/Breadcrumbs.php
+
+		-
+			message: '#^Function get_woocommerce_currency not found\.$#'
+			identifier: function.notFound
+			count: 1
+			path: app/src/Features/LacaSeo/Frontend/OpenGraph/Facebook.php
+
+		-
+			message: '#^Function wc_format_decimal not found\.$#'
+			identifier: function.notFound
+			count: 2
+			path: app/src/Features/LacaSeo/Frontend/OpenGraph/Slack.php
+
+		-
+			message: '#^Function wc_get_price_decimals not found\.$#'
+			identifier: function.notFound
+			count: 2
+			path: app/src/Features/LacaSeo/Frontend/OpenGraph/Slack.php
+
+		-
+			message: '#^Function wc_price not found\.$#'
+			identifier: function.notFound
+			count: 4
+			path: app/src/Features/LacaSeo/Frontend/OpenGraph/Slack.php
+
+		-
+			message: '#^Variable \$address in empty\(\) always exists and is not falsy\.$#'
+			identifier: empty.variable
+			count: 1
+			path: app/src/Features/LacaSeo/Modules/LocalSeo/LocalSeo.php
+
+		-
+			message: '#^Variable \$where in empty\(\) always exists and is not falsy\.$#'
+			identifier: empty.variable
+			count: 1
+			path: app/src/Features/LacaSeo/Modules/Redirections/DB.php
+
+		-
+			message: '#^Function WC not found\.$#'
+			identifier: function.notFound
+			count: 3
+			path: app/src/Features/LacaSeo/Schema/Snippets/Product.php
+
+		-
+			message: '#^Function get_woocommerce_currency not found\.$#'
+			identifier: function.notFound
+			count: 1
+			path: app/src/Features/LacaSeo/Schema/Snippets/ProductWooCommerce.php
+
+		-
+			message: '#^Function wc_format_decimal not found\.$#'
+			identifier: function.notFound
+			count: 1
+			path: app/src/Features/LacaSeo/Schema/Snippets/ProductWooCommerce.php
+
+		-
+			message: '#^Function wc_get_price_decimals not found\.$#'
+			identifier: function.notFound
+			count: 1
+			path: app/src/Features/LacaSeo/Schema/Snippets/ProductWooCommerce.php
+
+		-
+			message: '#^Function wc_get_product not found\.$#'
+			identifier: function.notFound
+			count: 1
+			path: app/src/Features/LacaSeo/Schema/Snippets/ProductWooCommerce.php
+
+		-
+			message: '#^Function wc_get_product not found\.$#'
+			identifier: function.notFound
+			count: 1
+			path: app/src/Features/LacaSeo/Schema/Snippets/ProductsPage.php
+
+		-
+			message: '#^Anonymous function has an unused use \$author\.$#'
+			identifier: closure.unusedUse
+			count: 1
+			path: app/src/Settings/AdminSettings.php
+
+		-
+			message: '#^Constant AUTHOR not found\.$#'
+			identifier: constant.notFound
+			count: 15
+			path: app/src/Settings/AdminSettings.php
+
+		-
+			message: '#^Filter callback return statement is missing\.$#'
+			identifier: return.missing
+			count: 1
+			path: app/src/Settings/AdminSettings.php
+
+		-
+			message: '#^Call to static method create\(\) on an unknown class Faker\\Factory\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/src/Settings/FakerData.php
+
+		-
+			message: '#^Function wc_get_order not found\.$#'
+			identifier: function.notFound
+			count: 1
+			path: app/src/Settings/LacaAdmin/ReleaseChecklist.php
+
+		-
+			message: '#^Function wc_get_order_status_name not found\.$#'
+			identifier: function.notFound
+			count: 1
+			path: app/src/Settings/LacaAdmin/ReleaseChecklist.php
+
+		-
+			message: '#^Instantiated class WC_Shipping_Zone not found\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/src/Settings/LacaAdmin/ReleaseChecklist.php
+
+		-
+			message: '#^Function carbon_get_theme_option not found\.$#'
+			identifier: function.notFound
+			count: 12
+			path: app/src/Settings/LacaTools/AITranslationHandler.php
+
+		-
+			message: '#^Function carbon_get_theme_option not found\.$#'
+			identifier: function.notFound
+			count: 6
+			path: app/src/Settings/LacaTools/Management/AdminUxService.php
+
+		-
+			message: '#^Function carbon_get_theme_option not found\.$#'
+			identifier: function.notFound
+			count: 1
+			path: app/src/Settings/LacaTools/Management/ContentAuditService.php
+
+		-
+			message: '#^Function carbon_get_theme_option not found\.$#'
+			identifier: function.notFound
+			count: 1
+			path: app/src/Settings/LacaTools/Management/DashboardWidgets.php
+
+		-
+			message: '#^Function wc_get_orders not found\.$#'
+			identifier: function.notFound
+			count: 2
+			path: app/src/Settings/LacaTools/Management/DashboardWidgets.php
+
+		-
+			message: '#^Function insertArrayAtPosition not found\.$#'
+			identifier: function.notFound
+			count: 1
+			path: app/src/Settings/LacaTools/Management/ListTableEnhancements.php
+
+		-
+			message: '#^Function carbon_get_theme_option not found\.$#'
+			identifier: function.notFound
+			count: 1
+			path: app/src/Settings/LacaTools/Management/MediaService.php
+
+		-
+			message: '#^Constant APP_DIR not found\.$#'
+			identifier: constant.notFound
+			count: 1
+			path: app/src/Settings/RequirePlugins.php
+
+		-
+			message: '#^Function tgmpa not found\.$#'
+			identifier: function.notFound
+			count: 1
+			path: app/src/Settings/RequirePlugins.php
+
+		-
+			message: '#^Found usage of constant DOING_AJAX\. Use wp_doing_ajax\(\) instead\.$#'
+			identifier: phpstanWP.wpConstant.fetch
+			count: 1
+			path: app/src/Settings/Security/CustomLoginManager.php
+
+		-
+			message: '#^Found usage of constant DOING_CRON\. Use wp_doing_cron\(\) instead\.$#'
+			identifier: phpstanWP.wpConstant.fetch
+			count: 1
+			path: app/src/Settings/Security/CustomLoginManager.php
+
+		-
+			message: '#^Callback expects 1 parameter, \$accepted_args is set to 2\.$#'
+			identifier: arguments.count
+			count: 1
+			path: app/src/Settings/ThemeSettings.php
+
+		-
+			message: '#^Constant AUTHOR not found\.$#'
+			identifier: constant.notFound
+			count: 4
+			path: app/src/Settings/ThemeSettings.php
+
+		-
+			message: '#^Function getExcerpt not found\.$#'
+			identifier: function.notFound
+			count: 1
+			path: app/src/Settings/ThemeSettings.php
+
+		-
+			message: '#^Function getOption not found\.$#'
+			identifier: function.notFound
+			count: 1
+			path: app/src/Settings/ThemeSettings.php
+
+		-
+			message: '#^Function getPostThumbnailUrl not found\.$#'
+			identifier: function.notFound
+			count: 1
+			path: app/src/Settings/ThemeSettings.php
+
+		-
+			message: '#^Function updateUserMeta not found\.$#'
+			identifier: function.notFound
+			count: 1
+			path: app/src/Settings/ThemeSettings.php
+
+		-
+			message: '#^Constant APP_DIR not found\.$#'
+			identifier: constant.notFound
+			count: 1
+			path: app/src/Validators/Validator.php
+
+		-
+			message: '#^Constant APP_APP_DIR not found\.$#'
+			identifier: constant.notFound
+			count: 1
+			path: app/src/View/ViewServiceProvider.php

@@ -95,6 +95,39 @@ class AITranslationHandler
         return $this->executeWithFallback($message, $system_prompt);
     }
 
+    private $preferred_provider = null;
+    private $maxTokens = null;
+    private $timeout = null;
+    private $last_provider = '';
+
+    public function setPreferredProvider(string $p): self
+    {
+        $this->preferred_provider = $p;
+        return $this;
+    }
+
+    public function setMaxTokens(int $n): self
+    {
+        $this->maxTokens = $n;
+        return $this;
+    }
+
+    public function setTimeout(int $seconds): self
+    {
+        $this->timeout = max(10, min(180, $seconds));
+        return $this;
+    }
+
+    public function hasAnyProvider(): bool
+    {
+        return !empty($this->buildProviderChain());
+    }
+
+    public function getLastProvider(): string
+    {
+        return $this->last_provider;
+    }
+
     /**
      * Thử lần lượt từng provider trong chain (ưu tiên default_provider trước)
      * cho tới khi có 1 provider trả về thành công. Mỗi lỗi (key sai, hết
@@ -113,6 +146,7 @@ class AITranslationHandler
         foreach ($chain as $provider) {
             $result = $this->callProvider($provider, $text, $system_prompt);
             if (!is_wp_error($result)) {
+                $this->last_provider = $provider;
                 return $result;
             }
             $errors[] = $provider . ': ' . $result->get_error_message();
@@ -132,8 +166,9 @@ class AITranslationHandler
     private function buildProviderChain(): array
     {
         $chain = [];
-        if ($this->isKeySet($this->default_provider)) {
-            $chain[] = $this->default_provider;
+        $primary = $this->preferred_provider ?: $this->default_provider;
+        if ($this->isKeySet($primary)) {
+            $chain[] = $primary;
         }
         foreach (self::PROVIDER_CHAIN_ORDER as $provider) {
             if (!in_array($provider, $chain, true) && $this->isKeySet($provider)) {
@@ -207,13 +242,13 @@ class AITranslationHandler
         $body = [
             "system_instruction" => ["parts" => [["text" => $system_prompt]]],
             "contents" => [["role" => "user", "parts" => [["text" => $text]]]],
-            "generationConfig" => ["temperature" => 0.1, "maxOutputTokens" => 2048]
+            "generationConfig" => ["temperature" => 0.1, "maxOutputTokens" => $this->maxTokens ?? 2048]
         ];
 
         $response = wp_remote_post($url, [
             'headers' => ['Content-Type' => 'application/json'],
             'body'    => json_encode($body, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
-            'timeout' => 30
+            'timeout' => $this->timeout ?? 30
         ]);
 
         if (is_wp_error($response)) return $response;
@@ -241,6 +276,8 @@ class AITranslationHandler
     private function tryModelsSequentially(string $url, array $headers, array $baseBody, array $models, string $errorCode, string $providerLabel)
     {
         $last_error = null;
+        // Gom lỗi của MỌI model đã thử — chỉ báo lỗi model cuối dễ hiểu nhầm là do model đó.
+        $errors = [];
 
         foreach ($models as $model) {
             $body = array_merge($baseBody, ['model' => $model]);
@@ -248,10 +285,11 @@ class AITranslationHandler
             $response = wp_remote_post($url, [
                 'headers' => $headers,
                 'body'    => json_encode($body, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
-                'timeout' => 30,
+                'timeout' => $this->timeout ?? 30,
             ]);
 
             if (is_wp_error($response)) {
+                $errors[] = "[{$model}] " . $response->get_error_message();
                 $last_error = $response;
                 continue;
             }
@@ -264,11 +302,16 @@ class AITranslationHandler
             }
 
             $err_msg = $data['error']['message'] ?? ($providerLabel . ' API error: HTTP ' . $http_code);
+            $errors[] = "[{$model}] {$err_msg}";
             $last_error = new \WP_Error($errorCode, "[{$model}] {$err_msg}");
 
             if (in_array($http_code, [401, 403], true)) {
                 break;
             }
+        }
+
+        if (!empty($errors)) {
+            return new \WP_Error($errorCode, implode(' | ', $errors));
         }
 
         return $last_error ?: new \WP_Error($errorCode, "Không thể kết nối tới {$providerLabel} API.");
@@ -294,7 +337,7 @@ class AITranslationHandler
                     ['role' => 'user', 'content' => $text],
                 ],
                 'temperature' => 0.3,
-                'max_tokens'  => 1024,
+                'max_tokens'  => $this->maxTokens ?? 1024,
             ],
             $models,
             'groq_api_error',
@@ -312,11 +355,13 @@ class AITranslationHandler
      */
     private function callOpenRouter($text, $system_prompt)
     {
+        // "openrouter/free" là router miễn phí của OpenRouter, tự chọn model
+        // free đang hoạt động — để cuối làm lưới an toàn khi các model trên
+        // bị gỡ (các model free cũ deepseek/llama/qwen/gemma-2 đã bị gỡ 10/2026).
         $models = [
-            'deepseek/deepseek-chat-v3.1:free',
-            'meta-llama/llama-3.3-70b-instruct:free',
-            'qwen/qwen-2.5-72b-instruct:free',
-            'google/gemma-2-9b-it:free',
+            'google/gemma-4-31b-it:free',
+            'nvidia/nemotron-3-ultra-550b-a55b:free',
+            'openrouter/free',
         ];
 
         return $this->tryModelsSequentially(
@@ -337,6 +382,7 @@ class AITranslationHandler
                     ['role' => 'user', 'content' => $text],
                 ],
                 'temperature' => 0.1,
+                'max_tokens'  => $this->maxTokens ?? 1024,
             ],
             $models,
             'openrouter_api_error',
@@ -358,6 +404,7 @@ class AITranslationHandler
                 ['role' => 'system', 'content' => $system_prompt],
                 ['role' => 'user', 'content' => $text]
             ],
+            'max_tokens' => $this->maxTokens ?? 1024,
         ];
 
         $response = wp_remote_post($url, [
@@ -366,7 +413,7 @@ class AITranslationHandler
                 'Authorization' => 'Bearer ' . $this->cloudflare_api_token,
             ],
             'body'    => json_encode($body, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
-            'timeout' => 30
+            'timeout' => $this->timeout ?? 30
         ]);
 
         if (is_wp_error($response)) return $response;
@@ -395,6 +442,7 @@ class AITranslationHandler
                 ['role' => 'user', 'content' => $text]
             ],
             'temperature' => 0.1,
+            'max_tokens'  => $this->maxTokens ?? 1024,
         ];
 
         $response = wp_remote_post($url, [
@@ -403,7 +451,7 @@ class AITranslationHandler
                 'Authorization' => 'Bearer ' . $this->mistral_key,
             ],
             'body'    => json_encode($body, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
-            'timeout' => 30
+            'timeout' => $this->timeout ?? 30
         ]);
 
         if (is_wp_error($response)) return $response;
@@ -434,6 +482,7 @@ class AITranslationHandler
                 ['role' => 'user', 'content' => $text]
             ],
             'temperature' => 0.1,
+            'max_tokens'  => $this->maxTokens ?? 1024,
         ];
 
         $response = wp_remote_post($url, [
@@ -442,7 +491,7 @@ class AITranslationHandler
                 'Authorization' => 'Bearer ' . $this->cohere_key,
             ],
             'body'    => json_encode($body, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
-            'timeout' => 30
+            'timeout' => $this->timeout ?? 30
         ]);
 
         if (is_wp_error($response)) return $response;
@@ -479,7 +528,7 @@ class AITranslationHandler
                 ['role' => 'user', 'content' => $text]
             ],
             'temperature' => 0.1,
-            'max_tokens'  => 1024,
+            'max_tokens'  => $this->maxTokens ?? 1024,
         ];
 
         $response = wp_remote_post($url, [
@@ -488,7 +537,7 @@ class AITranslationHandler
                 'Authorization' => 'Bearer ' . $this->nvidia_key,
             ],
             'body'    => json_encode($body, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
-            'timeout' => 30
+            'timeout' => $this->timeout ?? 30
         ]);
 
         if (is_wp_error($response)) return $response;
@@ -513,7 +562,8 @@ class AITranslationHandler
                 ['role' => 'system', 'content' => $system_prompt],
                 ['role' => 'user', 'content' => $text]
             ],
-            'temperature' => 0.1
+            'temperature' => 0.1,
+            'max_tokens'  => $this->maxTokens ?? 1024,
         ];
 
         $response = wp_remote_post($url, [
@@ -522,7 +572,7 @@ class AITranslationHandler
                 'Authorization' => 'Bearer ' . $this->deepseek_key
             ],
             'body'    => json_encode($body, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
-            'timeout' => 30
+            'timeout' => $this->timeout ?? 30
         ]);
 
         if (is_wp_error($response)) return $response;
@@ -547,7 +597,8 @@ class AITranslationHandler
                 ['role' => 'system', 'content' => $system_prompt],
                 ['role' => 'user', 'content' => $text]
             ],
-            'temperature' => 0.1
+            'temperature' => 0.1,
+            'max_tokens'  => $this->maxTokens ?? 1024,
         ];
 
         $response = wp_remote_post($url, [
@@ -556,7 +607,7 @@ class AITranslationHandler
                 'Authorization' => 'Bearer ' . $this->openai_key
             ],
             'body'    => json_encode($body, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
-            'timeout' => 30
+            'timeout' => $this->timeout ?? 30
         ]);
 
         if (is_wp_error($response)) return $response;
@@ -579,7 +630,7 @@ class AITranslationHandler
             'model' => 'claude-3-5-haiku-20241022',
             'system' => $system_prompt,
             'messages' => [['role' => 'user', 'content' => $text]],
-            'max_tokens' => 2048,
+            'max_tokens' => $this->maxTokens ?? 2048,
             'temperature' => 0.1
         ];
 
@@ -590,7 +641,7 @@ class AITranslationHandler
                 'anthropic-version' => '2023-06-01'
             ],
             'body'    => json_encode($body, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
-            'timeout' => 30
+            'timeout' => $this->timeout ?? 30
         ]);
 
         if (is_wp_error($response)) return $response;

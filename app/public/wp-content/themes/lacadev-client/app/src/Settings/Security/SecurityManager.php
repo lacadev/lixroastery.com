@@ -163,10 +163,7 @@ class SecurityManager
         ?>
         <div class="wrap">
             <h1>Bảo mật</h1>
-            <div class="laca-alert laca-alert--info">
-                <p class="laca-alert__title">Bảo mật website</p>
-                <p class="laca-alert__desc">Trang này tập hợp các công cụ giúp bảo vệ site: kiểm tra điểm bảo mật tổng quan, giám sát file bị thay đổi, quét mã độc, phát hiện tài khoản admin ẩn và đổi URL đăng nhập để tránh dò mật khẩu. Xác thực 2 bước (2FA) và Super User nằm ở menu riêng.</p>
-            </div>
+            <p class="laca-page-intro">Trang này tập hợp các công cụ giúp bảo vệ site: kiểm tra điểm bảo mật tổng quan, giám sát file bị thay đổi, quét mã độc, phát hiện tài khoản admin ẩn và đổi URL đăng nhập để tránh dò mật khẩu. Xác thực 2 bước (2FA) và Super User nằm ở menu riêng.</p>
             <nav class="nav-tab-wrapper">
                 <?php foreach ($tabs as $key => $label): ?>
                     <a href="<?php echo esc_url(add_query_arg(['page' => 'laca-security', 'tab' => $key], admin_url('admin.php'))); ?>"
@@ -636,23 +633,23 @@ class SecurityManager
     {
         $this->checkNonce();
         if (!current_user_can('manage_options')) {
-            wp_send_json_error(__('Bạn không có quyền thực hiện thao tác này.', 'lacadev'));
+            wp_send_json_error(__('Bạn không có quyền thực hiện thao tác này.', 'laca'));
         }
 
         $file = sanitize_text_field($_POST['file'] ?? '');
         if (empty($file)) {
-            wp_send_json_error(__('Đường dẫn file không hợp lệ.', 'lacadev'));
+            wp_send_json_error(__('Đường dẫn file không hợp lệ.', 'laca'));
         }
 
         $base = wp_normalize_path(ABSPATH);
         $fullPath = $base . ltrim($file, '/');
         if (!file_exists($fullPath) || !is_file($fullPath)) {
-            wp_send_json_error(__('File không tồn tại trên hệ thống.', 'lacadev'));
+            wp_send_json_error(__('File không tồn tại trên hệ thống.', 'laca'));
         }
 
         $hash = @hash_file('sha256', $fullPath);
         if (!$hash) {
-            wp_send_json_error(__('Không thể tạo mã băm cho file.', 'lacadev'));
+            wp_send_json_error(__('Không thể tạo mã băm cho file.', 'laca'));
         }
 
         $whitelist = get_option('laca_malware_whitelist', []);
@@ -664,7 +661,7 @@ class SecurityManager
         update_option('laca_malware_whitelist', $whitelist);
 
         wp_send_json_success([
-            'message' => __('Đã thêm vào danh sách an toàn.', 'lacadev'),
+            'message' => __('Đã thêm vào danh sách an toàn.', 'laca'),
             'file'    => $file,
         ]);
     }
@@ -787,9 +784,9 @@ class SecurityManager
                     var color = d.score >= 80 ? 'var(--laca-success)' : d.score >= 50 ? 'var(--laca-warning)' : 'var(--laca-danger)';
                     var verdict = d.score >= 80 ? 'Tốt' : d.score >= 50 ? 'Trung bình' : 'Yếu';
                     var html = '<div class="laca-security-flex" style="margin-bottom:20px;">';
-                    html += '<div class="audit-score-circle" style="color:'+color+';border-color:'+color+';">'+d.score+'</div>';
+                    html += '<div class="laca-audit-score-circle" style="color:'+color+';border-color:'+color+';">'+d.score+'</div>';
                     html += '<div><strong style="font-size:18px;">'+verdict+'</strong><br>';
-                    html += '<span style="font-size:13px;color:var(--laca-fg-muted);">Pass: '+d.pass+' | Fail: '+d.fail+' | Warning: '+d.warn+'</span></div></div>';
+                    html += '<span style="font-size:13px;color:var(--laca-fg-muted);">Đạt: '+d.pass+' · Lỗi: '+d.fail+' · Cảnh báo: '+d.warn+'</span></div></div>';
 
                     $.each(d.groups, function(cat, checks){
                         html += '<h3 style="margin:16px 0 8px;border-bottom:1px solid var(--laca-border);padding-bottom:6px;">'+cat+'</h3>';
@@ -798,8 +795,13 @@ class SecurityManager
                             var icon = c.status==='pass'?'✓':c.status==='fail'?'✗':c.status==='warn'?'⚠':'ℹ';
                             var col  = c.status==='pass'?'var(--laca-success)':c.status==='fail'?'var(--laca-danger)':c.status==='warn'?'var(--laca-warning)':'var(--laca-accent-fg)';
                             html += '<tr><td style="width:24px;font-size:16px;color:'+col+';">'+icon+'</td>';
-                            html += '<td><strong>'+c.title+'</strong><br><span style="font-size:12px;color:var(--laca-fg-muted);">'+c.desc+'</span></td>';
-                            html += '<td style="width:60px;text-align:right;font-size:12px;color:var(--laca-fg-subtle);">+'+c.points+'pt</td></tr>';
+                            // Mục chưa đạt: dòng chính là kết quả thật (desc), tiêu chí lùi xuống dòng phụ —
+                            // tránh đọc "HTTPS đang hoạt động" cạnh dấu ✗ rồi hiểu ngược.
+                            var ok = c.status === 'pass' || c.status === 'info';
+                            var main = ok ? c.title : c.desc;
+                            var sub  = ok ? c.desc : 'Tiêu chí: ' + c.title + (c.fix ? ' — Cách sửa: ' + c.fix : '');
+                            html += '<td><strong>'+main+'</strong><br><span style="font-size:12px;color:var(--laca-fg-muted);">'+sub+'</span></td>';
+                            html += '<td style="width:60px;text-align:right;font-size:12px;color:var(--laca-fg-subtle);">'+(c.status==='pass' ? '+'+c.points+'đ' : c.status==='info' ? '' : '0/'+c.points+'đ')+'</td></tr>';
                         });
                         html += '</tbody></table>';
                     });

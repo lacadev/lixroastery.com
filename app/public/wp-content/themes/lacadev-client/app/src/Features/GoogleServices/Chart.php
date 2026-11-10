@@ -43,7 +43,7 @@ class Chart
 
         if ($isListOfPoints) {
             $normalizedSeries[] = [
-                'name'   => (string) ($opts['title'] ?? __('Kỳ hiện tại', 'lacadev')),
+                'name'   => (string) ($opts['title'] ?? __('Kỳ hiện tại', 'laca')),
                 'points' => array_values($series),
                 'style'  => 'solid',
             ];
@@ -62,7 +62,7 @@ class Chart
                     $defaultStyle = ($sKey === 'prev' || $sKey === 1 || (!empty($sVal['name']) && stripos($sVal['name'], 'trước') !== false)) ? 'dashed' : 'solid';
                 }
                 $normalizedSeries[] = [
-                    'name'   => (string) ($sVal['name'] ?? ($defaultStyle === 'dashed' ? __('Kỳ trước', 'lacadev') : __('Kỳ này', 'lacadev'))),
+                    'name'   => (string) ($sVal['name'] ?? ($defaultStyle === 'dashed' ? __('Kỳ trước', 'laca') : __('Kỳ này', 'laca'))),
                     'points' => array_values($points),
                     'style'  => (string) ($sVal['style'] ?? $defaultStyle),
                 ];
@@ -113,7 +113,7 @@ class Chart
         }
 
         $ySuffix = (string) ($opts['ySuffix'] ?? '');
-        $ariaLabel = (string) ($opts['ariaLabel'] ?? ($opts['title'] ?? __('Biểu đồ xu hướng', 'lacadev')));
+        $ariaLabel = (string) ($opts['ariaLabel'] ?? ($opts['title'] ?? __('Biểu đồ xu hướng', 'laca')));
 
         // Y-axis ticks: 3 ticks (0, mid, max)
         $yTicks = [

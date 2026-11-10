@@ -13,11 +13,11 @@ if (!empty($_GET['action'])) {
     if ($act === 'delete' && !empty($_GET['id'])) {
         check_admin_referer('laca_seo_404_action');
         DB::deleteLog(absint($_GET['id']));
-        $notice = '<div class="notice notice-success is-dismissible"><p>' . esc_html__('Đã xoá bản ghi 404.', 'lacadev') . '</p></div>';
+        $notice = '<div class="notice notice-success is-dismissible"><p>' . esc_html__('Đã xoá bản ghi 404.', 'laca') . '</p></div>';
     } elseif ($act === 'clear_all') {
         check_admin_referer('laca_seo_404_clear');
         DB::clearLogs();
-        $notice = '<div class="notice notice-success is-dismissible"><p>' . esc_html__('Đã làm trống toàn bộ nhật ký 404.', 'lacadev') . '</p></div>';
+        $notice = '<div class="notice notice-success is-dismissible"><p>' . esc_html__('Đã làm trống toàn bộ nhật ký 404.', 'laca') . '</p></div>';
     }
 }
 
@@ -144,7 +144,7 @@ $totalPages = ceil($total / $limit);
     <?php if ($totalPages > 1): ?>
         <div class="tablenav bottom laca-mt-3">
             <div class="tablenav-pages">
-                <span class="displaying-num"><?php printf(esc_html__('%d mục', 'lacadev'), $total); ?></span>
+                <span class="displaying-num"><?php printf(esc_html__('%d mục', 'laca'), $total); ?></span>
                 <?php for ($p = 1; $p <= $totalPages; $p++): ?>
                     <a href="<?php echo esc_url(add_query_arg(['paged' => $p])); ?>" class="button laca-btn-page <?php echo $paged === $p ? 'button-primary' : ''; ?>"><?php echo $p; ?></a>
                 <?php endfor; ?>

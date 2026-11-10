@@ -58,7 +58,7 @@ class GoogleDashboardService
         if (empty($siteUrl)) {
             return [
                 'connected' => true,
-                'error'     => __('Chưa chọn Property Google Search Console.', 'lacadev'),
+                'error'     => __('Chưa chọn Property Google Search Console.', 'laca'),
                 'setup_url' => admin_url('admin.php?page=laca-google-search-console'),
             ];
         }
@@ -69,14 +69,14 @@ class GoogleDashboardService
             $msg = $result->get_error_message();
             if ($status === 404) {
                 $msg = sprintf(
-                    __('Không tìm thấy property "%s" trong Google Search Console. Hãy kiểm tra lại hoặc chọn property khác.', 'lacadev'),
+                    __('Không tìm thấy property "%s" trong Google Search Console. Hãy kiểm tra lại hoặc chọn property khác.', 'laca'),
                     $siteUrl
                 );
             } elseif ($status === 403) {
                 $email = GscOAuth::getConnectedEmail();
-                $emailDisplay = !empty($email) ? $email : __('Chưa rõ email, hãy kết nối lại để hiển thị', 'lacadev');
+                $emailDisplay = !empty($email) ? $email : __('Chưa rõ email, hãy kết nối lại để hiển thị', 'laca');
                 $msg = sprintf(
-                    __('Tài khoản %s chưa có property này. Ngắt kết nối và đăng nhập bằng tài khoản sở hữu site, hoặc thêm %s vào Search Console → Cài đặt → Người dùng và quyền.', 'lacadev'),
+                    __('Tài khoản %s chưa có property này. Ngắt kết nối và đăng nhập bằng tài khoản sở hữu site, hoặc thêm %s vào Search Console → Cài đặt → Người dùng và quyền.', 'laca'),
                     $emailDisplay,
                     $emailDisplay
                 );
@@ -128,11 +128,11 @@ class GoogleDashboardService
             'queries'           => $queries,
             'pages'             => $pages,
             'isCollecting'      => $isCollecting,
-            'collectingNotice'  => $isCollecting ? __('Đang thu thập dữ liệu (Google cần 24–48 giờ)', 'lacadev') : null,
+            'collectingNotice'  => $isCollecting ? __('Đang thu thập dữ liệu (Google cần 24–48 giờ)', 'laca') : null,
             'isZeroData'        => ($isZeroData && $hasDataEver),
-            'zeroDataNotice'    => ($isZeroData && $hasDataEver) ? __('Chưa có lượt truy cập trong khoảng này', 'lacadev') : null,
+            'zeroDataNotice'    => ($isZeroData && $hasDataEver) ? __('Chưa có lượt truy cập trong khoảng này', 'laca') : null,
             'dataDate'          => (string) ($result['dataDate'] ?? date('d/m', strtotime($result['endDate'] ?? '-1 day'))),
-            'lagNotice'         => sprintf(__('Dữ liệu đến ngày %s', 'lacadev'), (string) ($result['dataDate'] ?? date('d/m', strtotime($result['endDate'] ?? '-1 day')))),
+            'lagNotice'         => sprintf(__('Dữ liệu đến ngày %s', 'laca'), (string) ($result['dataDate'] ?? date('d/m', strtotime($result['endDate'] ?? '-1 day')))),
         ];
     }
 
@@ -238,7 +238,7 @@ class GoogleDashboardService
                 : (!empty($summary['engagementRate']) ? number_format((float) $summary['engagementRate'] * 100, 1) . '%' : '—');
         } else {
             $organicUsers = 0;
-            $organicNote = __('Chưa ghi nhận người dùng từ tìm kiếm tự nhiên trong khoảng này', 'lacadev');
+            $organicNote = __('Chưa ghi nhận người dùng từ tìm kiếm tự nhiên trong khoảng này', 'laca');
         }
 
         $formattedTopPages = [];
@@ -370,9 +370,9 @@ class GoogleDashboardService
             'topPages'             => array_slice($formattedTopPages, 0, 5),
             'realtimeUsers'        => $realtimeUsers,
             'isCollecting'         => $isCollecting,
-            'collectingNotice'     => $isCollecting ? __('Đang thu thập dữ liệu (Google cần 24–48 giờ)', 'lacadev') : null,
+            'collectingNotice'     => $isCollecting ? __('Đang thu thập dữ liệu (Google cần 24–48 giờ)', 'laca') : null,
             'isZeroData'           => ($isZeroData && $hasDataEver),
-            'zeroDataNotice'       => ($isZeroData && $hasDataEver) ? __('Chưa có lượt truy cập trong khoảng này', 'lacadev') : null,
+            'zeroDataNotice'       => ($isZeroData && $hasDataEver) ? __('Chưa có lượt truy cập trong khoảng này', 'laca') : null,
             'summary'              => $summary,
             'chartSeries'          => $chartSeries,
             'organicSearch'        => [
@@ -501,7 +501,7 @@ class GoogleDashboardService
     }
 
     /**
-     * Mock GSC data matching user specification for LIX Roastery.
+     * Mock GSC data for demo mode.
      *
      * @param string $range
      * @return array<string, mixed>
@@ -537,7 +537,7 @@ class GoogleDashboardService
         return [
             'connected'         => true,
             'isMock'            => true,
-            'siteUrl'           => 'sc-domain:lixroastery.com',
+            'siteUrl'           => 'sc-domain:example.com',
             'clicks'            => $clicks,
             'clicks_delta'      => '+12.4%',
             'impressions'       => $impressions,
@@ -549,20 +549,20 @@ class GoogleDashboardService
             'clicksSeries'      => $clicksSeries,
             'impressionsSeries' => $impressionsSeries,
             'queries'           => [
-                ['query' => 'ca phe dac san da nang', 'clicks' => (int) round(312 * $multipliers), 'impressions' => (int) round(4500 * $multipliers), 'ctr' => 6.9, 'position' => 3.1],
-                ['query' => 'lix roastery', 'clicks' => (int) round(285 * $multipliers), 'impressions' => (int) round(1200 * $multipliers), 'ctr' => 23.7, 'position' => 1.0],
-                ['query' => 'mua ca phe hat arabica', 'clicks' => (int) round(145 * $multipliers), 'impressions' => (int) round(3200 * $multipliers), 'ctr' => 4.5, 'position' => 5.4],
-                ['query' => 'gia ca phe rang xay nguyen chat', 'clicks' => (int) round(98 * $multipliers), 'impressions' => (int) round(2100 * $multipliers), 'ctr' => 4.6, 'position' => 7.8],
-                ['query' => 'workshop pha che ca phe', 'clicks' => (int) round(76 * $multipliers), 'impressions' => (int) round(1800 * $multipliers), 'ctr' => 4.2, 'position' => 4.2],
+                ['query' => 'dich vu thiet ke website', 'clicks' => (int) round(312 * $multipliers), 'impressions' => (int) round(4500 * $multipliers), 'ctr' => 6.9, 'position' => 3.1],
+                ['query' => 'thiet ke web chuyen nghiep', 'clicks' => (int) round(285 * $multipliers), 'impressions' => (int) round(1200 * $multipliers), 'ctr' => 23.7, 'position' => 1.0],
+                ['query' => 'thiet ke website doanh nghiep', 'clicks' => (int) round(145 * $multipliers), 'impressions' => (int) round(3200 * $multipliers), 'ctr' => 4.5, 'position' => 5.4],
+                ['query' => 'bao gia thiet ke website', 'clicks' => (int) round(98 * $multipliers), 'impressions' => (int) round(2100 * $multipliers), 'ctr' => 4.6, 'position' => 7.8],
+                ['query' => 'dich vu seo uy tin', 'clicks' => (int) round(76 * $multipliers), 'impressions' => (int) round(1800 * $multipliers), 'ctr' => 4.2, 'position' => 4.2],
             ],
             'pages'             => [
-                ['url' => '/san-pham/ca-phe-lix-specialty/', 'clicks' => (int) round(480 * $multipliers), 'impressions' => (int) round(7200 * $multipliers), 'ctr' => 6.67],
-                ['url' => '/journal/nghe-thuat-rang-ca-phe/', 'clicks' => (int) round(310 * $multipliers), 'impressions' => (int) round(6100 * $multipliers), 'ctr' => 5.08],
-                ['url' => '/ve-chung-toi/', 'clicks' => (int) round(195 * $multipliers), 'impressions' => (int) round(2400 * $multipliers), 'ctr' => 8.13],
-                ['url' => '/workshop/', 'clicks' => (int) round(120 * $multipliers), 'impressions' => (int) round(1900 * $multipliers), 'ctr' => 6.32],
+                ['url' => '/dich-vu/', 'clicks' => (int) round(480 * $multipliers), 'impressions' => (int) round(7200 * $multipliers), 'ctr' => 6.67],
+                ['url' => '/du-an/', 'clicks' => (int) round(310 * $multipliers), 'impressions' => (int) round(6100 * $multipliers), 'ctr' => 5.08],
+                ['url' => '/gioi-thieu/', 'clicks' => (int) round(195 * $multipliers), 'impressions' => (int) round(2400 * $multipliers), 'ctr' => 8.13],
+                ['url' => '/lien-he/', 'clicks' => (int) round(120 * $multipliers), 'impressions' => (int) round(1900 * $multipliers), 'ctr' => 6.32],
             ],
             'dataDate'          => date('d/m', strtotime('-1 day')),
-            'lagNotice'         => sprintf(__('Dữ liệu đến ngày %s', 'lacadev'), date('d/m', strtotime('-1 day'))),
+            'lagNotice'         => sprintf(__('Dữ liệu đến ngày %s', 'laca'), date('d/m', strtotime('-1 day'))),
         ];
     }
 
@@ -581,33 +581,33 @@ class GoogleDashboardService
         };
 
         $baseQueries = [
-            'lix roastery',
-            'ca phe dac san da nang',
-            'mua ca phe hat arabica',
-            'gia ca phe rang xay nguyen chat',
-            'workshop pha che ca phe da nang',
-            'ca phe arabica cau dat rang moc',
-            'quan ca phe rang xay ngon o da nang',
-            'ca phe specialty la gi',
-            'mua hat ca phe robusta gia tot',
-            'ca phe espresso rang dam',
-            'khoa hoc pha che barista da nang',
-            'ca phe drip bag tien loi',
-            'ca phe pour over da nang',
-            'mua phin pha ca phe cao cap',
-            'ca phe hat gia si da nang',
-            'dia chi rang ca phe uy tin da nang',
-            'ca phe cold brew dong chai',
-            'huong vi ca phe catimor da lat',
-            'ca phe fine robusta viet nam',
-            'workshop cupping ca phe chuyen sau',
+            'dich vu thiet ke website',
+            'thiet ke web chuyen nghiep',
+            'thiet ke website doanh nghiep',
+            'bao gia thiet ke website',
+            'dich vu seo uy tin',
+            'cong ty thiet ke web uy tin',
+            'mau website dep',
+            'thiet ke web chuan seo',
+            'toi uu toc do website',
+            'thiet ke landing page',
+            'nang cap giao dien website',
+            'quan tri website chuyen nghiep',
+            'chi phi thiet ke web',
+            'thiet ke web tron goi',
+            'bang gia dich vu web',
+            'cong ty phan mem uy tin',
+            'giai phap web doanh nghiep',
+            'thiet ke web ban hang',
+            'lap trinh web theo yeu cau',
+            'tu van giai phap website',
         ];
 
         $modifiers = [
             '',
-            'nguyen chat',
-            'gia re',
-            'chinh hang',
+            'chuyen nghiep',
+            'uy tin',
+            'tron goi',
             'cao cap',
         ];
 
@@ -638,7 +638,7 @@ class GoogleDashboardService
     }
 
     /**
-     * Mock GA4 data matching user specification for LIX Roastery.
+     * Mock GA4 data for demo mode.
      *
      * @param string $range
      * @return array<string, mixed>
@@ -717,23 +717,23 @@ class GoogleDashboardService
             'keyMetrics'           => GaClient::parseKeyMetricsReports(GaClient::getMockKeyMetricsRawResponse()['reports'] ?? [], (int) round(5260 * $multipliers)),
             'businessKpis'         => [
                 [
-                    'title' => __('Bấm Mua / Thêm giỏ (Cà phê)', 'lacadev'),
+                    'title' => __('Bấm Đăng ký / Tư vấn dịch vụ', 'laca'),
                     'value' => (int) round(186 * $multipliers),
                     'delta' => '+18.5% so với kỳ trước',
-                    'badge' => __('Hạt cà phê', 'lacadev'),
+                    'badge' => __('Tư vấn', 'laca'),
                 ],
                 [
-                    'title' => __('Gửi Form / Đặt lịch workshop', 'lacadev'),
+                    'title' => __('Gửi Form liên hệ', 'laca'),
                     'value' => (int) round(62 * $multipliers),
                     'delta' => '6.5% tỷ lệ trên trang liên hệ',
-                    'badge' => __('Workshop', 'lacadev'),
+                    'badge' => __('Liên hệ', 'laca'),
                 ],
             ],
             'topPages'             => [
-                ['title' => 'Trang chủ | LIX Roastery', 'path' => '/', 'views' => (int) round(4820 * $multipliers), 'duration' => '1m 15s'],
-                ['title' => 'Cửa hàng Cà phê Đặc sản', 'path' => '/shop/', 'views' => (int) round(3450 * $multipliers), 'duration' => '2m 05s'],
-                ['title' => 'Tạp chí: Nghệ thuật rang cà phê', 'path' => '/journal/', 'views' => (int) round(2180 * $multipliers), 'duration' => '2m 40s', 'highlight' => true],
-                ['title' => 'Liên hệ & Đặt lịch Workshop', 'path' => '/contact/', 'views' => (int) round(950 * $multipliers), 'duration' => '1m 55s'],
+                ['title' => 'Trang chủ | ' . get_bloginfo('name'), 'path' => '/', 'views' => (int) round(4820 * $multipliers), 'duration' => '1m 15s'],
+                ['title' => 'Dịch vụ thiết kế website', 'path' => '/dich-vu/', 'views' => (int) round(3450 * $multipliers), 'duration' => '2m 05s'],
+                ['title' => 'Giới thiệu về chúng tôi', 'path' => '/gioi-thieu/', 'views' => (int) round(2180 * $multipliers), 'duration' => '2m 40s', 'highlight' => true],
+                ['title' => 'Liên hệ tư vấn', 'path' => '/lien-he/', 'views' => (int) round(950 * $multipliers), 'duration' => '1m 55s'],
             ],
         ];
     }

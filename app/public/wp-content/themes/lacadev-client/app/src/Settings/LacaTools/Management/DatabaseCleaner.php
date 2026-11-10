@@ -49,12 +49,8 @@ class DatabaseCleaner
         }
         ?>
         <div class="wrap">
-            <h1>🧹 Dọn dẹp Database</h1>
-            <div class="laca-alert laca-alert--info laca-mb-3">
-                <div class="laca-alert__title">🔧 Dọn dẹp Database</div>
-                <div class="laca-alert__desc">Xoá bớt dữ liệu rác (bản nháp, thùng rác, bình luận spam, bản chỉnh sửa cũ...) tích tụ theo thời gian để website chạy nhanh hơn. Đây là thao tác dọn dẹp và <strong>không thể hoàn tác</strong> — hãy đọc kỹ từng mục trước khi bấm "Dọn dẹp".</div>
-            </div>
-            <p class="laca-fg-muted">Xoá dữ liệu rác để database gọn nhẹ hơn. Mỗi thao tác không thể hoàn tác — hãy backup trước nếu cần.</p>
+            <h1>Dọn dẹp Database</h1>
+            <p class="laca-page-intro">Xoá bớt dữ liệu rác (bản nháp, thùng rác, bình luận spam, bản chỉnh sửa cũ...) tích tụ theo thời gian để website chạy nhanh hơn. Đây là thao tác dọn dẹp và <strong>không thể hoàn tác</strong> — hãy đọc kỹ từng mục trước khi bấm "Dọn dẹp". Nên backup trước khi dọn.</p>
 
             <div id="laca-db-analyzer" class="laca-db-analyzer" style="display:none; /* động */">
                 <strong>📊 Phân tích hiện tại:</strong>

@@ -105,8 +105,8 @@ echo '<?xml version="1.0" encoding="UTF-8"?>';
 			</head>
 			<body>
 				<div id="description">
-					<h1><?php esc_html_e('XML Sitemap', 'lacadev'); ?></h1>
-					<p><?php esc_html_e('Sơ đồ trang XML được tối ưu bởi Laca SEO Framework. Tệp này cung cấp cấu trúc liên kết cho công cụ tìm kiếm Google, Bing thu thập dữ liệu nhanh chóng.', 'lacadev'); ?></p>
+					<h1><?php esc_html_e('XML Sitemap', 'laca'); ?></h1>
+					<p><?php esc_html_e('Sơ đồ trang XML được tối ưu bởi Laca SEO Framework. Tệp này cung cấp cấu trúc liên kết cho công cụ tìm kiếm Google, Bing thu thập dữ liệu nhanh chóng.', 'laca'); ?></p>
 				</div>
 
 				<div id="content">

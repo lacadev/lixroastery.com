@@ -85,7 +85,15 @@ class Db
 
         $type = \App\Features\LacaSeo\Core\Settings::get("titles.pt_{$pt}_default_rich_snippet", false);
         if (!$type || $type === 'off') {
-            return false;
+            if ($pt === 'project') {
+                $type = 'creativework';
+            } else {
+                return false;
+            }
+        }
+
+        if ($type === 'creativework') {
+            return 'CreativeWork';
         }
 
         if ($type === 'article') {

@@ -34,7 +34,7 @@ class BlockMarketplace
     {
         if (!LacaDevTrackerClient::isConfigured()) {
             return '<div class="laca-alert laca-alert--warning">'
-                . '⚠️ Cần cấu hình Tracker (Endpoint URL + Secret Key) tại <strong>Laca Admin → 📡 Tracker</strong> trước khi dùng Block Marketplace.'
+                . '⚠️ Cần cấu hình Tracker (Endpoint URL + Secret Key) tại <strong>Laca Admin → Kết nối LacaDev → Site Tracker</strong> trước khi dùng Block Marketplace.'
                 . '</div>';
         }
 
@@ -73,10 +73,11 @@ class BlockMarketplace
 
     private static function fetchFromHub(): ?array
     {
-        $endpoint = LacaDevTrackerClient::getEndpoint();
-        $secret   = LacaDevTrackerClient::getSecretKey();
+        $endpoint   = LacaDevTrackerClient::getEndpoint();
+        $catalogKey = LacaDevTrackerClient::getCatalogKey();
+        $projectId  = LacaDevTrackerClient::getProjectId();
 
-        if (empty($endpoint) || empty($secret)) {
+        if (empty($endpoint) || empty($catalogKey)) {
             return null;
         }
 
@@ -84,9 +85,15 @@ class BlockMarketplace
         // sang đúng route catalog cùng namespace REST, không cần thêm 1
         // trường cấu hình URL riêng cho Block Marketplace.
         $catalogUrl = str_replace('/tracker/log', '/blocks-catalog', $endpoint);
-        $url        = add_query_arg('secret_key', $secret, $catalogUrl);
 
-        $response = wp_remote_get($url, ['timeout' => 15]);
+        $headers = \App\Security\RequestSigner::sign('GET', $catalogUrl, '', $catalogKey, $projectId);
+        $headers['Accept']     = 'application/json';
+        $headers['X-Laca-Key'] = $catalogKey; // Fallback legacy header
+
+        $response = wp_remote_get($catalogUrl, [
+            'headers' => $headers,
+            'timeout' => 15,
+        ]);
 
         if (is_wp_error($response) || wp_remote_retrieve_response_code($response) !== 200) {
             return null;

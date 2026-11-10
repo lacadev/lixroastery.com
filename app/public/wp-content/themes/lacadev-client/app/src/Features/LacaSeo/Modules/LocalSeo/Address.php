@@ -13,39 +13,39 @@ class Address
         $labels = [
             'telephone'        => [
                 'key'   => 'telephone',
-                'label' => __('Phone', 'lacadev'),
+                'label' => __('Phone', 'laca'),
             ],
             'secondary_number' => [
                 'key'   => 'secondary_number',
-                'label' => __('Secondary phone', 'lacadev'),
+                'label' => __('Secondary phone', 'laca'),
             ],
             'fax'              => [
                 'key'   => 'faxNumber',
-                'label' => __('Fax', 'lacadev'),
+                'label' => __('Fax', 'laca'),
             ],
             'email'            => [
                 'key'   => 'email',
-                'label' => __('Email', 'lacadev'),
+                'label' => __('Email', 'laca'),
             ],
             'url'              => [
                 'key'   => 'url',
-                'label' => __('URL', 'lacadev'),
+                'label' => __('URL', 'laca'),
             ],
             'vat_id'           => [
                 'key'   => 'vatID',
-                'label' => __('VAT ID', 'lacadev'),
+                'label' => __('VAT ID', 'laca'),
             ],
             'tax_id'           => [
                 'key'   => 'taxID',
-                'label' => __('Tax ID', 'lacadev'),
+                'label' => __('Tax ID', 'laca'),
             ],
             'coc_id'           => [
                 'key'   => 'coc_id',
-                'label' => __('Chamber of Commerce ID', 'lacadev'),
+                'label' => __('Chamber of Commerce ID', 'laca'),
             ],
             'pricerange'       => [
                 'key'   => 'priceRange',
-                'label' => __('Price indication', 'lacadev'),
+                'label' => __('Price indication', 'laca'),
             ],
         ];
 

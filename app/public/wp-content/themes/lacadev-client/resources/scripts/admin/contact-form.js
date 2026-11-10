@@ -1973,7 +1973,7 @@ const FIELD_TYPES = window.LacaContactFormVars.FIELD_TYPES;
                     // Format plain text newlines to <br>
                     var formattedBody = rendered.replace(/\n/g, '<br>');
                     var primaryColor = styles.primary_color || '#2271b1';
-                    var siteName = (window.LacaContactFormVars && window.LacaContactFormVars.siteName) ? window.LacaContactFormVars.siteName : 'Lix Roastery';
+                    var siteName = (window.LacaContactFormVars && window.LacaContactFormVars.siteName) ? window.LacaContactFormVars.siteName : '';
 
                     var logoUrl = (window.LacaContactFormVars && window.LacaContactFormVars.logoUrl) || '';
                     var logoHtml = logoUrl

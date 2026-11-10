@@ -9,7 +9,7 @@
 defined('ABSPATH') || exit;
 ?>
 <div class="laca-google-report-skeleton" aria-busy="true" aria-live="polite">
-    <span class="screen-reader-text"><?php esc_html_e('Đang tải báo cáo Google…', 'lacadev'); ?></span>
+    <span class="screen-reader-text"><?php esc_html_e('Đang tải báo cáo Google…', 'laca'); ?></span>
 
     <!-- 1. Toolbar Skeleton -->
     <div class="laca-seo-card laca-google-skeleton__card laca-google-skeleton__card--toolbar">

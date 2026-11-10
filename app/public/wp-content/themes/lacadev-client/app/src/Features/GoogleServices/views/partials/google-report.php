@@ -33,10 +33,10 @@ $activeKeyMetrics = \App\Features\GoogleServices\GoogleServices::getActiveKeyMet
             <div class="laca-google-toolbar__title-wrap">
                 <span class="dashicons dashicons-chart-pie laca-google-toolbar__icon"></span>
                 <div>
-                    <strong class="laca-google-toolbar__title"><?php esc_html_e('Báo cáo Hiệu quả Tìm kiếm & Lưu lượng Truy cập', 'lacadev'); ?></strong>
+                    <strong class="laca-google-toolbar__title"><?php esc_html_e('Báo cáo Hiệu quả Tìm kiếm & Lưu lượng Truy cập', 'laca'); ?></strong>
                     <div class="laca-google-toolbar__meta">
                         <?php if ($isMock): ?>
-                            <span class="laca-badge"><?php esc_html_e('Dữ liệu mẫu', 'lacadev'); ?></span>
+                            <span class="laca-badge"><?php esc_html_e('Dữ liệu mẫu', 'laca'); ?></span>
                         <?php else: ?>
                             <span><?php echo esc_html($rangeLabels[$range] ?? '28 ngày qua'); ?></span>
                         <?php endif; ?>
@@ -45,7 +45,7 @@ $activeKeyMetrics = \App\Features\GoogleServices\GoogleServices::getActiveKeyMet
             </div>
 
             <div class="laca-google-toolbar__actions">
-                <div class="button-group laca-google-range-group" role="group" aria-label="<?php esc_attr_e('Khoảng thời gian', 'lacadev'); ?>">
+                <div class="button-group laca-google-range-group" role="group" aria-label="<?php esc_attr_e('Khoảng thời gian', 'laca'); ?>">
                     <?php foreach ($rangeLabels as $rKey => $rLabel): ?>
                         <?php
                         $shortLabel = match ($rKey) {
@@ -70,10 +70,10 @@ $activeKeyMetrics = \App\Features\GoogleServices\GoogleServices::getActiveKeyMet
                     type="button"
                     class="button button-secondary laca-google-refresh-btn"
                     data-refresh="1"
-                    title="<?php esc_attr_e('Làm mới dữ liệu từ Google (bỏ qua bộ nhớ tạm)', 'lacadev'); ?>"
+                    title="<?php esc_attr_e('Làm mới dữ liệu từ Google (bỏ qua bộ nhớ tạm)', 'laca'); ?>"
                 >
                     <span class="dashicons dashicons-update"></span>
-                    <?php esc_html_e('Làm mới', 'lacadev'); ?>
+                    <?php esc_html_e('Làm mới', 'laca'); ?>
                 </button>
             </div>
         </div>
@@ -83,8 +83,8 @@ $activeKeyMetrics = \App\Features\GoogleServices\GoogleServices::getActiveKeyMet
         <div class="laca-alert laca-alert--info laca-google-mock-notice" role="alert">
             <span class="dashicons dashicons-info laca-alert__icon" aria-hidden="true"></span>
             <div class="laca-alert__content">
-                <h3 class="laca-alert__title"><?php esc_html_e('DỮ LIỆU MẪU — không phải số liệu thật', 'lacadev'); ?></h3>
-                <p class="laca-alert__description"><?php esc_html_e('Đang hiển thị dữ liệu mô phỏng do có tham số ?laca_mock_google=1 trên môi trường phát triển cục bộ.', 'lacadev'); ?></p>
+                <h3 class="laca-alert__title"><?php esc_html_e('DỮ LIỆU MẪU — không phải số liệu thật', 'laca'); ?></h3>
+                <p class="laca-alert__description"><?php esc_html_e('Đang hiển thị dữ liệu mô phỏng do có tham số ?laca_mock_google=1 trên môi trường phát triển cục bộ.', 'laca'); ?></p>
             </div>
         </div>
     <?php endif; ?>
@@ -109,7 +109,7 @@ $activeKeyMetrics = \App\Features\GoogleServices\GoogleServices::getActiveKeyMet
                 <div class="laca-google-funnel__title-wrap">
                     <span class="dashicons dashicons-filter"></span>
                     <h3 class="laca-google-funnel__title">
-                        <?php esc_html_e('Phễu tìm kiếm tự nhiên (Search Funnel)', 'lacadev'); ?>
+                        <?php esc_html_e('Phễu tìm kiếm tự nhiên (Search Funnel)', 'laca'); ?>
                     </h3>
                 </div>
                 <span class="laca-google-funnel__source">
@@ -120,7 +120,7 @@ $activeKeyMetrics = \App\Features\GoogleServices\GoogleServices::getActiveKeyMet
             <div class="laca-google-funnel__grid">
                 <!-- Step 1: Impressions -->
                 <div class="laca-google-funnel__step">
-                    <div class="laca-google-funnel__step-label"><?php esc_html_e('1. Lượt hiển thị tìm kiếm', 'lacadev'); ?></div>
+                    <div class="laca-google-funnel__step-label"><?php esc_html_e('1. Lượt hiển thị tìm kiếm', 'laca'); ?></div>
                     <div class="laca-google-funnel__step-value">
                         <?php echo number_format_i18n($gscImpressions); ?>
                     </div>
@@ -128,13 +128,13 @@ $activeKeyMetrics = \App\Features\GoogleServices\GoogleServices::getActiveKeyMet
                         <span class="laca-delta <?php echo str_starts_with($gscImpressionsDelta, '+') ? 'laca-delta--up' : (str_starts_with($gscImpressionsDelta, '-') ? 'laca-delta--down' : ''); ?>">
                             <?php echo esc_html($gscImpressionsDelta); ?>
                         </span>
-                        <span><?php esc_html_e('so kỳ trước', 'lacadev'); ?></span>
+                        <span><?php esc_html_e('so kỳ trước', 'laca'); ?></span>
                     </div>
                 </div>
 
                 <!-- Step 2: Clicks -->
                 <div class="laca-google-funnel__step">
-                    <div class="laca-google-funnel__step-label"><?php esc_html_e('2. Lượt nhấp tìm kiếm', 'lacadev'); ?></div>
+                    <div class="laca-google-funnel__step-label"><?php esc_html_e('2. Lượt nhấp tìm kiếm', 'laca'); ?></div>
                     <div class="laca-google-funnel__step-value">
                         <?php echo number_format_i18n($gscClicks); ?>
                     </div>
@@ -148,34 +148,34 @@ $activeKeyMetrics = \App\Features\GoogleServices\GoogleServices::getActiveKeyMet
 
                 <!-- Step 3: Organic Users / Traffic -->
                 <div class="laca-google-funnel__step">
-                    <div class="laca-google-funnel__step-label"><?php esc_html_e('3. Khách từ tìm kiếm (GA4)', 'lacadev'); ?></div>
+                    <div class="laca-google-funnel__step-label"><?php esc_html_e('3. Khách từ tìm kiếm (GA4)', 'laca'); ?></div>
                     <div class="laca-google-funnel__step-value">
                         <?php echo $hasOrganic ? number_format_i18n($organicUsers) : '0'; ?>
                     </div>
                     <div class="laca-google-funnel__step-meta">
                         <?php if ($hasOrganic): ?>
                             <?php if ($organicShare > 0): ?>
-                                <span><?php echo esc_html($organicShare . '% ' . __('tổng phiên', 'lacadev')); ?></span>
+                                <span><?php echo esc_html($organicShare . '% ' . __('tổng phiên', 'laca')); ?></span>
                             <?php else: ?>
                                 <span class="laca-delta"><?php echo esc_html($ga['users_delta'] ?? '—'); ?></span>
                             <?php endif; ?>
                         <?php else: ?>
-                            <span class="laca-google-funnel__empty-note"><?php esc_html_e('Chưa ghi nhận người dùng từ tìm kiếm tự nhiên trong khoảng này', 'lacadev'); ?></span>
+                            <span class="laca-google-funnel__empty-note"><?php esc_html_e('Chưa ghi nhận người dùng từ tìm kiếm tự nhiên trong khoảng này', 'laca'); ?></span>
                         <?php endif; ?>
                     </div>
                 </div>
 
                 <!-- Step 4: Engagement -->
                 <div class="laca-google-funnel__step">
-                    <div class="laca-google-funnel__step-label"><?php esc_html_e('4. Tương tác từ tìm kiếm', 'lacadev'); ?></div>
+                    <div class="laca-google-funnel__step-label"><?php esc_html_e('4. Tương tác từ tìm kiếm', 'laca'); ?></div>
                     <div class="laca-google-funnel__step-value">
                         <?php echo $hasOrganic ? esc_html($organicEngagementRate) : '—'; ?>
                     </div>
                     <div class="laca-google-funnel__step-meta">
                         <?php if ($hasOrganic): ?>
-                            <span><?php esc_html_e('tỷ lệ tương tác tự nhiên', 'lacadev'); ?></span>
+                            <span><?php esc_html_e('tỷ lệ tương tác tự nhiên', 'laca'); ?></span>
                         <?php else: ?>
-                            <span><?php esc_html_e('tương tác tìm kiếm', 'lacadev'); ?></span>
+                            <span><?php esc_html_e('tương tác tìm kiếm', 'laca'); ?></span>
                         <?php endif; ?>
                     </div>
                 </div>
@@ -194,49 +194,49 @@ $activeKeyMetrics = \App\Features\GoogleServices\GoogleServices::getActiveKeyMet
         // Metric definitions with conditions (unified camelCase keys)
         $metricCards = [
             'newVsReturning' => [
-                'title'     => __('Khách mới / Quay lại', 'lacadev'),
+                'title'     => __('Khách mới / Quay lại', 'laca'),
                 'value'     => $kmData['newVsReturning']['value'] ?? '—',
                 'sub'       => $kmData['newVsReturning']['sub'] ?? '',
                 'available' => isset($kmData['newVsReturning']['available']) ? (bool) $kmData['newVsReturning']['available'] : true,
             ],
             'topTrafficSource' => [
-                'title'     => __('Nguồn truy cập hàng đầu', 'lacadev'),
+                'title'     => __('Nguồn truy cập hàng đầu', 'laca'),
                 'value'     => $kmData['topTrafficSource']['value'] ?? ($kmData['topSource']['value'] ?? '—'),
                 'sub'       => $kmData['topTrafficSource']['sub'] ?? ($kmData['topSource']['sub'] ?? ''),
                 'available' => isset($kmData['topTrafficSource']['available']) ? (bool) $kmData['topTrafficSource']['available'] : true,
             ],
             'topCities' => [
-                'title'     => __('Top 3 thành phố', 'lacadev'),
+                'title'     => __('Top 3 thành phố', 'laca'),
                 'value'     => $kmData['topCities']['value'] ?? '—',
                 'sub'       => $kmData['topCities']['sub'] ?? '',
                 'available' => isset($kmData['topCities']['available']) ? (bool) $kmData['topCities']['available'] : true,
             ],
             'pagesPerSession' => [
-                'title'     => __('Số trang / Lượt', 'lacadev'),
+                'title'     => __('Số trang / Lượt', 'laca'),
                 'value'     => $kmData['pagesPerSession']['value'] ?? '—',
                 'sub'       => $kmData['pagesPerSession']['sub'] ?? '',
                 'available' => isset($kmData['pagesPerSession']['available']) ? (bool) $kmData['pagesPerSession']['available'] : true,
             ],
             'sessionDuration' => [
-                'title'     => __('Thời lượng trung bình', 'lacadev'),
+                'title'     => __('Thời lượng trung bình', 'laca'),
                 'value'     => $kmData['sessionDuration']['value'] ?? '—',
                 'sub'       => $kmData['sessionDuration']['sub'] ?? '',
                 'available' => isset($kmData['sessionDuration']['available']) ? (bool) $kmData['sessionDuration']['available'] : true,
             ],
             'topProducts' => [
-                'title'     => __('Sản phẩm xem nhiều nhất', 'lacadev'),
+                'title'     => __('Sản phẩm xem nhiều nhất', 'laca'),
                 'value'     => $kmData['topProducts']['value'] ?? ($kmData['topProduct']['value'] ?? '—'),
                 'sub'       => $kmData['topProducts']['sub'] ?? ($kmData['topProduct']['sub'] ?? ''),
                 'available' => $hasProductPostType && (!isset($kmData['topProducts']['available']) || $kmData['topProducts']['available']),
             ],
             'bestConversionSource' => [
-                'title'     => __('Nguồn chuyển đổi tốt nhất', 'lacadev'),
+                'title'     => __('Nguồn chuyển đổi tốt nhất', 'laca'),
                 'value'     => $kmData['bestConversionSource']['value'] ?? '—',
                 'sub'       => $kmData['bestConversionSource']['sub'] ?? '',
                 'available' => $hasKeyEvents && (!isset($kmData['bestConversionSource']['available']) || $kmData['bestConversionSource']['available']),
             ],
             'addToCartSource' => [
-                'title'     => __('Nguồn thêm giỏ / mua hàng', 'lacadev'),
+                'title'     => __('Nguồn thêm giỏ / mua hàng', 'laca'),
                 'value'     => $kmData['addToCartSource']['value'] ?? ($kmData['cartAndPurchaseSource']['value'] ?? '—'),
                 'sub'       => $kmData['addToCartSource']['sub'] ?? ($kmData['cartAndPurchaseSource']['sub'] ?? ''),
                 'available' => $hasEcommerce && (!isset($kmData['addToCartSource']['available']) || $kmData['addToCartSource']['available']),
@@ -267,12 +267,12 @@ $activeKeyMetrics = \App\Features\GoogleServices\GoogleServices::getActiveKeyMet
                     <div class="laca-google-keymetrics__title-wrap">
                         <span class="dashicons dashicons-star-filled"></span>
                         <h3 class="laca-google-keymetrics__title">
-                            <?php esc_html_e('Chỉ số chính cho Cửa hàng (Key Metrics)', 'lacadev'); ?>
+                            <?php esc_html_e('Chỉ số chính cho Cửa hàng (Key Metrics)', 'laca'); ?>
                         </h3>
                     </div>
                     <a href="<?php echo esc_url(admin_url('admin.php?page=laca-google-analytics')); ?>" class="laca-google-keymetrics__settings-link">
                         <span class="dashicons dashicons-admin-generic"></span>
-                        <?php esc_html_e('Cấu hình Google Analytics', 'lacadev'); ?>
+                        <?php esc_html_e('Cấu hình Google Analytics', 'laca'); ?>
                     </a>
                 </div>
 
@@ -303,16 +303,16 @@ $activeKeyMetrics = \App\Features\GoogleServices\GoogleServices::getActiveKeyMet
                     <div>
                         <h2 class="laca-seo-card__title laca-google-card__title">
                             <span class="dashicons dashicons-search"></span>
-                            <?php esc_html_e('Google Search Console', 'lacadev'); ?>
+                            <?php esc_html_e('Google Search Console', 'laca'); ?>
                         </h2>
                         <p class="laca-seo-card__subtitle laca-google-card__subtitle">
-                            <?php esc_html_e('Bên ngoài trang — Hành vi tìm kiếm tự nhiên', 'lacadev'); ?>
+                            <?php esc_html_e('Bên ngoài trang — Hành vi tìm kiếm tự nhiên', 'laca'); ?>
                         </p>
                     </div>
                     <div class="laca-google-card__header-actions">
                         <span class="laca-badge">Organic Search</span>
                         <a href="<?php echo esc_url(admin_url('admin.php?page=laca-google-search-console')); ?>" class="button button-small">
-                            <?php esc_html_e('Cài đặt', 'lacadev'); ?>
+                            <?php esc_html_e('Cài đặt', 'laca'); ?>
                         </a>
                     </div>
                 </div>
@@ -320,12 +320,12 @@ $activeKeyMetrics = \App\Features\GoogleServices\GoogleServices::getActiveKeyMet
                 <?php if (empty($gsc['connected'])): ?>
                     <div class="laca-google-card__empty-state">
                         <span class="dashicons dashicons-google laca-google-card__empty-icon"></span>
-                        <h3 class="laca-google-card__empty-title"><?php esc_html_e('Chưa kết nối Google Search Console', 'lacadev'); ?></h3>
+                        <h3 class="laca-google-card__empty-title"><?php esc_html_e('Chưa kết nối Google Search Console', 'laca'); ?></h3>
                         <p class="laca-google-card__empty-desc">
-                            <?php esc_html_e('Kết nối tài khoản Google để theo dõi thứ hạng từ khóa, lượt hiển thị và số lượt click tự nhiên từ Google.', 'lacadev'); ?>
+                            <?php esc_html_e('Kết nối tài khoản Google để theo dõi thứ hạng từ khóa, lượt hiển thị và số lượt click tự nhiên từ Google.', 'laca'); ?>
                         </p>
                         <a href="<?php echo esc_url(admin_url('admin.php?page=laca-google-search-console')); ?>" class="button button-primary">
-                            <?php esc_html_e('Thiết lập Search Console', 'lacadev'); ?> &rarr;
+                            <?php esc_html_e('Thiết lập Search Console', 'laca'); ?> &rarr;
                         </a>
                     </div>
                 <?php elseif (!empty($gsc['error'])): ?>
@@ -336,15 +336,15 @@ $activeKeyMetrics = \App\Features\GoogleServices\GoogleServices::getActiveKeyMet
                                 <h4 class="laca-alert__title">
                                     <?php
                                     if (!empty($gsc['status'])) {
-                                        printf(esc_html__('Lỗi Google Search Console (HTTP %d)', 'lacadev'), (int) $gsc['status']);
+                                        printf(esc_html__('Lỗi Google Search Console (HTTP %d)', 'laca'), (int) $gsc['status']);
                                     } else {
-                                        esc_html_e('Lỗi kết nối Google Search Console', 'lacadev');
+                                        esc_html_e('Lỗi kết nối Google Search Console', 'laca');
                                     }
                                     ?>
                                 </h4>
                                 <p class="laca-alert__description"><?php echo esc_html($gsc['error']); ?></p>
                                 <a href="<?php echo esc_url($gsc['setup_url'] ?? admin_url('admin.php?page=laca-google-search-console')); ?>" class="button button-secondary button-small">
-                                    <?php esc_html_e('Chọn property khác', 'lacadev'); ?> &rarr;
+                                    <?php esc_html_e('Chọn property khác', 'laca'); ?> &rarr;
                                 </a>
                             </div>
                         </div>
@@ -355,8 +355,8 @@ $activeKeyMetrics = \App\Features\GoogleServices\GoogleServices::getActiveKeyMet
                             <div class="laca-alert laca-alert--info">
                                 <span class="dashicons dashicons-update laca-alert__icon" aria-hidden="true"></span>
                                 <div class="laca-alert__content">
-                                    <h4 class="laca-alert__title"><?php esc_html_e('Đang thu thập dữ liệu', 'lacadev'); ?></h4>
-                                    <p class="laca-alert__description"><?php esc_html_e('Google cần 24–48 giờ để bắt đầu có số liệu báo cáo.', 'lacadev'); ?></p>
+                                    <h4 class="laca-alert__title"><?php esc_html_e('Đang thu thập dữ liệu', 'laca'); ?></h4>
+                                    <p class="laca-alert__description"><?php esc_html_e('Google cần 24–48 giờ để bắt đầu có số liệu báo cáo.', 'laca'); ?></p>
                                 </div>
                             </div>
                         </div>
@@ -365,8 +365,8 @@ $activeKeyMetrics = \App\Features\GoogleServices\GoogleServices::getActiveKeyMet
                             <div class="laca-alert laca-alert--info">
                                 <span class="dashicons dashicons-info laca-alert__icon" aria-hidden="true"></span>
                                 <div class="laca-alert__content">
-                                    <h4 class="laca-alert__title"><?php esc_html_e('Chưa có lượt truy cập trong khoảng này', 'lacadev'); ?></h4>
-                                    <p class="laca-alert__description"><?php esc_html_e('Không có lượt hiển thị hay nhấp chuột nào được ghi nhận.', 'lacadev'); ?></p>
+                                    <h4 class="laca-alert__title"><?php esc_html_e('Chưa có lượt truy cập trong khoảng này', 'laca'); ?></h4>
+                                    <p class="laca-alert__description"><?php esc_html_e('Không có lượt hiển thị hay nhấp chuột nào được ghi nhận.', 'laca'); ?></p>
                                 </div>
                             </div>
                         </div>
@@ -375,7 +375,7 @@ $activeKeyMetrics = \App\Features\GoogleServices\GoogleServices::getActiveKeyMet
                     <!-- Dữ liệu đến ngày -->
                     <div class="laca-google-card__date-bar">
                         <span class="dashicons dashicons-calendar-alt"></span>
-                        <span><?php printf(esc_html__('Dữ liệu đến ngày %s', 'lacadev'), esc_html($gsc['dataDate'] ?? date('d/m', strtotime('-1 day')))); ?></span>
+                        <span><?php printf(esc_html__('Dữ liệu đến ngày %s', 'laca'), esc_html($gsc['dataDate'] ?? date('d/m', strtotime('-1 day')))); ?></span>
                     </div>
 
                     <!-- 4 KPI Blocks GSC -->
@@ -383,7 +383,7 @@ $activeKeyMetrics = \App\Features\GoogleServices\GoogleServices::getActiveKeyMet
                         <!-- Clicks -->
                         <div class="laca-seo-stat-card">
                             <div class="laca-seo-stat-card__info">
-                                <span class="laca-seo-stat-card__label"><?php esc_html_e('Tổng lượt click', 'lacadev'); ?></span>
+                                <span class="laca-seo-stat-card__label"><?php esc_html_e('Tổng lượt click', 'laca'); ?></span>
                                 <div class="laca-google-stat-card__value-wrap">
                                     <strong class="laca-seo-stat-card__value laca-google-kpi__value">
                                         <?php echo number_format_i18n((int) ($gsc['clicks'] ?? 0)); ?>
@@ -393,14 +393,14 @@ $activeKeyMetrics = \App\Features\GoogleServices\GoogleServices::getActiveKeyMet
                                         <?php echo esc_html($cDelta); ?>
                                     </span>
                                 </div>
-                                <small class="laca-google-stat-card__sub"><?php esc_html_e('so với kỳ trước', 'lacadev'); ?></small>
+                                <small class="laca-google-stat-card__sub"><?php esc_html_e('so với kỳ trước', 'laca'); ?></small>
                             </div>
                         </div>
 
                         <!-- Impressions -->
                         <div class="laca-seo-stat-card">
                             <div class="laca-seo-stat-card__info">
-                                <span class="laca-seo-stat-card__label"><?php esc_html_e('Lượt hiển thị', 'lacadev'); ?></span>
+                                <span class="laca-seo-stat-card__label"><?php esc_html_e('Lượt hiển thị', 'laca'); ?></span>
                                 <div class="laca-google-stat-card__value-wrap">
                                     <strong class="laca-seo-stat-card__value laca-google-kpi__value">
                                         <?php echo number_format_i18n((int) ($gsc['impressions'] ?? 0)); ?>
@@ -410,14 +410,14 @@ $activeKeyMetrics = \App\Features\GoogleServices\GoogleServices::getActiveKeyMet
                                         <?php echo esc_html($iDelta); ?>
                                     </span>
                                 </div>
-                                <small class="laca-google-stat-card__sub"><?php esc_html_e('so với kỳ trước', 'lacadev'); ?></small>
+                                <small class="laca-google-stat-card__sub"><?php esc_html_e('so với kỳ trước', 'laca'); ?></small>
                             </div>
                         </div>
 
                         <!-- CTR -->
                         <div class="laca-seo-stat-card">
                             <div class="laca-seo-stat-card__info">
-                                <span class="laca-seo-stat-card__label"><?php esc_html_e('CTR trung bình', 'lacadev'); ?></span>
+                                <span class="laca-seo-stat-card__label"><?php esc_html_e('CTR trung bình', 'laca'); ?></span>
                                 <div class="laca-google-stat-card__value-wrap">
                                     <strong class="laca-seo-stat-card__value laca-google-kpi__value">
                                         <?php echo esc_html((string) ($gsc['ctr'] ?? 0)); ?>%
@@ -427,14 +427,14 @@ $activeKeyMetrics = \App\Features\GoogleServices\GoogleServices::getActiveKeyMet
                                         <?php echo esc_html($ctrDelta); ?>
                                     </span>
                                 </div>
-                                <small class="laca-google-stat-card__sub"><?php esc_html_e('tỷ lệ nhấp', 'lacadev'); ?></small>
+                                <small class="laca-google-stat-card__sub"><?php esc_html_e('tỷ lệ nhấp', 'laca'); ?></small>
                             </div>
                         </div>
 
                         <!-- Average Position -->
                         <div class="laca-seo-stat-card">
                             <div class="laca-seo-stat-card__info">
-                                <span class="laca-seo-stat-card__label"><?php esc_html_e('Vị trí trung bình', 'lacadev'); ?></span>
+                                <span class="laca-seo-stat-card__label"><?php esc_html_e('Vị trí trung bình', 'laca'); ?></span>
                                 <div class="laca-google-stat-card__value-wrap">
                                     <strong class="laca-seo-stat-card__value laca-google-kpi__value">
                                         #<?php echo esc_html((string) ($gsc['position'] ?? 0)); ?>
@@ -444,7 +444,7 @@ $activeKeyMetrics = \App\Features\GoogleServices\GoogleServices::getActiveKeyMet
                                         <?php echo esc_html($posDelta); ?>
                                     </span>
                                 </div>
-                                <small class="laca-google-stat-card__sub"><?php esc_html_e('thứ hạng Google', 'lacadev'); ?></small>
+                                <small class="laca-google-stat-card__sub"><?php esc_html_e('thứ hạng Google', 'laca'); ?></small>
                             </div>
                         </div>
                     </div>
@@ -455,17 +455,17 @@ $activeKeyMetrics = \App\Features\GoogleServices\GoogleServices::getActiveKeyMet
                             <?php if (!empty($gsc['clicksSeries'])): ?>
                                 <div class="laca-google-card__chart-wrap">
                                     <div class="laca-google-card__chart-header">
-                                        <h4 class="laca-google-card__chart-title"><?php esc_html_e('Lượt click theo ngày', 'lacadev'); ?></h4>
+                                        <h4 class="laca-google-card__chart-title"><?php esc_html_e('Lượt click theo ngày', 'laca'); ?></h4>
                                     </div>
                                     <?php
                                     echo \App\Features\GoogleServices\Chart::line([
                                         [
-                                            'name'   => __('Lượt click', 'lacadev'),
+                                            'name'   => __('Lượt click', 'laca'),
                                             'data'   => $gsc['clicksSeries'],
                                             'dashed' => false,
                                         ],
                                     ], [
-                                        'title'  => __('Biểu đồ lượt click theo ngày', 'lacadev'),
+                                        'title'  => __('Biểu đồ lượt click theo ngày', 'laca'),
                                         'height' => 130,
                                     ]);
                                     ?>
@@ -475,17 +475,17 @@ $activeKeyMetrics = \App\Features\GoogleServices\GoogleServices::getActiveKeyMet
                             <?php if (!empty($gsc['impressionsSeries'])): ?>
                                 <div class="laca-google-card__chart-wrap">
                                     <div class="laca-google-card__chart-header">
-                                        <h4 class="laca-google-card__chart-title"><?php esc_html_e('Lượt hiển thị theo ngày', 'lacadev'); ?></h4>
+                                        <h4 class="laca-google-card__chart-title"><?php esc_html_e('Lượt hiển thị theo ngày', 'laca'); ?></h4>
                                     </div>
                                     <?php
                                     echo \App\Features\GoogleServices\Chart::line([
                                         [
-                                            'name'   => __('Lượt hiển thị', 'lacadev'),
+                                            'name'   => __('Lượt hiển thị', 'laca'),
                                             'data'   => $gsc['impressionsSeries'],
                                             'dashed' => false,
                                         ],
                                     ], [
-                                        'title'  => __('Biểu đồ lượt hiển thị theo ngày', 'lacadev'),
+                                        'title'  => __('Biểu đồ lượt hiển thị theo ngày', 'laca'),
                                         'height' => 130,
                                     ]);
                                     ?>
@@ -498,7 +498,7 @@ $activeKeyMetrics = \App\Features\GoogleServices\GoogleServices::getActiveKeyMet
                     <div class="laca-google-table-section">
                         <div class="laca-google-table-section__header">
                             <h4 class="laca-google-table-section__title">
-                                <?php esc_html_e('Top từ khóa tìm kiếm hàng đầu', 'lacadev'); ?>
+                                <?php esc_html_e('Top từ khóa tìm kiếm hàng đầu', 'laca'); ?>
                             </h4>
                             <button
                                 type="button"
@@ -508,17 +508,17 @@ $activeKeyMetrics = \App\Features\GoogleServices\GoogleServices::getActiveKeyMet
                                 aria-haspopup="dialog"
                                 aria-expanded="false"
                             >
-                                <?php esc_html_e('Xem tất cả (100 từ khoá)', 'lacadev'); ?> &rarr;
+                                <?php esc_html_e('Xem tất cả (100 từ khoá)', 'laca'); ?> &rarr;
                             </button>
                         </div>
                         <div class="laca-seo-table-responsive laca-google-table-wrap">
                             <table class="wp-list-table widefat striped laca-google-table">
                                 <thead>
                                     <tr>
-                                        <th><?php esc_html_e('Từ khóa', 'lacadev'); ?></th>
-                                        <th class="laca-col-right laca-col-w65"><?php esc_html_e('Clicks', 'lacadev'); ?></th>
-                                        <th class="laca-col-right laca-col-w75"><?php esc_html_e('Hiển thị', 'lacadev'); ?></th>
-                                        <th class="laca-col-right laca-col-w60"><?php esc_html_e('Vị trí', 'lacadev'); ?></th>
+                                        <th><?php esc_html_e('Từ khóa', 'laca'); ?></th>
+                                        <th class="laca-col-right laca-col-w65"><?php esc_html_e('Clicks', 'laca'); ?></th>
+                                        <th class="laca-col-right laca-col-w75"><?php esc_html_e('Hiển thị', 'laca'); ?></th>
+                                        <th class="laca-col-right laca-col-w60"><?php esc_html_e('Vị trí', 'laca'); ?></th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -531,7 +531,7 @@ $activeKeyMetrics = \App\Features\GoogleServices\GoogleServices::getActiveKeyMet
                                     <?php if (empty($displayQueries)): ?>
                                         <tr>
                                             <td colspan="4" class="laca-table-empty">
-                                                <?php esc_html_e('Chưa có dữ liệu từ khóa trong khoảng thời gian này.', 'lacadev'); ?>
+                                                <?php esc_html_e('Chưa có dữ liệu từ khóa trong khoảng thời gian này.', 'laca'); ?>
                                             </td>
                                         </tr>
                                     <?php else: ?>
@@ -559,15 +559,15 @@ $activeKeyMetrics = \App\Features\GoogleServices\GoogleServices::getActiveKeyMet
                     <?php if (!empty($gsc['pages'])): ?>
                         <div class="laca-google-table-section">
                             <h4 class="laca-google-table-section__title">
-                                <?php esc_html_e('Top trang đích có lượng truy cập cao', 'lacadev'); ?>
+                                <?php esc_html_e('Top trang đích có lượng truy cập cao', 'laca'); ?>
                             </h4>
                             <div class="laca-seo-table-responsive laca-google-table-wrap">
                                 <table class="wp-list-table widefat striped laca-google-table">
                                     <thead>
                                         <tr>
-                                            <th><?php esc_html_e('Đường dẫn trang', 'lacadev'); ?></th>
-                                            <th class="laca-col-right laca-col-w65"><?php esc_html_e('Clicks', 'lacadev'); ?></th>
-                                            <th class="laca-col-right laca-col-w60"><?php esc_html_e('CTR', 'lacadev'); ?></th>
+                                            <th><?php esc_html_e('Đường dẫn trang', 'laca'); ?></th>
+                                            <th class="laca-col-right laca-col-w65"><?php esc_html_e('Clicks', 'laca'); ?></th>
+                                            <th class="laca-col-right laca-col-w60"><?php esc_html_e('CTR', 'laca'); ?></th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -594,16 +594,16 @@ $activeKeyMetrics = \App\Features\GoogleServices\GoogleServices::getActiveKeyMet
                     <div>
                         <h2 class="laca-seo-card__title laca-google-card__title">
                             <span class="dashicons dashicons-chart-area"></span>
-                            <?php esc_html_e('Google Analytics 4', 'lacadev'); ?>
+                            <?php esc_html_e('Google Analytics 4', 'laca'); ?>
                         </h2>
                         <p class="laca-seo-card__subtitle laca-google-card__subtitle">
-                            <?php esc_html_e('Bên trong trang — Lưu lượng & Tương tác thực tế', 'lacadev'); ?>
+                            <?php esc_html_e('Bên trong trang — Lưu lượng & Tương tác thực tế', 'laca'); ?>
                         </p>
                     </div>
                     <div class="laca-google-card__header-actions">
                         <span class="laca-badge">On-Site Behavior</span>
                         <a href="<?php echo esc_url(admin_url('admin.php?page=laca-google-analytics')); ?>" class="button button-small">
-                            <?php esc_html_e('Cài đặt', 'lacadev'); ?>
+                            <?php esc_html_e('Cài đặt', 'laca'); ?>
                         </a>
                     </div>
                 </div>
@@ -611,12 +611,12 @@ $activeKeyMetrics = \App\Features\GoogleServices\GoogleServices::getActiveKeyMet
                 <?php if (empty($ga['connected'])): ?>
                     <div class="laca-google-card__empty-state">
                         <span class="dashicons dashicons-chart-pie laca-google-card__empty-icon"></span>
-                        <h3 class="laca-google-card__empty-title"><?php esc_html_e('Chưa kết nối Google Analytics 4', 'lacadev'); ?></h3>
+                        <h3 class="laca-google-card__empty-title"><?php esc_html_e('Chưa kết nối Google Analytics 4', 'laca'); ?></h3>
                         <p class="laca-google-card__empty-desc">
-                            <?php esc_html_e('Kết nối GA4 để xem số lượng người dùng thực tế, nguồn truy cập, thời lượng tương tác và tỷ lệ chuyển đổi.', 'lacadev'); ?>
+                            <?php esc_html_e('Kết nối GA4 để xem số lượng người dùng thực tế, nguồn truy cập, thời lượng tương tác và tỷ lệ chuyển đổi.', 'laca'); ?>
                         </p>
                         <a href="<?php echo esc_url(admin_url('admin.php?page=laca-google-analytics')); ?>" class="button button-primary">
-                            <?php esc_html_e('Thiết lập Google Analytics', 'lacadev'); ?> &rarr;
+                            <?php esc_html_e('Thiết lập Google Analytics', 'laca'); ?> &rarr;
                         </a>
                     </div>
                 <?php elseif (!empty($ga['error'])): ?>
@@ -627,15 +627,15 @@ $activeKeyMetrics = \App\Features\GoogleServices\GoogleServices::getActiveKeyMet
                                 <h4 class="laca-alert__title">
                                     <?php
                                     if (!empty($ga['status'])) {
-                                        printf(esc_html__('Lỗi Google Analytics 4 (HTTP %d)', 'lacadev'), (int) $ga['status']);
+                                        printf(esc_html__('Lỗi Google Analytics 4 (HTTP %d)', 'laca'), (int) $ga['status']);
                                     } else {
-                                        esc_html_e('Lỗi kết nối Google Analytics 4', 'lacadev');
+                                        esc_html_e('Lỗi kết nối Google Analytics 4', 'laca');
                                     }
                                     ?>
                                 </h4>
                                 <p class="laca-alert__description"><?php echo esc_html($ga['error']); ?></p>
                                 <a href="<?php echo esc_url($ga['setup_url'] ?? admin_url('admin.php?page=laca-google-analytics')); ?>" class="button button-secondary button-small">
-                                    <?php esc_html_e('Xem cài đặt Analytics', 'lacadev'); ?> &rarr;
+                                    <?php esc_html_e('Xem cài đặt Analytics', 'laca'); ?> &rarr;
                                 </a>
                             </div>
                         </div>
@@ -646,8 +646,8 @@ $activeKeyMetrics = \App\Features\GoogleServices\GoogleServices::getActiveKeyMet
                             <div class="laca-alert laca-alert--info">
                                 <span class="dashicons dashicons-update laca-alert__icon" aria-hidden="true"></span>
                                 <div class="laca-alert__content">
-                                    <h4 class="laca-alert__title"><?php esc_html_e('Đang thu thập dữ liệu', 'lacadev'); ?></h4>
-                                    <p class="laca-alert__description"><?php esc_html_e('Google cần 24–48 giờ để bắt đầu có số liệu báo cáo.', 'lacadev'); ?></p>
+                                    <h4 class="laca-alert__title"><?php esc_html_e('Đang thu thập dữ liệu', 'laca'); ?></h4>
+                                    <p class="laca-alert__description"><?php esc_html_e('Google cần 24–48 giờ để bắt đầu có số liệu báo cáo.', 'laca'); ?></p>
                                 </div>
                             </div>
                         </div>
@@ -656,8 +656,8 @@ $activeKeyMetrics = \App\Features\GoogleServices\GoogleServices::getActiveKeyMet
                             <div class="laca-alert laca-alert--info">
                                 <span class="dashicons dashicons-info laca-alert__icon" aria-hidden="true"></span>
                                 <div class="laca-alert__content">
-                                    <h4 class="laca-alert__title"><?php esc_html_e('Chưa có lượt truy cập trong khoảng này', 'lacadev'); ?></h4>
-                                    <p class="laca-alert__description"><?php esc_html_e('Không có phiên hay người dùng nào được ghi nhận.', 'lacadev'); ?></p>
+                                    <h4 class="laca-alert__title"><?php esc_html_e('Chưa có lượt truy cập trong khoảng này', 'laca'); ?></h4>
+                                    <p class="laca-alert__description"><?php esc_html_e('Không có phiên hay người dùng nào được ghi nhận.', 'laca'); ?></p>
                                 </div>
                             </div>
                         </div>
@@ -669,10 +669,10 @@ $activeKeyMetrics = \App\Features\GoogleServices\GoogleServices::getActiveKeyMet
                             <span class="laca-google-realtime__dot"></span>
                             <div>
                                 <div class="laca-google-realtime__title">
-                                    <?php esc_html_e('Đang hoạt động (30 phút qua)', 'lacadev'); ?>
+                                    <?php esc_html_e('Đang hoạt động (30 phút qua)', 'laca'); ?>
                                 </div>
                                 <div class="laca-google-realtime__desc">
-                                    <?php esc_html_e('Người dùng trực tiếp trên website theo GA4 Realtime', 'lacadev'); ?>
+                                    <?php esc_html_e('Người dùng trực tiếp trên website theo GA4 Realtime', 'laca'); ?>
                                 </div>
                             </div>
                         </div>
@@ -680,7 +680,7 @@ $activeKeyMetrics = \App\Features\GoogleServices\GoogleServices::getActiveKeyMet
                             <strong id="laca-ga4-realtime-count" class="laca-ga4-realtime-count laca-google-realtime__value">
                                 <?php echo number_format_i18n((int) ($ga['realtimeUsers'] ?? 0)); ?>
                             </strong>
-                            <span class="laca-google-realtime__unit"><?php esc_html_e('người', 'lacadev'); ?></span>
+                            <span class="laca-google-realtime__unit"><?php esc_html_e('người', 'laca'); ?></span>
                         </div>
                     </div>
 
@@ -688,7 +688,7 @@ $activeKeyMetrics = \App\Features\GoogleServices\GoogleServices::getActiveKeyMet
                         <div class="notice notice-info inline laca-google-realtime-notice">
                             <p>
                                 <span class="dashicons dashicons-info"></span>
-                                <span><?php esc_html_e('GA4 cần 24–48 giờ để xử lý báo cáo; số đang hoạt động là dữ liệu trực tiếp', 'lacadev'); ?></span>
+                                <span><?php esc_html_e('GA4 cần 24–48 giờ để xử lý báo cáo; số đang hoạt động là dữ liệu trực tiếp', 'laca'); ?></span>
                             </p>
                         </div>
                     <?php endif; ?>
@@ -698,7 +698,7 @@ $activeKeyMetrics = \App\Features\GoogleServices\GoogleServices::getActiveKeyMet
                         <!-- Active Users -->
                         <div class="laca-seo-stat-card">
                             <div class="laca-seo-stat-card__info">
-                                <span class="laca-seo-stat-card__label"><?php esc_html_e('Người dùng hoạt động', 'lacadev'); ?></span>
+                                <span class="laca-seo-stat-card__label"><?php esc_html_e('Người dùng hoạt động', 'laca'); ?></span>
                                 <div class="laca-google-stat-card__value-wrap">
                                     <strong class="laca-seo-stat-card__value laca-google-kpi__value">
                                         <?php echo number_format_i18n((int) ($ga['users'] ?? 0)); ?>
@@ -708,14 +708,14 @@ $activeKeyMetrics = \App\Features\GoogleServices\GoogleServices::getActiveKeyMet
                                         <?php echo esc_html($uDelta); ?>
                                     </span>
                                 </div>
-                                <small class="laca-google-stat-card__sub"><?php esc_html_e('so với kỳ trước', 'lacadev'); ?></small>
+                                <small class="laca-google-stat-card__sub"><?php esc_html_e('so với kỳ trước', 'laca'); ?></small>
                             </div>
                         </div>
 
                         <!-- Sessions -->
                         <div class="laca-seo-stat-card">
                             <div class="laca-seo-stat-card__info">
-                                <span class="laca-seo-stat-card__label"><?php esc_html_e('Số phiên truy cập', 'lacadev'); ?></span>
+                                <span class="laca-seo-stat-card__label"><?php esc_html_e('Số phiên truy cập', 'laca'); ?></span>
                                 <div class="laca-google-stat-card__value-wrap">
                                     <strong class="laca-seo-stat-card__value laca-google-kpi__value">
                                         <?php echo number_format_i18n((int) ($ga['sessions'] ?? 0)); ?>
@@ -725,14 +725,14 @@ $activeKeyMetrics = \App\Features\GoogleServices\GoogleServices::getActiveKeyMet
                                         <?php echo esc_html($sDelta); ?>
                                     </span>
                                 </div>
-                                <small class="laca-google-stat-card__sub"><?php esc_html_e('lượt ghé thăm', 'lacadev'); ?></small>
+                                <small class="laca-google-stat-card__sub"><?php esc_html_e('lượt ghé thăm', 'laca'); ?></small>
                             </div>
                         </div>
 
                         <!-- Avg Engagement Duration -->
                         <div class="laca-seo-stat-card">
                             <div class="laca-seo-stat-card__info">
-                                <span class="laca-seo-stat-card__label"><?php esc_html_e('Thời gian tương tác TB', 'lacadev'); ?></span>
+                                <span class="laca-seo-stat-card__label"><?php esc_html_e('Thời gian tương tác TB', 'laca'); ?></span>
                                 <div class="laca-google-stat-card__value-wrap">
                                     <strong class="laca-seo-stat-card__value laca-google-kpi__value">
                                         <?php echo esc_html($ga['avgEngagement'] ?? '—'); ?>
@@ -742,14 +742,14 @@ $activeKeyMetrics = \App\Features\GoogleServices\GoogleServices::getActiveKeyMet
                                         <?php echo esc_html($dDelta); ?>
                                     </span>
                                 </div>
-                                <small class="laca-google-stat-card__sub"><?php esc_html_e('trên mỗi phiên', 'lacadev'); ?></small>
+                                <small class="laca-google-stat-card__sub"><?php esc_html_e('trên mỗi phiên', 'laca'); ?></small>
                             </div>
                         </div>
 
                         <!-- Conversion Rate -->
                         <div class="laca-seo-stat-card">
                             <div class="laca-seo-stat-card__info">
-                                <span class="laca-seo-stat-card__label"><?php esc_html_e('Tỷ lệ chuyển đổi', 'lacadev'); ?></span>
+                                <span class="laca-seo-stat-card__label"><?php esc_html_e('Tỷ lệ chuyển đổi', 'laca'); ?></span>
                                 <?php if (!empty($ga['conversionRate'])): ?>
                                     <div class="laca-google-stat-card__value-wrap">
                                         <strong class="laca-seo-stat-card__value laca-google-kpi__value">
@@ -760,14 +760,14 @@ $activeKeyMetrics = \App\Features\GoogleServices\GoogleServices::getActiveKeyMet
                                             <?php echo esc_html($cvDelta); ?>
                                         </span>
                                     </div>
-                                    <small class="laca-google-stat-card__sub"><?php esc_html_e('sự kiện chính / phiên', 'lacadev'); ?></small>
+                                    <small class="laca-google-stat-card__sub"><?php esc_html_e('sự kiện chính / phiên', 'laca'); ?></small>
                                 <?php else: ?>
                                     <div class="laca-google-stat-card__empty-conversion">
-                                        <span class="laca-cell-muted"><?php esc_html_e('Chưa cấu hình sự kiện chính trong GA4', 'lacadev'); ?></span>
+                                        <span class="laca-cell-muted"><?php esc_html_e('Chưa cấu hình sự kiện chính trong GA4', 'laca'); ?></span>
                                     </div>
                                     <small class="laca-google-stat-card__sub">
                                         <a href="<?php echo esc_url(admin_url('admin.php?page=laca-google-analytics')); ?>" class="laca-google-btn-link">
-                                            <?php esc_html_e('Cấu hình mục tiêu', 'lacadev'); ?> &rarr;
+                                            <?php esc_html_e('Cấu hình mục tiêu', 'laca'); ?> &rarr;
                                         </a>
                                     </small>
                                 <?php endif; ?>
@@ -780,16 +780,16 @@ $activeKeyMetrics = \App\Features\GoogleServices\GoogleServices::getActiveKeyMet
                         <div class="laca-google-card__chart-section">
                             <div class="laca-google-card__chart-wrap">
                                 <div class="laca-google-card__chart-header">
-                                    <h4 class="laca-google-card__chart-title"><?php esc_html_e('Người dùng theo ngày', 'lacadev'); ?></h4>
+                                    <h4 class="laca-google-card__chart-title"><?php esc_html_e('Người dùng theo ngày', 'laca'); ?></h4>
                                     <div class="laca-google-card__chart-legend">
                                         <span class="laca-google-card__legend-item laca-google-card__legend-item--curr">
                                             <span class="laca-google-card__legend-line laca-google-card__legend-line--solid"></span>
-                                            <?php esc_html_e('Kỳ này', 'lacadev'); ?>
+                                            <?php esc_html_e('Kỳ này', 'laca'); ?>
                                         </span>
                                         <?php if (!empty($ga['chartSeries']['prev'])): ?>
                                             <span class="laca-google-card__legend-item laca-google-card__legend-item--prev">
                                                 <span class="laca-google-card__legend-line laca-google-card__legend-line--dashed"></span>
-                                                <?php esc_html_e('Kỳ trước', 'lacadev'); ?>
+                                                <?php esc_html_e('Kỳ trước', 'laca'); ?>
                                             </span>
                                         <?php endif; ?>
                                     </div>
@@ -797,20 +797,20 @@ $activeKeyMetrics = \App\Features\GoogleServices\GoogleServices::getActiveKeyMet
                                 <?php
                                 $gaSeries = [
                                     [
-                                        'name'   => __('Kỳ này', 'lacadev'),
+                                        'name'   => __('Kỳ này', 'laca'),
                                         'data'   => $ga['chartSeries']['curr'],
                                         'dashed' => false,
                                     ],
                                 ];
                                 if (!empty($ga['chartSeries']['prev'])) {
                                     $gaSeries[] = [
-                                        'name'   => __('Kỳ trước', 'lacadev'),
+                                        'name'   => __('Kỳ trước', 'laca'),
                                         'data'   => $ga['chartSeries']['prev'],
                                         'dashed' => true,
                                     ];
                                 }
                                 echo \App\Features\GoogleServices\Chart::line($gaSeries, [
-                                    'title'  => __('Biểu đồ người dùng theo ngày', 'lacadev'),
+                                    'title'  => __('Biểu đồ người dùng theo ngày', 'laca'),
                                     'height' => 160,
                                 ]);
                                 ?>
@@ -821,7 +821,7 @@ $activeKeyMetrics = \App\Features\GoogleServices\GoogleServices::getActiveKeyMet
                     <!-- Nguồn lưu lượng (Traffic Channels) -->
                     <div class="laca-google-table-section">
                         <h4 class="laca-google-table-section__title">
-                            <?php esc_html_e('Kênh lưu lượng truy cập (Traffic Acquisition)', 'lacadev'); ?>
+                            <?php esc_html_e('Kênh lưu lượng truy cập (Traffic Acquisition)', 'laca'); ?>
                         </h4>
                         <?php
                         $totalChannelSessions = 0;
@@ -852,7 +852,7 @@ $activeKeyMetrics = \App\Features\GoogleServices\GoogleServices::getActiveKeyMet
                             </div>
                         <?php else: ?>
                             <div class="laca-table-empty">
-                                <?php esc_html_e('Chưa có dữ liệu kênh.', 'lacadev'); ?>
+                                <?php esc_html_e('Chưa có dữ liệu kênh.', 'laca'); ?>
                             </div>
                         <?php endif; ?>
                     </div>
@@ -861,7 +861,7 @@ $activeKeyMetrics = \App\Features\GoogleServices\GoogleServices::getActiveKeyMet
                     <?php if (!empty($ga['businessKpis'])): ?>
                         <div class="laca-google-table-section">
                             <h4 class="laca-google-table-section__title">
-                                <?php esc_html_e('Hành động mục tiêu giá trị (Key Events / Conversions)', 'lacadev'); ?>
+                                <?php esc_html_e('Hành động mục tiêu giá trị (Key Events / Conversions)', 'laca'); ?>
                             </h4>
                             <div class="laca-google-kpis-grid">
                                 <?php foreach ($ga['businessKpis'] as $kpi): ?>
@@ -870,7 +870,7 @@ $activeKeyMetrics = \App\Features\GoogleServices\GoogleServices::getActiveKeyMet
                                         <div class="laca-google-kpis-grid__label"><?php echo esc_html($kpi['title']); ?></div>
                                         <div class="laca-google-kpis-grid__value">
                                             <?php echo number_format_i18n((int) $kpi['value']); ?>
-                                            <span class="laca-google-kpis-grid__unit"><?php esc_html_e('lượt', 'lacadev'); ?></span>
+                                            <span class="laca-google-kpis-grid__unit"><?php esc_html_e('lượt', 'laca'); ?></span>
                                         </div>
                                         <small class="laca-delta <?php echo str_starts_with($kDelta, '+') ? 'laca-delta--up' : (str_starts_with($kDelta, '-') ? 'laca-delta--down' : ''); ?>">
                                             <?php echo esc_html($kDelta); ?>
@@ -884,22 +884,22 @@ $activeKeyMetrics = \App\Features\GoogleServices\GoogleServices::getActiveKeyMet
                     <!-- Bảng Top trang có lượt xem cao & Thời gian tương tác TB -->
                     <div class="laca-google-table-section">
                         <h4 class="laca-google-table-section__title">
-                            <?php esc_html_e('Top trang có lượt xem cao & Thời gian tương tác', 'lacadev'); ?>
+                            <?php esc_html_e('Top trang có lượt xem cao & Thời gian tương tác', 'laca'); ?>
                         </h4>
                         <div class="laca-seo-table-responsive laca-google-table-wrap">
                             <table class="wp-list-table widefat striped laca-google-table">
                                 <thead>
                                     <tr>
-                                        <th><?php esc_html_e('Trang nội dung', 'lacadev'); ?></th>
-                                        <th class="laca-col-right laca-col-w75"><?php esc_html_e('Lượt xem', 'lacadev'); ?></th>
-                                        <th class="laca-col-right laca-col-w95"><?php esc_html_e('Tương tác TB', 'lacadev'); ?></th>
+                                        <th><?php esc_html_e('Trang nội dung', 'laca'); ?></th>
+                                        <th class="laca-col-right laca-col-w75"><?php esc_html_e('Lượt xem', 'laca'); ?></th>
+                                        <th class="laca-col-right laca-col-w95"><?php esc_html_e('Tương tác TB', 'laca'); ?></th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     <?php if (empty($ga['topPages'])): ?>
                                         <tr>
                                             <td colspan="3" class="laca-table-empty">
-                                                <?php esc_html_e('Chưa có dữ liệu trang trong khoảng thời gian này.', 'lacadev'); ?>
+                                                <?php esc_html_e('Chưa có dữ liệu trang trong khoảng thời gian này.', 'laca'); ?>
                                             </td>
                                         </tr>
                                     <?php else: ?>
@@ -950,23 +950,23 @@ $activeKeyMetrics = \App\Features\GoogleServices\GoogleServices::getActiveKeyMet
     <!-- ==================== 5. DIALOG 100 TỪ KHOÁ ==================== -->
     <dialog id="laca-gsc-dialog" class="laca-google-dialog">
         <div class="laca-google-dialog__header">
-            <h3 class="laca-google-dialog__title"><?php esc_html_e('100 từ khoá tìm kiếm hàng đầu', 'lacadev'); ?></h3>
-            <button type="button" class="laca-google-dialog__close" id="laca-gsc-queries-close" aria-label="<?php esc_attr_e('Đóng', 'lacadev'); ?>">&times;</button>
+            <h3 class="laca-google-dialog__title"><?php esc_html_e('100 từ khoá tìm kiếm hàng đầu', 'laca'); ?></h3>
+            <button type="button" class="laca-google-dialog__close" id="laca-gsc-queries-close" aria-label="<?php esc_attr_e('Đóng', 'laca'); ?>">&times;</button>
         </div>
         <div class="laca-google-dialog__toolbar">
             <input
                 type="search"
                 id="laca-gsc-queries-search"
                 class="laca-google-dialog__search"
-                placeholder="<?php esc_attr_e('Lọc theo từ khoá...', 'lacadev'); ?>"
-                aria-label="<?php esc_attr_e('Lọc theo từ khoá', 'lacadev'); ?>"
+                placeholder="<?php esc_attr_e('Lọc theo từ khoá...', 'laca'); ?>"
+                aria-label="<?php esc_attr_e('Lọc theo từ khoá', 'laca'); ?>"
             />
             <span id="laca-gsc-queries-count" class="laca-google-dialog__count"></span>
         </div>
         <div class="laca-google-dialog__body" id="laca-gsc-queries-body">
             <div class="laca-google-dialog__loading" id="laca-gsc-queries-loading">
                 <span class="dashicons dashicons-update laca-spin"></span>
-                <?php esc_html_e('Đang tải dữ liệu từ khoá từ Google Search Console...', 'lacadev'); ?>
+                <?php esc_html_e('Đang tải dữ liệu từ khoá từ Google Search Console...', 'laca'); ?>
             </div>
             <div class="laca-google-dialog__content" id="laca-gsc-queries-content"></div>
         </div>

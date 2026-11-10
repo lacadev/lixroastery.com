@@ -2,6 +2,16 @@
 // Centralized styles for Security, 2FA, Contact Form, Logs, DB Cleaner,
 // Widgets, Block Sync, Marketplace, Dynamic CPT, Discord Hub, Checklist.
 
+// ─── Dòng mô tả dưới tiêu đề trang (thay hộp alert lặp lại tiêu đề) ─
+.laca-page-intro {
+    max-width: 760px;
+    margin: 4px 0 16px;
+    font-family: var(--laca-font);
+    font-size: var(--laca-font-size-sm);
+    line-height: var(--laca-line-height-sm);
+    color: var(--laca-fg-muted);
+}
+
 // ─── Security Manager & 2FA ──────────────────────────────────────────
 .laca-security-tab-content {
     background: var(--laca-bg);
@@ -1449,6 +1459,31 @@
         border-top: 1px solid var(--rc-border);
     }
 
+    &__more-head {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 20px;
+        font-size: 13px;
+        color: var(--rc-muted);
+
+        &:hover {
+            color: var(--rc-text);
+        }
+    }
+
+    &__more[open] > &__more-head {
+        border-bottom: 1px solid var(--rc-border);
+
+        .laca-rc__chevron {
+            transform: rotate(180deg);
+        }
+    }
+
+    &__more:not([open]) {
+        margin-bottom: 0;
+    }
+
     summary {
         list-style: none;
         cursor: pointer;
@@ -1892,18 +1927,19 @@ body.is-merchant-admin {
 }
 
 // Laca SEO Post List Columns
-.column-laca_seo { width: 140px; }
-.column-laca_seo_title { width: 180px; }
-.column-laca_seo_desc { width: 220px; }
+.column-laca_seo { width: 170px; }
 
-@media screen and (max-width: 1200px) {
-    .column-laca_seo_desc,
-    .column-laca_seo_title {
-        display: none !important;
-    }
-    .column-laca_seo {
-        width: 110px !important;
-    }
+.laca-list-seo-meta {
+    margin-top: var(--laca-space-1);
+    font-size: var(--laca-font-size-xs);
+    color: var(--laca-fg-muted);
+}
+
+.laca-seo-quick-edit.button-link {
+    margin-top: 2px;
+    font-size: var(--laca-font-size-xs);
+    color: var(--laca-fg);
+    text-decoration: underline;
 }
 
 .laca-list-score {
@@ -1917,18 +1953,24 @@ body.is-merchant-admin {
 }
 
 .laca-list-score--good {
-    background: var(--laca-success-subtle);
+    background: var(--laca-success-bg);
     color: var(--laca-success);
 }
 
 .laca-list-score--ok {
-    background: var(--laca-warning-subtle);
+    background: var(--laca-warning-bg);
     color: var(--laca-warning);
 }
 
 .laca-list-score--bad {
-    background: var(--laca-danger-subtle);
+    background: var(--laca-danger-bg);
     color: var(--laca-danger);
+}
+
+.laca-list-score--none {
+    background: var(--laca-bg-muted);
+    color: var(--laca-fg-muted);
+    font-weight: 500;
 }
 
 .laca-list-badge {

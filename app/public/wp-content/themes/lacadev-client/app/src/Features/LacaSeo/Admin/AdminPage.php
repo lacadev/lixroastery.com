@@ -146,7 +146,7 @@ class AdminPage
     public function renderPage(): void
     {
         if (!current_user_can('manage_options')) {
-            wp_die(esc_html__('Bạn không có quyền truy cập trang này.', 'lacadev'));
+            wp_die(esc_html__('Bạn không có quyền truy cập trang này.', 'laca'));
         }
 
         $view = sanitize_key($_GET['view'] ?? 'dashboard');
@@ -205,10 +205,10 @@ class AdminPage
                 Notices::render();
 
                 if (isset($_GET['updated'])) {
-                    echo '<div class="notice notice-success is-dismissible laca-seo-notice laca-seo-auto-dismiss laca-alert laca-alert--success"><span class="dashicons dashicons-yes-alt laca-alert__icon" aria-hidden="true"></span><div class="laca-alert__content"><p>' . esc_html__('Cài đặt SEO đã được lưu thành công.', 'lacadev') . '</p></div></div>';
+                    echo '<div class="notice notice-success is-dismissible laca-seo-notice laca-seo-auto-dismiss laca-alert laca-alert--success"><span class="dashicons dashicons-yes-alt laca-alert__icon" aria-hidden="true"></span><div class="laca-alert__content"><p>' . esc_html__('Cài đặt SEO đã được lưu thành công.', 'laca') . '</p></div></div>';
                 }
                 if (isset($_GET['reset'])) {
-                    echo '<div class="notice notice-warning is-dismissible laca-seo-notice laca-seo-auto-dismiss laca-alert laca-alert--warning"><span class="dashicons dashicons-warning laca-alert__icon" aria-hidden="true"></span><div class="laca-alert__content"><p>' . esc_html__('Đã khôi phục cài đặt mặc định của tab này.', 'lacadev') . '</p></div></div>';
+                    echo '<div class="notice notice-warning is-dismissible laca-seo-notice laca-seo-auto-dismiss laca-alert laca-alert--warning"><span class="dashicons dashicons-warning laca-alert__icon" aria-hidden="true"></span><div class="laca-alert__content"><p>' . esc_html__('Đã khôi phục cài đặt mặc định của tab này.', 'laca') . '</p></div></div>';
                 }
                 ?>
             </div>
@@ -216,9 +216,9 @@ class AdminPage
             <div class="laca-seo-layout">
                 <!-- Mobile Select (< 1024px) -->
                 <div class="laca-seo-nav-select-wrap">
-                    <label for="laca-seo-nav-select" class="screen-reader-text"><?php esc_html_e('Chuyển trang Laca SEO', 'lacadev'); ?></label>
+                    <label for="laca-seo-nav-select" class="screen-reader-text"><?php esc_html_e('Chuyển trang Laca SEO', 'laca'); ?></label>
                     <select id="laca-seo-nav-select" class="laca-select laca-seo-nav-select" onchange="if(this.value) window.location.href=this.value;">
-                        <option value=""><?php esc_html_e('Đi tới...', 'lacadev'); ?></option>
+                        <option value=""><?php esc_html_e('Đi tới...', 'laca'); ?></option>
                         <?php foreach ($nav_groups as $group): ?>
                             <optgroup label="<?php echo esc_attr($group['title']); ?>">
                                 <?php foreach ($group['items'] as $key => $info): ?>
@@ -232,7 +232,7 @@ class AdminPage
                 </div>
 
                 <!-- Desktop Sidebar (>= 1024px) -->
-                <aside class="laca-seo-sidebar" aria-label="<?php esc_attr_e('Laca SEO Navigation', 'lacadev'); ?>">
+                <aside class="laca-seo-sidebar" aria-label="<?php esc_attr_e('Laca SEO Navigation', 'laca'); ?>">
                     <nav class="laca-seo-nav">
                         <?php foreach ($nav_groups as $group): ?>
                             <div class="laca-seo-nav__group">

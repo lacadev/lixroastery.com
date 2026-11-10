@@ -12,7 +12,7 @@ class OpeningHours
     public function getData(array $atts, array $schema): string
     {
         if (!isset($schema['openingHoursSpecification'])) {
-            return '<p>' . esc_html__('Open 24/7', 'lacadev') . '</p>';
+            return '<p>' . esc_html__('Open 24/7', 'laca') . '</p>';
         }
 
         if (empty($schema['openingHoursSpecification'])) {
@@ -22,11 +22,11 @@ class OpeningHours
         $days = $this->normalizeDays($schema, $atts);
         ob_start();
         ?>
-        <h5><?php esc_html_e('Opening Hours:', 'lacadev'); ?></h5>
+        <h5><?php esc_html_e('Opening Hours:', 'laca'); ?></h5>
         <div class="laca-seo-business-opening-hours rank-math-business-opening-hours">
             <?php
             foreach ($days as $day => $hours) {
-                $time = !empty($hours['time']) ? implode(__(' and ', 'lacadev'), $hours['time']) : __('Closed', 'lacadev');
+                $time = !empty($hours['time']) ? implode(__(' and ', 'laca'), $hours['time']) : __('Closed', 'laca');
                 $time = str_replace('-', ' &ndash; ', $time);
 
                 printf(

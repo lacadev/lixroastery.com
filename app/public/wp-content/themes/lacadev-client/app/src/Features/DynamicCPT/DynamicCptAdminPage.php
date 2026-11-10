@@ -86,10 +86,7 @@ class DynamicCptAdminPage
         ?>
         <div class="wrap laca-cpt-wrap">
 
-            <div class="laca-alert laca-alert--info laca-mb-3">
-                <p class="laca-alert__title">🔧 Custom Post Types</p>
-                <p class="laca-alert__description">Trang này cho phép tạo và quản lý các loại nội dung riêng (ví dụ: Dự án, Sản phẩm, Dịch vụ...) mà không cần biết lập trình. Sau khi tạo, hệ thống sẽ tự sinh giao diện trang danh sách và trang chi tiết cho loại nội dung đó.</p>
-            </div>
+            <p class="laca-page-intro">Trang này cho phép tạo và quản lý các loại nội dung riêng (ví dụ: Dự án, Sản phẩm, Dịch vụ...) mà không cần biết lập trình. Sau khi tạo, hệ thống sẽ tự sinh giao diện trang danh sách và trang chi tiết cho loại nội dung đó.</p>
 
             <div class="laca-cpt-header">
                 <div>

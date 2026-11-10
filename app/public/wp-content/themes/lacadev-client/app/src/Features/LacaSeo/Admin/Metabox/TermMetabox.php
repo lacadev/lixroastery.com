@@ -91,6 +91,7 @@ class TermMetabox
                 'termId'          => $termId,
                 'taxonomy'        => $tax,
                 'locale'          => $locale,
+                'siteName'        => get_bloginfo('name'),
                 'homeUrl'         => home_url(),
                 'permalink'       => !is_wp_error($termLink) ? $termLink : home_url(),
                 'defaultTitleTpl' => (string) Settings::get("titles.tax_{$tax}_title", '%term% %page% %sep% %sitename%'),
@@ -140,7 +141,7 @@ class TermMetabox
         ?>
         <tr class="form-field laca-seo-term-row">
             <th scope="row" valign="top">
-                <label><strong><?php esc_html_e('Cấu hình Laca SEO', 'lacadev'); ?></strong></label>
+                <label><strong><?php esc_html_e('Cấu hình Laca SEO', 'laca'); ?></strong></label>
             </th>
             <td>
                 <div class="laca-seo-metabox-wrapper" id="laca_seo_metabox_app" data-term-id="<?php echo esc_attr($termId); ?>">
@@ -149,14 +150,14 @@ class TermMetabox
                     <!-- Tabs Nav -->
                     <div class="laca-seo-tabs-nav" role="tablist">
                         <button type="button" role="tab" class="laca-seo-tab-btn active" data-tab="general" aria-selected="true">
-                            <span class="dashicons dashicons-admin-generic"></span> <?php esc_html_e('Chung', 'lacadev'); ?>
+                            <span class="dashicons dashicons-admin-generic"></span> <?php esc_html_e('Chung', 'laca'); ?>
                             <span class="laca-seo-tab-score-badge" id="laca_seo_tab_score"><?php echo esc_html($meta['seo_score'] ?: 0); ?>/100</span>
                         </button>
                         <button type="button" role="tab" class="laca-seo-tab-btn" data-tab="advanced" aria-selected="false">
-                            <span class="dashicons dashicons-admin-settings"></span> <?php esc_html_e('Nâng cao', 'lacadev'); ?>
+                            <span class="dashicons dashicons-admin-settings"></span> <?php esc_html_e('Nâng cao', 'laca'); ?>
                         </button>
                         <button type="button" role="tab" class="laca-seo-tab-btn" data-tab="social" aria-selected="false">
-                            <span class="dashicons dashicons-share"></span> <?php esc_html_e('Mạng xã hội', 'lacadev'); ?>
+                            <span class="dashicons dashicons-share"></span> <?php esc_html_e('Mạng xã hội', 'laca'); ?>
                         </button>
                     </div>
 
@@ -165,7 +166,7 @@ class TermMetabox
                         <!-- SERP Preview -->
                         <div class="laca-seo-serp-preview-box">
                             <div class="laca-seo-serp-header">
-                                <span class="laca-seo-serp-title-label"><?php esc_html_e('Xem trước kết quả tìm kiếm Google (SERP Preview)', 'lacadev'); ?></span>
+                                <span class="laca-seo-serp-title-label"><?php esc_html_e('Xem trước kết quả tìm kiếm Google (SERP Preview)', 'laca'); ?></span>
                                 <div class="laca-seo-serp-devices">
                                     <button type="button" class="laca-serp-btn active" data-device="desktop">
                                         <span class="dashicons dashicons-desktop"></span> Desktop
@@ -189,7 +190,7 @@ class TermMetabox
                         <div class="laca-seo-editor-fields">
                             <div class="laca-seo-field-group">
                                 <div class="laca-seo-field-header">
-                                    <label for="laca_seo_title_input"><?php esc_html_e('Tiêu đề SEO Danh mục', 'lacadev'); ?></label>
+                                    <label for="laca_seo_title_input"><?php esc_html_e('Tiêu đề SEO Danh mục', 'laca'); ?></label>
                                     <div class="laca-seo-counter" id="laca_seo_title_counter">
                                         <span class="laca-counter-val">0</span> / 60
                                     </div>
@@ -199,7 +200,7 @@ class TermMetabox
 
                             <div class="laca-seo-field-group">
                                 <div class="laca-seo-field-header">
-                                    <label for="laca_seo_desc_input"><?php esc_html_e('Mô tả SEO Danh mục', 'lacadev'); ?></label>
+                                    <label for="laca_seo_desc_input"><?php esc_html_e('Mô tả SEO Danh mục', 'laca'); ?></label>
                                     <div class="laca-seo-counter" id="laca_seo_desc_counter">
                                         <span class="laca-counter-val">0</span> / 160
                                     </div>
@@ -208,10 +209,10 @@ class TermMetabox
                             </div>
 
                             <div class="laca-seo-field-group">
-                                <label><?php esc_html_e('Từ khoá chính Danh mục (Focus Keywords)', 'lacadev'); ?></label>
+                                <label><?php esc_html_e('Từ khoá chính Danh mục (Focus Keywords)', 'laca'); ?></label>
                                 <div class="laca-seo-tags-input" id="laca_seo_tags_input">
                                     <div class="laca-tags-list" id="laca_tags_list"></div>
-                                    <input type="text" id="laca_kw_type_input" class="laca-kw-input" placeholder="<?php esc_attr_e('Nhập từ khoá rồi nhấn Enter...', 'lacadev'); ?>">
+                                    <input type="text" id="laca_kw_type_input" class="laca-kw-input" placeholder="<?php esc_attr_e('Nhập từ khoá rồi nhấn Enter...', 'laca'); ?>">
                                 </div>
                                 <input type="hidden" name="laca_seo[_laca_seo_focus_keyword]" id="laca_seo_focus_kw_hidden" value="<?php echo esc_attr($meta['focus_keyword']); ?>">
                             </div>
@@ -226,13 +227,13 @@ class TermMetabox
                                         </div>
                                     </div>
                                     <div class="laca-score-intro">
-                                        <h4><?php esc_html_e('Kiểm tra SEO cho Danh mục (5 tiêu chí chuẩn)', 'lacadev'); ?></h4>
+                                        <h4><?php esc_html_e('Kiểm tra SEO cho Danh mục (5 tiêu chí chuẩn)', 'laca'); ?></h4>
                                     </div>
                                 </div>
                                 <div class="laca-test-groups">
                                     <div class="laca-test-group is-open" data-group="basic">
                                         <div class="laca-group-header">
-                                            <strong><?php esc_html_e('Tiêu chí kiểm tra', 'lacadev'); ?></strong>
+                                            <strong><?php esc_html_e('Tiêu chí kiểm tra', 'laca'); ?></strong>
                                             <span class="laca-group-count" id="count_basic">0/5</span>
                                         </div>
                                         <div class="laca-group-body" id="group_basic_tests"></div>
@@ -245,7 +246,7 @@ class TermMetabox
                     <!-- Tab 2: Advanced -->
                     <div class="laca-seo-tab-content" id="laca_seo_tab_advanced" role="tabpanel" hidden>
                         <div class="laca-seo-field-group">
-                            <label><strong><?php esc_html_e('Chỉ thị Robots Meta', 'lacadev'); ?></strong></label>
+                            <label><strong><?php esc_html_e('Chỉ thị Robots Meta', 'laca'); ?></strong></label>
                             <div class="laca-checkbox-grid">
                                 <?php
                                 $robotsList = Helper::choicesRobots();
@@ -262,7 +263,7 @@ class TermMetabox
                         </div>
 
                         <div class="laca-seo-field-group">
-                            <label><strong><?php esc_html_e('Advanced Robots Meta', 'lacadev'); ?></strong></label>
+                            <label><strong><?php esc_html_e('Advanced Robots Meta', 'laca'); ?></strong></label>
                             <?php
                             $adv = (array) $meta['advanced_robots'];
                             $maxSnippet = isset($adv['max-snippet']) ? (int) $adv['max-snippet'] : -1;
@@ -271,15 +272,15 @@ class TermMetabox
                             ?>
                             <div class="laca-adv-robots-grid">
                                 <div class="laca-adv-field">
-                                    <label><?php esc_html_e('Max Snippet (ký tự)', 'lacadev'); ?></label>
+                                    <label><?php esc_html_e('Max Snippet (ký tự)', 'laca'); ?></label>
                                     <input type="number" name="laca_seo[_laca_seo_advanced_robots][max-snippet]" value="<?php echo esc_attr($maxSnippet); ?>" class="small-text">
                                 </div>
                                 <div class="laca-adv-field">
-                                    <label><?php esc_html_e('Max Video Preview (giây)', 'lacadev'); ?></label>
+                                    <label><?php esc_html_e('Max Video Preview (giây)', 'laca'); ?></label>
                                     <input type="number" name="laca_seo[_laca_seo_advanced_robots][max-video-preview]" value="<?php echo esc_attr($maxVideo); ?>" class="small-text">
                                 </div>
                                 <div class="laca-adv-field">
-                                    <label><?php esc_html_e('Max Image Preview', 'lacadev'); ?></label>
+                                    <label><?php esc_html_e('Max Image Preview', 'laca'); ?></label>
                                     <select name="laca_seo[_laca_seo_advanced_robots][max-image-preview]">
                                         <option value="large" <?php selected($maxImage, 'large'); ?>>Large (Mặc định)</option>
                                         <option value="standard" <?php selected($maxImage, 'standard'); ?>>Standard</option>
@@ -290,12 +291,12 @@ class TermMetabox
                         </div>
 
                         <div class="laca-seo-field-group">
-                            <label for="laca_seo_canonical_url"><strong><?php esc_html_e('Canonical URL', 'lacadev'); ?></strong></label>
+                            <label for="laca_seo_canonical_url"><strong><?php esc_html_e('Canonical URL', 'laca'); ?></strong></label>
                             <input type="url" id="laca_seo_canonical_url" name="laca_seo[_laca_seo_canonical_url]" value="<?php echo esc_attr($meta['canonical_url']); ?>" class="large-text">
                         </div>
 
                         <div class="laca-seo-field-group">
-                            <label for="laca_seo_breadcrumb_title"><strong><?php esc_html_e('Tiêu đề Breadcrumb', 'lacadev'); ?></strong></label>
+                            <label for="laca_seo_breadcrumb_title"><strong><?php esc_html_e('Tiêu đề Breadcrumb', 'laca'); ?></strong></label>
                             <input type="text" id="laca_seo_breadcrumb_title" name="laca_seo[_laca_seo_breadcrumb_title]" value="<?php echo esc_attr($meta['breadcrumb_title']); ?>" class="regular-text">
                         </div>
 
@@ -307,21 +308,21 @@ class TermMetabox
                         $termRedirCode = $hasTermRedir ? ($existingTermRedir['header_code'] ?? 301) : 301;
                         ?>
                         <div class="laca-seo-field-group laca-seo-redirection-metabox">
-                            <label><strong><?php esc_html_e('Chuyển hướng Danh mục (Redirection)', 'lacadev'); ?></strong></label>
+                            <label><strong><?php esc_html_e('Chuyển hướng Danh mục (Redirection)', 'laca'); ?></strong></label>
                             <div style="margin-top: 8px;">
                                 <label class="laca-checkbox-inline">
                                     <input type="checkbox" name="laca_seo[_laca_seo_enable_redirection]" id="laca_seo_enable_term_redirection" value="on" <?php checked($hasTermRedir); ?>>
-                                    <span><?php esc_html_e('Kích hoạt chuyển hướng cho danh mục này', 'lacadev'); ?></span>
+                                    <span><?php esc_html_e('Kích hoạt chuyển hướng cho danh mục này', 'laca'); ?></span>
                                 </label>
                             </div>
                             <div id="laca_seo_term_redirection_fields" style="margin-top: 12px; <?php echo $hasTermRedir ? '' : 'display:none;'; ?>">
                                 <input type="hidden" name="laca_seo[_laca_seo_redirection_id]" value="<?php echo esc_attr((string) ($existingTermRedir['id'] ?? '')); ?>">
                                 <div style="margin-bottom: 10px;">
-                                    <label for="laca_seo_term_redirection_url_to" style="display:block; margin-bottom: 4px;"><?php esc_html_e('URL đích chuyển đến:', 'lacadev'); ?></label>
+                                    <label for="laca_seo_term_redirection_url_to" style="display:block; margin-bottom: 4px;"><?php esc_html_e('URL đích chuyển đến:', 'laca'); ?></label>
                                     <input type="text" id="laca_seo_term_redirection_url_to" name="laca_seo[_laca_seo_redirection_url_to]" value="<?php echo esc_attr($termRedirUrlTo); ?>" class="large-text" placeholder="https://example.com/danh-muc-moi/">
                                 </div>
                                 <div>
-                                    <label for="laca_seo_term_redirection_header_code" style="display:block; margin-bottom: 4px;"><?php esc_html_e('Loại chuyển hướng:', 'lacadev'); ?></label>
+                                    <label for="laca_seo_term_redirection_header_code" style="display:block; margin-bottom: 4px;"><?php esc_html_e('Loại chuyển hướng:', 'laca'); ?></label>
                                     <select id="laca_seo_term_redirection_header_code" name="laca_seo[_laca_seo_redirection_header_code]">
                                         <?php foreach (Helper::choicesRedirectionTypes() as $code => $label): ?>
                                             <option value="<?php echo esc_attr($code); ?>" <?php selected((string) $termRedirCode, (string) $code); ?>><?php echo esc_html($label); ?></option>
@@ -335,17 +336,17 @@ class TermMetabox
                     <!-- Tab 3: Social -->
                     <div class="laca-seo-tab-content" id="laca_seo_tab_social" role="tabpanel" hidden>
                         <div class="laca-social-section">
-                            <h4><span class="dashicons dashicons-facebook"></span> <?php esc_html_e('Facebook', 'lacadev'); ?></h4>
+                            <h4><span class="dashicons dashicons-facebook"></span> <?php esc_html_e('Facebook', 'laca'); ?></h4>
                             <div class="laca-seo-field-group">
-                                <label for="laca_seo_fb_title"><?php esc_html_e('Tiêu đề Facebook', 'lacadev'); ?></label>
+                                <label for="laca_seo_fb_title"><?php esc_html_e('Tiêu đề Facebook', 'laca'); ?></label>
                                 <input type="text" id="laca_seo_fb_title" name="laca_seo[_laca_seo_facebook_title]" value="<?php echo esc_attr($meta['facebook_title']); ?>" class="regular-text">
                             </div>
                             <div class="laca-seo-field-group">
-                                <label for="laca_seo_fb_desc"><?php esc_html_e('Mô tả Facebook', 'lacadev'); ?></label>
+                                <label for="laca_seo_fb_desc"><?php esc_html_e('Mô tả Facebook', 'laca'); ?></label>
                                 <textarea id="laca_seo_fb_desc" name="laca_seo[_laca_seo_facebook_description]" rows="3" class="large-text"><?php echo esc_textarea($meta['facebook_description']); ?></textarea>
                             </div>
                             <div class="laca-seo-field-group">
-                                <label><?php esc_html_e('Ảnh Facebook', 'lacadev'); ?></label>
+                                <label><?php esc_html_e('Ảnh Facebook', 'laca'); ?></label>
                                 <div class="laca-image-upload-wrap">
                                     <input type="hidden" name="laca_seo[_laca_seo_facebook_image]" id="laca_seo_fb_img" value="<?php echo esc_attr($meta['facebook_image']); ?>">
                                     <input type="hidden" name="laca_seo[_laca_seo_facebook_image_id]" id="laca_seo_fb_img_id" value="<?php echo esc_attr($meta['facebook_image_id']); ?>">
@@ -355,24 +356,24 @@ class TermMetabox
                                         <?php endif; ?>
                                     </div>
                                     <div class="laca-img-actions">
-                                        <button type="button" class="button laca-upload-media-btn" data-target="fb"><?php esc_html_e('Chọn ảnh', 'lacadev'); ?></button>
-                                        <button type="button" class="button laca-remove-media-btn" data-target="fb" <?php echo empty($meta['facebook_image']) ? 'style="display:none;"' : ''; ?>><?php esc_html_e('Gỡ bỏ', 'lacadev'); ?></button>
+                                        <button type="button" class="button laca-upload-media-btn" data-target="fb"><?php esc_html_e('Chọn ảnh', 'laca'); ?></button>
+                                        <button type="button" class="button laca-remove-media-btn" data-target="fb" <?php echo empty($meta['facebook_image']) ? 'style="display:none;"' : ''; ?>><?php esc_html_e('Gỡ bỏ', 'laca'); ?></button>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
                         <div class="laca-social-section" style="margin-top:20px;border-top:1px solid #e2e8f0;padding-top:16px;">
-                            <h4><span class="dashicons dashicons-twitter"></span> <?php esc_html_e('Twitter / X', 'lacadev'); ?></h4>
+                            <h4><span class="dashicons dashicons-twitter"></span> <?php esc_html_e('Twitter / X', 'laca'); ?></h4>
                             <div class="laca-seo-field-group">
                                 <label class="laca-checkbox-inline">
                                     <input type="checkbox" name="laca_seo[_laca_seo_twitter_use_facebook]" id="laca_twitter_use_fb" value="on" <?php checked($meta['twitter_use_facebook'], 'on'); ?>>
-                                    <strong><?php esc_html_e('Sử dụng lại dữ liệu của Facebook', 'lacadev'); ?></strong>
+                                    <strong><?php esc_html_e('Sử dụng lại dữ liệu của Facebook', 'laca'); ?></strong>
                                 </label>
                             </div>
                             <div id="laca_twitter_custom_fields" <?php echo $meta['twitter_use_facebook'] === 'on' ? 'style="display:none;"' : ''; ?>>
                                 <div class="laca-seo-field-group">
-                                    <label for="laca_seo_twitter_card"><?php esc_html_e('Loại thẻ Twitter Card', 'lacadev'); ?></label>
+                                    <label for="laca_seo_twitter_card"><?php esc_html_e('Loại thẻ Twitter Card', 'laca'); ?></label>
                                     <select name="laca_seo[_laca_seo_twitter_card_type]" id="laca_seo_twitter_card">
                                         <option value="summary_large_image" <?php selected($meta['twitter_card_type'], 'summary_large_image'); ?>>Summary with Large Image</option>
                                         <option value="summary_card" <?php selected($meta['twitter_card_type'], 'summary_card'); ?>>Summary (Ảnh nhỏ)</option>
@@ -381,15 +382,15 @@ class TermMetabox
                                     </select>
                                 </div>
                                 <div class="laca-seo-field-group">
-                                    <label for="laca_seo_tw_title"><?php esc_html_e('Tiêu đề Twitter', 'lacadev'); ?></label>
+                                    <label for="laca_seo_tw_title"><?php esc_html_e('Tiêu đề Twitter', 'laca'); ?></label>
                                     <input type="text" id="laca_seo_tw_title" name="laca_seo[_laca_seo_twitter_title]" value="<?php echo esc_attr($meta['twitter_title']); ?>" class="regular-text">
                                 </div>
                                 <div class="laca-seo-field-group">
-                                    <label for="laca_seo_tw_desc"><?php esc_html_e('Mô tả Twitter', 'lacadev'); ?></label>
+                                    <label for="laca_seo_tw_desc"><?php esc_html_e('Mô tả Twitter', 'laca'); ?></label>
                                     <textarea id="laca_seo_tw_desc" name="laca_seo[_laca_seo_twitter_description]" rows="3" class="large-text"><?php echo esc_textarea($meta['twitter_description']); ?></textarea>
                                 </div>
                                 <div class="laca-seo-field-group">
-                                    <label><?php esc_html_e('Ảnh Twitter', 'lacadev'); ?></label>
+                                    <label><?php esc_html_e('Ảnh Twitter', 'laca'); ?></label>
                                     <div class="laca-image-upload-wrap">
                                         <input type="hidden" name="laca_seo[_laca_seo_twitter_image]" id="laca_seo_tw_img" value="<?php echo esc_attr($meta['twitter_image']); ?>">
                                         <input type="hidden" name="laca_seo[_laca_seo_twitter_image_id]" id="laca_seo_tw_img_id" value="<?php echo esc_attr($meta['twitter_image_id']); ?>">
@@ -399,8 +400,8 @@ class TermMetabox
                                             <?php endif; ?>
                                         </div>
                                         <div class="laca-img-actions">
-                                            <button type="button" class="button laca-upload-media-btn" data-target="tw"><?php esc_html_e('Chọn ảnh', 'lacadev'); ?></button>
-                                            <button type="button" class="button laca-remove-media-btn" data-target="tw" <?php echo empty($meta['twitter_image']) ? 'style="display:none;"' : ''; ?>><?php esc_html_e('Gỡ bỏ', 'lacadev'); ?></button>
+                                            <button type="button" class="button laca-upload-media-btn" data-target="tw"><?php esc_html_e('Chọn ảnh', 'laca'); ?></button>
+                                            <button type="button" class="button laca-remove-media-btn" data-target="tw" <?php echo empty($meta['twitter_image']) ? 'style="display:none;"' : ''; ?>><?php esc_html_e('Gỡ bỏ', 'laca'); ?></button>
                                         </div>
                                     </div>
                                 </div>

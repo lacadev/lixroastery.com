@@ -36,12 +36,12 @@ class ThumbnailOverlay
 
         $choices = [
             'play' => [
-                'name'     => __('Play icon', 'lacadev'),
+                'name'     => __('Play icon', 'laca'),
                 'path'     => $playPath,
                 'position' => 'middle_center',
             ],
             'gif'  => [
-                'name'     => __('GIF icon', 'lacadev'),
+                'name'     => __('GIF icon', 'laca'),
                 'path'     => $gifPath,
                 'position' => 'middle_center',
             ],

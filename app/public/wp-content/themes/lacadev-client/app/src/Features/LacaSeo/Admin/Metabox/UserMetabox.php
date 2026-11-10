@@ -53,36 +53,36 @@ class UserMetabox
         ];
 
         ?>
-        <h3 id="laca-seo-author-title"><?php esc_html_e('Cấu hình SEO Tác giả (Laca SEO)', 'lacadev'); ?></h3>
+        <h3 id="laca-seo-author-title"><?php esc_html_e('Cấu hình SEO Tác giả (Laca SEO)', 'laca'); ?></h3>
         <table class="form-table laca-seo-user-table" role="presentation">
             <tr>
-                <th scope="row"><label for="laca_seo_user_title"><?php esc_html_e('Tiêu đề SEO Tác giả', 'lacadev'); ?></label></th>
+                <th scope="row"><label for="laca_seo_user_title"><?php esc_html_e('Tiêu đề SEO Tác giả', 'laca'); ?></label></th>
                 <td>
                     <input type="text" id="laca_seo_user_title" name="laca_seo[_laca_seo_title]" value="<?php echo esc_attr($meta['title']); ?>" class="regular-text" placeholder="<?php echo esc_attr((string) Settings::get('titles.author_archive_title', '%name% %sep% %sitename%')); ?>">
-                    <p class="description"><?php esc_html_e('Tiêu đề hiển thị trên kết quả tìm kiếm cho trang lưu trữ bài viết của tác giả này.', 'lacadev'); ?></p>
+                    <p class="description"><?php esc_html_e('Tiêu đề hiển thị trên kết quả tìm kiếm cho trang lưu trữ bài viết của tác giả này.', 'laca'); ?></p>
                 </td>
             </tr>
             <tr>
-                <th scope="row"><label for="laca_seo_user_desc"><?php esc_html_e('Mô tả SEO Tác giả', 'lacadev'); ?></label></th>
+                <th scope="row"><label for="laca_seo_user_desc"><?php esc_html_e('Mô tả SEO Tác giả', 'laca'); ?></label></th>
                 <td>
                     <textarea id="laca_seo_user_desc" name="laca_seo[_laca_seo_description]" rows="3" class="regular-text"><?php echo esc_textarea($meta['description']); ?></textarea>
-                    <p class="description"><?php esc_html_e('Đoạn mô tả ngắn gọn về tác giả trong thẻ meta description.', 'lacadev'); ?></p>
+                    <p class="description"><?php esc_html_e('Đoạn mô tả ngắn gọn về tác giả trong thẻ meta description.', 'laca'); ?></p>
                 </td>
             </tr>
             <tr>
-                <th scope="row"><label for="laca_seo_user_kw"><?php esc_html_e('Từ khoá chính', 'lacadev'); ?></label></th>
+                <th scope="row"><label for="laca_seo_user_kw"><?php esc_html_e('Từ khoá chính', 'laca'); ?></label></th>
                 <td>
                     <input type="text" id="laca_seo_user_kw" name="laca_seo[_laca_seo_focus_keyword]" value="<?php echo esc_attr($meta['focus_keyword']); ?>" class="regular-text">
                 </td>
             </tr>
             <tr>
-                <th scope="row"><label for="laca_seo_user_canonical"><?php esc_html_e('Canonical URL', 'lacadev'); ?></label></th>
+                <th scope="row"><label for="laca_seo_user_canonical"><?php esc_html_e('Canonical URL', 'laca'); ?></label></th>
                 <td>
                     <input type="url" id="laca_seo_user_canonical" name="laca_seo[_laca_seo_canonical_url]" value="<?php echo esc_attr($meta['canonical_url']); ?>" class="regular-text">
                 </td>
             </tr>
             <tr>
-                <th scope="row"><label><?php esc_html_e('Chỉ thị Robots Meta', 'lacadev'); ?></label></th>
+                <th scope="row"><label><?php esc_html_e('Chỉ thị Robots Meta', 'laca'); ?></label></th>
                 <td>
                     <?php
                     $robotsList = Helper::choicesRobots();
@@ -98,7 +98,7 @@ class UserMetabox
                 </td>
             </tr>
             <tr>
-                <th scope="row"><label for="laca_seo_user_fb_img"><?php esc_html_e('Ảnh chia sẻ Facebook', 'lacadev'); ?></label></th>
+                <th scope="row"><label for="laca_seo_user_fb_img"><?php esc_html_e('Ảnh chia sẻ Facebook', 'laca'); ?></label></th>
                 <td>
                     <input type="url" id="laca_seo_user_fb_img" name="laca_seo[_laca_seo_facebook_image]" value="<?php echo esc_attr($meta['facebook_image']); ?>" class="regular-text">
                 </td>

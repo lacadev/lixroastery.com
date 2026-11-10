@@ -138,7 +138,7 @@ export const getLinkStats = (content, domain = '') => {
     anchors,
   };
 
-  const parentDomain = domain || (typeof window !== 'undefined' && window.location ? window.location.hostname : 'lixroastery.local');
+  const parentDomain = domain || (typeof window !== 'undefined' && window.location ? window.location.hostname : '');
 
   anchors.forEach(aTag => {
     const hrefMatch = /href=(["'])([^"']+)\1/i.exec(aTag);

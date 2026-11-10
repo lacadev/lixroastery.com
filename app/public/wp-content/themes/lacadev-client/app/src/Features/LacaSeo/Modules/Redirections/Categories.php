@@ -18,8 +18,8 @@ class Categories
             null,
             [
                 'labels' => [
-                    'name'          => __('Danh mục chuyển hướng', 'lacadev'),
-                    'singular_name' => __('Danh mục chuyển hướng', 'lacadev'),
+                    'name'          => __('Danh mục chuyển hướng', 'laca'),
+                    'singular_name' => __('Danh mục chuyển hướng', 'laca'),
                 ],
                 'public'            => false,
                 'show_ui'           => false,

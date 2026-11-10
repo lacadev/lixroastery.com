@@ -142,7 +142,7 @@ class FrontendSeoScore
                 '</div>',
                 esc_attr($classRating),
                 esc_attr($color),
-                esc_html__('Điểm SEO:', 'lacadev'),
+                esc_html__('Điểm SEO:', 'laca'),
                 esc_attr($color),
                 esc_attr($color),
                 $score
@@ -157,7 +157,7 @@ class FrontendSeoScore
             esc_attr($classRating),
             esc_attr($color),
             esc_attr($color),
-            esc_attr(sprintf(__('Điểm SEO: %d/100', 'lacadev'), $score)),
+            esc_attr(sprintf(__('Điểm SEO: %d/100', 'laca'), $score)),
             $score
         );
     }

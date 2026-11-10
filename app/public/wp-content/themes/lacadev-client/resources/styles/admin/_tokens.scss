@@ -26,17 +26,25 @@
   --wp-components-color-accent-darker-10: #27272a;
   --wp-components-color-accent-darker-20: #3f3f46;
 
-  --laca-success: #3f3f46;
-  --laca-success-bg: #f4f4f5;
-  --laca-success-border: #e4e4e7;
+  // Trạng thái có màu riêng (màu nhấn vẫn đơn sắc) — đạt/cảnh báo/lỗi phải
+  // phân biệt được bằng màu, không chỉ bằng hình icon. Chữ trên nền -bg ≥ 4.5:1.
+  --laca-success: #15803d;
+  --laca-success-bg: #f0fdf4;
+  --laca-success-border: #bbf7d0;
 
-  --laca-warning: #27272a;
-  --laca-warning-bg: #f4f4f5;
-  --laca-warning-border: #e4e4e7;
+  --laca-warning: #b45309;
+  --laca-warning-bg: #fffbeb;
+  --laca-warning-border: #fde68a;
 
-  --laca-danger: #18181b;
-  --laca-danger-bg: #f4f4f5;
-  --laca-danger-border: #e4e4e7;
+  --laca-danger: #b91c1c;
+  --laca-danger-bg: #fef2f2;
+  --laca-danger-border: #fecaca;
+
+  // Tên "-subtle" đang được Laca SEO và vài skin dùng nhưng trước đây chưa khai báo
+  // (nền rơi về trong suốt) — trỏ về nền trạng thái tương ứng.
+  --laca-success-subtle: var(--laca-success-bg);
+  --laca-warning-subtle: var(--laca-warning-bg);
+  --laca-danger-subtle: var(--laca-danger-bg);
 
   --laca-info: #3f3f46;
   --laca-info-bg: #f4f4f5;

@@ -1,4 +1,5 @@
 <?php
+if (PHP_SAPI !== 'cli') { exit; } // Chỉ chạy từ CLI — file nằm trong thư mục theme được deploy lên hosting
 /**
  * Automated test suite for Google Services (Search Console + Analytics).
  *

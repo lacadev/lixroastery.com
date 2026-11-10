@@ -262,7 +262,7 @@ class Breadcrumbs
             return;
         }
         $this->prependShopPage();
-        $label = sprintf(__('Products tagged &ldquo;%s&rdquo;', 'lacadev'), $this->getBreadcrumbTitle('term', $term->term_id, $term->name));
+        $label = sprintf(__('Products tagged &ldquo;%s&rdquo;', 'laca'), $this->getBreadcrumbTitle('term', $term->term_id, $term->name));
         $this->addCrumb($label, get_term_link($term));
     }
 
@@ -458,7 +458,7 @@ class Breadcrumbs
             return;
         }
 
-        $this->addCrumb(sprintf(__('Page %s', 'lacadev'), $current_page), '', true);
+        $this->addCrumb(sprintf(__('Page %s', 'laca'), $current_page), '', true);
     }
 
     private function maybeAddHomeCrumb(): void

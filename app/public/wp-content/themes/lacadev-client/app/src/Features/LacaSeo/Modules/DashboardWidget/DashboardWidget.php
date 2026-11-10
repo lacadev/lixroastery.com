@@ -26,7 +26,7 @@ class DashboardWidget
 
         wp_add_dashboard_widget(
             'laca_seo_dashboard_widget',
-            '<span class="dashicons dashicons-chart-pie" style="margin-right: 6px;"></span>' . esc_html__('Tổng quan Laca SEO', 'lacadev'),
+            '<span class="dashicons dashicons-chart-pie" style="margin-right: 6px;"></span>' . esc_html__('Tổng quan Laca SEO', 'laca'),
             [$this, 'render']
         );
     }
@@ -57,27 +57,27 @@ class DashboardWidget
         }
         ?>
         <div class="laca-seo-dashboard-widget-content" style="padding: 10px 0;">
-            <p><strong><?php esc_html_e('Chỉ số SEO cốt lõi của website:', 'lacadev'); ?></strong></p>
+            <p><strong><?php esc_html_e('Chỉ số SEO cốt lõi của website:', 'laca'); ?></strong></p>
             <ul style="margin: 12px 0; line-height: 1.8;">
                 <li>
                     <span class="dashicons dashicons-randomize" style="color: var(--laca-accent, #18181b);"></span>
-                    <?php esc_html_e('Chuyển hướng hoạt động (301/302):', 'lacadev'); ?>
+                    <?php esc_html_e('Chuyển hướng hoạt động (301/302):', 'laca'); ?>
                     <strong><?php echo esc_html((string) $redirectionsCount); ?></strong>
                 </li>
                 <li>
                     <span class="dashicons dashicons-warning" style="color: #d63638;"></span>
-                    <?php esc_html_e('Lỗi 404 đã ghi nhận:', 'lacadev'); ?>
+                    <?php esc_html_e('Lỗi 404 đã ghi nhận:', 'laca'); ?>
                     <strong><?php echo esc_html((string) $notfoundCount); ?></strong>
                 </li>
                 <li>
                     <span class="dashicons dashicons-admin-links" style="color: #008a20;"></span>
-                    <?php esc_html_e('Liên kết nội bộ đã phân tích:', 'lacadev'); ?>
+                    <?php esc_html_e('Liên kết nội bộ đã phân tích:', 'laca'); ?>
                     <strong><?php echo esc_html((string) $linksCount); ?></strong>
                 </li>
             </ul>
             <div style="border-top: 1px solid #eee; padding-top: 10px; margin-top: 10px;">
                 <a href="<?php echo esc_url(admin_url('admin.php?page=laca-seo')); ?>" class="button button-primary">
-                    <?php esc_html_e('Mở Bảng điều khiển SEO', 'lacadev'); ?>
+                    <?php esc_html_e('Mở Bảng điều khiển SEO', 'laca'); ?>
                 </a>
             </div>
         </div>

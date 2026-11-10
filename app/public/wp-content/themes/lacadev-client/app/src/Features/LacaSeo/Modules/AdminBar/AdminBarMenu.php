@@ -29,30 +29,30 @@ class AdminBarMenu
         // Root Node
         $wpAdminBar->add_node([
             'id'    => self::MENU_ID,
-            'title' => '<span class="ab-icon dashicons dashicons-chart-line"></span><span class="ab-label">' . esc_html__('Laca SEO', 'lacadev') . '</span>',
+            'title' => '<span class="ab-icon dashicons dashicons-chart-line"></span><span class="ab-label">' . esc_html__('Laca SEO', 'laca') . '</span>',
             'href'  => admin_url('admin.php?page=laca-seo'),
-            'meta'  => ['title' => __('Laca SEO Dashboard', 'lacadev')],
+            'meta'  => ['title' => __('Laca SEO Dashboard', 'laca')],
         ]);
 
         // Subnodes
         $wpAdminBar->add_node([
             'id'     => self::MENU_ID . '-dashboard',
             'parent' => self::MENU_ID,
-            'title'  => esc_html__('Bảng điều khiển', 'lacadev'),
+            'title'  => esc_html__('Bảng điều khiển', 'laca'),
             'href'   => admin_url('admin.php?page=laca-seo'),
         ]);
 
         $wpAdminBar->add_node([
             'id'     => self::MENU_ID . '-titles',
             'parent' => self::MENU_ID,
-            'title'  => esc_html__('Tiêu đề & Meta', 'lacadev'),
+            'title'  => esc_html__('Tiêu đề & Meta', 'laca'),
             'href'   => admin_url('admin.php?page=laca-seo&view=titles'),
         ]);
 
         $wpAdminBar->add_node([
             'id'     => self::MENU_ID . '-analyzer',
             'parent' => self::MENU_ID,
-            'title'  => esc_html__('Phân tích SEO', 'lacadev'),
+            'title'  => esc_html__('Phân tích SEO', 'laca'),
             'href'   => admin_url('admin.php?page=laca-seo&view=seo-analysis'),
         ]);
 
@@ -63,7 +63,7 @@ class AdminBarMenu
         $wpAdminBar->add_node([
             'id'     => self::MENU_ID . '-psi',
             'parent' => self::MENU_ID,
-            'title'  => esc_html__('Google PageSpeed Insights', 'lacadev'),
+            'title'  => esc_html__('Google PageSpeed Insights', 'laca'),
             'href'   => 'https://pagespeed.web.dev/report?url=' . $encodedUrl,
             'meta'   => ['target' => '_blank'],
         ]);
@@ -71,7 +71,7 @@ class AdminBarMenu
         $wpAdminBar->add_node([
             'id'     => self::MENU_ID . '-rich-results',
             'parent' => self::MENU_ID,
-            'title'  => esc_html__('Google Rich Results Test', 'lacadev'),
+            'title'  => esc_html__('Google Rich Results Test', 'laca'),
             'href'   => 'https://search.google.com/test/rich-results?url=' . $encodedUrl,
             'meta'   => ['target' => '_blank'],
         ]);
@@ -83,7 +83,7 @@ class AdminBarMenu
             $wpAdminBar->add_node([
                 'id'     => self::MENU_ID . '-gsc-inspect',
                 'parent' => self::MENU_ID,
-                'title'  => esc_html__('Kiểm tra Index trên Google', 'lacadev'),
+                'title'  => esc_html__('Kiểm tra Index trên Google', 'laca'),
                 'href'   => 'https://search.google.com/search-console/inspect?resource_id=' . rawurlencode($resourceId) . '&id=' . $encodedUrl,
                 'meta'   => ['target' => '_blank'],
             ]);

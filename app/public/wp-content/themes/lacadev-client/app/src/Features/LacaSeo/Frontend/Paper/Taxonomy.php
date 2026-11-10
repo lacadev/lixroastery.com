@@ -42,7 +42,18 @@ class Taxonomy implements IPaper
             return Variables::replace($meta, $term);
         }
 
-        return Paper::get_from_options("tax_{$term->taxonomy}_description", $term, '');
+        $desc = Paper::get_from_options("tax_{$term->taxonomy}_description", $term, '');
+        if ($desc !== '') {
+            return $desc;
+        }
+
+        $td = wp_strip_all_tags(term_description($term->term_id, $term->taxonomy));
+        if ($td !== '') {
+            return $td;
+        }
+
+        /* translators: 1: Term name, 2: Site name */
+        return sprintf(__('Danh mục %1$s – %2$s', 'laca'), $term->name, get_bloginfo('name'));
     }
 
     public function robots(): array

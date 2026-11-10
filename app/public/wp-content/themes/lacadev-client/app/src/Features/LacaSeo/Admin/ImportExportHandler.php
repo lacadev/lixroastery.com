@@ -32,7 +32,7 @@ class ImportExportHandler
     private function checkPermission(string $action, string $nonceName = 'nonce'): void
     {
         if (!current_user_can('manage_options')) {
-            wp_die(esc_html__('Bạn không có quyền thực hiện thao tác này.', 'lacadev'));
+            wp_die(esc_html__('Bạn không có quyền thực hiện thao tác này.', 'laca'));
         }
 
         check_admin_referer($action, $nonceName);

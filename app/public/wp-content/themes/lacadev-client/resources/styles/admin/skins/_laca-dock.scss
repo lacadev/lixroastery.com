@@ -13,6 +13,11 @@
     padding-left: 268px !important; // 240px dock + 28px breathing room
   }
 
+  // #wpfooter là absolute, không ăn padding của #wpcontent nên bị dock che chữ.
+  body.laca-admin-dock-active #wpfooter {
+    left: 240px;
+  }
+
   .laca-admin-dock {
     position: fixed;
     top: 32px;
@@ -130,28 +135,6 @@
           transform: scale(1.15);
         }
       }
-
-      // Indicator dots cho các nhóm chức năng nổi bật
-      &--laca-tools {
-        .laca-admin-dock__indicator {
-          display: inline-block;
-          background-color: var(--laca-fg-muted);
-        }
-      }
-
-      &--laca-security {
-        .laca-admin-dock__indicator {
-          display: inline-block;
-          background-color: var(--laca-fg-subtle);
-        }
-      }
-
-      &--laca-recaptcha {
-        .laca-admin-dock__indicator {
-          display: inline-block;
-          background-color: var(--laca-fg);
-        }
-      }
     }
   }
 }
@@ -160,6 +143,17 @@
 .laca-shared-tabs-wrapper {
   max-width: 100%;
   margin: 12px 0 20px 0;
+
+  // Cùng cỡ với h1 tiêu đề trang WP để thanh tab đọc như 1 phần của đầu trang.
+  &__title {
+    margin: 0 0 var(--laca-spacing-3);
+    padding: 9px 0 4px;
+    font-family: var(--laca-font);
+    font-size: 23px;
+    font-weight: 400;
+    line-height: 1.3;
+    color: var(--laca-fg);
+  }
 
   .nav-tab-wrapper.laca-shared-tabs {
     border: 1px solid var(--laca-border) !important;

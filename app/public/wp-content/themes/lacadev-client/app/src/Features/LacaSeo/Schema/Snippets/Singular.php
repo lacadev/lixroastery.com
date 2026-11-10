@@ -3,6 +3,7 @@
 namespace App\Features\LacaSeo\Schema\Snippets;
 
 use App\Features\LacaSeo\Core\Settings;
+use App\Features\LacaSeo\Frontend\Paper\Paper;
 use App\Features\LacaSeo\Schema\Db;
 use App\Features\LacaSeo\Schema\JsonLd;
 use App\Features\LacaSeo\Schema\Snippet;
@@ -34,6 +35,25 @@ class Singular implements Snippet
         } elseif ($schema === 'product') {
             $obj = new Product();
             $entity = $obj->process($data, $jsonld);
+        } elseif ($schema === 'creativework') {
+            $canonical = Paper::get()->get_canonical();
+            $entity = [
+                '@type'            => 'CreativeWork',
+                '@id'              => ($canonical !== '' ? $canonical : '') . '#creativework',
+                'url'              => ($canonical !== '' ? $canonical : false),
+                'name'             => Paper::get()->get_title(),
+                'headline'         => Paper::get()->get_title(),
+                'description'      => Paper::get()->get_description(),
+                'datePublished'    => $jsonld->parts['published'] ?? '',
+                'dateModified'     => $jsonld->parts['modified'] ?? '',
+                'mainEntityOfPage' => ['@id' => ($canonical !== '' ? $canonical : '') . '#webpage'],
+            ];
+            $jsonld->addProp('is_part_of', $entity, 'website');
+            $jsonld->addProp('publisher', $entity, 'publisher', $data);
+            $jsonld->addProp('author', $entity, 'author', $data);
+            if (isset($data['WebPage'])) {
+                $data['WebPage']['about'] = ['@id' => $entity['@id']];
+            }
         }
 
         $entity = apply_filters("rank_math/{$hook}_entity", $entity);
@@ -77,6 +97,9 @@ class Singular implements Snippet
         }
         if (in_array($type, ['woocommerceproduct', 'product'], true)) {
             return 'product';
+        }
+        if (in_array($type, ['creativework'], true)) {
+            return 'creativework';
         }
 
         return $type;

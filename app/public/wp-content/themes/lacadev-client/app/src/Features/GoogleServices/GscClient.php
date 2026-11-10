@@ -34,7 +34,7 @@ class GscClient
 
         $token = GscOAuth::getValidAccessToken();
         if (!$token) {
-            return new \WP_Error('no_token', __('Chưa kết nối tài khoản Google Search Console.', 'lacadev'));
+            return new \WP_Error('no_token', __('Chưa kết nối tài khoản Google Search Console.', 'laca'));
         }
 
         $url = self::WEBMASTERS_API_BASE . '/sites';
@@ -55,8 +55,8 @@ class GscClient
         $data = json_decode($body, true);
 
         if ($code < 200 || $code >= 300) {
-            $msg = $data['error']['message'] ?? __('Không thể lấy danh sách site từ Google Search Console.', 'lacadev');
-            return new \WP_Error('http_' . $code, sprintf(__('Lỗi Google (%d): %s', 'lacadev'), $code, $msg), [
+            $msg = $data['error']['message'] ?? __('Không thể lấy danh sách site từ Google Search Console.', 'laca');
+            return new \WP_Error('http_' . $code, sprintf(__('Lỗi Google (%d): %s', 'laca'), $code, $msg), [
                 'status' => $code,
                 'data'   => $data,
             ]);
@@ -225,7 +225,7 @@ class GscClient
     {
         $token = GscOAuth::getValidAccessToken();
         if (!$token) {
-            return new \WP_Error('no_token', __('Chưa kết nối tài khoản Google Search Console.', 'lacadev'));
+            return new \WP_Error('no_token', __('Chưa kết nối tài khoản Google Search Console.', 'laca'));
         }
 
         $url = self::WEBMASTERS_API_BASE . '/sites/' . rawurlencode($siteUrl) . '/searchAnalytics/query';
@@ -248,7 +248,7 @@ class GscClient
         $data = json_decode($body, true);
 
         if ($code < 200 || $code >= 300) {
-            return new \WP_Error('gsc_error_' . $code, sprintf(__('Lỗi Search Console (HTTP %d)', 'lacadev'), $code));
+            return new \WP_Error('gsc_error_' . $code, sprintf(__('Lỗi Search Console (HTTP %d)', 'laca'), $code));
         }
 
         return is_array($data) ? $data : [];
@@ -273,12 +273,12 @@ class GscClient
         }
 
         if (get_transient('laca_gsc_429_limit')) {
-            return new \WP_Error('rate_limit_exceeded', __('Google đang giới hạn truy vấn, thử lại sau ít phút.', 'lacadev'), ['status' => 429]);
+            return new \WP_Error('rate_limit_exceeded', __('Google đang giới hạn truy vấn, thử lại sau ít phút.', 'laca'), ['status' => 429]);
         }
 
         $token = GscOAuth::getValidAccessToken();
         if (!$token) {
-            return new \WP_Error('no_token', __('Chưa kết nối tài khoản Google Search Console.', 'lacadev'));
+            return new \WP_Error('no_token', __('Chưa kết nối tài khoản Google Search Console.', 'laca'));
         }
 
         $rangeInfo     = DateRange::get($range);
@@ -318,7 +318,7 @@ class GscClient
 
         if ($code === 429) {
             set_transient('laca_gsc_429_limit', 1, 10 * MINUTE_IN_SECONDS);
-            return new \WP_Error('http_429', __('Google đang giới hạn truy vấn, thử lại sau ít phút.', 'lacadev'), ['status' => 429]);
+            return new \WP_Error('http_429', __('Google đang giới hạn truy vấn, thử lại sau ít phút.', 'laca'), ['status' => 429]);
         }
 
         if ($code < 200 || $code >= 300) {
@@ -327,11 +327,11 @@ class GscClient
             }
             $rawMsg = is_array($data) && isset($data['error']['message']) ? $data['error']['message'] : '';
             if ($code === 403) {
-                $msg = __('Tài khoản chưa có quyền truy cập property này hoặc chưa bật Google Search Console API.', 'lacadev');
+                $msg = __('Tài khoản chưa có quyền truy cập property này hoặc chưa bật Google Search Console API.', 'laca');
             } elseif ($code === 404) {
-                $msg = __('Không tìm thấy property trong Google Search Console. Hãy kiểm tra lại property đã chọn.', 'lacadev');
+                $msg = __('Không tìm thấy property trong Google Search Console. Hãy kiểm tra lại property đã chọn.', 'laca');
             } else {
-                $msg = sprintf(__('Lỗi kết nối Google Search Console (%d)%s', 'lacadev'), $code, $rawMsg ? ': ' . $rawMsg : '');
+                $msg = sprintf(__('Lỗi kết nối Google Search Console (%d)%s', 'laca'), $code, $rawMsg ? ': ' . $rawMsg : '');
             }
 
             return new \WP_Error('http_' . $code, $msg, [
@@ -343,7 +343,7 @@ class GscClient
         delete_transient('laca_gsc_last_error_code');
 
         if (!is_array($data)) {
-            return new \WP_Error('invalid_response', __('Phản hồi từ Google Search Console không hợp lệ.', 'lacadev'));
+            return new \WP_Error('invalid_response', __('Phản hồi từ Google Search Console không hợp lệ.', 'laca'));
         }
 
         // Parse totals
@@ -420,12 +420,12 @@ class GscClient
 
         $prevCode = (int) wp_remote_retrieve_response_code($prevResponse);
         if ($prevCode < 200 || $prevCode >= 300) {
-            return new \WP_Error('http_' . $prevCode, sprintf(__('Lỗi kết nối Google Search Console kỳ trước (%d)', 'lacadev'), $prevCode));
+            return new \WP_Error('http_' . $prevCode, sprintf(__('Lỗi kết nối Google Search Console kỳ trước (%d)', 'laca'), $prevCode));
         }
 
         $prevData = json_decode(wp_remote_retrieve_body($prevResponse), true);
         if (!is_array($prevData)) {
-            return new \WP_Error('invalid_response', __('Phản hồi từ Google Search Console kỳ trước không hợp lệ.', 'lacadev'));
+            return new \WP_Error('invalid_response', __('Phản hồi từ Google Search Console kỳ trước không hợp lệ.', 'laca'));
         }
 
         $prevClicks = 0;
@@ -505,7 +505,7 @@ class GscClient
 
         $token = GscOAuth::getValidAccessToken();
         if (!$token) {
-            return new \WP_Error('no_token', __('Chưa kết nối tài khoản Google Search Console.', 'lacadev'));
+            return new \WP_Error('no_token', __('Chưa kết nối tài khoản Google Search Console.', 'laca'));
         }
 
         $rangeInfo = DateRange::get($range);
@@ -542,7 +542,7 @@ class GscClient
 
         if ($code < 200 || $code >= 300) {
             $rawMsg = is_array($data) && isset($data['error']['message']) ? $data['error']['message'] : '';
-            return new \WP_Error('http_' . $code, sprintf(__('Lỗi GSC Pages (%d): %s', 'lacadev'), $code, $rawMsg));
+            return new \WP_Error('http_' . $code, sprintf(__('Lỗi GSC Pages (%d): %s', 'laca'), $code, $rawMsg));
         }
 
         $pages = [];
@@ -659,7 +659,7 @@ class GscClient
 
         $token = GscOAuth::getValidAccessToken();
         if (!$token) {
-            return new \WP_Error('no_token', __('Chưa kết nối tài khoản Google Search Console.', 'lacadev'));
+            return new \WP_Error('no_token', __('Chưa kết nối tài khoản Google Search Console.', 'laca'));
         }
 
         $url = self::WEBMASTERS_API_BASE . '/sites/' . rawurlencode($siteUrl) . '/sitemaps';
@@ -680,14 +680,14 @@ class GscClient
             $rawBody = wp_remote_retrieve_body($response);
             $errData = json_decode($rawBody, true);
             $msg = is_array($errData) && isset($errData['error']['message']) ? $errData['error']['message'] : '';
-            return new \WP_Error('http_' . $code, sprintf(__('Lỗi kết nối sitemaps Google (%d)%s', 'lacadev'), $code, $msg ? ': ' . $msg : ''), [
+            return new \WP_Error('http_' . $code, sprintf(__('Lỗi kết nối sitemaps Google (%d)%s', 'laca'), $code, $msg ? ': ' . $msg : ''), [
                 'status' => $code,
             ]);
         }
 
         $data = json_decode(wp_remote_retrieve_body($response), true);
         if (!is_array($data)) {
-            return new \WP_Error('invalid_response', __('Phản hồi sitemaps không hợp lệ.', 'lacadev'));
+            return new \WP_Error('invalid_response', __('Phản hồi sitemaps không hợp lệ.', 'laca'));
         }
 
         $parsed = self::parseSitemapsResponse($data);

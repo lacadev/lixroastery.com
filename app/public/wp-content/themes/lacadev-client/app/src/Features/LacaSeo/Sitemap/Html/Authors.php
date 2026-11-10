@@ -33,7 +33,7 @@ class Authors
 
         $output = [];
         $output[] = '<div class="laca-seo-html-sitemap__section laca-seo-html-sitemap__section--authors">';
-        $output[] = '<h2 class="laca-seo-html-sitemap__title">' . esc_html__('Tác giả', 'lacadev') . '</h2>';
+        $output[] = '<h2 class="laca-seo-html-sitemap__title">' . esc_html__('Tác giả', 'laca') . '</h2>';
         $output[] = '<ul class="laca-seo-html-sitemap__list">';
 
         foreach ($users as $user) {

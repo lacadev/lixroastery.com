@@ -166,7 +166,7 @@ class WooCommerce
         woocommerce_wp_text_input([
             'id'          => '_laca_seo_gtin_code',
             'label'       => $label,
-            'description' => sprintf(__('Mã %s cho sản phẩm này.', 'lacadev'), $label),
+            'description' => sprintf(__('Mã %s cho sản phẩm này.', 'laca'), $label),
             'desc_tip'    => true,
         ]);
         echo '</div>';
@@ -197,7 +197,7 @@ class WooCommerce
             'name'          => "_laca_seo_gtin_code_var[{$loop}]",
             'value'         => $val,
             'label'         => $label,
-            'description'   => sprintf(__('Mã %s cho biến thể này.', 'lacadev'), $label),
+            'description'   => sprintf(__('Mã %s cho biến thể này.', 'laca'), $label),
             'desc_tip'      => true,
             'wrapper_class' => 'form-row form-row-full',
         ]);

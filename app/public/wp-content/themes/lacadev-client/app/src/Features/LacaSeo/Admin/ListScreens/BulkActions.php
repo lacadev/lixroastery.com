@@ -36,11 +36,11 @@ class BulkActions
      */
     public function addBulkActions(array $actions): array
     {
-        $actions['laca_seo_noindex']      = __('SEO: Đặt Noindex', 'lacadev');
-        $actions['laca_seo_index']        = __('SEO: Đặt Index', 'lacadev');
-        $actions['laca_seo_nofollow']     = __('SEO: Đặt Nofollow', 'lacadev');
-        $actions['laca_seo_follow']       = __('SEO: Đặt Follow', 'lacadev');
-        $actions['laca_seo_rem_canonical']= __('SEO: Xoá Canonical riêng', 'lacadev');
+        $actions['laca_seo_noindex']      = __('SEO: Đặt Noindex', 'laca');
+        $actions['laca_seo_index']        = __('SEO: Đặt Index', 'laca');
+        $actions['laca_seo_nofollow']     = __('SEO: Đặt Nofollow', 'laca');
+        $actions['laca_seo_follow']       = __('SEO: Đặt Follow', 'laca');
+        $actions['laca_seo_rem_canonical']= __('SEO: Xoá Canonical riêng', 'laca');
 
         return $actions;
     }
@@ -126,17 +126,17 @@ class BulkActions
         $action = sanitize_key($_GET['laca_seo_bulk_action']);
 
         $label = match ($action) {
-            'laca_seo_noindex'       => __('đặt Noindex', 'lacadev'),
-            'laca_seo_index'         => __('đặt Index', 'lacadev'),
-            'laca_seo_nofollow'      => __('đặt Nofollow', 'lacadev'),
-            'laca_seo_follow'        => __('gỡ Nofollow', 'lacadev'),
-            'laca_seo_rem_canonical' => __('xoá Canonical riêng', 'lacadev'),
-            default                  => __('cập nhật', 'lacadev'),
+            'laca_seo_noindex'       => __('đặt Noindex', 'laca'),
+            'laca_seo_index'         => __('đặt Index', 'laca'),
+            'laca_seo_nofollow'      => __('đặt Nofollow', 'laca'),
+            'laca_seo_follow'        => __('gỡ Nofollow', 'laca'),
+            'laca_seo_rem_canonical' => __('xoá Canonical riêng', 'laca'),
+            default                  => __('cập nhật', 'laca'),
         };
 
         printf(
             '<div class="notice notice-success is-dismissible"><p>%s</p></div>',
-            esc_html(sprintf(__('Laca SEO: Đã %s thành công cho %d bài viết.', 'lacadev'), $label, $count))
+            esc_html(sprintf(__('Laca SEO: Đã %s thành công cho %d bài viết.', 'laca'), $label, $count))
         );
     }
 }

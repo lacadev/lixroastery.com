@@ -251,8 +251,12 @@ class ListTableInlineEditor
                 $tax = $field_config['taxonomy'] ?? $field_key;
                 unset($columns['taxonomy-' . $tax]);
                 unset($columns[$tax]);
+                // Cột gốc của WP đặt tên khác slug taxonomy
                 if ($tax === 'post_tag') {
                     unset($columns['tags']);
+                }
+                if ($tax === 'category') {
+                    unset($columns['categories']);
                 }
             }
         }

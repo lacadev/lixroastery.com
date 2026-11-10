@@ -89,7 +89,7 @@ class TitlesFields
                 ->note(
                     'Ký tự phân cách giữa tên bài viết và tên website trong thẻ <title>.',
                     'Chọn ký tự phù hợp (ví dụ gạch ngang - hoặc gạch đứng |). Biến %sep% trong các mẫu sẽ dùng ký tự này.',
-                    'Tiêu đề trang hiển thị trên tab trình duyệt và kết quả tìm kiếm (Ví dụ: "Cà phê Robusta - Lix Roastery").'
+                    'Tiêu đề trang hiển thị trên tab trình duyệt và kết quả tìm kiếm (Ví dụ: "Dịch vụ thiết kế website - Tên website").'
                 ),
 
             Field::make('rewrite_title', 'toggle', 'Ghi đè tiêu đề trang (Rewrite Titles)')
@@ -132,8 +132,8 @@ class TitlesFields
                 ->tab('global')
                 ->group('titles')
                 ->choices([
-                    'summary_large_image' => __('Thẻ lớn kèm ảnh biểu ngữ lớn (Summary with Large Image)', 'lacadev'),
-                    'summary_card'        => __('Thẻ nhỏ kèm ảnh vuông (Summary Card)', 'lacadev'),
+                    'summary_large_image' => __('Thẻ lớn kèm ảnh biểu ngữ lớn (Summary with Large Image)', 'laca'),
+                    'summary_card'        => __('Thẻ nhỏ kèm ảnh vuông (Summary Card)', 'laca'),
                 ])
                 ->note(
                     'Kiểu hiển thị bài viết khi được chia sẻ lên Twitter/X.',
@@ -154,8 +154,8 @@ class TitlesFields
                 ->tab('local')
                 ->group('titles')
                 ->choices([
-                    'company' => __('Doanh nghiệp / Tổ chức (Organization)', 'lacadev'),
-                    'person'  => __('Cá nhân / Chuyên gia (Person)', 'lacadev'),
+                    'company' => __('Doanh nghiệp / Tổ chức (Organization)', 'laca'),
+                    'person'  => __('Cá nhân / Chuyên gia (Person)', 'laca'),
                 ])
                 ->note(
                     'Xác định website đại diện cho một tổ chức doanh nghiệp hay một cá nhân/blog cá nhân.',
@@ -170,7 +170,7 @@ class TitlesFields
                 ->translatable()
                 ->note(
                     'Tên chính thức của trang web xuất hiện trên bảng kết quả Google Search.',
-                    'Nhập tên thương hiệu chuẩn của bạn (Ví dụ: "Lix Roastery").',
+                    'Nhập tên thương hiệu chuẩn của bạn (Ví dụ: "Tên thương hiệu").',
                     'Google sử dụng tên này thay cho URL thô trên kết quả tìm kiếm mobile.'
                 ),
 
@@ -180,7 +180,7 @@ class TitlesFields
                 ->group('titles')
                 ->translatable()
                 ->note(
-                    'Tên viết tắt hoặc tên gọi thông dụng khác của trang web (Ví dụ: "LIX Coffee").',
+                    'Tên viết tắt hoặc tên gọi thông dụng khác của trang web (Ví dụ: "Tên viết tắt").',
                     'Nhập nếu thương hiệu của bạn có tên viết tắt phổ biến.',
                     'Khai báo thuộc tính alternateName trong WebSite Schema.'
                 ),
@@ -239,7 +239,7 @@ class TitlesFields
                 ->group('titles')
                 ->note(
                     'Hộp thư điện tử liên hệ tiếp nhận thông tin khách hàng.',
-                    'Nhập email tên miền công ty (ví dụ: contact@lixroastery.com).',
+                    'Nhập email tên miền công ty (ví dụ: contact@example.com).',
                     'Trường email xuất hiện trong Schema LocalBusiness / Organization.'
                 ),
 
@@ -492,7 +492,7 @@ class TitlesFields
                 ->tab('local')
                 ->group('titles')
                 ->choices([
-                    ''   => __('— Chọn quốc gia —', 'lacadev'),
+                    ''   => __('— Chọn quốc gia —', 'laca'),
                     'VN' => 'Việt Nam (VN)',
                     'US' => 'Hoa Kỳ (US)',
                 ])
@@ -655,7 +655,7 @@ class TitlesFields
                 ->tab('social')
                 ->group('titles')
                 ->note(
-                    'Tên tài khoản Twitter/X (ví dụ: LixRoastery).',
+                    'Tên tài khoản Twitter/X (ví dụ: ExampleAgency).',
                     'Nhập tên tài khoản không cần dấu @ phía trước.',
                     'Thẻ <meta name="twitter:creator" content="@ten"> và twitter:site được tạo.'
                 ),
@@ -1078,9 +1078,10 @@ class TitlesFields
 
         // Schema Rich Snippet default
         $schema_default = match ($pt_slug) {
-            'post', 'page' => 'article',
+            'post', 'page'        => 'article',
             'product', 'download' => 'product',
-            default        => 'off',
+            'project'             => 'creativework',
+            default               => 'off',
         };
 
         $fields[] = Field::make("pt_{$pt_slug}_default_rich_snippet", 'select', "Loại Schema mặc định cho {$name}")
@@ -1100,9 +1101,9 @@ class TitlesFields
             ->group('titles')
             ->showIf("pt_{$pt_slug}_default_rich_snippet", 'article')
             ->choices([
-                'Article'     => __('Bài báo chung (Article)', 'lacadev'),
-                'BlogPosting' => __('Bài viết Blog (BlogPosting)', 'lacadev'),
-                'NewsArticle' => __('Tin tức báo chí (NewsArticle)', 'lacadev'),
+                'Article'     => __('Bài báo chung (Article)', 'laca'),
+                'BlogPosting' => __('Bài viết Blog (BlogPosting)', 'laca'),
+                'NewsArticle' => __('Tin tức báo chí (NewsArticle)', 'laca'),
             ])
             ->note(
                 'Định danh chuyên sâu cho Schema Article của bài viết tin tức.',
@@ -1190,8 +1191,8 @@ class TitlesFields
                 ->tab($tab_id)
                 ->group('titles')
                 ->choices([
-                    'titles'          => __('Tiêu đề bài viết (Titles)', 'lacadev'),
-                    'focus_keywords'  => __('Từ khoá chính (Focus Keywords)', 'lacadev'),
+                    'titles'          => __('Tiêu đề bài viết (Titles)', 'laca'),
+                    'focus_keywords'  => __('Từ khoá chính (Focus Keywords)', 'laca'),
                 ])
                 ->note(
                     "Sử dụng từ khoá chính thay cho tiêu đề bài viết làm anchor text mặc định khi chèn link.",
@@ -1199,7 +1200,7 @@ class TitlesFields
                     "Anchor text đề xuất khi chèn liên kết."
                 );
 
-            $tax_choices = ['off' => __('Không (None)', 'lacadev')];
+            $tax_choices = ['off' => __('Không (None)', 'laca')];
             $taxonomies = get_object_taxonomies($pt_slug, 'objects');
             foreach ($taxonomies as $tax) {
                 if (!empty($tax->hierarchical) && !empty($tax->public)) {
@@ -1241,9 +1242,9 @@ class TitlesFields
                 ->tab($tab_id)
                 ->group('titles')
                 ->choices([
-                    '0'        => __('Tắt (Disabled)', 'lacadev'),
-                    'editing'  => __('Bật chỉnh sửa (Enabled)', 'lacadev'),
-                    'readonly' => __('Chỉ đọc (Read Only)', 'lacadev'),
+                    '0'        => __('Tắt (Disabled)', 'laca'),
+                    'editing'  => __('Bật chỉnh sửa (Enabled)', 'laca'),
+                    'readonly' => __('Chỉ đọc (Read Only)', 'laca'),
                 ])
                 ->note(
                     "Thêm cột chỉnh sửa nhanh tiêu đề và mô tả SEO trong danh sách bài viết quản trị.",
@@ -1266,9 +1267,9 @@ class TitlesFields
                 ->tab($tab_id)
                 ->group('titles')
                 ->choices([
-                    '0'        => __('Tắt (Disabled)', 'lacadev'),
-                    'editing'  => __('Bật chỉnh sửa (Enabled)', 'lacadev'),
-                    'readonly' => __('Chỉ đọc (Read Only)', 'lacadev'),
+                    '0'        => __('Tắt (Disabled)', 'laca'),
+                    'editing'  => __('Bật chỉnh sửa (Enabled)', 'laca'),
+                    'readonly' => __('Chỉ đọc (Read Only)', 'laca'),
                 ]);
         }
 
@@ -1386,8 +1387,8 @@ class TitlesFields
                 ->tab($tab_id)
                 ->group('titles')
                 ->choices([
-                    0 => __('Tắt (Disabled)', 'lacadev'),
-                    1 => __('Bật (Enabled)', 'lacadev'),
+                    0 => __('Tắt (Disabled)', 'laca'),
+                    1 => __('Bật (Enabled)', 'laca'),
                 ])
                 ->note(
                     "Bật sửa nhanh tiêu đề và mô tả trong bảng danh sách phân loại {$name}.",

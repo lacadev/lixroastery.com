@@ -30,8 +30,8 @@ class SetupWizard
     {
         add_submenu_page(
             null, // Hide from menu
-            __('Cài đặt nhanh Laca SEO', 'lacadev'),
-            __('Setup Wizard', 'lacadev'),
+            __('Cài đặt nhanh Laca SEO', 'laca'),
+            __('Setup Wizard', 'laca'),
             'manage_options',
             self::WIZARD_PAGE,
             [$this, 'render']
@@ -101,7 +101,7 @@ class SetupWizard
     {
         check_admin_referer('laca_seo_wizard_nonce', 'security');
         if (!current_user_can('manage_options')) {
-            wp_die(__('Bạn không có quyền thực hiện thao tác này.', 'lacadev'));
+            wp_die(__('Bạn không có quyền thực hiện thao tác này.', 'laca'));
         }
 
         $step = sanitize_key($_POST['step'] ?? '');
@@ -116,10 +116,10 @@ class SetupWizard
     {
         $currentStep = sanitize_key($_GET['step'] ?? 'your-site');
         echo '<div class="wrap laca-seo-wizard-wrap">';
-        echo '<h1>' . esc_html__('Trình hướng dẫn thiết lập Laca SEO', 'lacadev') . '</h1>';
+        echo '<h1>' . esc_html__('Trình hướng dẫn thiết lập Laca SEO', 'laca') . '</h1>';
         echo '<div class="wizard-content card" style="max-width: 700px; padding: 24px; margin-top: 20px;">';
-        printf('<h2>%s: %s</h2>', esc_html__('Bước hiện tại', 'lacadev'), esc_html(strtoupper($currentStep)));
-        echo '<p>' . esc_html__('Trình hướng dẫn giúp cấu hình trang web, sitemap, tối ưu SEO onpage và phân quyền dễ dàng.', 'lacadev') . '</p>';
+        printf('<h2>%s: %s</h2>', esc_html__('Bước hiện tại', 'laca'), esc_html(strtoupper($currentStep)));
+        echo '<p>' . esc_html__('Trình hướng dẫn giúp cấu hình trang web, sitemap, tối ưu SEO onpage và phân quyền dễ dàng.', 'laca') . '</p>';
         echo '</div>';
         echo '</div>';
     }

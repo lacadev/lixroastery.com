@@ -288,20 +288,20 @@ class GoogleServices
         if (!$isConnected || !GscOAuth::hasGscScope()) {
             $gscState = [
                 'status'   => 'incomplete',
-                'reason'   => __('Chưa kết nối tài khoản Google hoặc thiếu quyền Search Console.', 'lacadev'),
+                'reason'   => __('Chưa kết nối tài khoản Google hoặc thiếu quyền Search Console.', 'laca'),
                 'property' => $gscProp,
             ];
         } elseif (empty($gscProp)) {
             $gscState = [
                 'status'   => 'incomplete',
-                'reason'   => __('Chưa chọn property Search Console.', 'lacadev'),
+                'reason'   => __('Chưa chọn property Search Console.', 'laca'),
                 'property' => '',
             ];
         } elseif ($gscLastErr && in_array((int) $gscLastErr, [401, 403, 404], true)) {
             $gscState = [
                 'status'   => 'error',
                 'code'     => (int) $gscLastErr,
-                'reason'   => sprintf(__('Lỗi API Search Console (%d)', 'lacadev'), (int) $gscLastErr),
+                'reason'   => sprintf(__('Lỗi API Search Console (%d)', 'laca'), (int) $gscLastErr),
                 'property' => $gscProp,
             ];
         } else {
@@ -319,14 +319,14 @@ class GoogleServices
         if (!$isConnected || !GscOAuth::hasAnalyticsScope()) {
             $gaState = [
                 'status'         => 'incomplete',
-                'reason'         => __('Chưa kết nối tài khoản Google hoặc thiếu quyền Google Analytics.', 'lacadev'),
+                'reason'         => __('Chưa kết nối tài khoản Google hoặc thiếu quyền Google Analytics.', 'laca'),
                 'property_id'    => $gaPropId,
                 'measurement_id' => $gaMsId,
             ];
         } elseif (empty($gaPropId)) {
             $gaState = [
                 'status'         => 'incomplete',
-                'reason'         => __('Chưa chọn thuộc tính GA4.', 'lacadev'),
+                'reason'         => __('Chưa chọn thuộc tính GA4.', 'laca'),
                 'property_id'    => '',
                 'measurement_id' => $gaMsId,
             ];
@@ -353,14 +353,14 @@ class GoogleServices
             if (empty($gaMsId)) {
                 $gaState = [
                     'status'         => 'incomplete',
-                    'reason'         => __('Chưa cấu hình mã đo lường GA4.', 'lacadev'),
+                    'reason'         => __('Chưa cấu hình mã đo lường GA4.', 'laca'),
                     'property_id'    => $gaPropId,
                     'measurement_id' => '',
                 ];
             } elseif ($streamMismatch) {
                 $gaState = [
                     'status'         => 'incomplete',
-                    'reason'         => __('Mã đo lường không thuộc luồng web của thuộc tính GA4 đã chọn.', 'lacadev'),
+                    'reason'         => __('Mã đo lường không thuộc luồng web của thuộc tính GA4 đã chọn.', 'laca'),
                     'property_id'    => $gaPropId,
                     'measurement_id' => $gaMsId,
                 ];
@@ -368,7 +368,7 @@ class GoogleServices
                 $gaState = [
                     'status'         => 'error',
                     'code'           => (int) $gaLastErr,
-                    'reason'         => sprintf(__('Lỗi API Google Analytics 4 (%d)', 'lacadev'), (int) $gaLastErr),
+                    'reason'         => sprintf(__('Lỗi API Google Analytics 4 (%d)', 'laca'), (int) $gaLastErr),
                     'property_id'    => $gaPropId,
                     'measurement_id' => $gaMsId,
                 ];
@@ -433,16 +433,16 @@ class GoogleServices
                 <div class="laca-google-report-header__title" style="display: flex; align-items: center; gap: 8px;">
                     <span class="dashicons dashicons-chart-area" style="font-size: 20px; width: 20px; height: 20px; color: var(--laca-fg, #18181b);" aria-hidden="true"></span>
                     <h2 style="font-size: 16px; font-weight: 600; margin: 0; color: var(--laca-fg, #18181b);">
-                        <?php esc_html_e('Báo cáo Google Search Console & Google Analytics 4', 'lacadev'); ?>
+                        <?php esc_html_e('Báo cáo Google Search Console & Google Analytics 4', 'laca'); ?>
                     </h2>
                 </div>
                 <div class="laca-google-report-header__actions" style="display: flex; align-items: center; gap: 8px;">
                     <a href="<?php echo esc_url(admin_url('admin.php?page=laca-google-search-console')); ?>" class="button button-secondary button-small" style="font-size: 12px; height: 28px; line-height: 26px;">
-                        <?php esc_html_e('Cấu hình Dịch vụ Google', 'lacadev'); ?>
+                        <?php esc_html_e('Cấu hình Dịch vụ Google', 'laca'); ?>
                     </a>
-                    <button type="button" class="button button-secondary button-small laca-google-report-toggle" aria-expanded="true" title="<?php esc_attr_e('Thu gọn / Mở rộng', 'lacadev'); ?>" style="font-size: 12px; height: 28px; line-height: 26px; padding: 0 8px;">
+                    <button type="button" class="button button-secondary button-small laca-google-report-toggle" aria-expanded="true" title="<?php esc_attr_e('Thu gọn / Mở rộng', 'laca'); ?>" style="font-size: 12px; height: 28px; line-height: 26px; padding: 0 8px;">
                         <span class="dashicons dashicons-arrow-up-alt2" aria-hidden="true" style="margin-top: 3px;"></span>
-                        <span class="screen-reader-text"><?php esc_html_e('Thu gọn / Mở rộng', 'lacadev'); ?></span>
+                        <span class="screen-reader-text"><?php esc_html_e('Thu gọn / Mở rộng', 'laca'); ?></span>
                     </button>
                 </div>
             </div>
@@ -504,7 +504,7 @@ class GoogleServices
             wp_localize_script('laca-google-dashboard-report', 'lacaGoogleReportData', [
                 'ajaxUrl'     => admin_url('admin-ajax.php'),
                 'nonce'       => wp_create_nonce('laca_google_report_nonce'),
-                'loadingText' => __('Đang tải báo cáo...', 'lacadev'),
+                'loadingText' => __('Đang tải báo cáo...', 'laca'),
             ]);
         }
     }
@@ -521,7 +521,7 @@ class GoogleServices
         }
 
         if (!self::userCanViewReport()) {
-            wp_send_json_error(['message' => __('Bạn không có quyền thực hiện thao tác này.', 'lacadev')], 403);
+            wp_send_json_error(['message' => __('Bạn không có quyền thực hiện thao tác này.', 'laca')], 403);
         }
 
         $range = sanitize_key(wp_unslash($_REQUEST['range'] ?? DateRange::getUserRange()));
@@ -566,7 +566,7 @@ class GoogleServices
         }
 
         if (!self::userCanViewReport()) {
-            wp_send_json_error(['message' => __('Bạn không có quyền thực hiện thao tác này.', 'lacadev')], 403);
+            wp_send_json_error(['message' => __('Bạn không có quyền thực hiện thao tác này.', 'laca')], 403);
         }
 
         if (!empty($_REQUEST['laca_mock_google']) && function_exists('wp_get_environment_type') && wp_get_environment_type() === 'local' && current_user_can('manage_options')) {
@@ -608,7 +608,7 @@ class GoogleServices
         }
 
         if (!self::userCanViewReport()) {
-            wp_send_json_error(['message' => __('Bạn không có quyền thực hiện thao tác này.', 'lacadev')], 403);
+            wp_send_json_error(['message' => __('Bạn không có quyền thực hiện thao tác này.', 'laca')], 403);
         }
 
         $strategy = sanitize_key(wp_unslash($_REQUEST['strategy'] ?? 'mobile'));
@@ -630,10 +630,10 @@ class GoogleServices
         if (GoogleDashboardService::isMockMode()) {
             if (!empty($_REQUEST['laca_mock_psi_error'])) {
                 $keyUrl = admin_url('admin.php?page=laca-google-search-console#laca-psi-key');
-                $result = new \WP_Error('psi_error_429', __('Đã hết hạn mức miễn phí của Google cho hôm nay. Thêm PageSpeed API key để có hạn mức riêng.', 'lacadev'), [
+                $result = new \WP_Error('psi_error_429', __('Đã hết hạn mức miễn phí của Google cho hôm nay. Thêm PageSpeed API key để có hạn mức riêng.', 'laca'), [
                     'status'      => 429,
                     'actionUrl'   => $keyUrl,
-                    'actionLabel' => __('Thêm API key', 'lacadev'),
+                    'actionLabel' => __('Thêm API key', 'laca'),
                     'link'        => $keyUrl,
                 ]);
             } else {
@@ -682,7 +682,7 @@ class GoogleServices
         }
 
         if (!self::userCanViewReport()) {
-            wp_send_json_error(['message' => __('Bạn không có quyền thực hiện thao tác này.', 'lacadev')], 403);
+            wp_send_json_error(['message' => __('Bạn không có quyền thực hiện thao tác này.', 'laca')], 403);
         }
 
         $range = sanitize_key(wp_unslash($_REQUEST['range'] ?? DateRange::getUserRange()));
@@ -712,7 +712,7 @@ class GoogleServices
 
         ob_start();
         if (empty($rows)) {
-            echo '<tr><td colspan="5" class="laca-google-dialog__empty">' . esc_html__('Không tìm thấy từ khóa tìm kiếm trong khoảng thời gian này.', 'lacadev') . '</td></tr>';
+            echo '<tr><td colspan="5" class="laca-google-dialog__empty">' . esc_html__('Không tìm thấy từ khóa tìm kiếm trong khoảng thời gian này.', 'laca') . '</td></tr>';
         } else {
             foreach ($rows as $r) {
                 $q = esc_html($r['query'] ?? '');

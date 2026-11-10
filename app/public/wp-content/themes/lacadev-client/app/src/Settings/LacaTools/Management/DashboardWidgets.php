@@ -26,15 +26,20 @@ class DashboardWidgets
         add_action('admin_head', [$this, 'renderWidgetStyles']);
         add_action('admin_enqueue_scripts', [$this, 'enqueueDashboardScripts']);
 
+        add_action('all_admin_notices', [$this, 'renderOverview'], 1);
+        // Mặc định 2 cột: 4 cột của WP để lại các ô "Drag boxes here" trống.
+        add_filter('get_user_option_screen_layout_dashboard', static fn ($columns) => $columns ?: 2);
+
         add_action('wp_dashboard_setup', function () {
-            wp_add_dashboard_widget('lacadev_management_hub',    '🚀 LacaDev Business Hub',   [$this, 'renderDashboardWidget']);
-            wp_add_dashboard_widget('lacadev_content_tracker',  '📈 Báo cáo Nội dung',       [$this, 'renderContentTrackerWidget']);
-            wp_add_dashboard_widget('lacadev_site_health',      '🩺 Tình trạng Website',      [$this, 'renderSiteHealthWidget']);
-            wp_add_dashboard_widget('lacadev_media_insights',   '🖼️ Thư viện Media',          [$this, 'renderMediaLibraryWidget']);
-            wp_add_dashboard_widget('lacadev_todo_widget',      '✅ Việc cần làm',            [$this, 'renderTodoWidget']);
-            wp_add_dashboard_widget('lacadev_quick_search',     '🔍 Tìm kiếm nhanh',          [$this, 'renderQuickSearchWidget']);
+            remove_action('welcome_panel', 'wp_welcome_panel');
+            remove_meta_box('dashboard_site_health', 'dashboard', 'normal');
+
+            wp_add_dashboard_widget('lacadev_content_tracker',  __('Báo cáo nội dung', 'laca'), [$this, 'renderContentTrackerWidget']);
+            wp_add_dashboard_widget('lacadev_site_health',      __('Tình trạng website', 'laca'), [$this, 'renderSiteHealthWidget']);
+            wp_add_dashboard_widget('lacadev_media_insights',   __('Thư viện media', 'laca'), [$this, 'renderMediaLibraryWidget']);
+            wp_add_dashboard_widget('lacadev_quick_search',     __('Tìm kiếm nhanh', 'laca'), [$this, 'renderQuickSearchWidget']);
             if (post_type_exists('project')) {
-                wp_add_dashboard_widget('lacadev_project_charts', '📊 Thống kê Dự án', [$this, 'renderProjectChartsWidget']);
+                wp_add_dashboard_widget('lacadev_project_charts', __('Thống kê dự án', 'laca'), [$this, 'renderProjectChartsWidget']);
             }
         });
 
@@ -115,53 +120,105 @@ class DashboardWidgets
     // Widget 1: Business Hub
     // ──────────────────────────────────────────────────────────────
 
-    public function renderDashboardWidget(): void
+    /**
+     * Khối tổng quan đầu Dashboard (thay banner Welcome + widget Hub + Việc cần làm):
+     * số liệu → việc đang chờ → thao tác nhanh. In qua all_admin_notices để chiếm hết
+     * chiều ngang trên lưới widget; h1 "Dashboard" gốc của WP ẩn bằng CSS.
+     */
+    public function renderOverview(): void
     {
-        $posts_count = (int) wp_count_posts()->publish;
-        $pages_count = wp_count_posts('page')->publish;
-
-        $cpt_stats = '';
-        foreach (get_post_types(['public' => true, '_builtin' => false], 'objects') as $post_type) {
-            if (class_exists('WooCommerce') && $post_type->name === 'product') continue;
-            $count = (int) wp_count_posts($post_type->name)->publish;
-            $cpt_stats .= "<div class='stat-item'><span class='stat-value'>" . esc_html($count) . "</span><span class='stat-label'>" . esc_html($post_type->label) . "</span></div>";
+        $screen = function_exists('get_current_screen') ? get_current_screen() : null;
+        if (!$screen || $screen->id !== 'dashboard') {
+            return;
         }
 
-        $woo_stats = '';
+        $stats = [
+            ['label' => __('Bài viết', 'laca'), 'value' => (int) wp_count_posts()->publish],
+            ['label' => __('Trang', 'laca'), 'value' => (int) wp_count_posts('page')->publish],
+        ];
+        if (class_exists(\App\Databases\ContactFormTable::class)) {
+            $stats[] = ['label' => __('Form liên hệ chưa đọc', 'laca'), 'value' => \App\Databases\ContactFormTable::countAllUnread(), 'url' => admin_url('admin.php?page=laca-contact-forms')];
+        }
         if (class_exists('WooCommerce')) {
-            $products_count = (int) wp_count_posts('product')->publish;
-            $orders_count   = (int) wc_get_orders(['status' => 'completed', 'return' => 'count']);
-            $woo_stats = "<div class='stat-item'><span class='stat-value'>" . esc_html($products_count) . "</span><span class='stat-label'>Sản phẩm</span></div>";
-            $woo_stats .= "<div class='stat-item'><span class='stat-value'>" . esc_html($orders_count) . "</span><span class='stat-label'>Đơn hàng</span></div>";
+            $stats[] = ['label' => __('Sản phẩm', 'laca'), 'value' => (int) wp_count_posts('product')->publish];
         }
+        $maintenanceOn = get_option('_is_maintenance') === 'yes';
 
-        $maintenance_status = (get_option('_is_maintenance') === 'yes')
-            ? '<span class="stat-maintenance--on">🔴 Đang Bật</span>'
-            : '<span class="stat-maintenance--off">🟢 Đã Tắt</span>';
+        $actions = [
+            ['label' => __('Viết bài mới', 'laca'), 'url' => admin_url('post-new.php'), 'primary' => true],
+            ['label' => __('Xem site', 'laca'), 'url' => home_url('/'), 'external' => true],
+            ['label' => __('Bản nháp', 'laca'), 'url' => admin_url('edit.php?post_status=draft&post_type=post')],
+            ['label' => __('Đã lên lịch', 'laca'), 'url' => admin_url('edit.php?post_status=future&post_type=post')],
+        ];
+        foreach (get_post_types(['public' => true, '_builtin' => false], 'objects') as $pt) {
+            if (class_exists('WooCommerce') && $pt->name === 'product') {
+                continue;
+            }
+            /* translators: %s: tên loại nội dung, vd "Dự án" */
+            $actions[] = ['label' => sprintf(__('Thêm %s', 'laca'), $pt->labels->singular_name), 'url' => admin_url('post-new.php?post_type=' . $pt->name)];
+        }
+        if (class_exists('WooCommerce')) {
+            $actions[] = ['label' => __('Thêm sản phẩm', 'laca'), 'url' => admin_url('post-new.php?post_type=product')];
+        }
+        $actions[] = ['label' => __('Media không dùng', 'laca'), 'url' => admin_url('upload.php?detached=1&mode=list')];
+        $actions[] = ['label' => __('Cấu hình Theme', 'laca'), 'url' => admin_url('admin.php?page=app-theme-options.php')];
+
+        $todo = $this->getTodoItems();
         ?>
-        <div class="lacadev-dashboard-grid">
-            <div class="stat-item"><span class="stat-value"><?php echo esc_html($posts_count); ?></span><span class="stat-label">Bài viết</span></div>
-            <div class="stat-item"><span class="stat-value"><?php echo esc_html($pages_count); ?></span><span class="stat-label">Trang</span></div>
-            <?php echo $cpt_stats; ?>
-            <?php echo $woo_stats; ?>
-            <div class="stat-item"><span class="stat-value"><?php echo $maintenance_status; ?></span><span class="stat-label">Bảo trì</span></div>
-        </div>
-        <div class="hub-section-title">Thao tác nhanh</div>
-        <div class="lacadev-actions-list">
-            <a href="<?php echo esc_url(home_url('/')); ?>" target="_blank" class="lacadev-btn-quick"><span>🌐</span> Xem site</a>
-            <a href="<?php echo esc_url(admin_url('post-new.php')); ?>" class="lacadev-btn-quick"><span>📝</span> Viết bài mới</a>
-            <a href="<?php echo esc_url(admin_url('edit.php?post_status=draft&post_type=post')); ?>" class="lacadev-btn-quick"><span>📋</span> Bản nháp</a>
-            <a href="<?php echo esc_url(admin_url('edit.php?post_status=future&post_type=post')); ?>" class="lacadev-btn-quick"><span>📅</span> Đã lên lịch</a>
-            <?php foreach (get_post_types(['public' => true, '_builtin' => false], 'objects') as $pt) : ?>
-                <?php if (class_exists('WooCommerce') && $pt->name === 'product') continue; ?>
-                <a href="<?php echo esc_url(admin_url('post-new.php?post_type=' . $pt->name)); ?>" class="lacadev-btn-quick"><span>➕</span> Thêm <?php echo esc_html($pt->labels->singular_name); ?></a>
-            <?php endforeach; ?>
-            <?php if (class_exists('WooCommerce')) : ?>
-                <a href="<?php echo esc_url(admin_url('post-new.php?post_type=product')); ?>" class="lacadev-btn-quick"><span>🎁</span> Thêm sản phẩm</a>
-                <a href="<?php echo esc_url(admin_url('edit.php?post_type=shop_order&status=wc-processing')); ?>" class="lacadev-btn-quick"><span>🚩</span> Đơn hàng mới</a>
-            <?php endif; ?>
-            <a href="<?php echo esc_url(admin_url('upload.php?detached=1&mode=list')); ?>" class="lacadev-btn-quick"><span>🖼️</span> Media không dùng</a>
-            <a href="<?php echo esc_url(admin_url('admin.php?page=app-theme-options.php')); ?>" class="lacadev-btn-quick"><span>⚙️</span> Cấu hình Theme</a>
+        <div class="laca-dash">
+            <h1 class="laca-dash__title"><?php esc_html_e('Bảng điều khiển', 'laca'); ?></h1>
+
+            <div class="laca-dash__stats">
+                <?php foreach ($stats as $stat) : ?>
+                    <div class="laca-dash__stat">
+                        <span class="laca-stat__label"><?php echo esc_html($stat['label']); ?></span>
+                        <?php if (!empty($stat['url'])) : ?>
+                            <a class="laca-stat__value" href="<?php echo esc_url($stat['url']); ?>"><?php echo esc_html(number_format_i18n($stat['value'])); ?></a>
+                        <?php else : ?>
+                            <span class="laca-stat__value"><?php echo esc_html(number_format_i18n($stat['value'])); ?></span>
+                        <?php endif; ?>
+                    </div>
+                <?php endforeach; ?>
+                <div class="laca-dash__stat">
+                    <span class="laca-stat__label"><?php esc_html_e('Chế độ bảo trì', 'laca'); ?></span>
+                    <span class="laca-dash__state <?php echo $maintenanceOn ? 'is-on' : 'is-off'; ?>">
+                        <?php echo $maintenanceOn ? esc_html__('Đang bật', 'laca') : esc_html__('Đang tắt', 'laca'); ?>
+                    </span>
+                </div>
+            </div>
+
+            <div class="laca-dash__cols">
+                <section class="laca-dash__card" aria-labelledby="laca-dash-todo">
+                    <h2 id="laca-dash-todo" class="laca-dash__card-title"><?php esc_html_e('Việc cần làm', 'laca'); ?></h2>
+                    <?php if ($todo === []) : ?>
+                        <p class="laca-dash__empty"><?php esc_html_e('Không có việc cần làm ngay.', 'laca'); ?></p>
+                    <?php else : ?>
+                        <ul class="laca-dash__todo">
+                            <?php foreach ($todo as $item) : ?>
+                                <li>
+                                    <a href="<?php echo esc_url($item['url']); ?>">
+                                        <span><?php echo esc_html($item['label']); ?></span>
+                                        <span class="laca-dash__count"><?php echo esc_html(number_format_i18n($item['count'])); ?></span>
+                                    </a>
+                                </li>
+                            <?php endforeach; ?>
+                        </ul>
+                    <?php endif; ?>
+                </section>
+
+                <section class="laca-dash__card" aria-labelledby="laca-dash-actions">
+                    <h2 id="laca-dash-actions" class="laca-dash__card-title"><?php esc_html_e('Thao tác nhanh', 'laca'); ?></h2>
+                    <div class="laca-dash__actions">
+                        <?php foreach ($actions as $action) : ?>
+                            <a
+                                class="laca-btn laca-btn--sm <?php echo !empty($action['primary']) ? 'laca-btn--solid' : 'laca-btn--outline'; ?>"
+                                href="<?php echo esc_url($action['url']); ?>"
+                                <?php echo !empty($action['external']) ? 'target="_blank" rel="noopener"' : ''; ?>
+                            ><?php echo esc_html($action['label']); ?></a>
+                        <?php endforeach; ?>
+                    </div>
+                </section>
+            </div>
         </div>
         <?php
     }
@@ -237,19 +294,22 @@ class DashboardWidgets
     // Widget 4: To-do
     // ──────────────────────────────────────────────────────────────
 
-    public function renderTodoWidget(): void
+    /**
+     * @return array<int,array{label:string,count:int,url:string}>
+     */
+    private function getTodoItems(): array
     {
         $items = [];
 
         $pending_comments = (int) wp_count_comments()->moderated;
         if ($pending_comments > 0) {
-            $items[] = ['label' => 'Bình luận chờ duyệt', 'count' => $pending_comments, 'url' => admin_url('edit-comments.php?comment_status=moderated'), 'icon' => '💬'];
+            $items[] = ['label' => __('Bình luận chờ duyệt', 'laca'), 'count' => $pending_comments, 'url' => admin_url('edit-comments.php?comment_status=moderated')];
         }
 
         if (class_exists('WooCommerce')) {
             $new_orders = wc_get_orders(['status' => ['wc-processing', 'wc-on-hold'], 'return' => 'count']);
             if ($new_orders > 0) {
-                $items[] = ['label' => 'Đơn hàng mới cần xử lý', 'count' => (int) $new_orders, 'url' => admin_url('edit.php?post_type=shop_order&status=wc-processing'), 'icon' => '🚩'];
+                $items[] = ['label' => __('Đơn hàng mới cần xử lý', 'laca'), 'count' => (int) $new_orders, 'url' => admin_url('edit.php?post_type=shop_order&status=wc-processing')];
             }
 
             global $wpdb;
@@ -263,7 +323,7 @@ class DashboardWidgets
                 $threshold
             ));
             if ($low_stock > 0) {
-                $items[] = ['label' => 'Sản phẩm sắp hết hàng', 'count' => $low_stock, 'url' => admin_url('edit.php?post_type=product&stock_status=lowstock'), 'icon' => '📦'];
+                $items[] = ['label' => __('Sản phẩm sắp hết hàng', 'laca'), 'count' => $low_stock, 'url' => admin_url('edit.php?post_type=product&stock_status=lowstock')];
             }
         }
 
@@ -284,29 +344,16 @@ class DashboardWidgets
             $draft_pt = (int) ($counts->draft ?? 0);
             if ($draft_pt > 0) {
                 $pt_obj   = get_post_type_object($pt);
-                $items[] = ['label' => ($pt_obj ? $pt_obj->labels->singular_name : $pt) . ' bản nháp', 'count' => $draft_pt, 'url' => admin_url('edit.php?post_status=draft&post_type=' . $pt), 'icon' => '📋'];
+                $items[] = ['label' => sprintf(/* translators: %s: tên loại nội dung */ __('%s bản nháp', 'laca'), $pt_obj ? $pt_obj->labels->singular_name : $pt), 'count' => $draft_pt, 'url' => admin_url('edit.php?post_status=draft&post_type=' . $pt)];
             }
 
             if (isset($scheduled_counts[$pt])) {
                 $pt_obj   = get_post_type_object($pt);
-                $items[] = ['label' => ($pt_obj ? $pt_obj->labels->singular_name : $pt) . ' lên lịch (7 ngày)', 'count' => (int) $scheduled_counts[$pt]->count, 'url' => admin_url('edit.php?post_status=future&post_type=' . $pt), 'icon' => '📅'];
+                $items[] = ['label' => sprintf(/* translators: %s: tên loại nội dung */ __('%s lên lịch (7 ngày)', 'laca'), $pt_obj ? $pt_obj->labels->singular_name : $pt), 'count' => (int) $scheduled_counts[$pt]->count, 'url' => admin_url('edit.php?post_status=future&post_type=' . $pt)];
             }
         }
 
-        if (empty($items)) : ?>
-            <div class="laca-todo-empty">Không có việc cần làm ngay.</div>
-        <?php else : ?>
-            <ul class="laca-todo-list">
-                <?php foreach ($items as $item) : ?>
-                    <li>
-                        <a href="<?php echo esc_url($item['url']); ?>" class="laca-todo-item">
-                            <span><span><?php echo esc_html($item['icon']); ?></span> <?php echo esc_html($item['label']); ?></span>
-                            <span class="laca-todo-badge"><?php echo (int) $item['count']; ?></span>
-                        </a>
-                    </li>
-                <?php endforeach; ?>
-            </ul>
-        <?php endif;
+        return $items;
     }
 
     // ──────────────────────────────────────────────────────────────

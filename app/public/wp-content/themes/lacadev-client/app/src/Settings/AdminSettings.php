@@ -36,6 +36,7 @@ class AdminSettings
 		// bên trong nên gọi không điều kiện ở đây là an toàn.
 		$this->restrictExtraSuperUserAccess();
 
+		$this->addTrackerConfigParserScript();
 		$this->addDashboardContactWidget();
 		$this->removeDefaultWidgets();
 		$this->removeDashboardWidgets();
@@ -125,7 +126,7 @@ class AdminSettings
 					<a target="_blank" href="<?php echo AUTHOR['website'] ?>" title="<?php echo AUTHOR['name'] ?>"
 						style="opacity: 0.9; transition: opacity 0.2s;">
 						<img style="max-width: 160px; height: auto; display: block;"
-							src="<?php echo get_site_url() . '/wp-content/themes/lacadev/resources/images/dev/moomsdev-black.png' ?>"
+							src="<?php echo esc_url(get_template_directory_uri() . '/../resources/images/dev/moomsdev-black.png') ?>"
 							alt="<?php echo AUTHOR['name'] ?>">
 					</a>
 					<div style="margin-top: 20px; text-align: center;">
@@ -233,7 +234,7 @@ class AdminSettings
 		add_action('admin_bar_menu', static function ($wp_admin_bar) use ($author) {
 			$args = [
 				'id' => 'logo_author',
-				'title' => '<img src="' . get_site_url() . "/wp-content/themes/lacadev/resources/images/dev/moomsdev-white.png" . '" class="logo-admin-bar" alt="' . AUTHOR['name'] . '">',
+				'title' => '<img src="' . esc_url(get_template_directory_uri() . '/../resources/images/dev/moomsdev-white.png') . '" class="logo-admin-bar" alt="' . AUTHOR['name'] . '">',
 				'href' => $author['website'],
 				'meta' => [
 					'target' => '_blank',
@@ -531,7 +532,7 @@ class AdminSettings
 
 	public function setupErrorMessage()
 	{
-		$logoUrl = get_site_url() . "/wp-content/themes/lacadev/resources/images/dev/moomsdev-black.png";
+		$logoUrl = get_template_directory_uri() . '/../resources/images/dev/moomsdev-black.png';
 		$adminUrl = admin_url();
 		$website = AUTHOR['website'];
 		$authorName = AUTHOR['name'];
@@ -940,61 +941,61 @@ class AdminSettings
 						->set_default_value('← Leave the Station'),
 				]);
 
-			Container::make('theme_options', __('Tools', 'laca'))
+			Container::make('theme_options', __('Tối ưu hóa', 'laca'))
 				->set_page_parent($options)
 				->set_page_file(__('laca-tools', 'laca'))
-				->add_tab(__('Optimization', 'laca'), [
+				->add_tab(__('Tối ưu hóa', 'laca'), [
 					// Disable unnecessary items
-					Field::make('separator', 'title_disable_unnecessary_items', __('Disable unnecessary items')),
-					Field::make('checkbox', 'disable_use_jquery_migrate', __('Disable jQuery Migrate', 'laca'))
+					Field::make('separator', 'title_disable_unnecessary_items', __('Tắt thành phần không cần thiết', 'laca')),
+					Field::make('checkbox', 'disable_use_jquery_migrate', __('Tắt jQuery Migrate', 'laca'))
 						->set_width(30),
 					Field::make('html', 'disable_use_jquery_migrate_desc')
 						->set_width(70)
 						->set_html('<i class="fa-regular fa-lightbulb-on"></i> jQuery Migrate là thư viện được sử dụng để duy trì hoạt động của các plugin và theme cũ. Nếu bạn không sử dụng plugin này, bạn có thể tắt nó để tăng tốc độ tải trang.'),
 
-					Field::make('checkbox', 'disable_gutenberg_css', __('Disable Gutenberg CSS', 'laca'))
+					Field::make('checkbox', 'disable_gutenberg_css', __('Tắt CSS Gutenberg', 'laca'))
 						->set_width(30),
 					Field::make('html', 'gutenberg_css_desc')
 						->set_width(70)
 						->set_html('<i class="fa-regular fa-lightbulb-on"></i> Gutenberg CSS là thư viện được sử dụng để duy trì hoạt động của các plugin và theme cũ. Nếu bạn không sử dụng plugin này, bạn có thể tắt nó để tăng tốc độ tải trang.'),
 
-					Field::make('checkbox', 'disable_classic_css', __('Disable Classic CSS', 'laca'))
+					Field::make('checkbox', 'disable_classic_css', __('Tắt CSS Classic', 'laca'))
 						->set_width(30),
 					Field::make('html', 'classic_css_desc')
 						->set_width(70)
 						->set_html('<i class="fa-regular fa-lightbulb-on"></i> Classic CSS là thư viện được sử dụng để duy trì hoạt động của các plugin và theme cũ. Nếu bạn không sử dụng plugin này, bạn có thể tắt nó để tăng tốc độ tải trang.'),
 
-					Field::make('checkbox', 'disable_emoji', __('Disable Emoji', 'laca'))
+					Field::make('checkbox', 'disable_emoji', __('Tắt Emoji', 'laca'))
 						->set_width(30),
 					Field::make('html', 'emoji_desc')
 						->set_width(70)
 						->set_html('<i class="fa-regular fa-lightbulb-on"></i> Emoji là thư viện được sử dụng để hiển thị các biểu tượng trong trang web. Nếu bạn không sử dụng plugin này, bạn có thể tắt nó để tăng tốc độ tải trang.'),
 
 					// Optimization Library
-					Field::make('separator', 'title_optimization_library', __('Optimization Library')),
-					Field::make('checkbox', 'enable_instant_page', __('Enable Instant-page', 'laca'))
+					Field::make('separator', 'title_optimization_library', __('Thư viện tối ưu', 'laca')),
+					Field::make('checkbox', 'enable_instant_page', __('Bật Instant-page', 'laca'))
 						->set_width(30),
 					Field::make('html', 'instant_page_desc')
 						->set_width(70)
 						->set_html('<i class="fa-regular fa-lightbulb-on"></i> Instant-Page là một thư viện cho phép bạn tải trước nội dung của trang được liên kết vào bộ nhớ trình duyệt chỉ bằng cách di chuyển qua liên kết. Khi bạn nhấp vào liên kết, nó cung cấp trải nghiệm tải nhanh đáng kể'),
 
-					Field::make('checkbox', 'enable_smooth_scroll', __('Enable Smooth-scroll', 'laca'))
+					Field::make('checkbox', 'enable_smooth_scroll', __('Bật cuộn mượt (Smooth-scroll)', 'laca'))
 						->set_width(30),
 					Field::make('html', 'smooth_scroll_desc')
 						->set_width(70)
 						->set_html('<i class="fa-regular fa-lightbulb-on"></i> Smooth-scroll là thư viện cho phép bạn tạo hiệu ứng cuộn mượt mà, cung cấp cho người dùng cảm giác điều hướng trang nhanh hơn.'),
 
 					// The function of lazy loading images
-					Field::make('separator', 'title_lazy_loading_images', __('The function of lazy loading images')),
+					Field::make('separator', 'title_lazy_loading_images', __('Tối ưu HTML & ảnh', 'laca')),
 					Field::make('html', 'lazy_loading_images_desc')
 						->set_width(70)
 						->set_html('<i class="fa-regular fa-lightbulb-on"></i> Nếu bạn muốn lazy load hình ảnh mỗi khi trang tải, hãy bật tính năng này. Chức năng này giúp trang web của bạn tải nhanh hơn'),
 
-					Field::make('checkbox', 'remove_comments', __('Remove comments from HTML, JavaScript, and CSS', 'laca')),
-					Field::make('checkbox', 'remove_xhtml_closing_tags', __('Remove XHTML closing tags from empty elements in HTML5', 'laca')),
-					Field::make('checkbox', 'remove_relative_domain', __('Remove relative domain from internal URLs', 'laca')),
-					Field::make('checkbox', 'remove_protocols', __('Remove protocols (HTTP: and HTTPS:) from all URLs', 'laca')),
-					Field::make('checkbox', 'support_multi_byte_utf_8', __('Support multi-byte UTF-8 encoding (if you see strange characters)', 'laca')),
+					Field::make('checkbox', 'remove_comments', __('Xoá comment trong HTML, JavaScript và CSS', 'laca')),
+					Field::make('checkbox', 'remove_xhtml_closing_tags', __('Bỏ thẻ đóng XHTML ở phần tử rỗng (HTML5)', 'laca')),
+					Field::make('checkbox', 'remove_relative_domain', __('Bỏ tên miền khỏi URL nội bộ', 'laca')),
+					Field::make('checkbox', 'remove_protocols', __('Bỏ giao thức (HTTP: và HTTPS:) khỏi mọi URL', 'laca')),
+					Field::make('checkbox', 'support_multi_byte_utf_8', __('Hỗ trợ mã hoá UTF-8 nhiều byte (khi thấy ký tự lạ)', 'laca')),
 					// Thêm các field tối ưu hóa mới
 					Field::make('checkbox', 'enable_advanced_resource_hints', __('Bật Advanced Resource Hints', 'laca'))
 						->set_width(30),
@@ -1103,7 +1104,7 @@ class AdminSettings
 				]);
 
 			// Tracker Settings — kết nối gửi log về lacadev CMS
-			Container::make('theme_options', __('📡 Tracker', 'laca'))
+			Container::make('theme_options', __('Site Tracker', 'laca'))
 				->set_page_parent($options)
 				->set_page_file(__('laca-tracker', 'laca'))
 				->add_fields([
@@ -1125,18 +1126,48 @@ class AdminSettings
 							return '<div style="background:#fff7ed;border:1px solid #fed7aa;border-radius:6px;padding:10px 14px;margin:8px 0;color:#c2410c;font-weight:600">⚠️ Chưa cấu hình — nhập Endpoint và Secret Key bên dưới để kích hoạt</div>';
 						}),
 
-					Field::make('separator', 'sep_tracker', __('Kết nối với lacadev.com', 'laca')),
+					Field::make('separator', 'sep_tracker_fast_config', __('⚡ Dán cấu hình nhanh từ Hub (Laca CMS)', 'laca')),
+
+					Field::make('textarea', 'laca_client_config_paste', __('Dán cấu hình JSON từ Hub', 'laca'))
+						->set_rows(4)
+						->set_attribute('placeholder', '{"hub_url": "...", "endpoint": "...", "project_id": "...", "keys": { ... }}')
+						->set_help_text('Dán toàn bộ mã JSON cấu hình sao chép từ Project Workspace trên Hub. Hệ thống sẽ tự động bóc tách và điền vào các trường bên dưới.'),
+
+					Field::make('separator', 'sep_tracker', __('Chi tiết kết nối & Khóa bảo mật (HMAC)', 'laca')),
 
 					Field::make('text', 'laca_tracker_endpoint', __('Tracker Endpoint URL', 'laca'))
 						->set_width(60)
 						->set_attribute('placeholder', 'https://lacadev.com/wp-json/laca/v1/tracker/log')
-						->set_help_text('REST URL của lacadev CMS. Copy từ trang Project → Tracker trên lacadev.com.'),
+						->set_help_text('REST URL của lacadev CMS. Tự động điền khi dán JSON cấu hình.'),
 
-					Field::make('text', 'laca_tracker_secret_key', __('Secret Key', 'laca'))
+					Field::make('text', 'laca_project_id', __('Public Project ID', 'laca'))
 						->set_width(40)
+						->set_attribute('placeholder', 'prj_xxxxxxx')
+						->set_help_text('Mã định danh dự án trên Hub (truyền trong header X-Laca-Project).'),
+
+					Field::make('text', 'laca_key_tracker', __('Tracker Key', 'laca'))
+						->set_width(33.33)
+						->set_attribute('type', 'password')
+						->set_attribute('placeholder', 'Key ký HMAC gửi log')
+						->set_help_text('Dùng để ký chữ ký HMAC khi gửi log và heartbeat lên Hub.'),
+
+					Field::make('text', 'laca_key_catalog', __('Block Catalog Key', 'laca'))
+						->set_width(33.33)
+						->set_attribute('type', 'password')
+						->set_attribute('placeholder', 'Key Block Marketplace')
+						->set_help_text('Dùng để xác thực tải block từ Hub hoặc nhận sync block.'),
+
+					Field::make('text', 'laca_key_remote', __('Remote Update Key', 'laca'))
+						->set_width(33.33)
+						->set_attribute('type', 'password')
+						->set_attribute('placeholder', 'Key nhận lệnh cập nhật từ xa')
+						->set_help_text('Dùng để xác thực lệnh cập nhật plugin/theme/core gửi từ Hub.'),
+
+					Field::make('text', 'laca_tracker_secret_key', __('Secret Key dự phòng (Legacy)', 'laca'))
+						->set_width(100)
 						->set_attribute('placeholder', 'sk_xxxxxxxx')
 						->set_attribute('type', 'password')
-						->set_help_text('Secret key riêng của project. Không chia sẻ key này.'),
+						->set_help_text('Secret key cũ dự phòng nếu không dùng chữ ký HMAC.'),
 
 					Field::make('separator', 'sep_tracker_deep_fim', __('Kiểm tra sâu (nâng cao)', 'laca')),
 
@@ -1355,7 +1386,105 @@ class AdminSettings
 					Field::make('text', 'help_support_phone', __('Điện thoại/Zalo', 'laca')),
 					Field::make('text', 'help_support_email', __('Email', 'laca')),
 					Field::make('text', 'help_support_website', __('Website', 'laca')),
+				])
+				->add_tab(__('Vai trò Khách hàng', 'laca'), [
+					Field::make('html', 'client_role_desc')
+						->set_html('<div class="carbon-field-description">Vai trò <b>"Khách hàng" (laca_client)</b> cho phép người dùng biên tập nội dung (bài viết, trang, media, menu, xem form liên hệ, SEO) nhưng ẩn hoàn toàn các mục kỹ thuật (Plugins, Themes, Users, Tools, Cài đặt hệ thống, Laca Admin).</div>'),
+
+					Field::make('multiselect', 'laca_client_assigned_users', __('Gán vai trò Khách hàng cho người dùng', 'laca'))
+						->set_options(function () {
+							$users = get_users(['fields' => ['ID', 'user_login', 'display_name']]);
+							$options = [];
+							$superLogins = \App\Settings\AdminSettings::getSuperUserLogins();
+							foreach ($users as $u) {
+								if (in_array($u->user_login, $superLogins, true)) {
+									continue;
+								}
+								$options[(string) $u->ID] = "{$u->display_name} ({$u->user_login})";
+							}
+							return $options;
+						})
+						->set_help_text(__('Chọn các tài khoản thuộc nhóm khách hàng để áp dụng phân quyền an toàn.', 'laca')),
 				]);
+		});
+	}
+
+	/**
+	 * Script tự động phân tích JSON cấu hình khi dán vào ô laca_client_config_paste
+	 */
+	public function addTrackerConfigParserScript(): void
+	{
+		add_action('admin_footer', static function () {
+			$screen = get_current_screen();
+			if (!$screen || strpos((string) $screen->id, 'laca-tracker') === false) {
+				return;
+			}
+			?>
+			<script>
+			document.addEventListener('DOMContentLoaded', function () {
+				function setupParser() {
+					var textarea = document.querySelector('textarea[name*="laca_client_config_paste"]');
+					if (!textarea || textarea.dataset.parsedAttached) {
+						return;
+					}
+					textarea.dataset.parsedAttached = 'true';
+
+					function parseConfig() {
+						var raw = textarea.value.trim();
+						if (!raw || raw.charAt(0) !== '{') {
+							return;
+						}
+						try {
+							var data = JSON.parse(raw);
+							var setVal = function (fieldName, val) {
+								if (!val) return;
+								var input = document.querySelector('input[name*="' + fieldName + '"]');
+								if (input) {
+									input.value = val;
+									input.dispatchEvent(new Event('input', { bubbles: true }));
+									input.dispatchEvent(new Event('change', { bubbles: true }));
+								}
+							};
+
+							if (data.endpoint) {
+								setVal('laca_tracker_endpoint', data.endpoint);
+							} else if (data.hub_url) {
+								setVal('laca_tracker_endpoint', data.hub_url.replace(/\/+$/, '') + '/wp-json/laca/v1/tracker/log');
+							}
+
+							if (data.project_id) {
+								setVal('laca_project_id', data.project_id);
+							}
+
+							if (data.keys) {
+								if (data.keys.tracker) {
+									setVal('laca_key_tracker', data.keys.tracker);
+									setVal('laca_tracker_secret_key', data.keys.tracker);
+								}
+								if (data.keys.catalog) {
+									setVal('laca_key_catalog', data.keys.catalog);
+								}
+								if (data.keys.remote) {
+									setVal('laca_key_remote', data.keys.remote);
+								}
+							}
+						} catch (e) {
+							console.warn('[LacaDev Tracker] Không thể parse JSON cấu hình:', e);
+						}
+					}
+
+					textarea.addEventListener('input', parseConfig);
+					textarea.addEventListener('paste', function () {
+						setTimeout(parseConfig, 60);
+					});
+				}
+
+				setupParser();
+				var observer = new MutationObserver(setupParser);
+				observer.observe(document.body, { childList: true, subtree: true });
+			});
+			</script>
+			<?php
 		});
 	}
 }

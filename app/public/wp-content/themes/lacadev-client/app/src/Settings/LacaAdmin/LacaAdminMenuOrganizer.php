@@ -30,35 +30,20 @@ class LacaAdminMenuOrganizer
                 'laca-management-settings',
             ],
         ],
-        'performance' => [
-            'label' => 'Hiệu năng & bảo trì',
+        // Gộp các nhóm chỉ có 1 mục để dock không lặp tên nhóm = tên mục.
+        'system' => [
+            'label' => 'Hệ thống',
             'items' => [
                 'laca-tools',
-            ],
-        ],
-        'security' => [
-            'label' => 'Bảo mật',
-            'items' => [
                 'laca-security',
             ],
         ],
         'users' => [
-            'label' => 'Quản lý người dùng',
+            'label' => 'Người dùng & đăng nhập',
             'items' => [
                 'laca-2fa',
                 'laca-login-log',
-            ],
-        ],
-        'superuser' => [
-            'label' => 'Super User',
-            'items' => [
                 'laca-super-user',
-            ],
-        ],
-        'google' => [
-            'label' => 'Dịch vụ Google',
-            'items' => [
-                'laca-recaptcha',
             ],
         ],
         'content' => [
@@ -68,15 +53,11 @@ class LacaAdminMenuOrganizer
                 'laca-contact-forms',
             ],
         ],
-        'sync' => [
-            'label' => 'Kết nối LacaDev',
+        'integrations' => [
+            'label' => 'Kết nối & dịch vụ',
             'items' => [
+                'laca-recaptcha',
                 'laca-block-sync',
-            ],
-        ],
-        'projects' => [
-            'label' => 'Dự án & thông báo',
-            'items' => [
                 'laca-project-notifications',
             ],
         ],
@@ -84,6 +65,7 @@ class LacaAdminMenuOrganizer
             'label' => 'Marketing & AI',
             'items' => [
                 'laca-exit-popup',
+                'laca-post-audio',
             ],
         ],
     ];
@@ -142,7 +124,7 @@ class LacaAdminMenuOrganizer
             if ($groupItems !== []) {
                 $navigationGroups[] = [
                     'key' => $groupKey,
-                    'label' => $group['label'],
+                    'label' => $this->getGroupLabel($groupKey, $group['label']),
                     'items' => $groupItems,
                 ];
             }
@@ -268,12 +250,26 @@ class LacaAdminMenuOrganizer
 
             $groups[] = [
                 'key' => $groupKey,
-                'label' => $group['label'],
+                'label' => $this->getGroupLabel($groupKey, $group['label']),
                 'items' => $items,
             ];
         }
 
         return $this->navigationGroups = $groups;
+    }
+
+    private function getGroupLabel(string $key, string $fallback): string
+    {
+        $labels = [
+            'general'      => __('Tổng quan', 'laca'),
+            'system'       => __('Hệ thống', 'laca'),
+            'users'        => __('Người dùng & đăng nhập', 'laca'),
+            'content'      => __('Nội dung & Form', 'laca'),
+            'integrations' => __('Kết nối & dịch vụ', 'laca'),
+            'marketing'    => __('Marketing & AI', 'laca'),
+        ];
+
+        return $labels[$key] ?? $fallback;
     }
 
     private function getFallbackItemLabel(string $slug): string
@@ -291,7 +287,7 @@ class LacaAdminMenuOrganizer
             'laca-contact-forms'         => 'Form Liên Hệ',
             'laca-block-sync'            => 'Kết nối LacaDev',
             'laca-project-notifications' => 'Dự án & Thông báo',
-            'laca-exit-popup'            => 'Marketing & AI',
+            'laca-exit-popup'            => 'Exit Popup & Chatbot',
         ];
 
         return $labels[$slug] ?? $slug;

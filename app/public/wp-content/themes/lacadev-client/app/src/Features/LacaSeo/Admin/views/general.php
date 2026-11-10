@@ -70,11 +70,11 @@ $current_options = Settings::getGroup('general');
                     </div>
                     <div class="laca-seo-fields-container" style="padding: 24px;">
                         <p style="font-size: 14px; color: var(--laca-fg-muted, #71717a); margin-bottom: 16px;">
-                            <?php esc_html_e('Đã chuyển sang Laca Admin → Dịch vụ Google để quản lý tập trung và tích hợp kết nối Google OAuth.', 'lacadev'); ?>
+                            <?php esc_html_e('Đã chuyển sang Laca Admin → Dịch vụ Google để quản lý tập trung và tích hợp kết nối Google OAuth.', 'laca'); ?>
                         </p>
                         <a href="<?php echo esc_url(admin_url('admin.php?page=laca-google-analytics')); ?>" class="button button-primary">
                             <span class="dashicons dashicons-arrow-right-alt" style="margin-top: 3px;" aria-hidden="true"></span>
-                            <?php esc_html_e('Chuyển sang trang Cấu hình Google Analytics & GTM', 'lacadev'); ?>
+                            <?php esc_html_e('Chuyển sang trang Cấu hình Google Analytics & GTM', 'laca'); ?>
                         </a>
                     </div>
                 </div>

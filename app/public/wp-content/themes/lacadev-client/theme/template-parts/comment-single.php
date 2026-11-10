@@ -32,14 +32,14 @@ $add_below = 'div-comment';
 			<div class="comment-metadata">
 				<a href="<?php echo esc_url( get_comment_link( $comment, $passed_args ) ); ?>">
 					<time datetime="<?php comment_time( 'c' ); ?>">
-						<?php printf( __( '%s ago', 'laca' ), human_time_diff( get_comment_time('U'), current_time('timestamp') ) ); ?>
+						<?php /* translators: %s: khoảng thời gian, vd "5 phút". */ printf( __('%s trước', 'laca' ), human_time_diff( get_comment_time('U'), current_time('timestamp') ) ); ?>
 					</time>
 				</a>
 			</div><!-- .comment-metadata -->
 		</header><!-- .comment-meta -->
 
 		<?php if ( '0' == $comment->comment_approved ) : ?>
-		<p class="comment-awaiting-moderation"><?php _e( 'Your comment is awaiting moderation.', 'laca' ); ?></p>
+		<p class="comment-awaiting-moderation"><?php _e('Bình luận của bạn đang chờ duyệt.', 'laca' ); ?></p>
 		<?php endif; ?>
 
 		<div class="comment-content">

@@ -33,9 +33,9 @@ class TermList
      */
     public function addColumns(array $columns): array
     {
-        $columns['laca_seo']       = __('SEO', 'lacadev');
-        $columns['laca_seo_title'] = __('Tiêu đề SEO', 'lacadev');
-        $columns['laca_seo_desc']  = __('Mô tả SEO', 'lacadev');
+        $columns['laca_seo']       = __('SEO', 'laca');
+        $columns['laca_seo_title'] = __('Tiêu đề SEO', 'laca');
+        $columns['laca_seo_desc']  = __('Mô tả SEO', 'laca');
         return $columns;
     }
 
@@ -83,14 +83,14 @@ class TermList
                 if ($customTitle !== '') {
                     return esc_html($customTitle);
                 }
-                return '<span style="color:#94a3b8;font-style:italic;">' . esc_html__('— Theo mẫu chung —', 'lacadev') . '</span>';
+                return '<span style="color:#94a3b8;font-style:italic;">' . esc_html__('— Theo mẫu chung —', 'laca') . '</span>';
 
             case 'laca_seo_desc':
                 $customDesc = (string) get_term_meta($termId, '_laca_seo_description', true);
                 if ($customDesc !== '') {
                     return esc_html(wp_trim_words($customDesc, 15, '...'));
                 }
-                return '<span style="color:#94a3b8;font-style:italic;">' . esc_html__('— Theo mẫu chung —', 'lacadev') . '</span>';
+                return '<span style="color:#94a3b8;font-style:italic;">' . esc_html__('— Theo mẫu chung —', 'laca') . '</span>';
         }
 
         return $content;

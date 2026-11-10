@@ -156,7 +156,7 @@ add_action('carbon_fields_register_fields', 'app_bootstrap_carbon_fields_registe
 add_action('carbon_fields_theme_options_container_saved', static function ($user_data, $container) {
     if (!empty($_POST['carbon_fields_auto_save']) || wp_doing_ajax()) {
         wp_send_json_success([
-            'message'   => __('Đã tự động lưu cài đặt thành công.', 'lacadev'),
+            'message'   => __('Đã tự động lưu cài đặt thành công.', 'laca'),
             'timestamp' => current_time('H:i:s'),
         ]);
     }
@@ -168,9 +168,16 @@ add_action('carbon_fields_theme_options_container_saved', static function ($user
  */
 if (is_admin()) {
     add_action('init', static function () {
+        $defaultJsonUrl = wp_get_environment_type() === 'local'
+            ? 'http://lacadev.local/theme-updates/lacadev-client.json'
+            : 'https://lacadev.com/theme-updates/lacadev-client.json';
+        $updateJsonUrl = (string) apply_filters(
+            'laca_theme_update_json_url',
+            $defaultJsonUrl
+        );
         new \App\Settings\ThemeUpdater(
             'lacadev-client/theme',
-            'https://clients.lacadev.com/theme-updates/lacadev-client.json'
+            $updateJsonUrl
         );
         new \App\Widgets\BlockSyncWidget();
 
@@ -193,6 +200,13 @@ if (is_admin()) {
  */
 add_action('init', static function () {
     new \App\Settings\LacaDevTrackerClient();
+
+    if (class_exists('\App\Features\ClientSupport\ClientSupportManager')) {
+        (new \App\Features\ClientSupport\ClientSupportManager())->init();
+    }
+    if (class_exists('\App\Security\ClientRoleManager')) {
+        (new \App\Security\ClientRoleManager())->init();
+    }
 });
 
 /**
@@ -289,6 +303,15 @@ add_action('init', function () {
 add_action('init', function () {
     if (class_exists('\App\Features\FrontendChatbot\FrontendChatbotHandler')) {
         (new \App\Features\FrontendChatbot\FrontendChatbotHandler())->init();
+    }
+});
+
+/**
+ * Post Audio - Nghe bài viết
+ */
+add_action('init', function () {
+    if (class_exists('\App\Features\PostAudio\PostAudioManager')) {
+        (new \App\Features\PostAudio\PostAudioManager())->init();
     }
 });
 
