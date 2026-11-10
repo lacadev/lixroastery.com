@@ -391,7 +391,7 @@ class ThemeUpdater
         $parsed = parse_url($url);
         $path   = $parsed['path'] ?? '';
 
-        if (!str_contains($path, '/wp-json/laca/v1/theme-package/')) {
+        if (!str_starts_with($path, '/wp-json/laca/v1/theme-package/') || !$this->isTrustedHubUrl($url)) {
             return $args;
         }
 
@@ -421,6 +421,31 @@ class ThemeUpdater
         $args['timeout'] = max((int) ($args['timeout'] ?? 30), 300);
 
         return $args;
+    }
+
+    /**
+     * Chỉ ký/gửi key tới đúng host của hub (host của file update JSON hoặc tracker endpoint),
+     * và bắt buộc https ngoài môi trường local — tránh lộ key khi download_url trỏ host lạ.
+     */
+    private function isTrustedHubUrl(string $url): bool
+    {
+        $normalize = static fn($u) => strtolower(rtrim((string) parse_url((string) $u, PHP_URL_HOST), '.'));
+
+        $host = $normalize($url);
+        if ($host === '') {
+            return false;
+        }
+
+        $trusted = array_filter([
+            $normalize($this->updateInfoUrl),
+            $normalize(LacaDevTrackerClient::getEndpoint()),
+        ]);
+        if (!in_array($host, $trusted, true)) {
+            return false;
+        }
+
+        $isLocal = function_exists('wp_get_environment_type') && wp_get_environment_type() === 'local';
+        return $isLocal || parse_url($url, PHP_URL_SCHEME) === 'https';
     }
 
     /**
