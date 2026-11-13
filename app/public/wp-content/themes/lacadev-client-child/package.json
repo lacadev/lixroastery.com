@@ -12,7 +12,7 @@
     "dev:theme": "cross-env NODE_ENV=development webpack --color --config resources/build/webpack.development.js",
     "dev:blocks": "wp-scripts start --config resources/build/webpack.blocks.js",
     "build": "yarn build:theme && yarn build:blocks && yarn critical",
-    "build:theme": "cross-env NODE_ENV=production webpack --color --config resources/build/webpack.production.js",
+    "build:theme": "cross-env NODE_ENV=production webpack --color --config resources/build/webpack.production.js && node resources/build/write-build-meta.js",
     "build:blocks": "wp-scripts build --config resources/build/webpack.blocks.js",
     "lint": "run-s -cl lint:scripts lint:styles",
     "lint:scripts": "wp-scripts lint-js 'resources/scripts' 'block-gutenberg'",
