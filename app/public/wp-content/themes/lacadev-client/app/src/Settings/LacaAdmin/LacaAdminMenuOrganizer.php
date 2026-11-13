@@ -26,6 +26,7 @@ class LacaAdminMenuOrganizer
         'general' => [
             'label' => 'Tổng quan',
             'items' => [
+                'laca-dashboard',
                 'laca-admin',
                 'laca-management-settings',
             ],
@@ -34,8 +35,10 @@ class LacaAdminMenuOrganizer
         'system' => [
             'label' => 'Hệ thống',
             'items' => [
+                'laca-system',
                 'laca-tools',
                 'laca-security',
+                'laca-config',
             ],
         ],
         'users' => [
@@ -275,10 +278,13 @@ class LacaAdminMenuOrganizer
     private function getFallbackItemLabel(string $slug): string
     {
         $labels = [
+            'laca-dashboard'             => 'Tổng quan',
             'laca-admin'                 => 'Cấu hình chung',
             'laca-management-settings'   => 'Quản trị & HD Sử dụng',
+            'laca-system'                => 'Hệ thống',
             'laca-tools'                 => 'Hiệu năng & Bảo trì',
             'laca-security'              => 'Bảo mật',
+            'laca-config'                => 'Cấu hình',
             'laca-2fa'                   => 'Xác thực 2 bước (2FA)',
             'laca-super-user'            => 'Super User',
             'laca-login-log'             => 'Login Log',
@@ -288,6 +294,7 @@ class LacaAdminMenuOrganizer
             'laca-block-sync'            => 'Kết nối LacaDev',
             'laca-project-notifications' => 'Dự án & Thông báo',
             'laca-exit-popup'            => 'Exit Popup & Chatbot',
+            'laca-block-catalog-source'  => 'Nguồn khối giao diện',
         ];
 
         return $labels[$slug] ?? $slug;

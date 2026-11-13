@@ -9,6 +9,7 @@
 if (!defined('ABSPATH')) {
     exit;
 }
+
 /**
  * Load base helpers.
  */
@@ -22,9 +23,13 @@ require_once APP_APP_HELPERS_DIR . 'functions.php';
 require_once APP_APP_HELPERS_DIR . 'ajax.php';
 require_once APP_APP_HELPERS_DIR . 'hooks.php';
 require_once APP_APP_HELPERS_DIR . 'template_tags.php';
-require_once APP_APP_HELPERS_DIR . 'woocommerce.php';
+if (file_exists(APP_APP_HELPERS_DIR . 'woocommerce.php')) {
+    require_once APP_APP_HELPERS_DIR . 'woocommerce.php';
+}
 require_once APP_APP_HELPERS_DIR . 'carbon_fields.php';
-require_once APP_APP_HELPERS_DIR . 'layout-mode.php';
+if (file_exists(APP_APP_HELPERS_DIR . 'layout-mode.php')) {
+    require_once APP_APP_HELPERS_DIR . 'layout-mode.php';
+}
 require_once APP_APP_SETUP_DIR . 'users/auth.php';
 require_once get_template_directory() . '/setup/admin-ui.php';
 
@@ -33,13 +38,22 @@ require_once get_template_directory() . '/setup/admin-ui.php';
  */
 new \App\Settings\RequirePlugins();
 new \App\Settings\AdminSettings();
-if (!class_exists(\App\Settings\LayoutModeMeta::class)) {
+
+if (!class_exists(\App\Settings\LayoutModeMeta::class) && file_exists(get_template_directory() . '/app/src/Settings/LayoutModeMeta.php')) {
     require_once get_template_directory() . '/app/src/Settings/LayoutModeMeta.php';
 }
-new \App\Settings\LayoutModeMeta();
-new \App\Settings\AutoDownloadImage();
+if (class_exists(\App\Settings\LayoutModeMeta::class)) {
+    new \App\Settings\LayoutModeMeta();
+}
+
+if (class_exists(\App\Settings\AutoDownloadImage::class)) {
+    new \App\Settings\AutoDownloadImage();
+}
+
 new \App\Settings\ThemeSettings();
 new \App\Settings\LacaTools\Optimize();
+new \App\Settings\LacaTools\Security();
+
 // Dashboard widgets và LacaTools Management: load class files từ parent theme nếu chưa có.
 // Child theme dùng autoloader riêng (App\ → app/src/) nên cần require tường minh.
 if (!class_exists(\App\Settings\LacaTools\ManagementExperience::class)) {
@@ -67,8 +81,6 @@ new \App\Settings\LacaTools\ManagementExperience();
 
 // phpcs:disable
 /**
- * Annoyed that you have to constantly add helper file require statements? Uncomment the bellow snippet!
- *
  * Automatically require all helper files in the app/helpers directory (non-recursive).
  */
 /*

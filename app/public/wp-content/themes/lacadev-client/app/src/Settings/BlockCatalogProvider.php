@@ -2,31 +2,23 @@
 
 namespace App\Settings;
 
+if (!defined('ABSPATH')) {
+    exit;
+}
+
 /**
  * BlockCatalogProvider
  *
- * Phục vụ danh mục Gutenberg block (metadata + preview.png + toàn bộ file
- * nguồn) đọc-chỉ (read-only) cho hub (lacadev.com), để hub cache lại và cho
- * site khách hàng duyệt/yêu cầu đồng bộ từng block.
- *
- * Quét cả block-gutenberg/ của theme cha (lacadev-client) lẫn theme con
- * (lacadev-client-child) — nếu trùng tên, ưu tiên bản ở theme con (coi như
- * bản mới nhất/tùy biến).
- *
- * Endpoint:
- *   GET /wp-json/lacadev/v1/blocks-catalog             — danh sách block + metadata + preview
- *   GET /wp-json/lacadev/v1/blocks-catalog/{block}/files — toàn bộ file nguồn của 1 block (base64)
- *
- * Xác thực: header X-Laca-Catalog-Key, so khớp option `laca_catalog_key`
- * (khác với `laca_sync_key` của BlockSyncReceiver — 2 vai trò khác nhau:
- * BlockSyncReceiver NHẬN block được đẩy tới, còn provider này CUNG CẤP
- * block cho hub đọc).
+ * Phục vụ danh mục Gutenberg block (opt-in qua `laca.catalog === true` trong `block.json`)
+ * kèm manifest SHA-256 từng file và danh sách phụ thuộc `requires` cho Hub LacaDev.
  */
 class BlockCatalogProvider
 {
-    private const NAMESPACE  = 'lacadev/v1';
-    private const ROUTE      = 'blocks-catalog';
-    private const KEY_OPTION = 'laca_catalog_key';
+    private const NAMESPACE           = 'lacadev/v1';
+    private const ROUTE               = 'blocks-catalog';
+    private const KEY_OPTION          = 'laca_catalog_key';
+    private const LEGACY_OPTION       = 'laca_block_sync_allow_legacy';
+    private const MAX_PREVIEW_BYTES   = 524288; // 512 KB
 
     public function __construct()
     {
@@ -38,11 +30,9 @@ class BlockCatalogProvider
         register_rest_route(self::NAMESPACE, '/' . self::ROUTE, [
             'methods'             => \WP_REST_Server::READABLE,
             'callback'            => [$this, 'listBlocks'],
-            'permission_callback' => '__return_true', // Auth được xử lý trong callback
+            'permission_callback' => '__return_true',
         ]);
 
-        // Route chuẩn: /wp-json/lacadev/v1/blocks-catalog/{block}/files
-        // Hỗ trợ block phẳng hoặc bucketed (bucket/block, kể cả rawurlencode %2F)
         register_rest_route(self::NAMESPACE, '/' . self::ROUTE . '/(?P<block>[a-zA-Z0-9_\-\/%]+)/files', [
             'methods'             => \WP_REST_Server::READABLE,
             'callback'            => [$this, 'getBlockFiles'],
@@ -52,7 +42,6 @@ class BlockCatalogProvider
             ],
         ]);
 
-        // Route tương thích ngược cho hub cũ: /wp-json/lacadev/v1/blocks-catalog/files?block=X
         register_rest_route(self::NAMESPACE, '/' . self::ROUTE . '/files', [
             'methods'             => \WP_REST_Server::READABLE,
             'callback'            => [$this, 'getBlockFiles'],
@@ -70,28 +59,51 @@ class BlockCatalogProvider
     public function listBlocks(\WP_REST_Request $request): \WP_REST_Response
     {
         if (!$this->authenticate($request)) {
-            return new \WP_REST_Response(['success' => false, 'message' => 'Catalog Key không hợp lệ.'], 401);
+            return new \WP_REST_Response([
+                'success' => false,
+                'message' => __('Xác thực Catalog Key không hợp lệ.', 'laca'),
+            ], 401);
         }
 
         $blocks = [];
 
-        // Quét theme cha trước, theme con sau — nếu trùng tên, bản con ghi
-        // đè bản cha (coi bản con là mới nhất/tùy biến).
-        foreach ($this->resolveBlockDirs() as $dir) {
-            foreach ((glob("{$dir}/*/block.json") ?: []) as $file) {
-                $data = json_decode((string) file_get_contents($file), true);
+        // Quét parent trước, child sau — nếu trùng đường dẫn tương đối thì child ghi đè parent.
+        foreach ($this->resolveBlockDirs() as $rootDir) {
+            $relPaths = $this->scanRelativePaths($rootDir);
+            foreach ($relPaths as $relPath) {
+                $blockDir      = "{$rootDir}/{$relPath}";
+                $blockJsonPath = "{$blockDir}/block.json";
+                if (!is_file($blockJsonPath)) {
+                    continue;
+                }
+
+                $data = json_decode((string) file_get_contents($blockJsonPath), true);
                 if (!is_array($data)) {
                     continue;
                 }
 
-                $blockDir = dirname($file);
-                $name     = basename($blockDir);
+                // Chỉ đưa vào catalog các block opt-in rõ ràng `laca.catalog === true`.
+                if (($data['laca']['catalog'] ?? false) !== true) {
+                    continue;
+                }
 
-                $blocks[$name] = [
-                    'name'        => $name,
-                    'title'       => $data['title'] ?? $name,
-                    'description' => $data['description'] ?? '',
-                    'version'     => $data['version'] ?? '1.0.0',
+                $requires = (isset($data['laca']['requires']) && is_array($data['laca']['requires']))
+                    ? $data['laca']['requires']
+                    : [];
+
+                $files       = [];
+                $shaManifest = [];
+                $this->encodeDirectoryFiles($blockDir, $blockDir, $files, $shaManifest);
+
+                $leafName          = basename($relPath);
+                $blocks[$relPath] = [
+                    'name'        => $leafName,
+                    'path'        => $relPath,
+                    'title'       => (string) ($data['title'] ?? $leafName),
+                    'description' => (string) ($data['description'] ?? ''),
+                    'version'     => (string) ($data['version'] ?? '1.0.0'),
+                    'requires'    => $requires,
+                    'checksum'    => $this->computeChecksumFromFiles($files),
                     'preview'     => $this->encodePreview($blockDir),
                 ];
             }
@@ -108,46 +120,75 @@ class BlockCatalogProvider
     public function getBlockFiles(\WP_REST_Request $request): \WP_REST_Response
     {
         if (!$this->authenticate($request)) {
-            return new \WP_REST_Response(['success' => false, 'message' => 'Catalog Key không hợp lệ.'], 401);
+            return new \WP_REST_Response([
+                'success' => false,
+                'message' => __('Xác thực Catalog Key không hợp lệ.', 'laca'),
+            ], 401);
         }
 
         $rawBlock = rawurldecode((string) ($request->get_param('block') ?? ''));
-        // Chống path traversal: không cho phép .. hoặc bắt đầu bằng / hoặc null bytes
         if (str_contains($rawBlock, '..') || str_starts_with($rawBlock, '/') || str_contains($rawBlock, "\0")) {
-            return new \WP_REST_Response(['success' => false, 'message' => 'Tên block không hợp lệ.'], 400);
+            return new \WP_REST_Response([
+                'success' => false,
+                'message' => __('Tên block không hợp lệ.', 'laca'),
+            ], 400);
         }
 
-        // Cho phép chữ cái, chữ số, gạch dưới, gạch ngang và dấu gạch chéo cho bucket/block
-        $blockName = trim(preg_replace('/[^a-zA-Z0-9_\-\/]/', '', $rawBlock), '/');
-        if (empty($blockName) || str_contains($blockName, '//')) {
-            return new \WP_REST_Response(['success' => false, 'message' => 'Tên block không hợp lệ.'], 400);
+        $blockName = trim((string) preg_replace('/[^a-zA-Z0-9_\-\/]/', '', $rawBlock), '/');
+        if ($blockName === '' || str_contains($blockName, '//') || substr_count($blockName, '/') > 1) {
+            return new \WP_REST_Response([
+                'success' => false,
+                'message' => __('Tên block không hợp lệ.', 'laca'),
+            ], 400);
         }
 
         $blockDir = $this->findBlockDir($blockName);
-
         if (!$blockDir) {
-            return new \WP_REST_Response(['success' => false, 'message' => 'Không tìm thấy block.'], 404);
+            return new \WP_REST_Response([
+                'success' => false,
+                'message' => __('Không tìm thấy block trong catalog.', 'laca'),
+            ], 404);
         }
 
-        $version       = '1.0.0';
         $blockJsonPath = "{$blockDir}/block.json";
-        if (file_exists($blockJsonPath)) {
-            $json    = json_decode((string) file_get_contents($blockJsonPath), true);
-            $version = $json['version'] ?? '1.0.0';
+        $json          = is_file($blockJsonPath)
+            ? json_decode((string) file_get_contents($blockJsonPath), true)
+            : null;
+
+        if (!is_array($json) || ($json['laca']['catalog'] ?? false) !== true) {
+            return new \WP_REST_Response([
+                'success' => false,
+                'message' => __('Block này không được bật chia sẻ trong catalog.', 'laca'),
+            ], 404);
         }
 
-        $files = [];
-        $this->encodeDirectoryFiles($blockDir, $blockDir, $files);
+        $version  = (string) ($json['version'] ?? '1.0.0');
+        $requires = (isset($json['laca']['requires']) && is_array($json['laca']['requires']))
+            ? $json['laca']['requires']
+            : [];
+
+        $files       = [];
+        $shaManifest = [];
+        $this->encodeDirectoryFiles($blockDir, $blockDir, $files, $shaManifest);
 
         if (empty($files)) {
-            return new \WP_REST_Response(['success' => false, 'message' => 'Không có file trong block.'], 404);
+            return new \WP_REST_Response([
+                'success' => false,
+                'message' => __('Không có file hợp lệ trong block.', 'laca'),
+            ], 404);
         }
 
         return new \WP_REST_Response([
             'success'    => true,
             'block_name' => $blockName,
             'version'    => $version,
+            'requires'   => $requires,
+            'checksum'   => $this->computeChecksumFromFiles($files),
             'files'      => $files,
+            'manifest'   => [
+                'files'    => $shaManifest,
+                'requires' => $requires,
+            ],
         ], 200);
     }
 
@@ -157,37 +198,87 @@ class BlockCatalogProvider
 
     private function authenticate(\WP_REST_Request $request): bool
     {
-        $catalogKey = LacaDevTrackerClient::getCatalogKey();
-        if (empty($catalogKey)) {
-            $catalogKey = (string) get_option(self::KEY_OPTION, '');
+        $candidateKeys = array_values(array_unique(array_filter([
+            LacaDevTrackerClient::getCatalogKey(),
+            (string) get_option(self::KEY_OPTION, ''),
+        ])));
+
+        $sigHeader = $request->get_header('x_laca_signature') ?: $request->get_header('x-laca-signature');
+        if (!empty($sigHeader) && !empty($candidateKeys)) {
+            foreach ($candidateKeys as $key) {
+                $verify = \App\Security\RequestSigner::verify($request, $key);
+                if (!empty($verify['valid'])) {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
-        $sigHeader = $request->get_header('X-Laca-Signature');
-        if (!empty($sigHeader) && !empty($catalogKey)) {
-            $verify = \App\Security\RequestSigner::verify($request, $catalogKey);
-            if ($verify['valid']) {
+        if (get_option(self::LEGACY_OPTION, 'no') !== 'yes') {
+            return false;
+        }
+
+        $requestKey = (string) ($request->get_header('X-Laca-Catalog-Key') ?? $request->get_header('X-Laca-Key') ?? '');
+        if ($requestKey === '' || empty($candidateKeys)) {
+            return false;
+        }
+
+        foreach ($candidateKeys as $storedKey) {
+            if (hash_equals($storedKey, $requestKey)) {
                 return true;
             }
         }
 
-        $storedKey  = (string) (get_option(self::KEY_OPTION, '') ?: $catalogKey);
-        $requestKey = (string) ($request->get_header('X-Laca-Catalog-Key') ?? $request->get_header('X-Laca-Key') ?? '');
-
-        if (empty($storedKey) || empty($requestKey)) {
-            return false;
-        }
-
-        return hash_equals($storedKey, $requestKey);
+        return false;
     }
 
     /**
-     * Trả về danh sách thư mục block-gutenberg cần quét, theo thứ tự
-     * cha → con (để vòng lặp gọi sau — theme con — ghi đè đúng ý nếu trùng tên).
+     * @return string[]
+     */
+    private function scanRelativePaths(string $rootDir): array
+    {
+        if (function_exists('lacadev_scan_block_relative_paths')) {
+            return lacadev_scan_block_relative_paths($rootDir);
+        }
+
+        if (!is_dir($rootDir)) {
+            return [];
+        }
+
+        $paths   = [];
+        $entries = @scandir($rootDir) ?: [];
+        foreach ($entries as $entry) {
+            if ($entry === '.' || $entry === '..') {
+                continue;
+            }
+            $entryPath = "{$rootDir}/{$entry}";
+            if (!is_dir($entryPath)) {
+                continue;
+            }
+            if (is_file("{$entryPath}/block.json")) {
+                $paths[] = $entry;
+                continue;
+            }
+            foreach ((@scandir($entryPath) ?: []) as $sub) {
+                if ($sub === '.' || $sub === '..') {
+                    continue;
+                }
+                if (is_dir("{$entryPath}/{$sub}") && is_file("{$entryPath}/{$sub}/block.json")) {
+                    $paths[] = "{$entry}/{$sub}";
+                }
+            }
+        }
+
+        return $paths;
+    }
+
+    /**
+     * @return string[]
      */
     private function resolveBlockDirs(): array
     {
-        $dirs = [];
-
+        $dirs   = [];
         $parent = dirname(get_template_directory()) . '/block-gutenberg';
         if (is_dir($parent)) {
             $dirs[] = $parent;
@@ -203,12 +294,17 @@ class BlockCatalogProvider
 
     private function findBlockDir(string $blockName): ?string
     {
-        // Quét theo thứ tự con trước (ưu tiên bản con nếu trùng tên ở cả 2 nơi)
         foreach (array_reverse($this->resolveBlockDirs()) as $dir) {
             $candidate     = "{$dir}/{$blockName}";
             $realCandidate = realpath($candidate);
             $realDir       = realpath($dir);
-            if ($realCandidate && $realDir && str_starts_with($realCandidate, $realDir) && is_dir($realCandidate) && file_exists("{$realCandidate}/block.json")) {
+            if (
+                $realCandidate !== false
+                && $realDir !== false
+                && str_starts_with(trailingslashit($realCandidate), trailingslashit($realDir))
+                && is_dir($realCandidate)
+                && is_file("{$realCandidate}/block.json")
+            ) {
                 return $realCandidate;
             }
         }
@@ -219,7 +315,12 @@ class BlockCatalogProvider
     private function encodePreview(string $blockDir): ?string
     {
         $previewPath = "{$blockDir}/preview.png";
-        if (!file_exists($previewPath)) {
+        if (!is_file($previewPath)) {
+            return null;
+        }
+
+        $size = @filesize($previewPath);
+        if ($size === false || $size > self::MAX_PREVIEW_BYTES) {
             return null;
         }
 
@@ -227,11 +328,12 @@ class BlockCatalogProvider
     }
 
     /**
-     * Đệ quy đọc tất cả files trong thư mục, encode base64 — cùng logic với
-     * BlockSyncSender::encodeDirectoryFiles() bên hub, để tương thích trực
-     * tiếp với BlockSyncReceiver::writeBlockFiles() phía site khách.
+     * Đệ quy đọc tất cả file hợp lệ của block (giữ `build/`, loại `*.map`, `node_modules`, `.DS_Store`, `preview.png > 512KB`).
+     *
+     * @param array<string, string> $files
+     * @param array<string, string> $shaManifest
      */
-    private function encodeDirectoryFiles(string $baseDir, string $currentDir, array &$files): void
+    private function encodeDirectoryFiles(string $baseDir, string $currentDir, array &$files, array &$shaManifest): void
     {
         $items = scandir($currentDir) ?: [];
         foreach ($items as $item) {
@@ -244,30 +346,50 @@ class BlockCatalogProvider
             }
 
             $path         = "{$currentDir}/{$item}";
-            $relativePath = ltrim(str_replace($baseDir, '', $path), '/');
+            $relativePath = ltrim(str_replace('\\', '/', substr($path, strlen($baseDir))), '/');
 
             if (is_dir($path)) {
-                $this->encodeDirectoryFiles($baseDir, $path, $files);
+                $this->encodeDirectoryFiles($baseDir, $path, $files, $shaManifest);
             } elseif (is_file($path)) {
                 if (str_ends_with($item, '.map')) {
                     continue;
                 }
-                $files[$relativePath] = base64_encode((string) file_get_contents($path));
+                if ($relativePath === 'preview.png') {
+                    $size = @filesize($path);
+                    if ($size !== false && $size > self::MAX_PREVIEW_BYTES) {
+                        continue;
+                    }
+                }
+                $raw                        = (string) file_get_contents($path);
+                $files[$relativePath]       = base64_encode($raw);
+                $shaManifest[$relativePath] = hash('sha256', $raw);
             }
         }
     }
 
-    // =========================================================================
-    // STATIC: AUTO-GENERATE CATALOG KEY
-    // =========================================================================
+    /**
+     * @param array<string, string> $files
+     */
+    private function computeChecksumFromFiles(array $files): string
+    {
+        $hashes = [];
+        foreach ($files as $relativePath => $base64Content) {
+            $content               = base64_decode($base64Content, true);
+            $hashes[$relativePath] = $content !== false ? md5($content) : '';
+        }
+        ksort($hashes);
+
+        return md5((string) wp_json_encode($hashes));
+    }
 
     public static function ensureApiKey(): string
     {
-        $key = get_option(self::KEY_OPTION, '');
-        if (empty($key)) {
+        $key = (string) get_option(self::KEY_OPTION, '');
+        if ($key === '') {
             $key = wp_generate_uuid4();
             update_option(self::KEY_OPTION, $key);
         }
+
         return $key;
     }
 }

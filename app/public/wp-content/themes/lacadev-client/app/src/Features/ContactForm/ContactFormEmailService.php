@@ -211,7 +211,9 @@ class ContactFormEmailService
         // theme + cách dùng gốc ở theme/header.php). Đặt trên 1 dải nền
         // TRẮNG riêng phía trên thanh tiêu đề màu primary — để logo hiện rõ
         // bất kể logo tối hay sáng màu, không phụ thuộc màu primary site.
-        $logoId  = function_exists('carbon_get_theme_option') ? (int) carbon_get_theme_option('logo') : 0;
+        $logoId = function_exists('laca_theme_option')
+            ? (int) laca_theme_option('logo')
+            : (function_exists('carbon_get_theme_option') ? (int) carbon_get_theme_option('logo') : 0);
         $logoUrl = $logoId ? wp_get_attachment_image_url($logoId, 'medium') : '';
         $logoHtml = $logoUrl
             ? '<div style="padding:20px 28px;text-align:center;background:#ffffff;border-bottom:1px solid #e2e8f0">
@@ -262,7 +264,7 @@ class ContactFormEmailService
             foreach ($rawFields as $row) {
                 foreach ($row['cols'] ?? [] as $col) {
                     foreach ($col['fields'] ?? [] as $f) {
-                        if (($f['type'] ?? '') !== 'content' && !empty($f['name'])) {
+                        if (($f['type'] ?? '') !== 'content' && ($f['type'] ?? '') !== 'step_break' && !empty($f['name'])) {
                             $flatFields[] = $f;
                         }
                     }
@@ -270,7 +272,7 @@ class ContactFormEmailService
             }
         } else {
             foreach ($rawFields as $f) {
-                if (($f['type'] ?? '') !== 'content' && !empty($f['name'])) {
+                if (($f['type'] ?? '') !== 'content' && ($f['type'] ?? '') !== 'step_break' && !empty($f['name'])) {
                     $flatFields[] = $f;
                 }
             }

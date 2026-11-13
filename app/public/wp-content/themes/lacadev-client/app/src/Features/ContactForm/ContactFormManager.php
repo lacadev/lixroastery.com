@@ -44,6 +44,7 @@ class ContactFormManager
         'datetime' => 'Ngày & Giờ (Datetime)',
         'url' => 'Đường dẫn (URL)',
         'hidden' => 'Ẩn (Hidden)',
+        'step_break' => 'Ngắt bước (Step)',
         // Không thu thập dữ liệu người dùng — chỉ để admin viết ghi chú/nội
         // dung tĩnh chèn giữa các field (hỗ trợ in đậm/in nghiêng/link qua
         // nút soạn thảo, xem contact-form.js buildFieldCard()).
@@ -157,16 +158,16 @@ class ContactFormManager
         }
         // Old flat format: first item has 'type' and no 'cols'
         if (isset($raw[0]['type']) && !isset($raw[0]['cols'])) {
-            return array_values(array_filter($raw, fn($f) => ($f['type'] ?? '') !== 'content'));
+            return array_values(array_filter($raw, fn($f) => !in_array($f['type'] ?? '', ['step_break', 'content'], true)));
         }
         // New row-based format
         $fields = [];
         foreach ($raw as $row) {
             foreach ($row['cols'] ?? [] as $col) {
                 foreach ($col['fields'] ?? [] as $field) {
-                    // "content" là ghi chú tĩnh, không thu thập dữ liệu — bỏ
+                    // "content" và "step_break" không thu thập dữ liệu — bỏ
                     // qua khi liệt kê field cho bảng submissions/CSV export.
-                    if (($field['type'] ?? '') === 'content') {
+                    if (in_array($field['type'] ?? '', ['step_break', 'content'], true)) {
                         continue;
                     }
                     $fields[] = $field;
@@ -230,6 +231,26 @@ class ContactFormManager
     }
 
     /**
+     * Sanitize cấu hình điều kiện hiển thị của field.
+     */
+    private static function sanitizeFieldCondition($condition): array
+    {
+        if (!is_array($condition)) {
+            return [];
+        }
+        $field = sanitize_key($condition['field'] ?? '');
+        $operator = sanitize_key($condition['operator'] ?? 'equals');
+        if ($field === '') {
+            return [];
+        }
+        return [
+            'field' => $field,
+            'operator' => in_array($operator, ['equals', 'not_equals', 'contains', 'filled', 'not_empty', 'empty'], true) ? $operator : 'equals',
+            'value' => sanitize_text_field($condition['value'] ?? ''),
+        ];
+    }
+
+    /**
      * Convert raw DB data to row-based format for the builder JS.
      * Old flat format is auto-converted: each field → single-col row.
      */
@@ -246,7 +267,7 @@ class ContactFormManager
         // Convert old flat format
         return array_map(function ($field) {
             $span = in_array((int) ($field['col_width'] ?? 12), self::ALLOWED_SPANS, true)
-                ? (int) $field['col_width']
+                ? (int) ($field['col_width'] ?? 12)
                 : 12;
             unset($field['col_width']);
             return [
@@ -347,7 +368,7 @@ class ContactFormManager
         <div class="wrap laca-cf-wrap">
             <div class="laca-cf-header">
                 <div>
-                    <h1>Quản lý Form Liên Hệ</h1>
+                    <h1>📋 Quản lý Form Liên Hệ</h1>
                     <p class="laca-cf-subtitle">Tạo và quản lý các form liên hệ. Nhúng bằng shortcode <code>[laca_contact_form id="X"]</code></p>
                 </div>
                 <a href="<?php echo esc_url($pageUrl . '&action=new'); ?>" class="button button-primary laca-cf-btn-new">
@@ -548,6 +569,34 @@ class ContactFormManager
                                            placeholder="VD: info@example.com, hr@example.com">
                                     <p class="description">Email admin nhận thông báo mỗi khi có submission mới (có thể nhập nhiều email, phân tách bằng dấu phẩy <code>,</code>). Để trống = dùng email quản trị (<?php echo esc_html(get_option('admin_email')); ?>).</p>
                                 </div>
+                                <div class="laca-cf-field-group">
+                                    <label for="s-form-mode" class="lcf-form-label"><?php esc_html_e('Kiểu hiển thị form', 'laca'); ?></label>
+                                    <select id="s-form-mode" class="widefat" onchange="lcfStyleUpdate('form_mode',this.value)">
+                                        <option value="standard"><?php esc_html_e('Form thường', 'laca'); ?></option>
+                                        <option value="multi_step"><?php esc_html_e('Form từng bước', 'laca'); ?></option>
+                                    </select>
+                                    <p class="description"><?php esc_html_e('Dùng "Ngắt bước (Step)" trong tab Trường để chia form thành nhiều bước.', 'laca'); ?></p>
+                                </div>
+                                <div id="lcf-step-settings" class="lcf-step-settings">
+                                    <div class="laca-cf-field-group">
+                                        <label class="lcf-form-label"><?php esc_html_e('Nút tiếp theo', 'laca'); ?></label>
+                                        <input type="text" id="s-step-next-text" class="widefat"
+                                               oninput="lcfStyleUpdate('step_next_text',this.value)"
+                                               placeholder="<?php esc_attr_e('Tiếp theo', 'laca'); ?>">
+                                    </div>
+                                    <div class="laca-cf-field-group">
+                                        <label class="lcf-form-label"><?php esc_html_e('Nút quay lại', 'laca'); ?></label>
+                                        <input type="text" id="s-step-prev-text" class="widefat"
+                                               oninput="lcfStyleUpdate('step_prev_text',this.value)"
+                                               placeholder="<?php esc_attr_e('Quay lại', 'laca'); ?>">
+                                    </div>
+                                    <div class="laca-cf-field-group">
+                                        <label class="lcf-form-label"><?php esc_html_e('Nút gửi ở bước cuối', 'laca'); ?></label>
+                                        <input type="text" id="s-step-submit-text" class="widefat"
+                                               oninput="lcfStyleUpdate('step_submit_text',this.value)"
+                                               placeholder="<?php esc_attr_e('Gửi thông tin', 'laca'); ?>">
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
@@ -563,6 +612,9 @@ class ContactFormManager
                                 </p>
                                 <div class="laca-cf-add-row-palette">
                                     <span class="lcf-palette-label">+ Thêm hàng:</span>
+                                    <button type="button" class="lcf-add-row-btn lcf-add-step-btn" onclick="lcfAddStep()">
+                                        + Thêm bước
+                                    </button>
                                     <button type="button" class="lcf-add-row-btn" onclick="lcfAddRow('1')">
                                         <span class="lcf-row-preview lcf-rp-1"></span>1 cột
                                     </button>
@@ -1016,6 +1068,15 @@ class ContactFormManager
                         continue;
                     }
 
+                    if ($type === 'step_break') {
+                        $cleanFields[] = [
+                            'id' => sanitize_key($field['id'] ?? uniqid('field_', true)),
+                            'type' => 'step_break',
+                            'label' => sanitize_text_field($field['label'] ?? ''),
+                        ];
+                        continue;
+                    }
+
                     // Label KHÔNG bắt buộc — nhiều field chỉ dùng placeholder
                     // làm gợi ý hiển thị (label vẫn được render cho screen
                     // reader/email nhưng có thể để trống). Chỉ "name" (dùng
@@ -1023,6 +1084,7 @@ class ContactFormManager
                     if (empty($field['name'])) {
                         continue;
                     }
+                    $cond = self::sanitizeFieldCondition($field['condition'] ?? []);
                     $cleanFields[] = [
                         'id' => sanitize_key($field['id'] ?? uniqid('field_', true)),
                         'type' => $type,
@@ -1038,6 +1100,7 @@ class ContactFormManager
                         // xem ContactFormAjaxHandler::renderField(). Field
                         // type khác/option <2 vẫn lưu cờ này vô hại.
                         'single_choice' => !empty($field['single_choice']),
+                        'condition' => empty($cond) ? (object) [] : $cond,
                         // (object) ép json_encode() ra "{}" thay vì "[]" khi
                         // rỗng — xem giải thích đầy đủ ở nhánh 'content' phía
                         // trên (cùng 1 nguyên nhân gây mất bản dịch field mới).
@@ -1096,6 +1159,14 @@ class ContactFormManager
             }
             if (!empty($cleanBtnI18n)) {
                 $cleanStyle['btn_text_i18n'] = $cleanBtnI18n;
+            }
+        }
+        if (!empty($rawStyle['form_mode']) && in_array($rawStyle['form_mode'], ['standard', 'multi_step'], true)) {
+            $cleanStyle['form_mode'] = sanitize_key($rawStyle['form_mode']);
+        }
+        foreach (['step_next_text', 'step_prev_text', 'step_submit_text'] as $textKey) {
+            if (!empty($rawStyle[$textKey])) {
+                $cleanStyle[$textKey] = sanitize_text_field($rawStyle[$textKey]);
             }
         }
         if (!empty($rawStyle['email_customer_i18n']) && is_array($rawStyle['email_customer_i18n'])) {

@@ -37,10 +37,19 @@ function app_action_theme_enqueue_assets()
     /**
      * Vendors bundle
      */
+    $vendor_chunks = [
+        'theme-vendors-js'      => 'vendors.js',
+        'theme-vendor-gsap-js'  => 'vendor-gsap.js',
+        'theme-vendor-swiper-js'=> 'vendor-swiper.js',
+        'theme-vendor-swal-js'  => 'vendor-swal.js',
+        'theme-vendor-836-js'   => '836.js',
+    ];
     $vendors_deps = [];
-    if (file_exists($dist_path . 'vendors.js')) {
-        wp_enqueue_script('theme-vendors-js', $dist_url . 'vendors.js', [], $version, true);
-        $vendors_deps = ['theme-vendors-js'];
+    foreach ($vendor_chunks as $handle => $file) {
+        if (file_exists($dist_path . $file)) {
+            wp_enqueue_script($handle, $dist_url . $file, [], $version, true);
+            $vendors_deps[] = $handle;
+        }
     }
 
     /**
@@ -101,48 +110,53 @@ function app_action_theme_enqueue_assets()
  */
 function app_action_admin_enqueue_assets()
 {
-    // dist/ nằm ở .../lacadev-client/dist/ nên cần dirname() để lên 1 level
-    $template_dir = dirname(get_stylesheet_directory_uri());
-
     /**
-     * Enqueue styles.
+     * Enqueue styles (ưu tiên dist/ của parent, fallback dist/ của child).
      */
-    Assets::enqueueStyle(
-        'theme-admin-css-bundle',
-        $template_dir . '/dist/styles/admin.css'
-    );
-    Assets::enqueueStyle(
-        'theme-editor-css-bundle',
-        $template_dir . '/dist/styles/editor.css'
-    );
+    $adminCss = lacaParentAsset('styles/admin.css');
+    if ($adminCss) {
+        wp_enqueue_style(
+            'theme-admin-css-bundle',
+            $adminCss['url'],
+            [],
+            (string) $adminCss['ver']
+        );
+    }
+
+    $editorCss = lacaParentAsset('styles/editor.css');
+    if ($editorCss) {
+        wp_enqueue_style(
+            'theme-editor-css-bundle',
+            $editorCss['url'],
+            [],
+            (string) $editorCss['ver']
+        );
+    }
 
     /**
-     * Enqueue vendors.js if exists (same fix as frontend)
+     * Enqueue vendors.js if exists (ưu tiên dist/vendors.js của parent)
      * CRITICAL: Load in head (false) to ensure it's available before admin.js
      */
     $admin_deps = [];
-    $theme_root = dirname(get_stylesheet_directory());
-    $vendors_path = $theme_root . '/dist/vendors.js';
-    
-    if (file_exists($vendors_path)) {
-        $base_uri = get_stylesheet_directory_uri();
-        $theme_uri = dirname($base_uri);
-        $vendors_url = $theme_uri . '/dist/vendors.js';
-        
-        // Load in <head> without defer to ensure Swal is available
-        wp_enqueue_script('theme-vendors-js', $vendors_url, [], wp_get_theme()->get('Version'), false);
+    $vendorsJs  = lacaParentAsset('vendors.js');
+    if ($vendorsJs) {
+        wp_enqueue_script('theme-vendors-js', $vendorsJs['url'], [], (string) $vendorsJs['ver'], false);
         $admin_deps = ['theme-vendors-js'];
     }
 
     /**
      * Enqueue scripts.
      */
-    Assets::enqueueScript(
-        'theme-admin-js-bundle',
-        $template_dir . '/dist/admin.js',
-        $admin_deps,
-        true
-    );
+    $adminJs = lacaParentAsset('admin.js');
+    if ($adminJs) {
+        wp_enqueue_script(
+            'theme-admin-js-bundle',
+            $adminJs['url'],
+            $admin_deps,
+            (string) $adminJs['ver'],
+            true
+        );
+    }
 
     /**
      * Localize admin script data with nonce for AJAX requests and i18n strings
@@ -318,32 +332,27 @@ function app_action_login_enqueue_assets()
         return '';
     };
 
-    $login_logo_raw = carbon_get_theme_option('login_logo');
+    $login_logo_raw = function_exists('laca_theme_option') ? laca_theme_option('login_logo') : (function_exists('carbon_get_theme_option') ? carbon_get_theme_option('login_logo') : '');
     $login_logo_url = $resolveLogoUrl($login_logo_raw);
     if (empty($login_logo_url)) {
-        $login_logo_url = $resolveLogoUrl(carbon_get_theme_option('logo'));
+        $login_logo_url = $resolveLogoUrl(function_exists('laca_theme_option') ? laca_theme_option('logo') : (function_exists('carbon_get_theme_option') ? carbon_get_theme_option('logo') : ''));
     }
     // Ô ghi đè trong Theme Options theo ngôn ngữ đang xem (vd login_user_label_en),
     // rồi ô chung; trống thì rơi về câu __() — dịch bằng file .po của theme.
     $login_lang = strpos(determine_locale(), 'en') === 0 ? 'en' : 'vi';
     $pickLoginText = static function (string $key, string $default) use ($login_lang): string {
-        $value = carbon_get_theme_option("{$key}_{$login_lang}");
+        $value = function_exists('laca_theme_option') ? laca_theme_option("{$key}_{$login_lang}") : (function_exists('carbon_get_theme_option') ? carbon_get_theme_option("{$key}_{$login_lang}") : '');
         if (empty($value)) {
-            $value = carbon_get_theme_option($key);
+            $value = function_exists('laca_theme_option') ? laca_theme_option($key) : (function_exists('carbon_get_theme_option') ? carbon_get_theme_option($key) : '');
         }
         return !empty($value) ? (string) $value : $default;
     };
 
-    $login_logo_raw = carbon_get_theme_option('login_logo');
-    $login_logo_url = $resolveLogoUrl($login_logo_raw);
-    if (empty($login_logo_url)) {
-        $login_logo_url = $resolveLogoUrl(carbon_get_theme_option('logo'));
-    }
     $pickLoginI18n = static function (string $key, string $lang, string $fallback) {
-        $value = carbon_get_theme_option("{$key}_{$lang}");
+        $value = function_exists('laca_theme_option') ? laca_theme_option("{$key}_{$lang}") : (function_exists('carbon_get_theme_option') ? carbon_get_theme_option("{$key}_{$lang}") : '');
         if (empty($value)) {
             // Backward compatibility with old single-language keys.
-            $value = carbon_get_theme_option($key);
+            $value = function_exists('laca_theme_option') ? laca_theme_option($key) : (function_exists('carbon_get_theme_option') ? carbon_get_theme_option($key) : '');
         }
         return !empty($value) ? $value : $fallback;
     };
@@ -364,32 +373,41 @@ function app_action_login_enqueue_assets()
     /**
      * Enqueue scripts.
      */
-    Assets::enqueueScript(
-        'theme-login-js-bundle',
-        $template_dir . '/dist/login.js',
-        [],
-        true
-    );
+    $loginJs = lacaParentAsset('login.js');
+    if ($loginJs) {
+        wp_enqueue_script(
+            'theme-login-js-bundle',
+            $loginJs['url'],
+            [],
+            (string) $loginJs['ver'],
+            true
+        );
 
-    wp_localize_script('theme-login-js-bundle', 'loginI18n', [
-        'logoUrl' => $login_logo_url,
-        'strings' => $loginStrings,
-        'homeUrl' => home_url('/'),
-    ]);
+        wp_localize_script('theme-login-js-bundle', 'loginI18n', [
+            'logoUrl' => $login_logo_url,
+            'strings' => $loginStrings,
+            'homeUrl' => home_url('/'),
+        ]);
+    }
 
     /**
      * Enqueue styles.
      */
-    Assets::enqueueStyle(
-        'theme-login-css-bundle',
-        $template_dir . '/dist/styles/login.css'
-    );
+    $loginCss = lacaParentAsset('styles/login.css');
+    if ($loginCss) {
+        wp_enqueue_style(
+            'theme-login-css-bundle',
+            $loginCss['url'],
+            [],
+            (string) $loginCss['ver']
+        );
 
-    // Force override login logo in case theme CSS uses !important.
-    if (!empty($login_logo_url)) {
-        $safe_logo_url = esc_url_raw($login_logo_url);
-        $login_logo_css = "#login h1 a{background-image:url('{$safe_logo_url}') !important;}";
-        wp_add_inline_style('theme-login-css-bundle', $login_logo_css);
+        // Force override login logo in case theme CSS uses !important.
+        if (!empty($login_logo_url)) {
+            $safe_logo_url  = esc_url_raw($login_logo_url);
+            $login_logo_css = "#login h1 a{background-image:url('{$safe_logo_url}') !important;}";
+            wp_add_inline_style('theme-login-css-bundle', $login_logo_css);
+        }
     }
 }
 
@@ -400,33 +418,38 @@ function app_action_login_enqueue_assets()
  */
 function app_action_editor_enqueue_assets()
 {
-    $template_dir = dirname(get_stylesheet_directory_uri());
-
     /**
      * Enqueue scripts.
      */
-    Assets::enqueueScript(
-        'theme-editor-js-bundle',
-        $template_dir . '/dist/editor.js',
-        // Khai báo rõ phụ thuộc wp-* — bundle này import @wordpress/* qua
-        // externals map (xem resources/build/webpack/externals.js) nên cần
-        // các global window.wp.* tương ứng đã sẵn sàng TRƯỚC khi chạy. Luôn
-        // an toàn khai báo (dù không dùng hết) vì đang ở màn hình Block
-        // Editor, các handle này chắc chắn đã được core đăng ký sẵn.
-        ['wp-element', 'wp-components', 'wp-compose', 'wp-block-editor', 'wp-data', 'wp-hooks', 'wp-i18n'],
-        true
-    );
+    $editorJs = lacaParentAsset('editor.js');
+    if ($editorJs) {
+        wp_enqueue_script(
+            'theme-editor-js-bundle',
+            $editorJs['url'],
+            // Khai báo rõ phụ thuộc wp-* — bundle này import @wordpress/* qua
+            // externals map (xem resources/build/webpack/externals.js) nên cần
+            // các global window.wp.* tương ứng đã sẵn sàng TRƯỚC khi chạy.
+            ['wp-element', 'wp-components', 'wp-compose', 'wp-block-editor', 'wp-data', 'wp-hooks', 'wp-i18n'],
+            (string) $editorJs['ver'],
+            true
+        );
+    }
 
     /**
-    * Enqueue styles.
-    */
-    Assets::enqueueStyle(
-        'theme-editor-css-bundle',
-        $template_dir . '/dist/styles/editor.css'
-    );
+     * Enqueue styles.
+     */
+    $editorCss = lacaParentAsset('styles/editor.css');
+    if ($editorCss) {
+        wp_enqueue_style(
+            'theme-editor-css-bundle',
+            $editorCss['url'],
+            [],
+            (string) $editorCss['ver']
+        );
 
-    // Support for block editor styles (classic and modern)
-    add_editor_style($template_dir . '/dist/styles/editor.css');
+        // Support for block editor styles (classic and modern)
+        add_editor_style($editorCss['url']);
+    }
 
     // Inject theme colors and fonts as CSS variables for the editor
     $primary_color = getOption('primary_color');

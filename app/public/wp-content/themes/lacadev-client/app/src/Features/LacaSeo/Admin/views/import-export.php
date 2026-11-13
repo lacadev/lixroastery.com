@@ -15,6 +15,16 @@ $pendingImport = get_transient(ImportExportHandler::PENDING_IMPORT_TRANSIENT . $
 ?>
 <div class="laca-seo-import-export-wrap">
 
+    <div class="laca-alert laca-alert--info" style="margin-bottom: 20px;">
+        <?php
+        printf(
+            /* translators: %s: URL to Laca Admin Config page */
+            __('Muốn sao chép toàn bộ cấu hình site (Laca Admin + Laca SEO) trong 1 file, dùng <a href="%s"><strong>Laca Admin &rarr; Cấu hình &rarr;</strong></a>', 'laca'),
+            esc_url(admin_url('admin.php?page=laca-config&tab=transfer'))
+        );
+        ?>
+    </div>
+
     <?php if (!empty($pendingImport) && is_array($pendingImport) && !empty($pendingImport['payload'])): ?>
         <?php
         $payload = $pendingImport['payload'];

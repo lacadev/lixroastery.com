@@ -649,11 +649,38 @@ class LacaDevTrackerClient
     // =========================================================================
 
     /**
+     * Kiểm tra xem môi trường hiện tại có được phép gửi dữ liệu tới Hub hay không.
+     * Môi trường local/development bị cấm gửi dữ liệu trừ khi định nghĩa LACA_TRACKER_ALLOW_LOCAL = true.
+     */
+    public static function isAllowedEnvironment(): bool
+    {
+        if (defined('LACA_TRACKER_ALLOW_LOCAL') && LACA_TRACKER_ALLOW_LOCAL) {
+            return true;
+        }
+
+        if (function_exists('wp_get_environment_type')) {
+            $env = wp_get_environment_type();
+            if ($env === 'local' || $env === 'development') {
+                // Chỉ cho phép gửi ở local khi endpoint trỏ thẳng về Hub local (.local / localhost),
+                // tuyệt đối chặn gửi nhầm từ máy dev lên Hub production (lacadev.com).
+                $endpointHost = strtolower(rtrim((string) parse_url(self::getEndpoint(), PHP_URL_HOST), '.'));
+                return $endpointHost !== '' && (str_ends_with($endpointHost, '.local') || $endpointHost === 'localhost');
+            }
+        }
+
+        return true;
+    }
+
+    /**
      * Gửi heartbeat về hub: site_url, wp_version, php_version, theme versions parent/child
      */
     public function sendHeartbeat(): void
     {
         update_option(self::OPT_LAST_RUN_HEARTBEAT, time(), false);
+
+        if (!self::isAllowedEnvironment()) {
+            return;
+        }
 
         global $wp_version;
         $parentTheme = wp_get_theme(get_template());
@@ -1135,8 +1162,51 @@ class LacaDevTrackerClient
      *
      * @param array<array{type: string, content: string, level?: string}> $logs
      */
-    private function sendLogs(array $logs, bool $blocking = false): bool
+    /**
+     * Dựng body JSON gửi lên endpoint `/laca/v1/tracker/log`.
+     * Khi đã đủ `projectId` và key ký HMAC thì KHÔNG đưa `secret_key` vào body.
+     *
+     * @param array<int, array<string, mixed>> $logs
+     * @return array<string, mixed>
+     */
+    public static function buildLogBody(
+        array $logs,
+        ?string $siteUrl = null,
+        ?string $projectId = null,
+        ?string $trackerKey = null,
+        ?string $secretKey = null
+    ): array {
+        $siteUrl       = $siteUrl ?? get_bloginfo('url');
+        $projectId     = $projectId ?? self::getProjectId();
+        $trackerKey    = $trackerKey ?? self::getTrackerKey();
+        $secretKey     = $secretKey ?? self::getSecretKey();
+        $keyForSigning = $trackerKey !== '' ? $trackerKey : $secretKey;
+
+        if ($projectId !== '' && $keyForSigning !== '') {
+            return [
+                'site_url' => $siteUrl,
+                'logs'     => $logs,
+            ];
+        }
+
+        return [
+            'secret_key' => $secretKey !== '' ? $secretKey : $trackerKey,
+            'site_url'   => $siteUrl,
+            'logs'       => $logs,
+        ];
+    }
+
+    /**
+     * Gửi danh sách log lên Hub (hỗ trợ cả ngữ cảnh static và instance).
+     *
+     * @param array<int, array<string, mixed>> $logs
+     */
+    private static function dispatchLogs(array $logs, bool $blocking = false): bool
     {
+        if (!self::isAllowedEnvironment()) {
+            return false;
+        }
+
         $endpoint   = self::getEndpoint();
         $trackerKey = self::getTrackerKey();
         $secretKey  = self::getSecretKey();
@@ -1145,22 +1215,21 @@ class LacaDevTrackerClient
             return false;
         }
 
-        $siteUrl   = get_bloginfo('url');
-        $projectId = self::getProjectId();
-
-        $bodyJson = wp_json_encode([
-            'secret_key' => $secretKey ?: $trackerKey,
-            'site_url'   => $siteUrl,
-            'logs'       => $logs,
-        ], JSON_UNESCAPED_UNICODE);
+        $siteUrl       = get_bloginfo('url');
+        $projectId     = self::getProjectId();
+        $keyForSigning = $trackerKey ?: $secretKey;
+        $bodyPayload   = self::buildLogBody($logs, $siteUrl, $projectId, $trackerKey, $secretKey);
+        $bodyJson      = wp_json_encode($bodyPayload, JSON_UNESCAPED_UNICODE);
 
         if (!$bodyJson) {
             return false;
         }
 
-        $keyForSigning = $trackerKey ?: $secretKey;
-        $headers       = \App\Security\RequestSigner::sign('POST', $endpoint, $bodyJson, $keyForSigning, $projectId);
-        $headers['Content-Type'] = 'application/json';
+        $headers = ['Content-Type' => 'application/json'];
+        if (!empty($projectId) && !empty($keyForSigning)) {
+            $sigHeaders = \App\Security\RequestSigner::sign('POST', $endpoint, $bodyJson, $keyForSigning, $projectId);
+            $headers    = array_merge($headers, $sigHeaders);
+        }
 
         $response = wp_remote_post($endpoint, [
             'body'     => $bodyJson,
@@ -1176,6 +1245,32 @@ class LacaDevTrackerClient
         return !is_wp_error($response)
             && wp_remote_retrieve_response_code($response) >= 200
             && wp_remote_retrieve_response_code($response) < 300;
+    }
+
+    private function sendLogs(array $logs, bool $blocking = false): bool
+    {
+        return self::dispatchLogs($logs, $blocking);
+    }
+
+    /**
+     * Gửi sự kiện có cấu trúc (structured log) đã ký HMAC về Hub.
+     *
+     * @param array<string, mixed> $meta
+     */
+    public static function sendStructuredLog(string $type, array $meta, string $level = 'info', string $content = ''): bool
+    {
+        $finalContent = trim($content);
+        if ($finalContent === '') {
+            $summary      = isset($meta['result']) ? (string) $meta['result'] : 'event';
+            $finalContent = sprintf('[%s] %s', $type, $summary);
+        }
+
+        return self::dispatchLogs([[
+            'type'    => $type,
+            'content' => $finalContent,
+            'level'   => $level,
+            'meta'    => $meta,
+        ]], true);
     }
 
     // =========================================================================
@@ -1266,32 +1361,16 @@ class LacaDevTrackerClient
      */
     public static function requestBlockSync(string $blockName): bool
     {
-        $endpoint  = self::getEndpoint();
-        $secretKey = self::getSecretKey();
-
-        if (empty($endpoint) || empty($secretKey) || empty($blockName)) {
+        if (!self::isAllowedEnvironment() || empty($blockName)) {
             return false;
         }
 
-        $response = wp_remote_post($endpoint, [
-            'body'     => wp_json_encode([
-                'secret_key' => $secretKey,
-                'site_url'   => get_bloginfo('url'),
-                'logs'       => [[
-                    'type'    => 'block_sync_request',
-                    'content' => "🧩 Yêu cầu đồng bộ block: {$blockName}",
-                    'level'   => 'info',
-                    'meta'    => ['block_name' => $blockName],
-                ]],
-            ], JSON_UNESCAPED_UNICODE),
-            'headers'  => ['Content-Type' => 'application/json'],
-            'timeout'  => 15,
-            'blocking' => true,
-        ]);
-
-        return !is_wp_error($response)
-            && wp_remote_retrieve_response_code($response) >= 200
-            && wp_remote_retrieve_response_code($response) < 300;
+        return self::dispatchLogs([[
+            'type'    => 'block_sync_request',
+            'content' => "🧩 Yêu cầu đồng bộ block: {$blockName}",
+            'level'   => 'info',
+            'meta'    => ['block_name' => $blockName],
+        ]], true);
     }
 
     /**
@@ -1356,7 +1435,7 @@ class LacaDevTrackerClient
         }
 
         // 2) Validate action
-        $allowed = ['update_plugin', 'update_theme', 'update_core'];
+        $allowed = ['update_plugin', 'update_theme', 'update_core', 'rollback_theme'];
         if (!in_array($action, $allowed, true)) {
             return new \WP_REST_Response(['success' => false, 'message' => 'Action không hợp lệ.'], 400);
         }
@@ -1388,10 +1467,45 @@ class LacaDevTrackerClient
                 if (empty($slug)) {
                     return new \WP_REST_Response(['success' => false, 'message' => 'Thiếu slug theme.'], 400);
                 }
-                wp_update_themes();
-                $upgrader = new \Theme_Upgrader($skin);
-                $result   = $upgrader->upgrade($slug);
-                $label    = "theme '{$slug}'";
+                require_once ABSPATH . 'wp-admin/includes/theme.php';
+                if (class_exists(ThemeUpdater::class)) {
+                    ThemeUpdater::setForcedSource('remote');
+                }
+                try {
+                    wp_update_themes();
+                    $upgrader = new \Theme_Upgrader($skin);
+                    $result   = $upgrader->upgrade($slug);
+                } finally {
+                    if (class_exists(ThemeUpdater::class)) {
+                        ThemeUpdater::setForcedSource(null);
+                    }
+                }
+                $label = "theme '{$slug}'";
+                break;
+
+            case 'rollback_theme':
+                $rawSnapshot       = trim((string) ($params['snapshot'] ?? ''));
+                $requestedSnapshot = $rawSnapshot !== '' ? sanitize_file_name($rawSnapshot) : '';
+                if ($requestedSnapshot !== '') {
+                    $validNames = array_column(ThemeSnapshot::list(), 'file');
+                    if (!in_array($requestedSnapshot, $validNames, true)) {
+                        return new \WP_REST_Response([
+                            'success' => false,
+                            'message' => __('Tên bản snapshot không tồn tại hoặc không hợp lệ.', 'laca'),
+                        ], 400);
+                    }
+                }
+                if (class_exists(ThemeUpdater::class)) {
+                    ThemeUpdater::setForcedSource('remote');
+                }
+                try {
+                    $result = ThemeSnapshot::restore($requestedSnapshot);
+                } finally {
+                    if (class_exists(ThemeUpdater::class)) {
+                        ThemeUpdater::setForcedSource(null);
+                    }
+                }
+                $label = 'rollback parent theme';
                 break;
 
             case 'update_core':
@@ -1442,6 +1556,10 @@ class LacaDevTrackerClient
      */
     public function sendMonthlySummary(bool $force = false, string $targetMonth = ''): bool
     {
+        if (!self::isAllowedEnvironment()) {
+            return false;
+        }
+
         if (empty($targetMonth)) {
             $targetMonth = gmdate('Y-m', strtotime('first day of last month'));
         }

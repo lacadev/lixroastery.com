@@ -1,0 +1,20 @@
+{
+  "admin.css": "auto/styles/admin.css",
+  "admin.js": "auto/admin.js",
+  "login.css": "auto/styles/login.css",
+  "login.js": "auto/login.js",
+  "editor.css": "auto/styles/editor.css",
+  "editor.js": "auto/editor.js",
+  "laca-seo.css": "auto/styles/laca-seo.css",
+  "laca-seo.js": "auto/laca-seo.js",
+  "laca-seo-editor.css": "auto/styles/laca-seo-editor.css",
+  "laca-seo-editor.js": "auto/laca-seo-editor.js",
+  "vendors.js": "auto/vendors.js",
+  "fonts/Quicksand-Medium.ttf": "auto/fonts/Quicksand-Medium.04b8198132.ttf",
+  "fonts/Quicksand-Regular.ttf": "auto/fonts/Quicksand-Regular.61504eaec8.ttf",
+  "fonts/Quicksand-SemiBold.ttf": "auto/fonts/Quicksand-SemiBold.339f8d3e09.ttf",
+  "fonts/Quicksand-Light.ttf": "auto/fonts/Quicksand-Light.4d3b72ff15.ttf",
+  "fonts/Quicksand-Bold.ttf": "auto/fonts/Quicksand-Bold.111e880f4d.ttf",
+  "images/moomsdev-black.png": "auto/images/moomsdev-black.c7cc464603.png",
+  "images/moomsdev-white.png": "auto/images/moomsdev-white.f6361b4511.png"
+}

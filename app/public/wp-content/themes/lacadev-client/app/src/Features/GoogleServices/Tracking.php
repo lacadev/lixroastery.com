@@ -366,7 +366,9 @@ class Tracking
     public static function getManualScripts(): string
     {
         $scripts = '';
-        if (function_exists('carbon_get_theme_option')) {
+        if (function_exists('laca_theme_option')) {
+            $scripts = (string) laca_theme_option('crb_header_script') . (string) laca_theme_option('crb_footer_script');
+        } elseif (function_exists('carbon_get_theme_option')) {
             $scripts = (string) carbon_get_theme_option('crb_header_script') . (string) carbon_get_theme_option('crb_footer_script');
         }
         if (empty($scripts)) {

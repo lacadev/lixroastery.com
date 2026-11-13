@@ -2,6 +2,7 @@
 namespace App\Settings;
 
 use PHPMailer\PHPMailer\PHPMailer;
+use App\Helpers\Crypto;
 
 class ThemeSettings {
     public function __construct() {
@@ -15,16 +16,11 @@ class ThemeSettings {
     }
 
     /**
-     * Tự động tăng lượt xem khi vào trang single
+     * Tự động tăng lượt xem bài viết bất đồng bộ qua PostViewTracker.
+     * Không ghi DB trực tiếp trong request để hỗ trợ full-page cache.
      */
     public function trackPostViews() {
-        add_action('wp_head', function() {
-            if (is_single() || is_page()) {
-                if (function_exists('updateViewCount')) {
-                    updateViewCount(get_the_ID());
-                }
-            }
-        });
+        // Đã được xử lý bất đồng bộ bởi \App\Features\Performance\PostViewTracker
     }
 
     public function useGmailSmtp() {
@@ -36,7 +32,25 @@ class ThemeSettings {
                 $phpmailer->SMTPSecure = get_option('_smtp_secure');
                 $phpmailer->Port       = get_option('_smtp_port');
                 $phpmailer->Username   = get_option('_smtp_username');
-                $phpmailer->Password   = get_option('_smtp_password');
+
+                // Giải mã mật khẩu SMTP (hỗ trợ cả plaintext cũ lẫn tagged encryption)
+                $rawPassword = get_option('_smtp_password');
+                if (Crypto::isTagged($rawPassword)) {
+                    $password = Crypto::decryptTagged($rawPassword);
+                    if ($password === null) {
+                        // Giải mã thất bại — hiện admin notice
+                        add_action('admin_notices', static function () {
+                            echo '<div class="notice notice-error"><p>';
+                            echo esc_html__('Không thể giải mã mật khẩu SMTP. Vui lòng vào Laca Admin → Email để nhập lại.', 'laca');
+                            echo '</p></div>';
+                        });
+                        return; // Bỏ qua cấu hình SMTP
+                    }
+                } else {
+                    $password = $rawPassword;
+                }
+                $phpmailer->Password = $password;
+
                 // BUG THẬT đã gặp: "_admin_email" không phải option nào cả
                 // (option thật của WP là "admin_email", không gạch dưới —
                 // field admin thật trong màn hình Cài đặt cũng không tên

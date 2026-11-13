@@ -30,9 +30,82 @@ function currentLanguage()
 // ASSETS & RESOURCES
 // =============================================================================
 
+function lacaThemeRootDir()
+{
+    if (defined('APP_DIR')) {
+        return untrailingslashit(APP_DIR);
+    }
+
+    return dirname(get_template_directory());
+}
+
+function lacaThemeRootUri()
+{
+    return untrailingslashit(dirname(get_template_directory_uri()));
+}
+
+function lacaDistDir($path = '')
+{
+    return trailingslashit(lacaThemeRootDir()) . 'dist/' . ltrim($path, '/');
+}
+
+function lacaDistUrl($path = '')
+{
+    return trailingslashit(lacaThemeRootUri()) . 'dist/' . ltrim($path, '/');
+}
+
+/**
+ * Tra cứu asset của parent theme: ưu tiên dist/ của parent, fallback dist/ của child.
+ *
+ * @param string $rel Đường dẫn tương đối bên trong dist/ (vd: 'admin.js', 'styles/admin.css').
+ * @return array{url: string, path: string, ver: int}|null
+ */
+function lacaParentAsset(string $rel): ?array
+{
+    $rel        = ltrim($rel, '/');
+    $parentPath = lacaDistDir($rel);
+    if (is_file($parentPath)) {
+        return [
+            'url'  => lacaDistUrl($rel),
+            'path' => $parentPath,
+            'ver'  => (int) filemtime($parentPath),
+        ];
+    }
+
+    $childRoot = dirname(get_stylesheet_directory());
+    $childPath = trailingslashit($childRoot) . 'dist/' . $rel;
+    if (is_file($childPath)) {
+        $childUri = dirname(get_stylesheet_directory_uri());
+        return [
+            'url'  => trailingslashit($childUri) . 'dist/' . $rel,
+            'path' => $childPath,
+            'ver'  => (int) filemtime($childPath),
+        ];
+    }
+
+    return null;
+}
+
+function lacaResourceUrl($path = '')
+{
+    return trailingslashit(lacaThemeRootUri()) . 'resources/' . ltrim($path, '/');
+}
+
+function lacaSanitizeCssColor($value, $fallback = '#000000')
+{
+    $color = sanitize_hex_color((string) $value);
+
+    if ($color) {
+        return $color;
+    }
+
+    $fallback = sanitize_hex_color((string) $fallback);
+    return $fallback ?: '#000000';
+}
+
 function adminAsset($path)
 {
-    return get_stylesheet_directory_uri() . '/../dist/' . $path;
+    return lacaDistUrl($path);
 }
 
 function loadStyles($files = [])
@@ -313,7 +386,7 @@ function getRelatePosts($postId = null, $postCount = null)
 function getLatestPosts($postType = 'post', $postCount = null)
 {
     $postCount = $postCount ?: get_option('posts_per_page');
-
+    
     // Generate cache key
     $cache_key = 'latest_posts_' . $postType . '_' . $postCount;
     $cached_post_ids = get_transient($cache_key);
@@ -354,7 +427,7 @@ function getLatestPosts($postType = 'post', $postCount = null)
 function getTopViewPosts($postType = 'post', $postCount = null)
 {
     $postCount = $postCount ?: get_option('posts_per_page');
-
+    
     // Generate cache key
     $cache_key = 'top_view_posts_' . $postType . '_' . $postCount;
     $cached_post_ids = get_transient($cache_key);
@@ -430,6 +503,7 @@ function formatHumanTime($time)
 // =============================================================================
 // VIDEO HANDLING
 // =============================================================================
+
 function getYoutubeEmbedUrl($url)
 {
     $youtube_id = '';
@@ -475,6 +549,7 @@ function getVideoUrl($video_link)
 // =============================================================================
 // UTILITY FUNCTIONS
 // =============================================================================
+
 function crb_normalize_path($path)
 {
     return preg_replace('~[/' . preg_quote('\\', '~') . ']~', DIRECTORY_SEPARATOR, $path);
@@ -585,18 +660,17 @@ add_post_type_support('page', 'excerpt');
 /**
  * Registered meta fields for REST API
  */
-function lacadev_register_rest_fields()
-{
+function lacadev_register_rest_fields() {
     register_post_meta('project', '_is_real', [
         'show_in_rest' => true,
-        'single' => true,
-        'type' => 'string',
+        'single'       => true,
+        'type'         => 'string',
     ]);
 
     register_post_meta('project', 'quick_view_img', [
         'show_in_rest' => true,
-        'single' => true,
-        'type' => 'string',
+        'single'       => true,
+        'type'         => 'string',
     ]);
 }
 add_action('init', 'lacadev_register_rest_fields');
@@ -605,9 +679,9 @@ add_action('init', 'lacadev_register_rest_fields');
  * Fix REST API taxonomy query for projects
  * Some clients send project_cat as an array which causes 400 error
  */
-add_filter('rest_project_query', function ($args, $request) {
+add_filter('rest_project_query', function($args, $request) {
     $project_cat = $request->get_param('project_cat');
-
+    
     // ERROR LOG for debug
     if (defined('WP_DEBUG') && WP_DEBUG) {
         error_log('REST Project Query: project_cat = ' . print_r($project_cat, true));
@@ -618,15 +692,15 @@ add_filter('rest_project_query', function ($args, $request) {
         $args['tax_query'] = [
             [
                 'taxonomy' => 'project_cat',
-                'field' => 'term_id',
-                'terms' => array_map('intval', $terms),
+                'field'    => 'term_id',
+                'terms'    => array_map('intval', $terms),
                 'operator' => 'IN',
             ]
         ];
         // Remove the original project_cat if it exists to avoid conflicts
         unset($args['project_cat']);
     }
-
+    
     return $args;
 }, 10, 2);
 

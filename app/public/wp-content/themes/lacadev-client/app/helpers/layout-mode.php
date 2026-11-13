@@ -71,8 +71,8 @@ if (!function_exists('laca_get_current_layout_mode')) {
 
 		// 3. Option site (Tầng 1)
 		$site_mode = function_exists('getOption') ? getOption('layout_container_mode') : '';
-		if (!$site_mode && function_exists('carbon_get_theme_option')) {
-			$site_mode = carbon_get_theme_option('layout_container_mode');
+		if (!$site_mode) {
+			$site_mode = function_exists('laca_theme_option') ? laca_theme_option('layout_container_mode') : (function_exists('carbon_get_theme_option') ? carbon_get_theme_option('layout_container_mode') : '');
 		}
 		if ($site_mode && in_array($site_mode, ['fluid', 'boxed'], true)) {
 			return $site_mode;

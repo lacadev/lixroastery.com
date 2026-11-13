@@ -86,9 +86,13 @@ class BlockMarketplace
         // trường cấu hình URL riêng cho Block Marketplace.
         $catalogUrl = str_replace('/tracker/log', '/blocks-catalog', $endpoint);
 
-        $headers = \App\Security\RequestSigner::sign('GET', $catalogUrl, '', $catalogKey, $projectId);
-        $headers['Accept']     = 'application/json';
-        $headers['X-Laca-Key'] = $catalogKey; // Fallback legacy header
+        $headers = ['Accept' => 'application/json'];
+        if (!empty($projectId)) {
+            $sigHeaders = \App\Security\RequestSigner::sign('GET', $catalogUrl, '', $catalogKey, $projectId);
+            $headers    = array_merge($headers, $sigHeaders);
+        } else {
+            $headers['X-Laca-Key'] = $catalogKey; // Chỉ gửi key thô khi không đủ projectId để ký HMAC
+        }
 
         $response = wp_remote_get($catalogUrl, [
             'headers' => $headers,
@@ -138,8 +142,9 @@ class BlockMarketplace
                     // bucket theo site, fallback về "name" cho nguồn catalog cũ
                     // chưa có field "path"). "name"/"title" vẫn dùng để hiển thị.
                     $name          = (string) ($block['path'] ?? $block['name']);
-                    $localVersion  = $installed[$name] ?? null;
-                    $isInstalled   = $localVersion !== null;
+                    $rawLocalVer   = $installed[$name] ?? null;
+                    $localVersion  = is_array($rawLocalVer) ? ($rawLocalVer['version'] ?? null) : $rawLocalVer;
+                    $isInstalled   = $localVersion !== null && $localVersion !== '';
                     $hasUpdate     = $isInstalled && version_compare((string) $block['version'], (string) $localVersion, '>');
                     $requestInfo   = $requests[$name] ?? null;
                     $requestStatus = $requestInfo['status'] ?? null;

@@ -1,0 +1,659 @@
+.laca-project-workspace {
+  --laca-admin-border: #dcdcde;
+  --laca-admin-border-soft: #edf0f2;
+  --laca-admin-bg: #f6f7f7;
+  --laca-admin-panel: #fff;
+  --laca-admin-text: #1d2327;
+  --laca-admin-muted: #646970;
+  --laca-admin-accent: #2271b1;
+  --laca-admin-success: #008a20;
+  --laca-admin-warning: #b26200;
+  --laca-admin-danger: #b32d2e;
+
+  display: block;
+  color: var(--laca-admin-text);
+}
+
+.laca-project-workspace__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin: 0 0 1rem;
+  padding: 1rem 1.125rem;
+  background: linear-gradient(135deg, #fff 0%, #f8fafc 100%);
+  border: 1px solid var(--laca-admin-border);
+  border-radius: 0.5rem;
+
+  h2 {
+    margin: 0 0 0.35rem;
+    font-size: 1.2rem;
+    line-height: 1.25;
+  }
+
+  p {
+    max-width: 48rem;
+    margin: 0;
+    color: var(--laca-admin-muted);
+  }
+}
+
+.laca-project-workspace__status {
+  display: inline-flex;
+  align-items: center;
+  min-height: 1.75rem;
+  padding: 0.25rem 0.65rem;
+  color: #0a4b78;
+  background: #edf6ff;
+  border: 1px solid #c5d9ed;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.laca-project-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.laca-project-summary-card {
+  min-width: 0;
+  padding: 0.95rem 1rem;
+  background: var(--laca-admin-panel);
+  border: 1px solid var(--laca-admin-border);
+  border-radius: 0.5rem;
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.02);
+
+  strong {
+    display: block;
+    margin-top: 0.25rem;
+    color: var(--laca-admin-text);
+    font-size: 1.25rem;
+    line-height: 1.2;
+  }
+
+  small {
+    display: block;
+    margin-top: 0.3rem;
+    color: var(--laca-admin-muted);
+    line-height: 1.35;
+  }
+}
+
+.laca-project-summary-card__label {
+  color: var(--laca-admin-muted);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.laca-project-summary-card--tracker {
+  border-top: 3px solid #1f2937;
+}
+
+.laca-project-health-pill {
+  display: inline-flex;
+  align-items: center;
+  min-height: 1.65rem;
+  padding: 0.2rem 0.6rem;
+  border: 1px solid var(--laca-admin-border);
+  border-radius: 999px;
+  background: #f8fafc;
+  color: #374151;
+  font-size: 0.72rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.laca-project-health-pill--ok {
+  border-color: #bbf7d0;
+  background: #f0fdf4;
+  color: #047857;
+}
+
+.laca-project-health-pill--warning {
+  border-color: #fde68a;
+  background: #fffbeb;
+  color: #92400e;
+}
+
+.laca-project-health-pill--danger {
+  border-color: #fecaca;
+  background: #fef2f2;
+  color: #b91c1c;
+}
+
+.laca-project-health-list {
+  display: grid;
+  gap: 0.65rem;
+  margin: 0;
+
+  div {
+    display: grid;
+    gap: 0.2rem;
+    padding-top: 0.65rem;
+    border-top: 1px solid var(--laca-admin-border-soft);
+
+    &:first-child {
+      padding-top: 0;
+      border-top: 0;
+    }
+  }
+
+  dt {
+    color: var(--laca-admin-muted);
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+  }
+
+  dd {
+    margin: 0;
+    color: var(--laca-admin-text);
+    font-size: 0.85rem;
+  }
+}
+
+.laca-project-workspace__grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(20rem, 0.65fr);
+  gap: 1rem;
+}
+
+.laca-pm-col {
+  min-width: 0;
+}
+
+.laca-project-panel {
+  padding: 1rem;
+  background: var(--laca-admin-panel);
+  border: 1px solid var(--laca-admin-border);
+  border-radius: 0.5rem;
+  box-sizing: border-box;
+
+  + .laca-project-panel {
+    margin-top: 1rem;
+  }
+}
+
+.laca-project-panel__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.85rem;
+
+  h3 {
+    margin: 0;
+    font-size: 1rem;
+    line-height: 1.3;
+  }
+
+  p {
+    margin: 0.25rem 0 0;
+    color: var(--laca-admin-muted);
+    font-size: 0.8rem;
+    line-height: 1.45;
+  }
+
+  .button {
+    flex: 0 0 auto;
+  }
+}
+
+.laca-pm-list {
+  max-height: 28rem;
+  overflow-y: auto;
+  padding-right: 0.25rem;
+}
+
+.laca-pm-item {
+  padding: 0.85rem 0;
+  border-bottom: 1px solid var(--laca-admin-border-soft);
+  font-size: 0.82rem;
+
+  &:last-child {
+    border-bottom: 0;
+  }
+}
+
+.laca-pm-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.35rem;
+  color: var(--laca-admin-muted);
+  font-size: 0.72rem;
+}
+
+.laca-pm-badge,
+.laca-project-chip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 1.35rem;
+  padding: 0.1rem 0.45rem;
+  border-radius: 999px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.laca-pm-alert-critical {
+  color: var(--laca-admin-danger);
+  background: #fcf0f1;
+  border: 1px solid #f2c9cb;
+}
+
+.laca-pm-alert-warning {
+  color: var(--laca-admin-warning);
+  background: #fff8e5;
+  border: 1px solid #f2dca7;
+}
+
+.laca-pm-alert-info {
+  color: #0a4b78;
+  background: #edf6ff;
+  border: 1px solid #c5d9ed;
+}
+
+.laca-project-chip {
+  margin-left: 0.35rem;
+  color: #7a3b00;
+  background: #fff4de;
+}
+
+.laca-project-progress {
+  margin-bottom: 0.9rem;
+}
+
+.laca-project-progress__meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.4rem;
+  color: var(--laca-admin-muted);
+  font-size: 0.8rem;
+}
+
+.laca-project-progress__track {
+  height: 0.5rem;
+  overflow: hidden;
+  background: #e8eef3;
+  border-radius: 999px;
+}
+
+.laca-project-progress__bar {
+  width: var(--laca-progress, 0%);
+  height: 100%;
+  background: linear-gradient(90deg, #2271b1, #2f7bbd);
+  border-radius: inherit;
+  transition: width 0.25s ease;
+}
+
+.laca-task-list {
+  max-height: 24rem;
+}
+
+.laca-task-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  border: 1px solid transparent;
+  border-radius: 0.45rem;
+  transition: background 0.15s ease, border-color 0.15s ease;
+
+  + .laca-task-item {
+    margin-top: 0.35rem;
+  }
+
+  &:hover {
+    background: #f8fafc;
+    border-color: var(--laca-admin-border-soft);
+  }
+
+  &.task-done .task-name {
+    color: #8c8f94;
+    text-decoration: line-through;
+  }
+}
+
+.laca-task-item__content {
+  min-width: 0;
+  flex: 1;
+}
+
+.task-name {
+  display: block;
+  color: var(--laca-admin-text);
+  font-size: 0.85rem;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.laca-task-item__meta,
+.laca-task-item__link {
+  display: inline-flex;
+  margin-top: 0.25rem;
+  color: var(--laca-admin-muted);
+  font-size: 0.72rem;
+  line-height: 1.35;
+}
+
+.laca-task-item__link {
+  margin-left: 0.5rem;
+  color: var(--laca-admin-accent);
+}
+
+.task-checkbox {
+  position: relative;
+  flex-shrink: 0;
+  width: 1.15rem !important;
+  height: 1.15rem !important;
+  min-width: 1.15rem;
+  margin: 0.05rem 0 0;
+  cursor: pointer;
+  appearance: none;
+  background: #fff;
+  border: 2px solid #c3c4c7;
+  border-radius: 0.3rem;
+  transition: border-color 0.18s ease, background 0.18s ease, box-shadow 0.18s ease;
+
+  &::after {
+    position: absolute;
+    top: 0.08rem;
+    left: 0.28rem;
+    width: 0.3rem;
+    height: 0.55rem;
+    border: 2px solid #fff;
+    border-top: 0;
+    border-left: 0;
+    content: "";
+    transform: rotate(45deg) scale(0);
+    transition: transform 0.15s ease;
+  }
+
+  &:hover {
+    border-color: var(--laca-admin-accent);
+    box-shadow: 0 0 0 3px rgba(34, 113, 177, 0.12);
+  }
+
+  &:checked {
+    background: var(--laca-admin-accent);
+    border-color: var(--laca-admin-accent);
+
+    &::after {
+      transform: rotate(45deg) scale(1);
+    }
+  }
+
+  &:disabled {
+    cursor: wait;
+    opacity: 0.55;
+  }
+}
+
+.task-delete-btn {
+  flex-shrink: 0;
+  padding: 0.05rem 0.4rem;
+  color: #8c8f94;
+  border-radius: 0.25rem;
+  cursor: pointer;
+  font-size: 1rem;
+  line-height: 1.2;
+  text-decoration: none;
+  transition: color 0.15s ease, background 0.15s ease;
+
+  &:hover,
+  &:focus {
+    color: var(--laca-admin-danger);
+    background: #fcf0f1;
+  }
+}
+
+.laca-task-add,
+.laca-remote-form {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.9rem;
+
+  input,
+  select {
+    min-height: 2rem;
+    border-color: var(--laca-admin-border);
+    border-radius: 0.35rem;
+  }
+
+  input {
+    min-width: 0;
+    flex: 1;
+  }
+}
+
+.laca-alert-list {
+  max-height: 20rem;
+}
+
+.laca-alert-item__message,
+.laca-log-item__content {
+  color: #2c3338;
+  line-height: 1.55;
+}
+
+.laca-alert-item .laca-resolve-btn {
+  margin-top: 0.6rem;
+}
+
+.laca-log-item__type {
+  color: var(--laca-admin-accent);
+  font-weight: 700;
+}
+
+.laca-project-state,
+.laca-project-empty {
+  margin: 0;
+  padding: 0.75rem 0.85rem;
+  color: var(--laca-admin-muted);
+  background: var(--laca-admin-bg);
+  border: 1px solid var(--laca-admin-border-soft);
+  border-radius: 0.45rem;
+  line-height: 1.45;
+}
+
+.laca-project-state--ok {
+  color: #1f6f43;
+  background: #effaf3;
+  border-color: #ccebd8;
+}
+
+.laca-project-state--warning,
+.laca-project-panel--pending {
+  color: #6f4d00;
+  background: #fffaf0;
+  border-color: #f0dca8;
+}
+
+.laca-pending-list,
+.laca-pending-plugins ul {
+  margin: 0;
+  padding-left: 1rem;
+
+  li + li {
+    margin-top: 0.3rem;
+  }
+}
+
+.laca-pending-plugins {
+  margin-top: 0.75rem;
+
+  strong {
+    display: block;
+    margin-bottom: 0.35rem;
+  }
+
+  span {
+    color: var(--laca-admin-muted);
+  }
+}
+
+.laca-form-group {
+  margin-bottom: 0.75rem;
+
+  label {
+    display: block;
+    margin-bottom: 0.25rem;
+    color: var(--laca-admin-muted);
+    font-size: 0.76rem;
+    font-weight: 700;
+  }
+
+  input,
+  select,
+  textarea {
+    width: 100%;
+    min-height: 2rem;
+    border-color: var(--laca-admin-border);
+    border-radius: 0.35rem;
+  }
+
+  textarea {
+    min-height: 4rem;
+  }
+}
+
+.laca-project-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin-top: 0.75rem;
+}
+
+.laca-project-details {
+  margin-top: 0.85rem;
+  padding-top: 0.85rem;
+  border-top: 1px solid var(--laca-admin-border-soft);
+
+  summary {
+    color: var(--laca-admin-accent);
+    cursor: pointer;
+    font-weight: 700;
+  }
+}
+
+.laca-project-help {
+  margin: 0.55rem 0 0;
+  color: var(--laca-admin-muted);
+  font-size: 0.75rem;
+  line-height: 1.45;
+}
+
+.laca-project-message {
+  display: none;
+  margin-top: 0.75rem;
+}
+
+.laca-pending-table {
+  display: none;
+  margin-top: 0.75rem;
+  overflow-x: auto;
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.8rem;
+  }
+
+  th,
+  td {
+    padding: 0.55rem 0.6rem;
+    text-align: left;
+    border-bottom: 1px solid var(--laca-admin-border-soft);
+  }
+
+  th {
+    color: var(--laca-admin-muted);
+    font-size: 0.72rem;
+    font-weight: 700;
+  }
+}
+
+#pending_plugins_empty {
+  display: none;
+  margin-top: 0.75rem;
+}
+
+/* Password & Copy Actions */
+.laca-input-with-actions {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+
+  input {
+    padding-right: 4rem !important;
+  }
+
+  .laca-input-actions {
+    position: absolute;
+    top: 50%;
+    right: 0.3rem;
+    z-index: 5;
+    display: flex;
+    gap: 0.25rem;
+    transform: translateY(-50%);
+  }
+
+  .laca-copy-btn,
+  .laca-toggle-pwd-btn {
+    min-height: 1.5rem;
+    padding: 0.1rem 0.4rem;
+    color: #2c3338;
+    background: #f6f7f7;
+    border: 1px solid #dcdcde;
+    border-radius: 0.25rem;
+    box-shadow: 0 1px 0 #dcdcde;
+    cursor: pointer;
+    font-size: 0.75rem;
+    line-height: 1.2;
+
+    &:hover {
+      color: #262a2e;
+      background: #f0f0f1;
+      border-color: #c3c4c7;
+    }
+  }
+}
+
+@media (max-width: 1280px) {
+  .laca-project-summary-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .laca-project-workspace__grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 782px) {
+  .laca-project-workspace__header,
+  .laca-project-panel__header,
+  .laca-task-add,
+  .laca-remote-form {
+    flex-direction: column;
+  }
+
+  .laca-project-summary-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .laca-project-panel__header .button,
+  .laca-task-add .button,
+  .laca-remote-form .button {
+    width: 100%;
+  }
+}

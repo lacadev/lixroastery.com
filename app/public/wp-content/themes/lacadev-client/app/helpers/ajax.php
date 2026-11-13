@@ -207,8 +207,10 @@ function mms_ajax_search() {
     // Rate limiting: 20 requests per minute
     lacadev_check_rate_limit('ajax_search', 20, 60);
     
-    // Security check
-    check_ajax_referer('theme_search_nonce', 'nonce');
+    // Thao tác chỉ đọc: hỗ trợ full-page cache (không chặn nếu HTML cache giữ nonce cũ)
+    if (!empty($_REQUEST['nonce'])) {
+        wp_verify_nonce((string) $_REQUEST['nonce'], 'theme_search_nonce');
+    }
 
     // Get search query
     $search_query = isset($_GET['s']) ? sanitize_text_field($_GET['s']) : '';
@@ -434,7 +436,8 @@ function lacadev_check_submission_status() {
 }
 
 // -----------------------------------------------------------------------------
-// AJAX: Gửi form liên hệ (Contact Form)
+// AJAX: Gửi form liên hệ (Contact Form) — form legacy của page template "Liên hệ" (template-contact.php).
+// KHÔNG gộp vào ContactFormAjaxHandler: khác nonce (laca_contact_nonce/field "nonce") và khác cấu trúc field.
 // -----------------------------------------------------------------------------
 add_action('wp_ajax_nopriv_laca_contact_submit', 'lacadev_handle_contact_submit');
 add_action('wp_ajax_laca_contact_submit', 'lacadev_handle_contact_submit');
@@ -463,7 +466,8 @@ function lacadev_handle_contact_submit() {
     $score_threshold = (float) carbon_get_theme_option('recaptcha_score') ?: 0.5;
 
     // Bypass reCAPTCHA check entirely for local development environments
-    $is_localhost = in_array($ip, ['127.0.0.1', '::1']) || strpos($_SERVER['HTTP_HOST'] ?? '', 'localhost') !== false || strpos($_SERVER['HTTP_HOST'] ?? '', '.local') !== false || wp_get_environment_type() === 'local';
+    // Chỉ dựa vào cấu hình server: Host header do client tự đặt được, còn IP 127.0.0.1 là IP của MỌI request khi có reverse proxy
+    $is_localhost = wp_get_environment_type() === 'local';
 
     if (!empty($secret_key) && !$is_localhost) {
         // Debug: Check if token is empty
@@ -698,7 +702,10 @@ function lacadev_get_customer_email_template($name, $email, $phone, $message) {
     $author_name = 'La cà dev';
     $author_title = 'WordPress Developer';
     $author_phone = '0776.41.00.43';
-    $author_email = carbon_get_theme_option('email') ?: get_option('admin_email');
+    $author_email = function_exists('laca_theme_option') ? laca_theme_option('email') : (function_exists('carbon_get_theme_option') ? carbon_get_theme_option('email') : '');
+    if (empty($author_email)) {
+        $author_email = get_option('admin_email');
+    }
     
     return "
     <!DOCTYPE html>
@@ -755,8 +762,10 @@ add_action('wp_ajax_nopriv_get_page', 'ajaxGetPage');
 add_action('wp_ajax_get_page', 'ajaxGetPage');
 
 function ajaxGetPage() {
-    // Security check
-    check_ajax_referer('theme_nonce', 'nonce');
+    // Thao tác chỉ đọc: hỗ trợ full-page cache
+    if (!empty($_REQUEST['nonce'])) {
+        wp_verify_nonce((string) $_REQUEST['nonce'], 'theme_nonce');
+    }
 
     $post_id = isset($_POST['post_id']) ? absint($_POST['post_id']) : 0;
     
@@ -797,8 +806,10 @@ add_action('wp_ajax_nopriv_load_more_search', 'lacadev_load_more_search');
 add_action('wp_ajax_load_more_search', 'lacadev_load_more_search');
 
 function lacadev_load_more_search() {
-    // Security check
-    check_ajax_referer('theme_search_nonce', 'nonce');
+    // Thao tác chỉ đọc: hỗ trợ full-page cache
+    if (!empty($_REQUEST['nonce'])) {
+        wp_verify_nonce((string) $_REQUEST['nonce'], 'theme_search_nonce');
+    }
     
     // Get parameters
     $post_type = isset($_POST['post_type']) ? sanitize_text_field($_POST['post_type']) : '';
@@ -840,7 +851,7 @@ function lacadev_load_more_search() {
     if (!locate_template("template-parts/loop-{$template_slug}.php")) {
         $template_slug = 'post';
     }
-
+    
     // Generate HTML
     ob_start();
     while ($query->have_posts()) {

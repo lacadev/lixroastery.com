@@ -195,6 +195,14 @@ final class Scanner
             $embed->field(sprintf(I18n::t('🗑️ Bị xoá (%1$d)', '🗑️ Deleted (%1$d)'), count($deleted)), self::formatList($deleted), false, true);
         }
 
+        $repo = defined('LACA_GITHUB_REPO') ? LACA_GITHUB_REPO : get_option('laca_github_repo', '');
+        $pullWorkflowUrl = !empty($repo) ? "https://github.com/{$repo}/actions/workflows/pull-production.yml" : '';
+        $hintText = !empty($pullWorkflowUrl)
+            ? sprintf(I18n::t('💡 Gợi ý: [Chạy workflow "Kéo thay đổi từ production"](%s) để tạo PR.', '💡 Hint: [Run the "Pull changes from production" workflow](%s) to create a PR.'), esc_url($pullWorkflowUrl))
+            : I18n::t('💡 Gợi ý: Chạy workflow "Kéo thay đổi từ production" trên GitHub Actions (hoặc "wp laca pull-files") để tạo PR.', '💡 Hint: Run the "Pull changes from production" workflow on GitHub Actions (or "wp laca pull-files") to create a PR.');
+
+        $embed->field(I18n::t('Khắc phục', 'Resolution'), $hintText, false);
+
         Notifier::send(Settings::CHANNEL_SECURITY, 'files.changed', $embed);
     }
 

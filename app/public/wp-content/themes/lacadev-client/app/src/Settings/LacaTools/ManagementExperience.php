@@ -10,6 +10,13 @@ use App\Settings\LacaTools\Management\ListTableInlineEditor;
 use App\Settings\LacaTools\Management\AdminUxService;
 use App\Settings\LacaTools\Management\DatabaseCleaner;
 use App\Settings\LacaTools\Management\QuickNotesWidget;
+use App\Settings\LacaTools\Management\ConfigExportImport;
+use App\Settings\LacaTools\Management\ConfigChangeLog;
+use App\Settings\LacaTools\Management\ConfigPage;
+use App\Settings\LacaTools\Management\SiteConfig\SiteConfigExporter;
+use App\Settings\LacaTools\Management\SiteConfig\SiteConfigImporter;
+use App\Settings\LacaTools\Management\SystemInfoPage;
+use App\Settings\LacaTools\Management\LargeFileScanner;
 
 /**
  * ManagementExperience
@@ -63,21 +70,54 @@ class ManagementExperience
         // 7. Quick Notes dashboard widget
         (new QuickNotesWidget())->register();
 
-        // 8. Database Cleaner (Appearance > Dọn dẹp DB)
+        // 8. Database Cleaner
         (new DatabaseCleaner())->register();
+
+        // 9. Config Export/Import (Bộ cấu hình site & legacy handler)
+        (new ConfigExportImport())->register();
+        (new SiteConfigExporter())->register();
+        (new SiteConfigImporter())->register();
+
+        // 10. Config Change Log (nhật ký thay đổi cấu hình)
+        (new ConfigChangeLog())->register();
+
+        // 10.5. Config Admin Page (Laca Admin → Cấu hình)
+        (new ConfigPage())->register();
+
+        // 10.6. Laca Dashboard (Laca Admin → Tổng quan)
+        if (class_exists(\App\Settings\LacaAdmin\LacaDashboard::class)) {
+            (new \App\Settings\LacaAdmin\LacaDashboard())->register();
+        }
+
+        // 10.7. System Info & Storage Page (Laca Admin → Hệ thống)
+        (new SystemInfoPage())->register();
+
+        // 10.8. Large File Scanner (quét file lớn theo lô & xoá an toàn)
+        (new LargeFileScanner())->register();
 
         // 9. AI Translation Manager
         add_action('init', function () {
             new AITranslationManager();
         });
 
-        // 10. Dynamic CPT admin page (Appearance > Custom Post Types)
-        new \App\Features\DynamicCPT\DynamicCptAdminPage();
+        // 9.5. Project Reports — chart.js data provider (Hub-only if present)
+        if (class_exists(ProjectReportsManager::class)) {
+            new ProjectReportsManager();
+        }
+
+        // 10. Dynamic CPT admin page
+        if (class_exists(\App\Features\DynamicCPT\DynamicCptAdminPage::class)) {
+            new \App\Features\DynamicCPT\DynamicCptAdminPage();
+        }
 
         // 10.5. Thu gọn/mở rộng danh mục con trên edit-tags.php (mọi taxonomy phân cấp)
-        (new \App\Features\DynamicCPT\CollapsibleTaxonomyTerms())->register();
+        if (class_exists(\App\Features\DynamicCPT\CollapsibleTaxonomyTerms::class)) {
+            (new \App\Features\DynamicCPT\CollapsibleTaxonomyTerms())->register();
+        }
 
-        // 11. Contact Form Manager (Appearance > Form Liên Hệ)
-        new \App\Features\ContactForm\ContactFormManager();
+        // 11. Contact Form Manager
+        if (class_exists(\App\Features\ContactForm\ContactFormManager::class)) {
+            new \App\Features\ContactForm\ContactFormManager();
+        }
     }
 }

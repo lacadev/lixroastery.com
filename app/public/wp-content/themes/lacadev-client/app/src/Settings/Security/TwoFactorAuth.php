@@ -2,6 +2,8 @@
 
 namespace App\Settings\Security;
 
+use App\Helpers\Crypto;
+
 if (!defined('ABSPATH')) {
     exit;
 }
@@ -45,6 +47,48 @@ class TwoFactorAuth
     // ═══════════════════════════════════════════════════════════
     //  TOTP CORE
     // ═══════════════════════════════════════════════════════════
+
+    /**
+     * Đọc TOTP secret của user, tự động chuyển đổi plaintext cũ → mã hoá.
+     *
+     * - Nếu giá trị có prefix `laca:v1:` → giải mã bằng `decryptTagged()`.
+     * - Nếu giải mã thất bại (vd đổi AUTH_KEY) → trả null để chặn đăng nhập,
+     *   buộc dùng mã dự phòng hoặc nhờ Super User reset 2FA.
+     * - Nếu giá trị là plaintext cũ → dùng nguyên và tự động lưu lại bản mã hoá
+     *   (auto-migration).
+     *
+     * @param int $userId
+     * @return string|null  Plaintext secret hoặc null khi giải mã thất bại.
+     */
+    private function getUserSecret(int $userId): ?string
+    {
+        $raw = get_user_meta($userId, 'laca_2fa_secret', true);
+        if (empty($raw)) {
+            return null;
+        }
+
+        // Đã mã hoá bằng tagged encryption
+        if (Crypto::isTagged($raw)) {
+            $decrypted = Crypto::decryptTagged($raw);
+            // Giải mã thất bại → KHÔNG trả về plaintext để tránh bypass 2FA
+            return $decrypted; // null khi thất bại
+        }
+
+        // Plaintext cũ → dùng nguyên giá trị, đồng thời tự lưu bản mã hoá
+        $this->storeUserSecret($userId, $raw);
+        return $raw;
+    }
+
+    /**
+     * Lưu TOTP secret đã mã hoá bằng tagged encryption.
+     */
+    private function storeUserSecret(int $userId, string $plainSecret): void
+    {
+        $encrypted = Crypto::encryptTagged($plainSecret);
+        if (!empty($encrypted)) {
+            update_user_meta($userId, 'laca_2fa_secret', $encrypted);
+        }
+    }
 
     public function generateSecret(int $length = 16): string
     {
@@ -156,7 +200,21 @@ class TwoFactorAuth
         }
 
         $otp    = trim(sanitize_text_field($_POST['laca_otp'] ?? ''));
-        $secret = get_user_meta($userId, 'laca_2fa_secret', true);
+        $secret = $this->getUserSecret($userId);
+
+        // Giải mã thất bại (vd đổi AUTH_KEY khi chuyển host)
+        if ($secret === null) {
+            // Cho phép thử backup code nếu OTP 8 ký tự
+            if (strlen($otp) === 8 && $this->verifyAndConsumeBackup($userId, $otp)) {
+                delete_transient('laca_2fa_' . $token);
+                return get_user_by('id', $userId);
+            }
+            return new \WP_Error(
+                'laca_2fa_decrypt_failed',
+                '<strong>' . esc_html__('Lỗi:', 'laca') . '</strong> ' .
+                esc_html__('Không thể giải mã secret 2FA. Vui lòng dùng mã dự phòng hoặc nhờ quản trị viên reset 2FA.', 'laca')
+            );
+        }
 
         // Thử TOTP 6 chữ số
         if (preg_match('/^\d{6}$/', $otp) && $this->verifyTotp($secret, $otp)) {
@@ -237,7 +295,7 @@ class TwoFactorAuth
 
         $enabled    = (bool) get_user_meta($user->ID, 'laca_2fa_enabled', true);
         $verified   = (bool) get_user_meta($user->ID, 'laca_2fa_verified', true);
-        $secret     = get_user_meta($user->ID, 'laca_2fa_secret', true);
+        $secret     = $this->getUserSecret($user->ID) ?? '';
         $backups    = get_user_meta($user->ID, 'laca_2fa_backup_codes', true);
         $backupCnt  = is_array($backups) ? count($backups) : 0;
 
@@ -330,10 +388,10 @@ class TwoFactorAuth
         $userId = get_current_user_id();
         if (!$userId) wp_send_json_error('Unauthorized');
 
-        $secret = get_user_meta($userId, 'laca_2fa_secret', true);
+        $secret = $this->getUserSecret($userId);
         if (empty($secret)) {
             $secret = $this->generateSecret();
-            update_user_meta($userId, 'laca_2fa_secret', $secret);
+            $this->storeUserSecret($userId, $secret);
         }
 
         $issuer   = get_bloginfo('name');
@@ -351,11 +409,11 @@ class TwoFactorAuth
         if (!$userId) wp_send_json_error('Unauthorized');
 
         $code   = sanitize_text_field($_POST['code'] ?? '');
-        $secret = get_user_meta($userId, 'laca_2fa_secret', true);
+        $secret = $this->getUserSecret($userId);
 
-        if (empty($secret)) wp_send_json_error('Chưa có secret key.');
+        if (empty($secret)) wp_send_json_error(esc_html__('Chưa có secret key.', 'laca'));
         if (!$this->verifyTotp($secret, $code)) {
-            wp_send_json_error('Mã không đúng. Kiểm tra đồng hồ điện thoại và thử lại.');
+            wp_send_json_error(esc_html__('Mã không đúng. Kiểm tra đồng hồ điện thoại và thử lại.', 'laca'));
         }
 
         update_user_meta($userId, 'laca_2fa_enabled',  1);
@@ -375,7 +433,7 @@ class TwoFactorAuth
         delete_user_meta($userId, 'laca_2fa_secret');
         delete_user_meta($userId, 'laca_2fa_backup_codes');
 
-        wp_send_json_success('2FA đã được tắt thành công.');
+        wp_send_json_success(esc_html__('2FA đã được tắt thành công.', 'laca'));
     }
 
     public function ajaxRegenBackup(): void

@@ -86,10 +86,6 @@ add_action('init', function () {
     }
 });
 
-
-
-
-
 /**
  * Checklist phát hành production — đầu trang Laca Admin (chỉ Super User).
  */
@@ -98,6 +94,7 @@ add_action('init', function () {
         (new \App\Settings\LacaAdmin\ReleaseChecklist())->register();
     }
 });
+
 // Tra DNS (SPF/DMARC) chạy nền qua WP-Cron — request cron không phải is_admin() nên đăng ký riêng.
 add_action('laca_release_checklist_dns', ['\App\Settings\LacaAdmin\ReleaseChecklist', 'refreshDns']);
 
@@ -163,28 +160,44 @@ add_action('carbon_fields_theme_options_container_saved', static function ($user
 }, 10, 2);
 
 /**
- * Theme Updater — tự động check & nhận update từ clients.lacadev.com
- * Chỉ chạy ở admin để tiết kiệm tài nguyên frontend
+ * Theme Updater — tự động check & nhận update từ Hub LacaDev.
+ * Khởi tạo trong Admin, WP-CLI, WP-Cron và REST API (phục vụ remote-update).
  */
+$lacaBootThemeUpdater = static function (): void {
+    if (!class_exists('\App\Settings\ThemeUpdater')) {
+        return;
+    }
+
+    $defaultJsonUrl = wp_get_environment_type() === 'local'
+        ? 'http://lacadev.local/theme-updates/lacadev-client.json'
+        : 'https://lacadev.com/theme-updates/lacadev-client.json';
+    $updateJsonUrl = (string) apply_filters(
+        'laca_theme_update_json_url',
+        $defaultJsonUrl
+    );
+
+    \App\Settings\ThemeUpdater::boot(
+        'lacadev-client/theme',
+        $updateJsonUrl
+    );
+};
+
+if (is_admin() || (defined('WP_CLI') && \WP_CLI) || (function_exists('wp_doing_cron') && wp_doing_cron())) {
+    add_action('init', $lacaBootThemeUpdater);
+}
+add_action('rest_api_init', $lacaBootThemeUpdater, 5);
+
 if (is_admin()) {
     add_action('init', static function () {
-        $defaultJsonUrl = wp_get_environment_type() === 'local'
-            ? 'http://lacadev.local/theme-updates/lacadev-client.json'
-            : 'https://lacadev.com/theme-updates/lacadev-client.json';
-        $updateJsonUrl = (string) apply_filters(
-            'laca_theme_update_json_url',
-            $defaultJsonUrl
-        );
-        new \App\Settings\ThemeUpdater(
-            'lacadev-client/theme',
-            $updateJsonUrl
-        );
-        new \App\Widgets\BlockSyncWidget();
+        if (class_exists('\App\Settings\ChildBuildNotice')) {
+            (new \App\Settings\ChildBuildNotice())->register();
+        }
 
-        // Block Marketplace — trang "Laca Theme → Block Marketplace" cho
-        // site khách browse + yêu cầu đồng bộ block từ clients.lacadev.com
-        // (qua hub). Chỉ cần đăng ký AJAX handler ở đây, phần render page
-        // được gọi trực tiếp từ theme-options.php (child theme).
+        if (class_exists('\App\Widgets\BlockSyncWidget')) {
+            new \App\Widgets\BlockSyncWidget();
+        }
+
+        // Block Marketplace — trang "Laca Theme → Block Marketplace"
         if (class_exists('\App\Settings\BlockMarketplace')) {
             new \App\Settings\BlockMarketplace();
         }
@@ -193,13 +206,11 @@ if (is_admin()) {
 
 /**
  * LacaDev Tracker Client — gửi logs & alerts về lacadev CMS.
- * Phải đăng ký vô điều kiện (không bọc is_admin()) vì cron (wp-cron.php)
- * và REST request (/laca/v1/remote-update) không đi qua wp-admin nên
- * is_admin() luôn false ở đó — nếu bọc trong is_admin(), cron và route
- * REST của tracker sẽ không bao giờ đăng ký được.
  */
 add_action('init', static function () {
-    new \App\Settings\LacaDevTrackerClient();
+    if (class_exists('\App\Settings\LacaDevTrackerClient')) {
+        new \App\Settings\LacaDevTrackerClient();
+    }
 
     if (class_exists('\App\Features\ClientSupport\ClientSupportManager')) {
         (new \App\Features\ClientSupport\ClientSupportManager())->init();
@@ -211,9 +222,6 @@ add_action('init', static function () {
 
 /**
  * Dọn cron mồ côi `laca_fim_scan` để lại sau khi gỡ App\Features\ClientTracker\Tracker
- * (đã gộp chức năng theme_switched + FIM sâu vào LacaDevTrackerClient — xem
- * doc/TRACKER_HUB_CLIENT_SYNC.md, Giai đoạn 3). Chỉ chạy 1 lần rồi tự đánh dấu,
- * không chạy lại mỗi request.
  */
 add_action('init', function () {
     if (!get_option('_laca_tracker_fim_cron_cleaned')) {
@@ -224,25 +232,161 @@ add_action('init', function () {
 
 /**
  * Block Sync Receiver — REST API endpoint nhận blocks từ lacadev.com
- * Chạy cả frontend để REST API hoạt động đúng
  */
 add_action('init', static function () {
-    new \App\Settings\BlockSyncReceiver();
-    // BlockAutoloader disabled — blocks are already registered by
-    // lacadev_child_register_synced_blocks() at init priority 15.
-    // Having both causes duplicate "already registered" notices → "headers already sent" → admin 403/404.
-    // new \App\Settings\BlockAutoloader();
-
-    // Block Catalog Provider — REST API đọc-chỉ phục vụ danh mục block cho
-    // hub (lacadev.com) đọc, dùng cho tính năng "site khách yêu cầu đồng bộ
-    // block". Chạy trên mọi site dùng theme này, tự bảo vệ bằng Catalog Key
-    // riêng — chỉ site nào có key đúng (clients.lacadev.com) mới thực sự được
-    // hub gọi tới trong thực tế.
-    new \App\Settings\BlockCatalogProvider();
+    if (class_exists('\App\Settings\BlockSyncReceiver')) {
+        new \App\Settings\BlockSyncReceiver();
+    }
+    if (class_exists('\App\Settings\BlockCatalogProvider')) {
+        new \App\Settings\BlockCatalogProvider();
+    }
 }, 5);
 
 /**
+ * ============================================================================
+ * HUB ONLY: Database Tables, Project Endpoints & Project Management Hooks
+ * ============================================================================
+ */
+if (!defined('LACADEV_HUB_SCHEMA_VERSION')) {
+    define('LACADEV_HUB_SCHEMA_VERSION', '1.3.0');
+}
+
+function laca_install_project_manager_tables(): void
+{
+    if (class_exists('\App\Databases\DbVersionManager')) {
+        \App\Databases\DbVersionManager::maybeInstall(
+            LACADEV_HUB_SCHEMA_VERSION,
+            'lacadev_hub_db_version',
+            [
+                fn() => class_exists('\App\Databases\ProjectLogTable') && \App\Databases\ProjectLogTable::install(),
+                fn() => class_exists('\App\Databases\ProjectAlertTable') && \App\Databases\ProjectAlertTable::install(),
+                fn() => class_exists('\App\Databases\ContactFormTable') && \App\Databases\ContactFormTable::install(true),
+                fn() => class_exists('\App\Settings\EmailLog\EmailLogTable') && \App\Settings\EmailLog\EmailLogTable::install(),
+                fn() => class_exists('\App\Settings\LoginLog\LoginLogTable') && \App\Settings\LoginLog\LoginLogTable::install(),
+                fn() => class_exists('\App\Databases\UptimeLogTable') && \App\Databases\UptimeLogTable::install(),
+            ]
+        );
+    }
+}
+add_action('after_switch_theme', 'laca_install_project_manager_tables');
+add_action('after_setup_theme', 'laca_install_project_manager_tables', 1);
+
+add_action('init', function () {
+    if (class_exists('\App\Settings\LacaTools\ProjectPdfExporter')) {
+        (new \App\Settings\LacaTools\ProjectPdfExporter())->init();
+    }
+    
+    if (class_exists('\App\Settings\LacaTools\TrackerEndpointHandler')) {
+        (new \App\Settings\LacaTools\TrackerEndpointHandler())->init();
+    }
+
+    if (class_exists('\App\Settings\LacaTools\ClientPortalEndpoint')) {
+        (new \App\Settings\LacaTools\ClientPortalEndpoint())->init();
+    }
+
+    if (class_exists('\App\Settings\LacaTools\ClientRequestHandler')) {
+        (new \App\Settings\LacaTools\ClientRequestHandler())->init();
+    }
+
+    if (class_exists('\App\Settings\LacaTools\BlockCatalogHub')) {
+        (new \App\Settings\LacaTools\BlockCatalogHub())->init();
+    }
+
+    if (class_exists('\App\Settings\LacaTools\ThemePackageEndpoint')) {
+        (new \App\Settings\LacaTools\ThemePackageEndpoint())->init();
+    }
+
+    if (class_exists('\App\Settings\LacaTools\SiteHealthChecker')) {
+        (new \App\Settings\LacaTools\SiteHealthChecker())->init();
+    }
+
+    if (class_exists('\App\Settings\LacaTools\ProjectTrackerGenerator')) {
+        (new \App\Settings\LacaTools\ProjectTrackerGenerator())->init();
+    }
+});
+
+/**
+ * Auto-generate Tracker Secret Key khi tạo/lưu project lần đầu
+ * Hook: save_post_project — chỉ chạy cho post_type=project
+ */
+add_action('save_post_project', 'laca_auto_generate_tracker_key', 20, 2);
+
+function laca_auto_generate_tracker_key(int $postId, \WP_Post $post): void
+{
+    if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) {
+        return;
+    }
+    if ($post->post_status === 'trash' || $post->post_status === 'auto-draft') {
+        return;
+    }
+    if (!current_user_can('edit_post', $postId)) {
+        return;
+    }
+
+    $existingKey = get_post_meta($postId, '_tracker_secret_key', true);
+    if (empty($existingKey)) {
+        $secretKey = bin2hex(random_bytes(32));
+        update_post_meta($postId, '_tracker_secret_key', $secretKey);
+    }
+}
+
+/**
+ * Enqueue nonce cho AJAX của Project Manager (admin only)
+ */
+add_action('admin_enqueue_scripts', 'laca_project_manager_admin_scripts');
+
+function laca_project_manager_admin_scripts(string $hook): void
+{
+    $screen = get_current_screen();
+    if (!$screen || $screen->post_type !== 'project') {
+        return;
+    }
+
+    $data = [
+        'ajaxurl'   => admin_url('admin-ajax.php'),
+        'nonce'     => wp_create_nonce('laca_project_manager'),
+        'post_id'   => (int) (get_the_ID() ?: ($_GET['post'] ?? 0)),
+        'i18n'      => [
+            'confirm_delete' => __('Bạn có chắc muốn xoá?', 'laca'),
+            'resolving'      => __('Đang xử lý...', 'laca'),
+            'deleted'        => __('Đã xoá', 'laca'),
+            'resolved'       => __('Đã đánh dấu xử lý', 'laca'),
+        ],
+    ];
+    wp_add_inline_script(
+        'jquery',
+        'var lacaProjectManager = ' . wp_json_encode($data) . ';',
+        'before'
+    );
+}
+
+/**
+ * Thêm CSS cho admin list view của project
+ */
+add_action('admin_head', 'laca_project_list_admin_styles');
+
+function laca_project_list_admin_styles(): void
+{
+    $screen = get_current_screen();
+    if (!$screen || $screen->post_type !== 'project') {
+        return;
+    }
+    ?>
+    <style>
+        .column-laca_status  { width: 120px; }
+        .column-laca_expiry  { width: 160px; }
+        .column-laca_alerts  { width: 80px; text-align: center; }
+        .column-laca_client  { width: 150px; }
+        .column-laca_domain  { width: 150px; }
+        .wp-list-table .column-laca_expiry { font-size: 12px; line-height: 1.4; }
+    </style>
+    <?php
+}
+
+/**
+ * ============================================================================
  * CONTACT FORM — Frontend AJAX + Shortcode
+ * ============================================================================
  */
 add_action('init', function () {
     if (class_exists('\App\Features\ContactForm\ContactFormAjaxHandler')) {
@@ -269,9 +413,7 @@ add_action('init', function () {
 });
 
 /**
- * Login Log — ghi lại lý do thật của đăng nhập thất bại (xem
- * theme/setup/performance.php — login_errors filter chỉ hiện 1 câu chung
- * cho người dùng, chi tiết thật được lưu riêng ở đây cho admin kiểm tra).
+ * Login Log
  */
 add_action('init', function () {
     if (class_exists('\App\Settings\LoginLog\LoginLogManager')) {
@@ -350,15 +492,27 @@ add_action('after_setup_theme', function () {
     if (class_exists('\App\Settings\Security\CoreInfoFileCleanup')) {
         (new \App\Settings\Security\CoreInfoFileCleanup())->register();
     }
+    if (class_exists('\App\Settings\Security\SvgUploadGuard')) {
+        (new \App\Settings\Security\SvgUploadGuard())->register();
+    }
+    if (class_exists('\App\Settings\Security\LoginHoneypot')) {
+        (new \App\Settings\Security\LoginHoneypot())->register();
+    }
+    if (class_exists('\App\Settings\Security\LoginPolicy')) {
+        (new \App\Settings\Security\LoginPolicy())->register();
+    }
+    if (class_exists('\App\Settings\Security\BreachedPasswordGuard')) {
+        (new \App\Settings\Security\BreachedPasswordGuard())->register();
+    }
+    if (class_exists('\App\Settings\Security\AdminLoginAlert')) {
+        (new \App\Settings\Security\AdminLoginAlert())->register();
+    }
 }, 15);
 
 /**
  * Discord Hub — đẩy lead/hoạt động/cảnh báo bảo mật về Discord (Laca Admin → Discord Hub).
- * Boot ở after_setup_theme (sớm hơn init) vì một số sự kiện cần bắt có thể xảy ra
- * ngay đầu request (xác thực Application Password qua REST).
  */
 add_action('after_setup_theme', function () {
-    // Tính năng phụ: file đang upload dở khi deploy (ParseError/Class not found) không được làm sập site.
     try {
         if (class_exists('\App\Features\DiscordHub\DiscordHub')) {
             (new \App\Features\DiscordHub\DiscordHub())->boot();
@@ -374,11 +528,30 @@ add_action('after_setup_theme', function () {
     } catch (\Throwable $e) {
         error_log('[laca-seo] Không khởi động được: ' . $e->getMessage());
     }
+
+    try {
+        if (class_exists('\App\Features\Dev\LocalMediaProxy')) {
+            \App\Features\Dev\LocalMediaProxy::boot();
+        }
+    } catch (\Throwable $e) {
+        error_log('[laca-dev-media-proxy] Không khởi động được: ' . $e->getMessage());
+    }
 }, 20);
 
 /**
- * Bảo vệ tài khoản Super User mặc định (lacadev) — không cho user khác xoá
- * hoặc đổi quyền, áp dụng cả REST API nên không được gate trong is_admin().
+ * Đăng ký lệnh WP-CLI đồng bộ Production -> Local (wp laca ...)
+ */
+if (defined('WP_CLI') && \WP_CLI) {
+    if (class_exists('\App\Cli\LacaSyncCommand')) {
+        \WP_CLI::add_command('laca', \App\Cli\LacaSyncCommand::class);
+    }
+    if (class_exists('\App\Cli\LacaThemeCommand')) {
+        \WP_CLI::add_command('laca-theme', \App\Cli\LacaThemeCommand::class);
+    }
+}
+
+/**
+ * Bảo vệ tài khoản Super User mặc định (lacadev)
  */
 add_action('init', function () {
     if (class_exists('\App\Settings\Security\SuperUserGuard')) {
@@ -403,7 +576,6 @@ function app_render_featured_image_column($column, $postId) {
         return;
     }
     
-    // Generate nonce for CSRF protection
     $nonce = wp_create_nonce('update_post_thumbnail');
     $nonce_attr = esc_attr($nonce);
     $post_id_attr = absint($postId);
@@ -411,12 +583,10 @@ function app_render_featured_image_column($column, $postId) {
     $thumbnailUrl = get_the_post_thumbnail_url($postId, 'thumbnail');
     
     if ($thumbnailUrl) {
-        // Has thumbnail - show image with remove button (same as Service)
         echo "<div class='thumbnail-wrap'>";
         echo "<a href='javascript:void(0)' data-trigger-change-thumbnail-id data-post-id='{$post_id_attr}' data-nonce='{$nonce_attr}'>";
         echo "<img src='" . esc_url($thumbnailUrl) . "' class='thumbnail-preview' alt='Thumbnail'/>";
         echo "</a>";
-        // Remove button (white X on black background)
         echo "<a class='remove-thumbnail' href='javascript:void(0)' data-trigger-remove-thumbnail data-post-id='{$post_id_attr}' data-nonce='{$nonce_attr}' title='Remove thumbnail'>
                 <svg viewBox='0 0 12 12'>
                     <path d='M10 2L2 10M2 2L10 10' stroke='#ffffff' stroke-width='2' stroke-linecap='round'/>
@@ -424,7 +594,6 @@ function app_render_featured_image_column($column, $postId) {
             </a>";
         echo "</div>";
     } else {
-        // No thumbnail - show WordPress-style "Set featured image" link (same as Service)
         echo "<a href='javascript:void(0)' data-trigger-change-thumbnail-id data-post-id='{$post_id_attr}' data-nonce='{$nonce_attr}'>";
         echo "<div class='no-image-text'><span>Choose</span><span>image</span></div>";
         echo "</a>";
@@ -435,7 +604,6 @@ add_action('manage_post_posts_custom_column', 'app_render_featured_image_column'
 
 /**
  * Expose WooCommerce category thumbnail via WP core REST API.
- * Allows Gutenberg editor to load category images through @wordpress/data.
  */
 add_action('rest_api_init', function () {
     register_rest_field('product_cat', 'cat_image_url', [
@@ -455,3 +623,22 @@ add_action('rest_api_init', function () {
         ],
     ]);
 });
+
+/**
+ * Register Theme Options Snapshot cache and Option Defaults.
+ */
+if (class_exists(\App\Helpers\ThemeOptionsCache::class)) {
+    \App\Helpers\ThemeOptionsCache::register();
+}
+if (class_exists(\App\Helpers\OptionDefaults::class)) {
+    \App\Helpers\OptionDefaults::register();
+}
+if (class_exists(\App\Features\Performance\PostViewTracker::class)) {
+    \App\Features\Performance\PostViewTracker::register();
+}
+if (class_exists(\App\Features\Performance\FreshNonceHandler::class)) {
+    \App\Features\Performance\FreshNonceHandler::register();
+}
+if (class_exists(\App\Features\Performance\CacheCompat::class)) {
+    \App\Features\Performance\CacheCompat::register();
+}

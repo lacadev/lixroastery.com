@@ -12,14 +12,34 @@ namespace App\Settings\LoginLog;
  */
 class LoginLogTable
 {
-    public static function install(): void
+    public const TABLE_VERSION = '1.0.0';
+    public const VERSION_KEY   = 'laca_login_log_table_version';
+
+    public static function install(bool $force = false): void
     {
         global $wpdb;
         $table   = $wpdb->prefix . 'laca_login_log';
         $charset = $wpdb->get_charset_collate();
 
-        if ($wpdb->get_var("SHOW TABLES LIKE '{$table}'") === $table) {
-            return;
+        if (!$force) {
+            $installedVersion = get_option(self::VERSION_KEY);
+            if ($installedVersion === self::TABLE_VERSION) {
+                // Tự chữa chỉ chạy ở admin với transient 12h
+                if (is_admin()) {
+                    $checked = get_transient('laca_login_log_table_check');
+                    if ($checked === false) {
+                        $existing = $wpdb->get_var($wpdb->prepare('SHOW TABLES LIKE %s', $wpdb->esc_like($table)));
+                        if ($existing === $table) {
+                            set_transient('laca_login_log_table_check', 1, 12 * HOUR_IN_SECONDS);
+                            return;
+                        }
+                    } else {
+                        return;
+                    }
+                } else {
+                    return;
+                }
+            }
         }
 
         $sql = "CREATE TABLE {$table} (
@@ -36,6 +56,8 @@ class LoginLogTable
 
         require_once ABSPATH . 'wp-admin/includes/upgrade.php';
         dbDelta($sql);
+
+        update_option(self::VERSION_KEY, self::TABLE_VERSION, 'yes');
     }
 
     public static function log(string $username, string $ip, string $errorCode, string $errorMessage): void

@@ -104,26 +104,24 @@ class AdminPage
 
         wp_enqueue_media();
 
-        // Enqueue bundled laca-seo styles and scripts from child/parent dist
-        $theme_root_uri = dirname(get_stylesheet_directory_uri());
-        // filemtime để trình duyệt nhận bản build mới ngay (quy ước cache-busting của theme).
-        $dist_dir = dirname(get_stylesheet_directory()) . '/dist/';
-
-        if (file_exists(dirname(get_stylesheet_directory()) . '/dist/styles/laca-seo.css')) {
+        // Enqueue bundled laca-seo styles and scripts (ưu tiên parent dist, fallback child dist)
+        $styleAsset = function_exists('lacaParentAsset') ? \lacaParentAsset('styles/laca-seo.css') : null;
+        if ($styleAsset) {
             wp_enqueue_style(
                 'laca-seo-admin',
-                $theme_root_uri . '/dist/styles/laca-seo.css',
+                $styleAsset['url'],
                 ['dashicons'],
-                (string) filemtime($dist_dir . 'styles/laca-seo.css')
+                (string) $styleAsset['ver']
             );
         }
 
-        if (file_exists(dirname(get_stylesheet_directory()) . '/dist/laca-seo.js')) {
+        $scriptAsset = function_exists('lacaParentAsset') ? \lacaParentAsset('laca-seo.js') : null;
+        if ($scriptAsset) {
             wp_enqueue_script(
                 'laca-seo-admin',
-                $theme_root_uri . '/dist/laca-seo.js',
+                $scriptAsset['url'],
                 ['wp-i18n'],
-                (string) filemtime($dist_dir . 'laca-seo.js'),
+                (string) $scriptAsset['ver'],
                 true
             );
 
@@ -132,9 +130,9 @@ class AdminPage
                 'nonce'     => wp_create_nonce('laca_seo_admin_nonce'),
                 'variables' => \App\Features\LacaSeo\Core\Variables::getAvailableList(),
                 'i18n'      => [
-                    'confirmReset' => 'Bạn có chắc chắn muốn khôi phục mặc định toàn bộ cài đặt trong tab này không?',
-                    'saved'        => 'Đã lưu cài đặt thành công.',
-                    'copied'       => 'Đã sao chép vào bộ nhớ tạm!',
+                    'confirmReset' => __('Bạn có chắc chắn muốn khôi phục mặc định toàn bộ cài đặt trong tab này không?', 'laca'),
+                    'saved'        => __('Đã lưu cài đặt thành công.', 'laca'),
+                    'copied'       => __('Đã sao chép vào bộ nhớ tạm!', 'laca'),
                 ],
             ]);
         }

@@ -187,8 +187,8 @@ class Field
         return match ($this->type) {
             'toggle' => ($value === 'on' || $value === 1 || $value === '1' || $value === true) ? 'on' : 'off',
             'number' => is_numeric($value) ? (int) $value : 0,
-            'textarea', 'variable_textarea' => sanitize_textarea_field((string) $value),
-            'code' => (string) $value, // Don't strip newlines or special chars for robots/htaccess
+            'textarea', 'variable_textarea' => is_array($value) ? '' : sanitize_textarea_field((string) $value),
+            'code' => is_array($value) ? '' : (string) $value, // Don't strip newlines or special chars for robots/htaccess
             'multicheck', 'robots' => is_array($value) ? array_map('sanitize_text_field', $value) : [],
             'group' => is_array($value) ? array_values($value) : [],
             'advanced_robots' => is_array($value) ? [

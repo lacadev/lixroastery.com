@@ -82,8 +82,9 @@ class BlockSyncWidget
                     </summary>
                     <ul class="laca-sync-tag-list">
                         <?php foreach ($installed as $name => $version): ?>
+                        <?php $verLabel = is_array($version) ? (string) ($version['version'] ?? '') : (string) $version; ?>
                         <li class="laca-sync-tag">
-                            <?php echo esc_html($name); ?> <span><?php echo esc_html($version); ?></span>
+                            <?php echo esc_html((string) $name); ?> <span><?php echo esc_html($verLabel); ?></span>
                         </li>
                         <?php endforeach; ?>
                     </ul>

@@ -5,45 +5,67 @@ namespace App\Settings\LacaTools;
 class Security
 {
     protected $currentUser;
-
-	protected $errorMessage = '';
+    protected $errorMessage = '';
 
     public function __construct()
     {
         $this->currentUser = wp_get_current_user();
+        $this->applyOptions();
+    }
 
-        // Enhance website security
-        if (get_option('_disable_rest_api') === 'yes') {
+    private function isEnabled(string $name): bool
+    {
+        $val = get_option('_' . $name);
+        if ($val === 'yes' || $val === '1' || $val === 1 || $val === true) {
+            return true;
+        }
+        // Class được khởi tạo lúc nạp theme — trước khi Carbon Fields đăng ký field thì gọi carbon_get_* sẽ fatal
+        if (did_action('carbon_fields_fields_registered') && function_exists('carbon_get_theme_option')) {
+            return (bool) carbon_get_theme_option($name);
+        }
+        return false;
+    }
+
+    public function applyOptions(): void
+    {
+        if ($this->isEnabled('disable_rest_api')) {
             $this->disableRestApi();
         }
 
-        if (get_option('_disable_xml_rpc') === 'yes') {
+        if ($this->isEnabled('disable_xml_rpc')) {
             $this->disableXmlRpc();
         }
 
-        if (get_option('_disable_wp_embed') === 'yes') {
+        if ($this->isEnabled('disable_wp_embed')) {
             $this->disableWpEmbed();
         }
 
-        if (get_option('_disable_x_pingback') === 'yes') {
+        if ($this->isEnabled('disable_x_pingback')) {
             $this->disableXPingback();
+        }
+
+        if ($this->isEnabled('enable_remove_wordpress_bloat')) {
+            $this->removeWordPressBloat();
+        }
+
+        if ($this->isEnabled('enable_optimize_database_queries')) {
+            $this->optimizeDatabaseQueries();
+        }
+
+        if ($this->isEnabled('enable_optimize_memory_usage')) {
+            $this->optimizeMemoryUsage();
         }
     }
 
     public function disableRestApi()
     {
-        add_filter( 'rest_authentication_errors', function( $result ) {
-            if ( true === $result || is_wp_error( $result ) ) {
+        add_filter('rest_authentication_errors', function ($result) {
+            if (true === $result || is_wp_error($result)) {
                 return $result;
             }
 
-            // Check if the user is logged in
-            if ( ! is_user_logged_in() ) {
-                // "\WP_Error" (có dấu \) — thiếu dấu \ sẽ khiến PHP tìm class
-                // "App\Settings\LacaTools\WP_Error" (không tồn tại, vì file
-                // này nằm trong namespace App\Settings\LacaTools) thay vì
-                // class gốc, gây Fatal Error ngay khi filter này chạy.
-                return new \WP_Error( 'rest_not_logged_in',  __('You are not logged in', 'laca'), array( 'status' => 401 ) );
+            if (!is_user_logged_in()) {
+                return new \WP_Error('rest_not_logged_in', __('You are not logged in', 'laca'), ['status' => 401]);
             }
 
             return $result;
@@ -62,16 +84,17 @@ class Security
 
     public function disableWpEmbed()
     {
-        add_action('init', function() {
+        add_action('init', function () {
             wp_deregister_script('wp-embed');
             remove_action('wp_head', 'wp_oembed_add_discovery_links');
             remove_action('wp_head', 'wp_oembed_add_host_js');
+            remove_filter('the_content', [GLOBALS['wp_embed'] ?? null, 'autoembed'], 8);
         });
     }
 
     public function disableXPingback()
     {
-        add_filter('wp_headers', function($headers) {
+        add_filter('wp_headers', function (array $headers): array {
             if (isset($headers['X-Pingback'])) {
                 unset($headers['X-Pingback']);
             }
@@ -80,7 +103,24 @@ class Security
     }
 
     /**
-     * Giới hạn số lượng post revision và tăng autosave interval
+     * Loại bỏ bloat WordPress: RSD link, wlwmanifest, shortlink, generator tag,
+     * adjacent posts links, REST API link header.
+     */
+    public function removeWordPressBloat()
+    {
+        add_action('init', function () {
+            remove_action('wp_head', 'rsd_link');
+            remove_action('wp_head', 'wlwmanifest_link');
+            remove_action('wp_head', 'wp_shortlink_wp_head');
+            remove_action('wp_head', 'wp_generator');
+            remove_action('wp_head', 'adjacent_posts_rel_link_wp_head', 10);
+            remove_action('wp_head', 'rest_output_link_wp_head', 10);
+            remove_action('template_redirect', 'rest_output_link_header', 11);
+        });
+    }
+
+    /**
+     * Giới hạn post revision (giữ tối đa 3) và tăng autosave interval lên 5 phút.
      */
     public function optimizeDatabaseQueries()
     {
@@ -115,12 +155,12 @@ class Security
     }
 
     /**
-     * Tăng memory limit và bật garbage collection
+     * Tăng memory limit lên 256MB và bật PHP garbage collection.
      */
     public function optimizeMemoryUsage()
     {
-        if (function_exists('ini_get') && ini_get('memory_limit') < 256) {
-            ini_set('memory_limit', '256M');
+        if (function_exists('ini_get') && (int) ini_get('memory_limit') < 256) {
+            @ini_set('memory_limit', '256M');
         }
         if (function_exists('gc_enable')) {
             gc_enable();
@@ -136,5 +176,4 @@ class Security
             gc_collect_cycles();
         }
     }
-
 }

@@ -108,4 +108,63 @@ class Crypto
         $decoded = base64_decode($text, true);
         return $decoded !== false && strlen($decoded) > openssl_cipher_iv_length(self::CIPHER_ALGO);
     }
+
+    // ═══════════════════════════════════════════════════════════
+    //  TAGGED ENCRYPTION (dùng cho 2FA secret, SMTP password…)
+    //  Prefix 'laca:v1:' giúp phân biệt rõ ràng giá trị đã mã hoá
+    //  với plaintext — không phụ thuộc heuristic base64.
+    // ═══════════════════════════════════════════════════════════
+
+    private const TAG_PREFIX = 'laca:v1:';
+
+    /**
+     * Mã hoá và gắn prefix tag để nhận diện rõ ràng.
+     */
+    public static function encryptTagged(string $plainText): string
+    {
+        if (empty($plainText)) {
+            return '';
+        }
+
+        $encrypted = self::encrypt($plainText);
+        if (empty($encrypted)) {
+            return '';
+        }
+
+        return self::TAG_PREFIX . $encrypted;
+    }
+
+    /**
+     * Giải mã chuỗi có prefix tag.
+     * Trả về null khi giải mã thất bại (vd đổi AUTH_KEY).
+     */
+    public static function decryptTagged(string $taggedText): ?string
+    {
+        if (empty($taggedText)) {
+            return null;
+        }
+
+        if (!self::isTagged($taggedText)) {
+            return null;
+        }
+
+        $cipherText = substr($taggedText, strlen(self::TAG_PREFIX));
+        $result     = self::decrypt($cipherText);
+
+        // decrypt() trả về nguyên chuỗi cipher khi giải mã thất bại
+        // → nếu kết quả trùng với cipherText ban đầu thì coi là thất bại
+        if ($result === $cipherText) {
+            return null;
+        }
+
+        return $result;
+    }
+
+    /**
+     * Kiểm tra chuỗi có prefix tag hay không (không dùng heuristic).
+     */
+    public static function isTagged(string $text): bool
+    {
+        return str_starts_with($text, self::TAG_PREFIX);
+    }
 }

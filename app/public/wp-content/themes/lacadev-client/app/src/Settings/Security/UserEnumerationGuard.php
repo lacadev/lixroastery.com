@@ -17,6 +17,7 @@ final class UserEnumerationGuard
     {
         add_action('template_redirect', [$this, 'blockAuthorQuery'], 1);
         add_filter('oembed_response_data', [$this, 'stripOembedAuthor'], 10, 1);
+        add_filter('rest_pre_dispatch', [$this, 'blockRestUserEnumeration'], 10, 3);
     }
 
     public function blockAuthorQuery(): void
@@ -43,5 +44,32 @@ final class UserEnumerationGuard
         $data = (array) $data;
         unset($data['author_name'], $data['author_url']);
         return $data;
+    }
+
+    /**
+     * Chặn khách chưa đăng nhập truy cập endpoint REST /wp/v2/users để lộ danh sách username.
+     * Người dùng đã đăng nhập (admin/editor trong Gutenberg) vẫn truy cập bình thường.
+     *
+     * @param mixed            $result
+     * @param \WP_REST_Server  $server
+     * @param \WP_REST_Request $request
+     * @return mixed
+     */
+    public function blockRestUserEnumeration($result, $server, $request)
+    {
+        if (is_user_logged_in()) {
+            return $result;
+        }
+
+        $route = $request instanceof \WP_REST_Request ? $request->get_route() : '';
+        if (str_starts_with($route, '/wp/v2/users')) {
+            return new \WP_Error(
+                'rest_cannot_view',
+                __('Bạn không có quyền xem thông tin thành viên.', 'laca'),
+                ['status' => 401]
+            );
+        }
+
+        return $result;
     }
 }

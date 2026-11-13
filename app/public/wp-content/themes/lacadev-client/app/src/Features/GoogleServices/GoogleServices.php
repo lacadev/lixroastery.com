@@ -477,15 +477,13 @@ class GoogleServices
             return;
         }
 
-        $distDir = dirname(get_stylesheet_directory()) . '/dist/';
-        $themeRootUri = dirname(get_stylesheet_directory_uri());
-
-        if (file_exists($distDir . 'styles/laca-seo.css')) {
+        $styleAsset = function_exists('lacaParentAsset') ? \lacaParentAsset('styles/laca-seo.css') : null;
+        if ($styleAsset) {
             wp_enqueue_style(
                 'laca-seo-admin',
-                $themeRootUri . '/dist/styles/laca-seo.css',
+                $styleAsset['url'],
                 ['dashicons'],
-                (string) filemtime($distDir . 'styles/laca-seo.css')
+                (string) $styleAsset['ver']
             );
         }
 

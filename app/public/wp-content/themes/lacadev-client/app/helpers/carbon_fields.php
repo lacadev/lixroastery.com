@@ -1,8 +1,9 @@
 <?php
+
 /**
- * Load Carbon Fields.
+ * Carbon Fields Helper Functions
  *
- * @package WPEmergeCli
+ * @package WPEmergeTheme
  */
 
 /**
@@ -24,13 +25,37 @@ function app_bootstrap_carbon_fields_register_fields() {
             }
         }
     }
-    include_once APP_APP_SETUP_DIR . 'category_meta.php';
-    include_once APP_APP_SETUP_DIR . 'contact_page_meta.php';
+
+    if (file_exists(APP_APP_SETUP_DIR . 'category_meta.php')) {
+        include_once APP_APP_SETUP_DIR . 'category_meta.php';
+    }
+
+    if (file_exists(APP_APP_SETUP_DIR . 'contact_page_meta.php')) {
+        include_once APP_APP_SETUP_DIR . 'contact_page_meta.php';
+    }
 }
 
 /**
- * Filter Google Maps API key for Carbon Fields.
+ * Get a theme option with a default value.
+ *
+ * @param  string $name
+ * @param  mixed  $default
+ * @return mixed
  */
-function app_filter_carbon_fields_google_maps_api_key() {
-    return carbon_get_theme_option('crb_google_maps_api_key');
+function app_get_theme_option( $name, $default = null ) {
+    if ( function_exists( 'laca_theme_option' ) ) {
+        $value = laca_theme_option( $name, $default );
+        if ( ! empty( $value ) || is_null( $default ) ) {
+            return $value;
+        }
+        return $default;
+    }
+
+    $value = function_exists( 'carbon_get_theme_option' ) ? carbon_get_theme_option( $name ) : null;
+
+    if ( empty( $value ) && ! is_null( $default ) ) {
+        return $default;
+    }
+
+    return $value;
 }

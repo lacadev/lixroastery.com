@@ -2,6 +2,8 @@
 
 namespace App\Settings;
 
+use App\Security\ReleaseVerifier;
+
 if (!defined('ABSPATH')) {
     exit;
 }
@@ -9,40 +11,140 @@ if (!defined('ABSPATH')) {
 /**
  * LacaDev Theme Updater
  *
- * Tự động check phiên bản mới của theme (cha hoặc con) từ clients.lacadev.com
- * và hiện thông báo update trong WP Admin — giống plugin update.
- *
- * Cách hoạt động:
- *   1. WordPress gọi pre_set_site_transient_update_themes mỗi 12h
- *   2. Class này fetch info.json từ clients.lacadev.com
- *   3. So sánh version → nếu mới hơn, thêm vào queue update của WP
- *   4. Admin thấy thông báo, click "Cập nhật ngay" → WP tự download & cài
+ * Tự động kiểm tra, xác minh chữ ký Ed25519 + SHA-256, tạo snapshot dự phòng
+ * và cập nhật Parent Theme từ Hub LacaDev.
  */
 class ThemeUpdater
 {
+    public const BLOCKED_TRANSIENT     = 'laca_theme_update_blocked';
+    public const INTEGRITY_THROTTLE_PREFIX = 'laca_theme_integrity_report_';
+
+    /** @var array<string, self> */
+    private static array $instances = [];
+
+    /** Nguồn kích hoạt cập nhật do handler bên ngoài đặt (vd: 'remote') */
+    private static ?string $forcedSource = null;
+
     /** Cache TTL: 6 giờ */
     private int $cacheTtl = 6 * HOUR_IN_SECONDS;
 
-    /** Cache transient key (tránh gọi API quá nhiều) — động theo từng theme */
+    /** Cache transient key — động theo từng theme */
     private string $cacheKey;
 
+    /** Manifest đã được xác minh chữ ký trong request hiện tại */
+    private ?object $verifiedManifest = null;
+
+    /** Trạng thái ghi nhận trước khi cài đặt để báo cáo sau khi hoàn tất */
+    private string $updatingFromVersion = '';
+    private float $updateStartTime = 0.0;
+    private bool $updateFailedInCurrentRun = false;
+    private ?\WP_Error $lastUpgradeError = null;
+
+    public function getLastUpgradeError(): ?\WP_Error
+    {
+        return $this->lastUpgradeError;
+    }
+
     /**
-     * @param string $themeSlug     Slug đầy đủ của theme, PHẢI khớp với "stylesheet"
-     *                              mà WordPress dùng nội bộ — vì theme này dùng cấu
-     *                              trúc lồng cấp (root thật nằm ở thư mục con `theme/`),
-     *                              slug đúng có dạng 'lacadev-client/theme', không phải
-     *                              chỉ 'lacadev-client'.
-     * @param string $updateInfoUrl URL file info.json đặt trên clients.lacadev.com.
+     * Khởi tạo singleton theo themeSlug để tránh đăng ký trùng hook giữa Admin / CLI / REST / Cron.
+     */
+    public static function boot(string $themeSlug, string $updateInfoUrl): self
+    {
+        if (!isset(self::$instances[$themeSlug])) {
+            self::$instances[$themeSlug] = new self($themeSlug, $updateInfoUrl);
+        }
+
+        return self::$instances[$themeSlug];
+    }
+
+    public static function getInstance(string $themeSlug = 'lacadev-client/theme'): ?self
+    {
+        return self::$instances[$themeSlug] ?? null;
+    }
+
+    public static function setForcedSource(?string $source): void
+    {
+        self::$forcedSource = $source;
+    }
+
+    public static function detectSource(): string
+    {
+        if (self::$forcedSource !== null && self::$forcedSource !== '') {
+            return self::$forcedSource;
+        }
+        if (defined('WP_CLI') && \WP_CLI) {
+            return 'cli';
+        }
+        if (function_exists('wp_doing_ajax') && wp_doing_ajax()) {
+            return 'ajax';
+        }
+
+        return 'dashboard';
+    }
+
+    public static function clearStaticCache(string $themeSlug = 'lacadev-client/theme'): void
+    {
+        delete_transient('lacadev_theme_update_' . md5($themeSlug));
+        delete_transient(self::BLOCKED_TRANSIENT);
+        if (isset(self::$instances[$themeSlug])) {
+            self::$instances[$themeSlug]->verifiedManifest = null;
+        }
+    }
+
+    /**
+     * Gửi báo cáo kết quả cập nhật/rollback cấu trúc chuẩn về Hub.
+     *
+     * @param array<string, mixed> $extra
+     */
+    public static function sendUpdateReport(string $result, array $extra = []): void
+    {
+        if (!class_exists(LacaDevTrackerClient::class)) {
+            return;
+        }
+
+        $source = (string) ($extra['source'] ?? self::detectSource());
+        $from   = (string) ($extra['from'] ?? '');
+        $to     = (string) ($extra['to'] ?? '');
+        $error  = (string) ($extra['error'] ?? '');
+
+        $meta = array_merge([
+            'from'        => $from,
+            'to'          => $to,
+            'result'      => $result,
+            'error'       => $error,
+            'sha256'      => (string) ($extra['sha256'] ?? ''),
+            'duration_ms' => (int) ($extra['duration_ms'] ?? 0),
+            'source'      => $source,
+        ], $extra);
+
+        $level = in_array($result, ['failed', 'integrity_failed'], true) ? 'critical' : 'info';
+
+        $content = match ($result) {
+            'success'          => sprintf('Cập nhật parent theme thành công (%s -> %s) [%s]', $from ?: '?', $to ?: '?', $source),
+            'rolled_back'      => sprintf('Khôi phục (rollback) parent theme (%s -> %s) [%s]', $from ?: '?', $to ?: '?', $source),
+            'integrity_failed' => sprintf('Xác minh toàn vẹn gói cập nhật parent theme thất bại (%s): %s', $to ?: '?', $error ?: 'signature/checksum mismatch'),
+            default            => sprintf('Cập nhật parent theme thất bại (%s -> %s): %s', $from ?: '?', $to ?: '?', $error ?: 'unknown error'),
+        };
+
+        LacaDevTrackerClient::sendStructuredLog('theme_update_result', $meta, $level, $content);
+    }
+
+    /**
+     * @param string $themeSlug     Slug đầy đủ của theme ('lacadev-client/theme').
+     * @param string $updateInfoUrl URL file manifest JSON trên Hub.
      */
     public function __construct(
         private string $themeSlug,
         private string $updateInfoUrl,
     ) {
         $this->updateInfoUrl = (string) apply_filters('laca_theme_update_json_url', $this->updateInfoUrl);
-        $this->cacheKey = 'lacadev_theme_update_' . md5($this->themeSlug);
+        $this->cacheKey      = 'lacadev_theme_update_' . md5($this->themeSlug);
+        self::$instances[$this->themeSlug] = $this;
 
         add_filter('pre_set_site_transient_update_themes', [$this, 'checkForUpdate']);
         add_filter('themes_api', [$this, 'themeInfo'], 10, 3);
+        add_filter('upgrader_pre_download', [$this, 'verifiedDownload'], 10, 4);
+        add_filter('upgrader_pre_install', [$this, 'snapshotBeforeInstall'], 10, 2);
         add_action('upgrader_process_complete', [$this, 'clearCache'], 10, 2);
         // Ưu tiên 9: phải chạy trước Theme_Upgrader::check_package (ưu tiên 10).
         add_filter('upgrader_source_selection', [$this, 'allowNestedThemePackage'], 9, 4);
@@ -53,21 +155,39 @@ class ThemeUpdater
         // Ưu tiên 9: gỡ current_after của core khi parent theme active trực tiếp để tránh switch_theme sai.
         add_filter('upgrader_post_install', [$this, 'preventFalseThemeSwitch'], 9, 3);
         // Hỗ trợ AJAX "Update now" trên themes.php khi slug có dấu gạch chéo.
-        // admin-ajax.php gọi do_action('wp_ajax_' . $_POST['action']), với action là 'update-theme' (dấu gạch nối).
         add_action('wp_ajax_update-theme', [$this, 'handleAjaxThemeUpdate'], 0);
         add_action('wp_ajax_update_theme', [$this, 'handleAjaxThemeUpdate'], 0);
+
+        if (is_admin()) {
+            add_action('admin_notices', [$this, 'renderBlockedUpdateNotice']);
+        }
+    }
+
+    /**
+     * Hiển thị cảnh báo trong Admin khi bản cập nhật mới bị chặn do yêu cầu phiên bản PHP / WordPress.
+     */
+    public function renderBlockedUpdateNotice(): void
+    {
+        if (!current_user_can('update_themes')) {
+            return;
+        }
+
+        $blocked = get_transient(self::BLOCKED_TRANSIENT);
+        if (!is_array($blocked) || empty($blocked['reason'])) {
+            return;
+        }
+
+        echo '<div class="notice notice-warning"><p>' . esc_html((string) $blocked['reason']) . '</p></div>';
     }
 
     /**
      * Core wp_ajax_update_theme dùng preg_replace('/[^A-z0-9_\-]/', '', $slug)
-     * làm mất dấu / trong 'lacadev-client/theme' thành 'lacadev-clienttheme'
-     * → không tìm thấy update → báo "The theme is at the latest version".
-     * Intercept tại priority 0 để xử lý đúng slug cho theme này.
+     * làm mất dấu / trong 'lacadev-client/theme'. Intercept tại priority 0.
      */
     public function handleAjaxThemeUpdate(): void
     {
-        $rawSlug = isset($_POST['slug']) ? wp_unslash($_POST['slug']) : '';
-        $cleanSlug = preg_replace('/[^A-z0-9_\-]/', '', $rawSlug);
+        $rawSlug       = isset($_POST['slug']) ? wp_unslash($_POST['slug']) : '';
+        $cleanSlug     = preg_replace('/[^A-z0-9_\-]/', '', $rawSlug);
         $expectedClean = preg_replace('/[^A-z0-9_\-]/', '', $this->themeSlug);
 
         if ($rawSlug !== $this->themeSlug && $cleanSlug !== $expectedClean) {
@@ -84,7 +204,7 @@ class ThemeUpdater
         ];
 
         if (!current_user_can('update_themes')) {
-            $status['errorMessage'] = __('Sorry, you are not allowed to update themes for this site.');
+            $status['errorMessage'] = __('Bạn không có quyền cập nhật giao diện trên trang này.', 'laca');
             wp_send_json_error($status);
         }
 
@@ -96,19 +216,19 @@ class ThemeUpdater
         require_once ABSPATH . 'wp-admin/includes/class-wp-upgrader.php';
         require_once ABSPATH . 'wp-admin/includes/theme.php';
 
-        $skin = new \WP_Ajax_Upgrader_Skin();
+        $skin     = new \WP_Ajax_Upgrader_Skin();
         $upgrader = new \Theme_Upgrader($skin);
-        $result = $upgrader->upgrade($this->themeSlug);
+        $result   = $upgrader->upgrade($this->themeSlug);
 
         if (is_wp_error($result)) {
-            $status['errorCode'] = $result->get_error_code();
+            $status['errorCode']    = $result->get_error_code();
             $status['errorMessage'] = $result->get_error_message();
             wp_send_json_error($status);
         } elseif ($result === false) {
             if ($skin->get_errors()->has_errors()) {
                 $status['errorMessage'] = $skin->get_error_messages();
             } else {
-                $status['errorMessage'] = $upgrader->strings['up_to_date'] ?? __('The theme is at the latest version.');
+                $status['errorMessage'] = $upgrader->strings['up_to_date'] ?? __('Giao diện đang ở phiên bản mới nhất.', 'laca');
             }
             wp_send_json_error($status);
         }
@@ -122,7 +242,7 @@ class ThemeUpdater
     }
 
     /**
-     * Cho phép request tới host local (vd .local) khi ở môi trường local
+     * Cho phép request tới host local (vd .local) khi ở môi trường local.
      */
     public function allowLocalHubHost(bool $allow, string $host): bool
     {
@@ -131,14 +251,12 @@ class ThemeUpdater
                 return true;
             }
         }
+
         return $allow;
     }
 
     /**
-     * WP sao lưu bản cũ vào upgrade-temp-backup/themes/{slug}. Slug lồng cấp
-     * 'lacadev-client/theme' làm WP chuyển vào thư mục con chưa tồn tại → lỗi
-     * "Không thể di chuyển phiên bản cũ vào thư mục upgrade-temp-backup".
-     * Đổi slug sao lưu thành thư mục gốc để sao lưu (và khôi phục khi lỗi) cả theme.
+     * Đổi slug sao lưu tạm thành thư mục gốc của theme để tránh lỗi thư mục lồng cấp.
      */
     public function backupWholeThemeFolder(array $options): array
     {
@@ -152,10 +270,134 @@ class ThemeUpdater
     }
 
     /**
-     * Theme dùng cấu trúc lồng cấp nên style.css nằm ở `theme/style.css`, không nằm ở gốc
-     * gói zip. Theme_Upgrader::check_package() (dùng khi cập nhật ở Bảng tin → Cập nhật)
-     * đòi style.css ở gốc nên luôn báo "thiếu style.css". Với đúng theme này thì bỏ bước
-     * kiểm đó và tự kiểm style.css ở vị trí thật.
+     * Xác minh SHA-256 của gói tải về trước khi giải nén (`upgrader_pre_download`).
+     */
+    public function verifiedDownload(mixed $reply, string $package, mixed $upgrader, array $hookExtra = []): mixed
+    {
+        if ($reply !== false) {
+            return $reply;
+        }
+
+        $theme   = (string) ($hookExtra['theme'] ?? '');
+        $themes  = (array) ($hookExtra['themes'] ?? []);
+        $manifest = $this->verifiedManifest ?? $this->getRemoteInfo();
+
+        $matchesTheme = ($theme === $this->themeSlug) || in_array($this->themeSlug, $themes, true);
+        $matchesUrl   = ($manifest !== null && !empty($manifest->download_url) && $package === (string) $manifest->download_url);
+
+        if (!$matchesTheme && !$matchesUrl) {
+            return false;
+        }
+
+        $this->updateFailedInCurrentRun = false;
+        $this->lastUpgradeError         = null;
+        $this->updatingFromVersion      = $this->getCurrentVersion();
+        $this->updateStartTime          = microtime(true);
+
+        $allowUnsigned = (bool) apply_filters('laca_allow_unsigned_theme_manifest', false);
+        if ($manifest === null || (!$allowUnsigned && empty($manifest->sha256))) {
+            $this->updateFailedInCurrentRun = true;
+            $err = new \WP_Error(
+                'laca_manifest_unverified',
+                __('Không thể xác minh chữ ký manifest phát hành — đã huỷ cập nhật.', 'laca')
+            );
+            $this->lastUpgradeError = $err;
+            $this->reportResult('integrity_failed', [
+                'from'  => $this->updatingFromVersion,
+                'to'    => (string) ($manifest->version ?? ''),
+                'error' => 'missing_verified_manifest',
+            ]);
+            return $err;
+        }
+
+        if (!function_exists('download_url')) {
+            require_once ABSPATH . 'wp-admin/includes/file.php';
+        }
+
+        $tmp = download_url($package, 300);
+        if (is_wp_error($tmp)) {
+            $this->updateFailedInCurrentRun = true;
+            $this->lastUpgradeError         = $tmp;
+            $this->reportResult('failed', [
+                'from'        => $this->updatingFromVersion,
+                'to'          => (string) ($manifest->version ?? ''),
+                'error'       => $tmp->get_error_code() . ': ' . $tmp->get_error_message(),
+                'duration_ms' => (int) round((microtime(true) - $this->updateStartTime) * 1000),
+            ]);
+            return $tmp;
+        }
+
+        if (!$allowUnsigned && !ReleaseVerifier::verifyFile($tmp, (string) $manifest->sha256)) {
+            $actualHash = is_file($tmp) ? (string) hash_file('sha256', $tmp) : '';
+            wp_delete_file($tmp);
+            $this->updateFailedInCurrentRun = true;
+            $err = new \WP_Error(
+                'laca_package_checksum',
+                __('Gói cập nhật không khớp checksum đã ký — đã huỷ cập nhật.', 'laca')
+            );
+            $this->lastUpgradeError = $err;
+            $this->reportResult('integrity_failed', [
+                'from'        => $this->updatingFromVersion,
+                'to'          => (string) ($manifest->version ?? ''),
+                'sha256'      => $actualHash,
+                'error'       => 'laca_package_checksum',
+                'duration_ms' => (int) round((microtime(true) - $this->updateStartTime) * 1000),
+            ]);
+
+            return $err;
+        }
+
+        return $tmp;
+    }
+
+    /**
+     * Tạo snapshot dự phòng trước khi ghi đè thư mục theme (`upgrader_pre_install`).
+     */
+    public function snapshotBeforeInstall(mixed $response, array $hookExtra = []): mixed
+    {
+        if (is_wp_error($response)) {
+            return $response;
+        }
+
+        $theme  = (string) ($hookExtra['theme'] ?? '');
+        $themes = (array) ($hookExtra['themes'] ?? []);
+        if ($theme !== $this->themeSlug && !in_array($this->themeSlug, $themes, true)) {
+            return $response;
+        }
+
+        if ($this->updatingFromVersion === '') {
+            $this->updatingFromVersion = $this->getCurrentVersion();
+        }
+        if ($this->updateStartTime <= 0.0) {
+            $this->updateStartTime = microtime(true);
+        }
+
+        $themesRoot = get_theme_root($this->themeSlug) ?: (WP_CONTENT_DIR . '/themes');
+        $parentDir  = trailingslashit($themesRoot) . strtok($this->themeSlug, '/');
+
+        if (is_dir($parentDir)) {
+            $snap = ThemeSnapshot::create($parentDir, $this->updatingFromVersion ?: 'unknown');
+            if (is_wp_error($snap)) {
+                $allowWithoutSnapshot = (bool) apply_filters('laca_update_allow_without_snapshot', false);
+                if (!$allowWithoutSnapshot) {
+                    $this->updateFailedInCurrentRun = true;
+                    $this->reportResult('failed', [
+                        'from'        => $this->updatingFromVersion,
+                        'to'          => (string) ($this->verifiedManifest->version ?? ''),
+                        'error'       => $snap->get_error_code() . ': ' . $snap->get_error_message(),
+                        'duration_ms' => (int) round((microtime(true) - $this->updateStartTime) * 1000),
+                    ]);
+
+                    return $snap;
+                }
+            }
+        }
+
+        return $response;
+    }
+
+    /**
+     * Hỗ trợ gói theme lồng cấp (`theme/style.css`).
      */
     public function allowNestedThemePackage(mixed $source, mixed $remoteSource, mixed $upgrader, array $hookExtra = []): mixed
     {
@@ -163,22 +405,21 @@ class ThemeUpdater
             return $source;
         }
 
-        $theme = $hookExtra['theme'] ?? '';
+        $theme  = $hookExtra['theme'] ?? '';
         $themes = (array) ($hookExtra['themes'] ?? []);
         if ($theme !== $this->themeSlug && !in_array($this->themeSlug, $themes, true)) {
             return $source;
         }
 
-        // 'lacadev-client/theme' → style.css nằm ở '<gốc gói>/theme/style.css'.
         $relStyle = basename($this->themeSlug) . '/style.css';
 
-        // Cùng cách quy đổi đường dẫn với check_package (filesystem FTP/SSH dùng đường dẫn khác).
         global $wp_filesystem;
         $workingDir = (string) $source;
         if ($wp_filesystem) {
             $workingDir = str_replace($wp_filesystem->wp_content_dir(), trailingslashit(WP_CONTENT_DIR), $workingDir);
         }
         if (is_dir($workingDir) && !file_exists(trailingslashit($workingDir) . $relStyle)) {
+            $this->updateFailedInCurrentRun = true;
             return new \WP_Error(
                 'lacadev_theme_package_invalid',
                 sprintf(
@@ -194,11 +435,7 @@ class ThemeUpdater
     }
 
     /**
-     * WP core Theme_Upgrader::current_after() so sánh $theme ('lacadev-client/theme')
-     * với $destination_name ('lacadev-client'). Nếu khác nhau, nó tự động gọi
-     * switch_theme('lacadev-client') làm hỏng stylesheet của theme lồng cấp khi
-     * parent theme đang active trực tiếp.
-     * Ở ưu tiên 9, gỡ filter current_after của upgrader và tự tắt maintenance mode.
+     * Ngăn core tự switch_theme sai khi parent theme lồng cấp đang active trực tiếp.
      */
     public function preventFalseThemeSwitch(mixed $response, array $hookExtra, array $result): mixed
     {
@@ -233,38 +470,83 @@ class ThemeUpdater
     }
 
     /**
-     * Hook vào WordPress update check — thêm thông tin update nếu có phiên bản mới
+     * Hook vào WordPress update check — kiểm tra tương thích PHP/WP trước khi đưa vào response.
      */
     public function checkForUpdate(mixed $transient): mixed
     {
-        if (empty($transient->checked)) {
+        if (!is_object($transient) || empty($transient->checked)) {
             return $transient;
         }
 
         $remoteInfo = $this->getRemoteInfo();
-
         if (!$remoteInfo || empty($remoteInfo->version)) {
+            unset($transient->response[$this->themeSlug]);
             return $transient;
         }
 
-        $currentVersion = $transient->checked[$this->themeSlug] ?? '';
-
-        if (version_compare($remoteInfo->version, $currentVersion, '>')) {
-            $transient->response[$this->themeSlug] = [
-                'theme'       => $this->themeSlug,
-                'new_version' => $remoteInfo->version,
-                'url'         => $remoteInfo->details_url ?? 'https://lacadev.com',
-                'package'     => $remoteInfo->download_url,
-                'requires'    => $remoteInfo->requires ?? '6.0',
-                'requires_php'=> $remoteInfo->requires_php ?? '8.0',
-            ];
+        $currentVersion = (string) ($transient->checked[$this->themeSlug] ?? $this->getCurrentVersion());
+        if ($currentVersion === '' || !version_compare((string) $remoteInfo->version, $currentVersion, '>')) {
+            delete_transient(self::BLOCKED_TRANSIENT);
+            unset($transient->response[$this->themeSlug]);
+            return $transient;
         }
+
+        $requiresPhp = (string) ($remoteInfo->requires_php ?? '8.1');
+        $requiresWp  = (string) ($remoteInfo->requires ?? '6.4');
+        $wpVersion   = (string) ($GLOBALS['wp_version'] ?? get_bloginfo('version'));
+
+        if (version_compare(PHP_VERSION, $requiresPhp, '<')) {
+            $reason = sprintf(
+                /* translators: 1: new theme version, 2: required PHP version, 3: current PHP version */
+                __('Bản cập nhật Parent Theme %1$s yêu cầu PHP >= %2$s (hiện tại: %3$s).', 'laca'),
+                (string) $remoteInfo->version,
+                $requiresPhp,
+                PHP_VERSION
+            );
+            set_transient(self::BLOCKED_TRANSIENT, [
+                'version'      => (string) $remoteInfo->version,
+                'requires_php' => $requiresPhp,
+                'requires'     => $requiresWp,
+                'reason'       => $reason,
+            ], $this->cacheTtl);
+            unset($transient->response[$this->themeSlug]);
+            return $transient;
+        }
+
+        if ($wpVersion !== '' && version_compare($wpVersion, $requiresWp, '<')) {
+            $reason = sprintf(
+                /* translators: 1: new theme version, 2: required WordPress version, 3: current WordPress version */
+                __('Bản cập nhật Parent Theme %1$s yêu cầu WordPress >= %2$s (hiện tại: %3$s).', 'laca'),
+                (string) $remoteInfo->version,
+                $requiresWp,
+                $wpVersion
+            );
+            set_transient(self::BLOCKED_TRANSIENT, [
+                'version'      => (string) $remoteInfo->version,
+                'requires_php' => $requiresPhp,
+                'requires'     => $requiresWp,
+                'reason'       => $reason,
+            ], $this->cacheTtl);
+            unset($transient->response[$this->themeSlug]);
+            return $transient;
+        }
+
+        delete_transient(self::BLOCKED_TRANSIENT);
+
+        $transient->response[$this->themeSlug] = [
+            'theme'        => $this->themeSlug,
+            'new_version'  => (string) $remoteInfo->version,
+            'url'          => (string) ($remoteInfo->details_url ?? 'https://lacadev.com'),
+            'package'      => (string) $remoteInfo->download_url,
+            'requires'     => $requiresWp,
+            'requires_php' => $requiresPhp,
+        ];
 
         return $transient;
     }
 
     /**
-     * Trả về thông tin theme cho màn hình "View version details"
+     * Trả về thông tin theme cho màn hình "View version details".
      */
     public function themeInfo(mixed $result, string $action, object $args): mixed
     {
@@ -273,50 +555,152 @@ class ThemeUpdater
         }
 
         $remoteInfo = $this->getRemoteInfo();
-
         if (!$remoteInfo) {
             return $result;
         }
 
         return (object) [
-            'name'          => $remoteInfo->name ?? 'LacaDev Child',
+            'name'          => $remoteInfo->name ?? 'La Cà Dev - Client',
             'slug'          => $this->themeSlug,
             'version'       => $remoteInfo->version,
             'author'        => '<a href="https://lacadev.com">La Cà Dev</a>',
             'homepage'      => 'https://lacadev.com',
             'download_link' => $remoteInfo->download_url,
             'last_updated'  => $remoteInfo->last_updated ?? '',
-            'requires'      => $remoteInfo->requires ?? '6.0',
-            'requires_php'  => $remoteInfo->requires_php ?? '8.0',
+            'requires'      => $remoteInfo->requires ?? '6.4',
+            'requires_php'  => $remoteInfo->requires_php ?? '8.1',
             'sections'      => [
-                'description' => $remoteInfo->description ?? 'LacaDev Child Theme — cập nhật tự động từ lacadev.com',
+                'description' => $remoteInfo->description ?? 'La Cà Dev Parent Theme — cập nhật tự động từ lacadev.com',
                 'changelog'   => $remoteInfo->changelog ?? '',
             ],
         ];
     }
 
     /**
-     * Xóa cache sau khi update xong để lần check sau luôn fresh
+     * Xoá cache và báo cáo thành công về Hub sau khi cài đặt hoàn tất (`upgrader_process_complete`).
      */
     public function clearCache(mixed $upgrader, array $options): void
     {
-        if ($options['type'] === 'theme' && in_array($this->themeSlug, (array) ($options['themes'] ?? []))) {
-            delete_transient($this->cacheKey);
+        if (($options['type'] ?? '') !== 'theme') {
+            return;
         }
+
+        $singleTheme = (string) ($options['theme'] ?? '');
+        $bulkThemes  = (array) ($options['themes'] ?? []);
+        $isTarget    = ($singleTheme === $this->themeSlug) || in_array($this->themeSlug, $bulkThemes, true);
+
+        if (!$isTarget) {
+            return;
+        }
+
+        // Tránh gửi báo cáo trùng 2 lần khi bulk_upgrade gọi cả single run lẫn bulk upgrader_process_complete.
+        if (!empty($options['bulk']) && $this->updatingFromVersion === '') {
+            delete_transient($this->cacheKey);
+            return;
+        }
+
+        delete_transient($this->cacheKey);
+
+        if ($this->updateFailedInCurrentRun) {
+            return;
+        }
+
+        if ($upgrader instanceof \WP_Upgrader && is_wp_error($upgrader->result)) {
+            return;
+        }
+
+        wp_clean_themes_cache();
+        $newVersion = $this->getCurrentVersion();
+        $fromVer    = $this->updatingFromVersion;
+        $durationMs = $this->updateStartTime > 0
+            ? (int) round((microtime(true) - $this->updateStartTime) * 1000)
+            : 0;
+
+        $sha256 = (string) ($this->verifiedManifest->sha256 ?? '');
+
+        // Reset cho lượt tiếp theo (đặc biệt khi bulk_upgrade).
+        $this->updatingFromVersion = '';
+        $this->updateStartTime     = 0.0;
+
+        $this->reportResult('success', [
+            'from'        => $fromVer,
+            'to'          => $newVersion,
+            'sha256'      => $sha256,
+            'duration_ms' => $durationMs,
+        ]);
     }
 
     /**
-     * Fetch info.json từ $updateInfoUrl, có cache 6h
+     * Báo cáo kết quả cập nhật lên Hub.
+     *
+     * @param array<string, mixed> $meta
+     */
+    private function reportResult(string $result, array $meta = []): void
+    {
+        $meta['source'] = self::detectSource();
+        self::sendUpdateReport($result, $meta);
+    }
+
+    /**
+     * Kiểm tra trạng thái manifest phục vụ WP-CLI `wp laca-theme status`.
+     *
+     * @return array{
+     *   cached_error: array<string,mixed>|null,
+     *   manifest: object|null,
+     *   signature_valid: bool,
+     *   error_code: string|null
+     * }
+     */
+    public function inspectManifestStatus(): array
+    {
+        $cached = get_transient($this->cacheKey);
+        if (is_array($cached) && !empty($cached['error'])) {
+            return [
+                'cached_error'    => $cached,
+                'manifest'        => null,
+                'signature_valid' => false,
+                'error_code'      => (string) ($cached['reason'] ?? 'fetch_failed'),
+            ];
+        }
+
+        $info = $this->getRemoteInfo();
+        if ($info !== null) {
+            return [
+                'cached_error'    => null,
+                'manifest'        => $info,
+                'signature_valid' => ReleaseVerifier::verifyManifest($info),
+                'error_code'      => null,
+            ];
+        }
+
+        $afterCached = get_transient($this->cacheKey);
+        return [
+            'cached_error'    => is_array($afterCached) ? $afterCached : null,
+            'manifest'        => null,
+            'signature_valid' => false,
+            'error_code'      => is_array($afterCached) ? (string) ($afterCached['reason'] ?? 'fetch_failed') : 'fetch_failed',
+        ];
+    }
+
+    /**
+     * Fetch và xác minh chữ ký Ed25519 của manifest từ Hub, cache 6 giờ.
      */
     private function getRemoteInfo(): ?object
     {
-        $cached = get_transient($this->cacheKey);
+        $allowUnsigned = (bool) apply_filters('laca_allow_unsigned_theme_manifest', false);
+        $cached        = get_transient($this->cacheKey);
 
         if ($cached !== false) {
             if (is_array($cached) && !empty($cached['error'])) {
                 return null;
             }
-            return is_object($cached) ? $cached : null;
+            if (is_object($cached)) {
+                if ($allowUnsigned || ReleaseVerifier::verifyManifest($cached)) {
+                    $this->verifiedManifest = $cached;
+                    return $cached;
+                }
+            }
+            delete_transient($this->cacheKey);
         }
 
         $response = wp_remote_get($this->updateInfoUrl, [
@@ -325,36 +709,66 @@ class ThemeUpdater
         ]);
 
         if (is_wp_error($response) || wp_remote_retrieve_response_code($response) !== 200) {
-            // Cache lỗi bằng marker array 1 giờ thay vì false (để không fetch lại mỗi request)
-            set_transient($this->cacheKey, ['error' => true], HOUR_IN_SECONDS);
+            set_transient($this->cacheKey, [
+                'error'  => true,
+                'reason' => 'http_error',
+            ], HOUR_IN_SECONDS);
             return null;
         }
 
         $data = json_decode(wp_remote_retrieve_body($response));
 
-        if (!$data || empty($data->version)) {
-            set_transient($this->cacheKey, ['error' => true], HOUR_IN_SECONDS);
+        if (!is_object($data) || empty($data->version)) {
+            set_transient($this->cacheKey, [
+                'error'  => true,
+                'reason' => 'invalid_json',
+            ], HOUR_IN_SECONDS);
             return null;
         }
 
+        if (!$allowUnsigned && !ReleaseVerifier::verifyManifest($data)) {
+            set_transient($this->cacheKey, [
+                'error'   => true,
+                'reason'  => 'integrity_failed',
+                'version' => (string) ($data->version ?? ''),
+            ], HOUR_IN_SECONDS);
+
+            $throttleKey = self::INTEGRITY_THROTTLE_PREFIX . md5($this->themeSlug);
+            if (!get_transient($throttleKey)) {
+                set_transient($throttleKey, 1, 6 * HOUR_IN_SECONDS);
+                $this->reportResult('integrity_failed', [
+                    'from'   => $this->getCurrentVersion(),
+                    'to'     => (string) ($data->version ?? ''),
+                    'sha256' => (string) ($data->sha256 ?? ''),
+                    'error'  => 'manifest_signature_invalid',
+                ]);
+            }
+
+            return null;
+        }
+
+        $this->verifiedManifest = $data;
         set_transient($this->cacheKey, $data, $this->cacheTtl);
+
+        update_option(ChildBuildNotice::MANIFEST_META_OPTION, [
+            'version'                   => (string) $data->version,
+            'child_rebuild_recommended' => !empty($data->child_rebuild_recommended),
+            'verified_at'               => time(),
+        ], false);
 
         return $data;
     }
 
     /**
-     * Đảm bảo thư mục giải nén được đổi tên về đúng slug theme (lacadev-client)
+     * Đảm bảo thư mục giải nén được đổi tên về đúng slug theme (`lacadev-client`).
      *
-     * @param string $source Path tới thư mục giải nén tạm
-     * @param string $remoteSource Path tới thư mục chứa file nén
-     * @param mixed $upgrader
-     * @param array $hookExtra
      * @return string|\WP_Error
      */
     public function filterSourceSelection(string $source, string $remoteSource, mixed $upgrader, array $hookExtra = []): string|\WP_Error
     {
-        $theme = $hookExtra['theme'] ?? '';
-        if ($theme !== $this->themeSlug && $theme !== basename($this->themeSlug)) {
+        $theme  = $hookExtra['theme'] ?? '';
+        $themes = (array) ($hookExtra['themes'] ?? []);
+        if ($theme !== $this->themeSlug && $theme !== basename($this->themeSlug) && !in_array($this->themeSlug, $themes, true)) {
             return $source;
         }
 
@@ -380,10 +794,9 @@ class ThemeUpdater
     }
 
     /**
-     * Tự động ký HMAC vào request tải gói cập nhật theme từ Hub
+     * Tự động ký HMAC vào request tải gói cập nhật theme từ Hub.
      *
-     * @param array<string,mixed> $args HTTP request arguments
-     * @param string $url Target URL
+     * @param array<string,mixed> $args
      * @return array<string,mixed>
      */
     public function filterDownloadRequestArgs(array $args, string $url): array
@@ -413,7 +826,7 @@ class ThemeUpdater
             $args['headers'] = array_merge($args['headers'], $sigHeaders);
         }
 
-        // Chỉ gửi key thô (legacy) khi KHÔNG ký được — tránh lộ key trong header/log khi đã có chữ ký
+        // Chỉ gửi key thô (legacy) khi KHÔNG ký được.
         if (!empty($trackerKey) && empty($projectId)) {
             $args['headers']['X-Laca-Key'] = $trackerKey;
         }
@@ -424,8 +837,7 @@ class ThemeUpdater
     }
 
     /**
-     * Chỉ ký/gửi key tới đúng host của hub (host của file update JSON hoặc tracker endpoint),
-     * và bắt buộc https ngoài môi trường local — tránh lộ key khi download_url trỏ host lạ.
+     * Chỉ ký/gửi key tới đúng host của Hub và bắt buộc https ngoài môi trường local.
      */
     private function isTrustedHubUrl(string $url): bool
     {
@@ -449,9 +861,9 @@ class ThemeUpdater
     }
 
     /**
-     * Lấy version hiện tại của theme từ style.css
+     * Lấy version hiện tại của theme từ style.css.
      */
-    private function getCurrentVersion(): string
+    public function getCurrentVersion(): string
     {
         $themeData = wp_get_theme($this->themeSlug);
         return $themeData->get('Version') ?: '';

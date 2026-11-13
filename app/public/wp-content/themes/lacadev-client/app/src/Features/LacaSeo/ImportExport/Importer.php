@@ -240,7 +240,7 @@ class Importer
         ];
     }
 
-    private static function deepReplaceString(string $search, string $replace, mixed $data): mixed
+    public static function deepReplaceString(string $search, string $replace, mixed $data): mixed
     {
         if (is_string($data)) {
             return str_replace($search, $replace, $data);

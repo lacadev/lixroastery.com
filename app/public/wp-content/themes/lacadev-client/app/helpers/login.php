@@ -44,11 +44,19 @@ function app_login_google_admin_message( $message ) {
 		} else {
 			$text = 'Google account is not linked to an administrator user. Please login with your admin account or contact the site owner.';
 		}
-
-		$message .= '<div id="login_error" class="notice notice-error"><p>';
-		$message .= esc_html( $text );
-		$message .= '</p></div>';
+	} elseif ( 'disabled' === $error_code ) {
+		if ( strpos( $locale, 'vi' ) === 0 ) {
+			$text = 'Đăng nhập bằng Google hiện chưa được bật. Vui lòng đăng nhập bằng tài khoản và mật khẩu.';
+		} else {
+			$text = 'Google login is currently disabled. Please use username and password instead.';
+		}
+	} else {
+		return $message;
 	}
+
+	$message .= '<div id="login_error" class="notice notice-error"><p>';
+	$message .= esc_html( $text );
+	$message .= '</p></div>';
 
 	return $message;
 }

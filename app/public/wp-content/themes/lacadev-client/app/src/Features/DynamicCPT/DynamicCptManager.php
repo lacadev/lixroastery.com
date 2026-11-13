@@ -44,7 +44,10 @@ class DynamicCptManager
     public static function getAll(): array
     {
         $raw  = get_option(self::OPTION_KEY, '[]');
-        $data = json_decode($raw, true);
+        if (is_array($raw)) {
+            return $raw;
+        }
+        $data = is_string($raw) ? json_decode($raw, true) : [];
         return is_array($data) ? $data : [];
     }
 

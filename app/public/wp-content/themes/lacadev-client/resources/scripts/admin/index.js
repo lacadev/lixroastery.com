@@ -1,5 +1,10 @@
 import '@styles/admin';
 import './custom_thumbnail_support.js';
+import './project.js';
+import './ai-chat.js';
+import './project-charts.js';
+import './global-alerts.js';
+import './media-library-infinite-scroll.js';
 import './contact-form.js';
 import { initReleaseChecklistAjax } from './release-checklist.js';
 import { initCarbonFieldsAutoSave } from './carbon-autosave.js';

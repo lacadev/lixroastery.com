@@ -25,7 +25,8 @@ function laca_login_scene_ready(): bool
 {
     static $ready = null;
     if ($ready === null) {
-        $css   = dirname(get_stylesheet_directory()) . '/dist/styles/login.css';
+        $asset = function_exists('lacaParentAsset') ? lacaParentAsset('styles/login.css') : null;
+        $css   = $asset['path'] ?? (dirname(get_stylesheet_directory()) . '/dist/styles/login.css');
         $ready = is_readable($css) && str_contains((string) file_get_contents($css), 'login-scene');
     }
     return $ready;
@@ -497,6 +498,9 @@ $folders = [
 ];
 
 foreach ($folders as $folder) {
+    if (!is_dir($folder)) {
+        continue;
+    }
     $filesPath = scandir($folder);
     if ($filesPath !== false) {
         foreach ($filesPath as $item) {

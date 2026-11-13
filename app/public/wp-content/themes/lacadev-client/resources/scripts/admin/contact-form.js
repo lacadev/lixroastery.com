@@ -5,7 +5,7 @@ import Swal from 'sweetalert2';
 // file không tồn tại nên wp_enqueue_script() không bao giờ chạy, kéo/thả
 // field trong trình tạo form vì vậy luôn im lặng không hoạt động (code có
 // guard "typeof Sortable === 'undefined'" nên không báo lỗi gì cả).
-import Sortable from 'sortablejs';
+import Sortable from '../lib/sortable.esm.js';
 
 // ── Popup Thông báo (Thành công/Thất bại) — logic DÙNG CHUNG giữa tab
 // "Giao diện" của 1 form (state = styles) VÀ panel "Cài đặt chung" ở trang
@@ -238,6 +238,10 @@ const FIELD_TYPES = window.LacaContactFormVars.FIELD_TYPES;
                 btn_border_radius: 6, input_border_radius: 6,
                 btn_text: 'Gửi thông tin', submit_align: 'right',
                 submit_margin_top: 0, submit_width: 'auto',
+                form_mode: 'standard',
+                step_next_text: 'Tiếp theo',
+                step_prev_text: 'Quay lại',
+                step_submit_text: 'Gửi thông tin',
                 popup_success_color: '#28a745', popup_error_color: '#dc3545',
                 popup_border_radius: 12,
                 // Nội dung/hành vi popup — KHỚP với ContactFormPopupSettings::DEFAULTS
@@ -318,6 +322,203 @@ const FIELD_TYPES = window.LacaContactFormVars.FIELD_TYPES;
                         });
                     });
                 });
+            }
+
+            function getAllFields() {
+                const fields = [];
+                rows.forEach(function(row) {
+                    row.cols.forEach(function(col) {
+                        col.fields.forEach(function(field) {
+                            fields.push(field);
+                        });
+                    });
+                });
+                return fields;
+            }
+
+            function isMultiStepBuilder() {
+                return (
+                    styles.form_mode === 'multi_step' ||
+                    getAllFields().some(function(field) {
+                        return field.type === 'step_break';
+                    })
+                );
+            }
+
+            function getRenderableFields(row) {
+                const fields = [];
+                row.cols.forEach(function(col) {
+                    col.fields.forEach(function(field) {
+                        if (field.type !== 'step_break') {
+                            fields.push(field);
+                        }
+                    });
+                });
+                return fields;
+            }
+
+            function getStepMarker(row) {
+                for (const col of row.cols) {
+                    for (const field of col.fields) {
+                        if (field.type === 'step_break') {
+                            return field;
+                        }
+                    }
+                }
+                return null;
+            }
+
+            function getStepSections() {
+                const sections = [
+                    {
+                        index: 1,
+                        label: 'Bước 1',
+                        marker: null,
+                        markerRow: null,
+                        rows: [],
+                    },
+                ];
+                let current = sections[0];
+
+                rows.forEach(function(row) {
+                    const marker = getStepMarker(row);
+                    if (marker) {
+                        current = {
+                            index: sections.length + 1,
+                            label: marker.label || 'Bước ' + (sections.length + 1),
+                            marker: marker,
+                            markerRow: row,
+                            rows: [],
+                        };
+                        sections.push(current);
+                    }
+
+                    if (!marker || getRenderableFields(row).length) {
+                        current.rows.push(row);
+                    }
+                });
+
+                return sections;
+            }
+
+            function getStepFieldCount(section) {
+                return section.rows.reduce(function(total, row) {
+                    return total + getRenderableFields(row).length;
+                }, 0);
+            }
+
+            function buildConditionHtml(field) {
+                if (field.type === 'step_break' || field.type === 'content') {
+                    return '';
+                }
+
+                const condition = field.condition || {};
+                const sourceOptions = getAllFields()
+                    .filter(function(item) {
+                        return (
+                            item.id !== field.id &&
+                            item.type !== 'step_break' &&
+                            item.type !== 'content' &&
+                            item.name
+                        );
+                    })
+                    .map(function(item) {
+                        return (
+                            '<option value="' +
+                            escAttr(item.name) +
+                            '" ' +
+                            (condition.field === item.name ? 'selected' : '') +
+                            '>' +
+                            escHtml(item.label || item.name) +
+                            ' (' +
+                            escHtml(item.name) +
+                            ')</option>'
+                        );
+                    })
+                    .join('');
+
+                return `
+                    <div class="lcf-condition-box" style="margin-top:12px;padding:10px;background:#f9f9f9;border:1px solid #e5e5e5;border-radius:4px">
+                        <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px;font-weight:600">
+                            <input type="checkbox" ${condition.field ? 'checked' : ''}
+                                onchange="lcfFieldConditionToggle('${escAttr(field.id)}',this.checked)">
+                            Chỉ hiện field này khi có điều kiện
+                        </label>
+                        <div class="lcf-condition-controls" style="${condition.field ? '' : 'display:none'}">
+                            <div class="lcf-input-row" style="margin-top:8px">
+                                <label class="lcf-label">Field điều kiện</label>
+                                <select class="widefat" onchange="lcfFieldConditionUpdate('${escAttr(field.id)}','field',this.value)">
+                                    <option value="">— Chọn field —</option>
+                                    ${sourceOptions}
+                                </select>
+                            </div>
+                            <div class="lcf-input-row" style="margin-top:8px">
+                                <label class="lcf-label">So sánh</label>
+                                <select class="widefat" onchange="lcfFieldConditionUpdate('${escAttr(field.id)}','operator',this.value)">
+                                    <option value="equals" ${(condition.operator || 'equals') === 'equals' ? 'selected' : ''}>bằng</option>
+                                    <option value="not_equals" ${condition.operator === 'not_equals' ? 'selected' : ''}>khác</option>
+                                    <option value="contains" ${condition.operator === 'contains' ? 'selected' : ''}>có chứa</option>
+                                    <option value="not_empty" ${condition.operator === 'not_empty' ? 'selected' : ''}>đã nhập/chọn</option>
+                                    <option value="empty" ${condition.operator === 'empty' ? 'selected' : ''}>đang trống</option>
+                                </select>
+                            </div>
+                            <div class="lcf-input-row" style="margin-top:8px">
+                                <label class="lcf-label">Giá trị</label>
+                                <input type="text" class="widefat"
+                                    value="${escAttr(condition.value || '')}"
+                                    placeholder="VD: Thiết kế website"
+                                    oninput="lcfFieldConditionUpdate('${escAttr(field.id)}','value',this.value)">
+                                <p class="description">Nhập đúng option của field điều kiện nếu dùng dropdown/radio/checkbox.</p>
+                            </div>
+                        </div>
+                    </div>`;
+            }
+
+            function buildStepSectionHtml(section) {
+                const fieldCount = getStepFieldCount(section);
+                const title = section.marker
+                    ? `<input type="text" class="lcf-step-title-input"
+                        value="${escAttr(section.label)}"
+                        placeholder="Tên bước"
+                        oninput="lcfFieldUpdate('${escAttr(section.marker.id)}','label',this.value)">`
+                    : `<strong>${escHtml(section.label)}</strong>`;
+
+                const rowsHtml = section.rows
+                    .map(function(row) {
+                        return buildRowHtml(row, { hideStepBreak: true });
+                    })
+                    .join('');
+
+                return `<section class="lcf-step-builder-section"
+                    data-step-index="${section.index}"
+                    data-marker-row-id="${escAttr(section.markerRow ? section.markerRow.id : '')}"
+                    data-marker-field-id="${escAttr(section.marker ? section.marker.id : '')}">
+                    <div class="lcf-step-builder-header">
+                        <div class="lcf-step-builder-title">
+                            <span class="lcf-step-builder-number">${section.index}</span>
+                            <div>
+                                ${title}
+                                <p>${fieldCount} field trong bước này</p>
+                            </div>
+                        </div>
+                        ${section.marker ? `<button type="button" class="lcf-step-remove-btn"
+                            onclick="lcfRemoveStepMarker('${escAttr(section.markerRow.id)}','${escAttr(section.marker.id)}')">
+                            Xoá bước
+                        </button>` : ''}
+                    </div>
+                    <div class="lcf-step-builder-rows" data-step-index="${section.index}">
+                        ${rowsHtml}
+                        <div class="lcf-step-empty-hint" style="${section.rows.length ? 'display:none' : ''}">Chưa có field nào trong bước này. Kéo hàng vào đây hoặc thêm hàng mới ở bên dưới.</div>
+                    </div>
+                </section>`;
+            }
+
+            function buildStepBuilderHtml() {
+                const sections = getStepSections();
+                return (
+                    '<div class="lcf-step-builder-intro"><strong>Form từng bước</strong><span>Các field được nhóm theo vị trí của field "Ngắt bước (Step)".</span></div>' +
+                    sections.map(buildStepSectionHtml).join('')
+                );
             }
 
             // ── Khối "Dịch sang ngôn ngữ khác" cho field thường (không áp
@@ -517,6 +718,37 @@ const FIELD_TYPES = window.LacaContactFormVars.FIELD_TYPES;
 
             // ── Build field card HTML ─────────────────────────────────────────
             function buildFieldCard(field) {
+                if (field.type === 'step_break') {
+                    const labelPrev = field.label
+                        ? escHtml(field.label)
+                        : '<em style="color:#aaa;font-weight:400">Chưa đặt nhãn</em>';
+                    const isOpenClass = field._isOpen === false ? '' : ' is-open';
+                    return `<div class="laca-cf-field-card laca-cf-field-card--step${isOpenClass}" data-field-id="${escAttr(field.id)}">
+                        <div class="laca-cf-field-card-header" onclick="lcfToggleCard(this.closest('.laca-cf-field-card'))">
+                            <span class="lcf-field-drag-handle" title="Kéo để di chuyển field">⋮⋮</span>
+                            <span class="lcf-type-badge">Step</span>
+                            <span class="lcf-label-preview">${labelPrev}</span>
+                            <span class="lcf-toggle-icon">
+                                <svg width="10" height="6" viewBox="0 0 10 6" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M1 1l4 4 4-4"/></svg>
+                            </span>
+                            <button type="button" class="lcf-remove-field-btn"
+                                onclick="lcfRemoveField(event,'${escAttr(field.id)}')"
+                                title="Xoá field">✕</button>
+                        </div>
+                        <div class="laca-cf-field-card-body">
+                            <div class="lcf-field-inputs">
+                                <div class="lcf-input-row">
+                                    <label class="lcf-label">Tên bước</label>
+                                    <input type="text" class="widefat" placeholder="VD: Bước 2 - Nhu cầu"
+                                        value="${escAttr(field.label || '')}"
+                                        oninput="lcfFieldUpdate('${escAttr(field.id)}','label',this.value)">
+                                    <p class="description">Đặt field này giữa các nhóm field. Những field phía sau sẽ thuộc bước mới.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>`;
+                }
+
                 // "content" là ghi chú tĩnh (không thu thập dữ liệu) — không
                 // có Label/Tên biến/Placeholder/Bắt buộc/Options, chỉ 1 ô
                 // soạn nội dung kèm nút chèn đậm/nghiêng/link.
@@ -643,6 +875,7 @@ const FIELD_TYPES = window.LacaContactFormVars.FIELD_TYPES;
                             ${singleChoiceHtml}
                             ${otherHtml}
                             ${buildI18nBlock(field)}
+                            ${buildConditionHtml(field)}
                         </div>
                     </div>
                 </div>`;
@@ -697,19 +930,22 @@ const FIELD_TYPES = window.LacaContactFormVars.FIELD_TYPES;
             }
 
             // ── Build row HTML ────────────────────────────────────────────────
-            function buildRowHtml(row) {
+            function buildRowHtml(row, options = {}) {
                 const colInfo = row.cols.map(function(c) {
                     return Math.round((c.span / 12) * 100) + '%';
                 }).join(' / ');
 
                 const colsHtml = row.cols.map(function(col, idx) {
-                    const fieldsHtml = col.fields.map(buildFieldCard).join('');
+                    const fields = options.hideStepBreak
+                        ? col.fields.filter(function(field) { return field.type !== 'step_break'; })
+                        : col.fields;
+                    const fieldsHtml = fields.map(buildFieldCard).join('');
                     const pct        = Math.round((col.span / 12) * 100);
                     return `<div class="laca-cf-col-slot" data-col-id="${escAttr(col.id)}" data-span="${col.span}" style="flex:${col.span}">
                         <div class="laca-cf-col-header">Cột ${idx + 1} <span style="opacity:0.6;font-weight:400">${pct}%</span></div>
                         <div class="laca-cf-col-drop" data-row-id="${escAttr(row.id)}" data-col-id="${escAttr(col.id)}">
                             ${fieldsHtml}
-                            <div class="lcf-col-empty-hint" style="${col.fields.length ? 'display:none' : ''}">Kéo field vào đây</div>
+                            <div class="lcf-col-empty-hint" style="${fields.length ? 'display:none' : ''}">Kéo field vào đây</div>
                         </div>
                         <div class="laca-cf-col-add-field">
                             <select class="laca-cf-add-field-type">
@@ -747,12 +983,25 @@ const FIELD_TYPES = window.LacaContactFormVars.FIELD_TYPES;
 
                 const builder  = document.getElementById('rows-builder');
                 const emptyMsg = document.getElementById('rows-empty-msg');
+                const stepMode = isMultiStepBuilder();
+                const palette  = document.querySelector('.laca-cf-add-row-palette');
                 builder.innerHTML = '';
-                if (emptyMsg) emptyMsg.style.display = rows.length ? 'none' : '';
+                if (palette) {
+                    palette.classList.toggle('is-step-mode', stepMode);
+                }
+                if (emptyMsg) {
+                    emptyMsg.style.display = (rows.length || stepMode) ? 'none' : '';
+                }
 
-                rows.forEach(function(row) {
-                    builder.insertAdjacentHTML('beforeend', buildRowHtml(row));
-                });
+                if (stepMode) {
+                    builder.classList.add('is-step-builder');
+                    builder.innerHTML = buildStepBuilderHtml();
+                } else {
+                    builder.classList.remove('is-step-builder');
+                    rows.forEach(function(row) {
+                        builder.insertAdjacentHTML('beforeend', buildRowHtml(row));
+                    });
+                }
 
                 updateJsonInput();
                 initSortables();
@@ -770,32 +1019,78 @@ const FIELD_TYPES = window.LacaContactFormVars.FIELD_TYPES;
                     });
                 });
 
-                const newRows = [];
-                document.querySelectorAll('#rows-builder > .laca-cf-layout-row').forEach(function(rowEl) {
-                    const rowId  = rowEl.dataset.rowId;
-                    const oldRow = rows.find(function(r) { return r.id === rowId; });
-                    if (!oldRow) return;
+                const rowIndex = {};
+                rows.forEach(function(row) {
+                    rowIndex[row.id] = row;
+                });
+
+                const buildRowFromElement = function(rowEl, markerField) {
+                    const rowId = rowEl.dataset.rowId;
+                    const oldRow = rowIndex[rowId];
+                    if (!oldRow) return null;
 
                     const newCols = [];
-                    rowEl.querySelectorAll(':scope > .laca-cf-row-content > .laca-cf-col-slot').forEach(function(slotEl) {
+                    rowEl.querySelectorAll(':scope > .laca-cf-row-content > .laca-cf-col-slot').forEach(function(slotEl, slotIndex) {
                         const colId = slotEl.dataset.colId;
-                        const span  = parseInt(slotEl.dataset.span) || 12;
+                        const span = parseInt(slotEl.dataset.span, 10) || 12;
 
                         const newFields = [];
+                        if (slotIndex === 0 && markerField) {
+                            newFields.push(markerField);
+                        }
+
                         slotEl.querySelectorAll(':scope > .laca-cf-col-drop > .laca-cf-field-card').forEach(function(cardEl) {
                             const fId = cardEl.dataset.fieldId;
                             if (fieldIndex[fId]) newFields.push(fieldIndex[fId]);
                         });
 
-                        // Update empty hint
                         const hint = slotEl.querySelector('.lcf-col-empty-hint');
-                        if (hint) hint.style.display = newFields.length ? 'none' : '';
+                        if (hint) {
+                            hint.style.display = newFields.filter(function(f) { return f.type !== 'step_break'; }).length ? 'none' : '';
+                        }
 
-                        newCols.push({ id: colId, span, fields: newFields });
+                        newCols.push({ id: colId, span: span, fields: newFields });
                     });
 
-                    newRows.push({ id: rowId, cols: newCols });
-                });
+                    return { id: rowId, cols: newCols };
+                };
+
+                const newRows = [];
+                if (isMultiStepBuilder()) {
+                    document.querySelectorAll('#rows-builder > .lcf-step-builder-section').forEach(function(sectionEl) {
+                        const markerFieldId = sectionEl.dataset.markerFieldId;
+                        const markerRowId = sectionEl.dataset.markerRowId;
+                        const markerField = markerFieldId ? fieldIndex[markerFieldId] : null;
+                        const markerRow = markerRowId ? rowIndex[markerRowId] : null;
+                        const sectionRows = [];
+                        let markerAttached = false;
+
+                        if (markerField && markerRow && getRenderableFields(markerRow).length === 0) {
+                            sectionRows.push(markerRow);
+                            markerAttached = true;
+                        }
+
+                        sectionEl.querySelectorAll(':scope > .lcf-step-builder-rows > .laca-cf-layout-row').forEach(function(rowEl) {
+                            const attachMarker = markerField && rowEl.dataset.rowId === markerRowId;
+                            const builtRow = buildRowFromElement(rowEl, attachMarker ? markerField : null);
+                            if (builtRow) {
+                                if (attachMarker) markerAttached = true;
+                                sectionRows.push(builtRow);
+                            }
+                        });
+
+                        if (markerField && !markerAttached && markerRow) {
+                            sectionRows.unshift(markerRow);
+                        }
+
+                        newRows.push(...sectionRows);
+                    });
+                } else {
+                    document.querySelectorAll('#rows-builder > .laca-cf-layout-row').forEach(function(rowEl) {
+                        const builtRow = buildRowFromElement(rowEl, null);
+                        if (builtRow) newRows.push(builtRow);
+                    });
+                }
 
                 rows = newRows;
                 updateJsonInput();
@@ -806,14 +1101,22 @@ const FIELD_TYPES = window.LacaContactFormVars.FIELD_TYPES;
             function initSortables() {
                 if (typeof Sortable === 'undefined') return;
 
-                // Row-level
-                sortableInstances.push(Sortable.create(document.getElementById('rows-builder'), {
-                    handle:     '.lcf-row-drag-handle',
-                    animation:  150,
-                    group:      'layout-rows',
-                    ghostClass: 'lcf-ghost',
-                    onEnd: syncFromDOM,
-                }));
+                const rowContainers = isMultiStepBuilder()
+                    ? document.querySelectorAll('.lcf-step-builder-rows')
+                    : [document.getElementById('rows-builder')];
+
+                rowContainers.forEach(function(rowContainer) {
+                    if (!rowContainer) return;
+                    sortableInstances.push(Sortable.create(rowContainer, {
+                        handle:     '.lcf-row-drag-handle',
+                        animation:  150,
+                        group:      'layout-rows',
+                        draggable:  '.laca-cf-layout-row',
+                        filter:     '.lcf-step-empty-hint',
+                        ghostClass: 'lcf-ghost',
+                        onEnd: syncFromDOM,
+                    }));
+                });
 
                 // Field-level per column drop zone
                 document.querySelectorAll('.laca-cf-col-drop').forEach(function(colDrop) {
@@ -870,6 +1173,18 @@ const FIELD_TYPES = window.LacaContactFormVars.FIELD_TYPES;
                 }
 
                 const cardEl = document.querySelector('.laca-cf-field-card[data-field-id="' + fieldId + '"]');
+
+                if (field.type === 'step_break') {
+                    if (key === 'label') {
+                        const prev = cardEl ? cardEl.querySelector('.lcf-label-preview') : null;
+                        if (prev) {
+                            prev.innerHTML = value ? escHtml(value) : '<em style="color:#aaa;font-weight:400">Chưa đặt nhãn</em>';
+                        }
+                    }
+                    updateJsonInput();
+                    updatePreview();
+                    return;
+                }
 
                 if (key === 'label' || key === 'required' || key === 'show_label') {
                     const prev = cardEl ? cardEl.querySelector('.lcf-label-preview') : null;
@@ -1272,6 +1587,98 @@ const FIELD_TYPES = window.LacaContactFormVars.FIELD_TYPES;
                 if (last) last.scrollIntoView({ behavior: 'smooth', block: 'center' });
             };
 
+            window.lcfAddStep = function() {
+                const nextIndex = getStepSections().length + 1;
+                rows.push({
+                    id: uid(),
+                    cols: [
+                        {
+                            id: uid(),
+                            span: 12,
+                            fields: [
+                                {
+                                    id: uid(),
+                                    type: 'step_break',
+                                    name: '',
+                                    label: 'Bước ' + nextIndex,
+                                    placeholder: '',
+                                    required: false,
+                                    options: [],
+                                    condition: {},
+                                },
+                            ],
+                        },
+                    ],
+                });
+                renderRows();
+
+                setTimeout(function() {
+                    const sections = document.querySelectorAll('.lcf-step-builder-section');
+                    const last = sections[sections.length - 1];
+                    if (last) {
+                        last.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        const input = last.querySelector('.lcf-step-title-input');
+                        if (input) {
+                            input.focus();
+                            input.select();
+                        }
+                    }
+                }, 60);
+            };
+
+            window.lcfRemoveStepMarker = function(rowId, fieldId) {
+                Swal.fire({
+                    title: 'Xoá bước này?',
+                    text: 'Các field trong bước sẽ được gộp vào bước phía trước.',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    confirmButtonText: 'Xoá bước',
+                    cancelButtonText: 'Huỷ',
+                }).then((result) => {
+                    if (!result.isConfirmed) return;
+
+                    rows.forEach(function(row) {
+                        row.cols.forEach(function(col) {
+                            col.fields = col.fields.filter(function(field) {
+                                return field.id !== fieldId;
+                            });
+                        });
+                    });
+
+                    rows = rows.filter(function(row) {
+                        if (row.id !== rowId) return true;
+                        return getRenderableFields(row).length > 0;
+                    });
+
+                    renderRows();
+                });
+            };
+
+            window.lcfFieldConditionToggle = function(fieldId, enabled) {
+                const found = findField(fieldId);
+                if (!found) return;
+
+                found.field.condition = enabled
+                    ? Object.assign({ field: '', operator: 'equals', value: '' }, found.field.condition || {})
+                    : {};
+
+                renderRows();
+            };
+
+            window.lcfFieldConditionUpdate = function(fieldId, key, value) {
+                const found = findField(fieldId);
+                if (!found) return;
+
+                found.field.condition = Object.assign(
+                    { field: '', operator: 'equals', value: '' },
+                    found.field.condition || {}
+                );
+                found.field.condition[key] = value;
+                updateJsonInput();
+                updatePreview();
+            };
+
             // ── Public: remove row ────────────────────────────────────────────
             window.lcfRemoveRow = function(rowId) {
                 const row         = rows.find(function(r) { return r.id === rowId; });
@@ -1311,6 +1718,7 @@ const FIELD_TYPES = window.LacaContactFormVars.FIELD_TYPES;
                     placeholder: '', required: false, show_label: false, options: [], _autoName: '',
                     has_other: false, other_label: '', content: '', i18n: {},
                     single_choice: false, _isOpen: true,
+                    condition: {},
                 };
                 col.fields.push(newField);
                 renderRows();
@@ -1373,6 +1781,12 @@ const FIELD_TYPES = window.LacaContactFormVars.FIELD_TYPES;
                     const found = findField(fieldId);
                     if (!found) return;
                     const { field } = found;
+
+                    if (field.type === 'step_break') {
+                        const stepInp = cardEl.querySelector('.lcf-field-inputs input[type="text"]');
+                        if (stepInp) field.label = stepInp.value;
+                        return;
+                    }
 
                     if (field.type === 'content') {
                         const contentTa = cardEl.querySelector('.lcf-field-inputs textarea[data-key="content"]');
@@ -1527,9 +1941,9 @@ const FIELD_TYPES = window.LacaContactFormVars.FIELD_TYPES;
                 });
                 for (let i = 0; i < allFields.length; i++) {
                     const f = allFields[i];
-                    // "content" là ghi chú tĩnh, không có tên biến (không thu
+                    // "content" và "step_break" không có tên biến (không thu
                     // thập dữ liệu) nên bỏ qua check này.
-                    if (f.type === 'content') {
+                    if (f.type === 'content' || f.type === 'step_break') {
                         continue;
                     }
                     // Label không bắt buộc (nhiều field chỉ dùng placeholder
@@ -1560,6 +1974,10 @@ const FIELD_TYPES = window.LacaContactFormVars.FIELD_TYPES;
                 } else {
                     styles[key] = value;
                 }
+                if (key === 'form_mode') {
+                    syncStepSettingsVisibility();
+                    renderRows();
+                }
                 updateStyleInput();
                 updatePreview();
                 // Sync text <-> color
@@ -1578,6 +1996,13 @@ const FIELD_TYPES = window.LacaContactFormVars.FIELD_TYPES;
                     lcfUpdateEmailPreview('customer');
                 }
             };
+
+            function syncStepSettingsVisibility() {
+                var box = document.getElementById('lcf-step-settings');
+                if (box) {
+                    box.style.display = (styles.form_mode || 'standard') === 'multi_step' ? '' : 'none';
+                }
+            }
 
             // ── Init style controls from saved state ──────────────────────────
             function initStyleControls() {
@@ -1623,6 +2048,20 @@ const FIELD_TYPES = window.LacaContactFormVars.FIELD_TYPES;
                 if (subMN) subMN.value = styles.submit_margin_top !== undefined ? styles.submit_margin_top : DEFAULT_STYLES.submit_margin_top;
                 if (subW) subW.value = styles.submit_width || DEFAULT_STYLES.submit_width;
 
+                var formMode = document.getElementById('s-form-mode');
+                if (formMode) formMode.value = styles.form_mode || DEFAULT_STYLES.form_mode;
+
+                var stepNext = document.getElementById('s-step-next-text');
+                if (stepNext) stepNext.value = styles.step_next_text || DEFAULT_STYLES.step_next_text;
+
+                var stepPrev = document.getElementById('s-step-prev-text');
+                if (stepPrev) stepPrev.value = styles.step_prev_text || DEFAULT_STYLES.step_prev_text;
+
+                var stepSubmit = document.getElementById('s-step-submit-text');
+                if (stepSubmit) stepSubmit.value = styles.step_submit_text || DEFAULT_STYLES.step_submit_text;
+
+                syncStepSettingsVisibility();
+
                 // Khởi tạo chế độ soạn email (Mẫu chuẩn vs HTML thô)
                 var adminTa = document.getElementById('email-admin-body');
                 var adminMode = styles.email_admin_mode || (adminTa && isHtmlDocument(adminTa.value) ? 'html' : 'template');
@@ -1639,12 +2078,18 @@ const FIELD_TYPES = window.LacaContactFormVars.FIELD_TYPES;
                 var label       = field.label || '';
                 var placeholder = field.placeholder || '';
                 var req         = field.required;
+                if (type === 'step_break') {
+                    return '<div class="lcf-pv-step-break" style="margin:12px 0 6px;padding:6px 12px;background:#f0f0f1;border-radius:4px;font-weight:600;font-size:12px;color:#555"><span>' + escHtml(label || 'Bước tiếp theo') + '</span></div>';
+                }
                 var html        = '<div class="lcf-pv-field-row">';
                 // Chỉ hiển thị nhãn trên form nếu field.show_label được tích chọn
                 if (type !== 'hidden' && label && field.show_label) {
                     html += '<label class="lcf-pv-label">' + escHtml(label);
                     if (req) html += ' <span style="color:#e53e3e">*</span>';
                     html += '</label>';
+                }
+                if (field.condition && field.condition.field) {
+                    html += '<p class="lcf-pv-condition" style="margin:2px 0 4px;font-size:11px;color:#888;font-style:italic">Hiện khi ' + escHtml(field.condition.field) + ' ' + escHtml(field.condition.operator || 'equals') + ' ' + escHtml(field.condition.value || '') + '</p>';
                 }
                 switch (type) {
                     case 'content':
@@ -1727,6 +2172,10 @@ const FIELD_TYPES = window.LacaContactFormVars.FIELD_TYPES;
                 }
                 
                 html += '<form class="lcf-pv-form" onsubmit="return false">';
+
+                if (styles.form_mode === 'multi_step' || getAllFields().some(function(f) { return f.type === 'step_break'; })) {
+                    html += '<div class="lcf-pv-step-mode" style="margin-bottom:12px;padding:8px 12px;background:#f0f6fc;border-left:3px solid #2271b1;font-size:12px;display:flex;justify-content:space-between"><span>Form từng bước</span><strong>Next chỉ bật sau khi bước hiện tại hợp lệ</strong></div>';
+                }
 
                 rows.forEach(function(row) {
                     var hasField = row.cols.some(function(c) { return c.fields.length > 0; });

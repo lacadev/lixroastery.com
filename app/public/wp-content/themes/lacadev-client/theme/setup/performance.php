@@ -60,8 +60,12 @@ class ThemePerformance
         remove_action('wp_head', 'index_rel_link');
         remove_action('wp_head', 'parent_post_rel_link');
 
-        // Optimize heartbeat
+        // Optimize heartbeat (chỉ áp dụng 120s mặc định khi admin chưa chọn chế độ riêng trong trang Tối ưu)
         add_filter('heartbeat_settings', function ($settings) {
+            $mode = get_option('_heartbeat_mode', '');
+            if (!empty($mode)) {
+                return $settings;
+            }
             $settings['interval'] = 120; // 2 minutes instead of 15 seconds
             return $settings;
         });

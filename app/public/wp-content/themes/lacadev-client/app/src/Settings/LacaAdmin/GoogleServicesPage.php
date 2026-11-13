@@ -62,33 +62,24 @@ class GoogleServicesPage
 
         wp_enqueue_media();
 
-        // Enqueue bundled laca-seo styles and scripts from child/parent dist
-        $distDir = dirname(get_stylesheet_directory()) . '/dist/';
-        $themeRootUri = dirname(get_stylesheet_directory_uri());
-        if (!file_exists($distDir . 'styles/laca-seo.css')) {
-            $distDir = dirname(get_template_directory()) . '/dist/';
-            $themeRootUri = dirname(get_template_directory_uri());
-        }
-
-        $stylePath = $distDir . 'styles/laca-seo.css';
-        $styleUri  = $themeRootUri . '/dist/styles/laca-seo.css';
-        if (file_exists($stylePath)) {
+        // Enqueue bundled laca-seo styles and scripts (ưu tiên parent dist, fallback child dist)
+        $styleAsset = function_exists('lacaParentAsset') ? \lacaParentAsset('styles/laca-seo.css') : null;
+        if ($styleAsset) {
             wp_enqueue_style(
                 'laca-seo-admin',
-                $styleUri,
+                $styleAsset['url'],
                 ['dashicons'],
-                (string) filemtime($stylePath)
+                (string) $styleAsset['ver']
             );
         }
 
-        $scriptPath = $distDir . 'laca-seo.js';
-        $scriptUri  = $themeRootUri . '/dist/laca-seo.js';
-        if (file_exists($scriptPath)) {
+        $scriptAsset = function_exists('lacaParentAsset') ? \lacaParentAsset('laca-seo.js') : null;
+        if ($scriptAsset) {
             wp_enqueue_script(
                 'laca-seo-admin',
-                $scriptUri,
+                $scriptAsset['url'],
                 ['wp-i18n'],
-                (string) filemtime($scriptPath),
+                (string) $scriptAsset['ver'],
                 true
             );
 

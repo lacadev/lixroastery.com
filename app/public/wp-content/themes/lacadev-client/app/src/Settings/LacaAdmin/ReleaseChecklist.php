@@ -52,15 +52,14 @@ final class ReleaseChecklist
                 'key' => 'laca',
                 'title' => 'Laca Admin',
                 'items' => [
-                    ['id' => 'laca_brand', 'title' => 'Màu admin & logo trang đăng nhập', 'type' => 'manual',
-                        'guide' => 'Tab ADMIN COLOR và LOGIN ngay bên dưới: chọn màu thương hiệu, tải logo cho trang đăng nhập.',
+                    ['id' => 'laca_brand', 'title' => 'Logo trang đăng nhập', 'type' => 'manual',
+                        'guide' => 'Tab LOGIN ngay bên dưới: tải logo cho trang đăng nhập.',
                         'url' => admin_url('admin.php?page=laca-admin'),
                         'check' => static function () {
                             $missing = array_keys(array_filter([
-                                'màu admin' => '' === (string) get_option('_primary_color_ad'),
                                 'logo đăng nhập' => !get_option('_login_logo'),
                             ]));
-                            return [!$missing, $missing ? 'Chưa có ' . implode(', ', $missing) : 'Đã chọn màu và logo'];
+                            return [!$missing, $missing ? 'Chưa có ' . implode(', ', $missing) : 'Đã tải logo trang đăng nhập'];
                         }],
                     ['id' => 'smtp', 'title' => 'SMTP gửi mail & gửi thử', 'type' => 'manual', 'high' => true,
                         'guide' => 'Tab SMTP: nhập máy chủ mail của khách rồi gửi một form liên hệ thử. Email Log phải ghi "Đã gửi" — không có SMTP, mail lead hay rơi vào spam hoặc mất.',

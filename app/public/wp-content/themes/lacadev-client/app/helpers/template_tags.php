@@ -10,7 +10,7 @@ function getImageAsset($path) {
     $my_theme   = wp_get_theme();
     $theme_path = dirname(get_stylesheet_directory_uri());
 
-    if (carbon_get_theme_option('use_short_url') !== true) {
+    if (laca_theme_option('use_short_url') !== true) {
         $siteUrl = $theme_path . "/resources/images/";
     } else {
         $siteUrl = $_SERVER['REQUEST_SCHEME'] . '://' . $_SERVER['HTTP_HOST'] . "/img/";
@@ -50,8 +50,8 @@ function getFieldImageUrl($name, $w, $h) {
  */
 function getDefaultImageId() {
     $id = getOption('default_image');
-    if (empty($id) && function_exists('carbon_get_theme_option')) {
-        $id = carbon_get_theme_option('default_image');
+    if (empty($id)) {
+        $id = laca_theme_option('default_image');
     }
     return (int) $id;
 }
@@ -120,10 +120,20 @@ function getViewCount($postId = null) {
 }
 
 function updateViewCount($postId = null) {
-	$postId = empty($postId) ? get_the_ID() : $postId;
+	$postId = empty($postId) ? get_the_ID() : (int) $postId;
+	if (!$postId) {
+		return 0;
+	}
 
 	$count_key = '_gm_view_count';
-	$count     = (int)get_post_meta($postId, $count_key, true);
+	$count     = (int) get_post_meta($postId, $count_key, true);
+
+	// Nếu là frontend request thông thường của khách, gom vào buffer thay vì UPDATE DB trực tiếp
+	if (!is_admin() && !wp_doing_cron() && !defined('REST_REQUEST') && class_exists(\App\Features\Performance\PostViewTracker::class)) {
+		\App\Features\Performance\PostViewTracker::recordView($postId);
+		return $count + 1;
+	}
+
 	if (empty($count)) {
 		$count = 1;
 		delete_post_meta($postId, $count_key);
@@ -161,8 +171,26 @@ function theContent() {
     echo !empty($content) ? wp_kses_post($content) : __('Dữ liệu đang được cập nhật', 'laca');
 }
 
+/**
+ * Lấy giá trị Carbon Fields Theme Option qua bộ đệm snapshot tối ưu (0 SQL query).
+ *
+ * @param string $name Tên field
+ * @param mixed  $default Giá trị mặc định
+ * @return mixed
+ */
+function laca_theme_option($name, $default = null) {
+    if (class_exists(\App\Helpers\ThemeOptionsCache::class)) {
+        return \App\Helpers\ThemeOptionsCache::get($name, $default);
+    }
+    return function_exists('carbon_get_theme_option') ? (carbon_get_theme_option($name) ?: $default) : $default;
+}
+
 function getOption($name) {
-	return carbon_get_theme_option($name . currentLanguage());
+    $lang = function_exists('currentLanguage') ? currentLanguage() : '';
+    if (class_exists(\App\Helpers\ThemeOptionsCache::class)) {
+        return \App\Helpers\ThemeOptionsCache::get($name . $lang);
+    }
+	return function_exists('carbon_get_theme_option') ? carbon_get_theme_option($name . $lang) : '';
 }
 function theOption($name) {
     echo getOption($name);

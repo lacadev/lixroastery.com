@@ -318,6 +318,42 @@ h1.wp-block-post-title {
   }
 }
 
+// ─── Project Charts ──────────────────────────────────────────
+
+#laca-project-charts-widget {
+  background: var(--laca-bg, #fff);
+  border-radius: 12px;
+  padding: 24px;
+  border: 1px solid var(--laca-border, rgba(0,0,0,0.06));
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+
+.laca-charts-grid {
+  display: grid;
+  grid-template-columns: 1fr 1.8fr;
+  gap: 24px;
+  margin-top: 16px;
+
+  @include maxWidth($lg) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.laca-chart-panel {
+  h4 {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--laca-fg-muted, rgba(0,0,0,0.55));
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin: 0 0 12px;
+  }
+
+  canvas {
+    max-height: 220px;
+  }
+}
+
 // ─── Keyframes ───────────────────────────────────────────────
 
 @keyframes laca-dots {

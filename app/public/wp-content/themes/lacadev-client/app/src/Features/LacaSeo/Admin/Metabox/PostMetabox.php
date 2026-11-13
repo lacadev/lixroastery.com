@@ -72,24 +72,23 @@ class PostMetabox
 
         wp_enqueue_media();
 
-        $theme_root_uri = dirname(get_stylesheet_directory_uri());
-        $dist_dir = dirname(get_stylesheet_directory()) . '/dist/';
-
-        if (file_exists($dist_dir . 'styles/laca-seo-editor.css')) {
+        $styleAsset = function_exists('lacaParentAsset') ? \lacaParentAsset('styles/laca-seo-editor.css') : null;
+        if ($styleAsset) {
             wp_enqueue_style(
                 'laca-seo-editor',
-                $theme_root_uri . '/dist/styles/laca-seo-editor.css',
+                $styleAsset['url'],
                 ['dashicons'],
-                (string) filemtime($dist_dir . 'styles/laca-seo-editor.css')
+                (string) $styleAsset['ver']
             );
         }
 
-        if (file_exists($dist_dir . 'laca-seo-editor.js')) {
+        $scriptAsset = function_exists('lacaParentAsset') ? \lacaParentAsset('laca-seo-editor.js') : null;
+        if ($scriptAsset) {
             wp_enqueue_script(
                 'laca-seo-editor',
-                $theme_root_uri . '/dist/laca-seo-editor.js',
+                $scriptAsset['url'],
                 ['wp-i18n', 'wp-element', 'wp-data', 'wp-wordcount', 'wp-url', 'wp-autop'],
-                (string) filemtime($dist_dir . 'laca-seo-editor.js'),
+                (string) $scriptAsset['ver'],
                 true
             );
 

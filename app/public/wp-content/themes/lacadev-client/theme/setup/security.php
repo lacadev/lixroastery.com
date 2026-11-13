@@ -10,111 +10,34 @@ if (!defined('ABSPATH')) {
  */
 
 /**
- * Add HTTP Security Headers
+ * Hardening mặc định: luôn tắt XML-RPC và xoá wp_generator
  */
-add_action('send_headers', function() {
-    // Generate Nonce
-    $nonce = base64_encode(random_bytes(16));
-    if (!defined('LACA_CSP_NONCE')) {
-        define('LACA_CSP_NONCE', $nonce);
+add_filter('xmlrpc_enabled', '__return_false');
+remove_action('wp_head', 'wp_generator');
+
+add_filter('wp_xmlrpc_server_class', function ($class) {
+    if (!apply_filters('xmlrpc_enabled', true)) {
+        if (!class_exists('Laca_XmlRpc_Disabled_Server', false)) {
+            class Laca_XmlRpc_Disabled_Server extends \wp_xmlrpc_server
+            {
+                public function serve_request()
+                {
+                    $this->error(new \IXR_Error(405, 'XML-RPC services are disabled on this site.'));
+                }
+            }
+        }
+        return 'Laca_XmlRpc_Disabled_Server';
     }
-
-    // Prevent clickjacking
-    header('X-Frame-Options: SAMEORIGIN');
-    
-    // Prevent MIME-sniffing
-    header('X-Content-Type-Options: nosniff');
-    
-    // Referrer policy
-    header('Referrer-Policy: strict-origin-when-cross-origin');
-    
-    // XSS Protection (legacy browsers)
-    header('X-XSS-Protection: 1; mode=block');
-
-    // Ẩn "X-Powered-By: PHP/8.x.y" — bot dùng phiên bản để chọn lỗ hổng khai thác.
-    header_remove('X-Powered-By');
-
-    // HSTS: trình duyệt chỉ dùng HTTPS cho domain này trong 1 năm (chống hạ cấp về HTTP).
-    // Chỉ gửi khi đang chạy HTTPS; KHÔNG includeSubDomains/preload để không ép các subdomain
-    // chưa có SSL. Lưu ý: SSL hết hạn thì khách sẽ không vào được cho tới khi gia hạn.
-    if (is_ssl()) {
-        header('Strict-Transport-Security: max-age=31536000');
-    }
-    
-    if ( ! is_admin() ) {
-        // Content Security Policy
-        // Frontend dùng 'unsafe-inline' thay cho nonce: page cache lưu HTML tĩnh
-        // nên nonce bị dùng lại cho mọi khách (mất ý nghĩa), và script inline do
-        // plugin cache chèn sau (lazyload, delay JS...) không có nonce sẽ bị chặn.
-        // Có nonce trong header thì trình duyệt bỏ qua 'unsafe-inline' — không
-        // được dùng chung 2 cái. Thuộc tính nonce="" vẫn gắn vào thẻ script (vô hại).
-        $csp  = "default-src 'self'; ";
-        $csp .= "script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://www.google.com https://www.gstatic.com https://www.googletagmanager.com https://www.google-analytics.com https://images.dmca.com https://apis.google.com blob:; ";
-        $csp .= "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net; ";
-        $csp .= "font-src 'self' https://fonts.gstatic.com data:; ";
-        $csp .= "connect-src 'self' https://www.google.com https://www.gstatic.com https://www.youtube.com https://www.google-analytics.com https://stats.g.doubleclick.net https://apis.google.com ws: wss:; ";
-        $default_frame_hosts = [
-            'https://www.youtube.com',
-            'https://www.youtube-nocookie.com',
-            'https://player.vimeo.com',
-            'https://docs.google.com',
-            'https://www.google.com',
-            'https://www.gstatic.com',
-        ];
-        $frame_hosts = apply_filters('laca_csp_frame_src', $default_frame_hosts);
-        $frame_src_str = implode(' ', array_unique(array_filter((array) $frame_hosts)));
-        $csp .= "frame-src 'self' {$frame_src_str}; ";
-        $csp .= "media-src 'self' https://www.youtube.com https://www.youtube-nocookie.com https://player.vimeo.com; ";
-        $csp .= "img-src 'self' data: https: http:; ";
-        $csp .= "worker-src 'self' blob:; ";
-        $csp .= "frame-ancestors 'self';";
-
-        header( "Content-Security-Policy: {$csp}" );
-
-        // Permissions Policy
-        header( 'Permissions-Policy: geolocation=(), microphone=(), camera=()' );
-    }
+    return $class;
 });
 
 /**
- * Inject Nonce into script tags
+ * Add HTTP Security Headers
+ * Chuyển sang dùng SecurityHeaders class có toggle — giữ nguyên hành vi mặc định.
  */
-add_filter('script_loader_tag', function($tag, $handle) {
-    if ( is_admin() ) {
-        return $tag;
-    }
-    if (defined('LACA_CSP_NONCE')) {
-        $nonce = LACA_CSP_NONCE;
-        if (strpos($tag, "nonce=") === false) {
-            $tag = str_replace('<script ', '<script nonce="' . $nonce . '" ', $tag);
-        }
-    }
-    return $tag;
-}, 10, 2);
-
-/**
- * Inject Nonce into INLINE script tags (wp_add_inline_script output)
- * Required for CSP compliance with wp_add_inline_script()
- */
-add_filter('wp_inline_script_attributes', function($attributes) {
-    if ( is_admin() ) {
-        return $attributes;
-    }
-    if (defined('LACA_CSP_NONCE') && empty($attributes['nonce'])) {
-        $attributes['nonce'] = LACA_CSP_NONCE;
-    }
-    return $attributes;
-}, 10, 1);
-
-/**
- * Remove WordPress version from head
- */
-remove_action('wp_head', 'wp_generator');
-
-/**
- * Disable XML-RPC if not needed
- */
-add_filter('xmlrpc_enabled', '__return_false');
+if (class_exists('\App\Settings\Security\SecurityHeaders')) {
+    (new \App\Settings\Security\SecurityHeaders())->register();
+}
 
 /**
  * Remove WP version from RSS feeds
@@ -127,43 +50,6 @@ add_filter('the_generator', '__return_empty_string');
 if (get_option('_hide_theme_editor') === 'yes' && !defined('DISALLOW_FILE_EDIT')) {
     define('DISALLOW_FILE_EDIT', true);
 }
-
-/**
- * Limit login attempts (basic implementation)
- */
-add_filter('authenticate', function($user, $username, $password) {
-    if (empty($username) || empty($password)) {
-        return $user;
-    }
-    
-    $ip = $_SERVER['REMOTE_ADDR'];
-    $transient_key = 'login_attempts_' . md5($ip);
-    $attempts = get_transient($transient_key);
-    
-    if ($attempts && $attempts >= 5) {
-        return new WP_Error(
-            'too_many_attempts',
-            __('Quá nhiều lần đăng nhập thất bại. Vui lòng thử lại sau 15 phút.', 'laca')
-        );
-    }
-    
-    // If login fails, increment counter
-    if (is_wp_error($user)) {
-        $attempts = $attempts ? $attempts + 1 : 1;
-        set_transient($transient_key, $attempts, 15 * MINUTE_IN_SECONDS);
-    }
-    
-    return $user;
-}, 30, 3);
-
-/**
- * Clear login attempts on successful login
- */
-add_action('wp_login', function($username) {
-    $ip = $_SERVER['REMOTE_ADDR'];
-    $transient_key = 'login_attempts_' . md5($ip);
-    delete_transient($transient_key);
-});
 
 /**
  * Sanitize Uploaded Filenames

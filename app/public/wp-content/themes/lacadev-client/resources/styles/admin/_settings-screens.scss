@@ -1,0 +1,218 @@
+// =============================================================================
+// LACA ADMIN SETTINGS SCREENS LAYOUT (2026-11)
+// Uses only --laca-* tokens from _tokens.scss. No custom hex/rgb, no box-shadow,
+// no gradients. Responsive down to 782px and 375px without horizontal overflow.
+// =============================================================================
+
+.laca-settings-stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--laca-space-5);
+  max-width: 960px;
+}
+
+.laca-card__header--flex {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--laca-space-3);
+  flex-wrap: wrap;
+}
+
+.laca-grid-2 {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--laca-space-4);
+}
+
+.laca-field--spaced-top {
+  margin-top: var(--laca-space-4);
+}
+
+.laca-discord-status-alert {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--laca-space-3);
+  flex-wrap: wrap;
+  font-size: var(--laca-font-sm);
+
+  .laca-link-inline {
+    margin-left: auto;
+    font-weight: var(--laca-weight-medium);
+  }
+}
+
+.laca-header-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--laca-space-3);
+}
+
+.laca-header-item {
+  padding: var(--laca-space-3) var(--laca-space-4);
+  border: 1px solid var(--laca-border);
+  border-radius: var(--laca-radius-md);
+  background: var(--laca-bg-subtle);
+}
+
+.laca-header-item__sub {
+  margin-top: var(--laca-space-3);
+  padding-top: var(--laca-space-3);
+  border-top: 1px solid var(--laca-border);
+}
+
+.laca-checkbox-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--laca-space-3);
+}
+
+.laca-sched-status {
+  display: flex;
+  align-items: center;
+  gap: var(--laca-space-2);
+  flex-wrap: wrap;
+}
+
+.laca-log-filter-bar {
+  display: flex;
+  align-items: center;
+  gap: var(--laca-space-2);
+  flex-wrap: wrap;
+
+  .laca-input {
+    max-width: 280px;
+    flex: 1 1 200px;
+  }
+}
+
+// Dashboard widget: Lưu trữ & quyền file
+.laca-storage-widget {
+  display: flex;
+  flex-direction: column;
+  gap: var(--laca-space-3);
+}
+
+.laca-storage-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--laca-space-2);
+}
+
+.laca-storage-free {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--laca-space-2);
+  padding: var(--laca-space-2) var(--laca-space-3);
+  border: 1px solid var(--laca-border);
+  border-radius: var(--laca-radius-md);
+  background: var(--laca-bg-subtle);
+  font-size: var(--laca-font-sm);
+  color: var(--laca-text-secondary);
+
+  strong {
+    color: var(--laca-text-primary);
+    font-weight: var(--laca-weight-semibold);
+  }
+}
+
+.laca-storage-perms {
+  padding-top: var(--laca-space-1);
+}
+
+.laca-perm-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--laca-space-2);
+}
+
+.laca-perm-item {
+  display: flex;
+  align-items: center;
+  gap: var(--laca-space-2);
+  flex-wrap: wrap;
+  font-size: var(--laca-font-xs);
+  color: var(--laca-text-secondary);
+}
+
+.laca-storage-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--laca-space-2);
+  flex-wrap: wrap;
+  padding-top: var(--laca-space-2);
+  border-top: 1px solid var(--laca-border);
+  font-size: var(--laca-font-xs);
+  color: var(--laca-text-secondary);
+}
+
+.laca-storage-meta {
+  display: flex;
+  align-items: center;
+  gap: var(--laca-space-2);
+  flex-wrap: wrap;
+}
+
+.laca-storage-link {
+  color: var(--laca-accent);
+  font-weight: var(--laca-weight-medium);
+  text-decoration: none;
+
+  &:hover,
+  &:focus {
+    color: var(--laca-accent-hover);
+    text-decoration: underline;
+  }
+}
+
+// Responsive: <= 782px (WP Admin tablet/mobile breakpoint) & 375px
+@media (max-width: 782px) {
+  .laca-grid-2,
+  .laca-checkbox-grid,
+  .laca-storage-stats {
+    grid-template-columns: 1fr;
+  }
+
+  .laca-log-filter-bar .laca-input {
+    max-width: 100%;
+  }
+
+  .laca-card__footer {
+    flex-wrap: wrap;
+  }
+
+  .laca-table-wrap {
+    max-width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+
+// Nhóm checkbox (vd vai trò bắt buộc 2FA) — label bao input, .laca-checkbox chỉ gắn cho <input>
+.laca-check-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--laca-space-2) var(--laca-space-5);
+  margin-bottom: var(--laca-space-3);
+
+  &__item {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--laca-space-2);
+    font-size: var(--laca-font-size-sm);
+    color: var(--laca-fg);
+    cursor: pointer;
+  }
+}
+
+// Field số ngắn (ngày, lần/giờ) — chỉ giới hạn bề rộng, giữ bố cục dọc của .laca-field
+.laca-field--narrow {
+  max-width: 320px;
+}

@@ -13,7 +13,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-$site_key = carbon_get_theme_option('recaptcha_site_key');
+$site_key = function_exists('laca_theme_option') ? laca_theme_option('recaptcha_site_key') : (function_exists('carbon_get_theme_option') ? carbon_get_theme_option('recaptcha_site_key') : '');
 
 // Tiêu đề/mô tả nhập ngay trên trang đang chọn template này (Page Attributes
 // → Template → "Contact Page"), xem contact_page_meta.php. Fallback về text

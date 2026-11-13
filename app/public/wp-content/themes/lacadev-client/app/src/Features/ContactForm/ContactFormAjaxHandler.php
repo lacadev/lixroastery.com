@@ -75,6 +75,14 @@ class ContactFormAjaxHandler
         $errors = [];
 
         foreach ($fields as $field) {
+            if (($field['type'] ?? '') === 'step_break') {
+                continue;
+            }
+
+            if (!self::isFieldConditionMatched($field, $_POST)) {
+                continue;
+            }
+
             // Áp bản dịch theo ngôn ngữ Polylang của khách đang xem — để
             // thông báo lỗi ("$label là bắt buộc.") và fallback nhãn "Khác"
             // hiện đúng ngôn ngữ khách nhìn thấy trên form, không phải luôn
@@ -230,6 +238,10 @@ class ContactFormAjaxHandler
         $atts   = shortcode_atts(['id' => 0, 'class' => ''], $atts, 'laca_contact_form');
         $formId = absint($atts['id']);
 
+        if (!$formId && class_exists(ContactFormTable::class)) {
+            $formId = ContactFormTable::ensureDefaultForm();
+        }
+
         if (!$formId) {
             return '<p class="laca-cf-error">Thiếu ID form. Dùng: [laca_contact_form id="X"]</p>';
         }
@@ -271,6 +283,24 @@ class ContactFormAjaxHandler
         $recaptchaEnabled = class_exists('Laca_Recaptcha') && \Laca_Recaptcha::isEnabledFor('contact');
         if ($recaptchaEnabled) {
             \Laca_Recaptcha::enqueue();
+        }
+
+        if (
+            method_exists(self::class, 'shouldRenderMultiStep')
+            && method_exists($this, 'renderMultiStepForm')
+            && self::shouldRenderMultiStep($rawData, $styleSettings)
+        ) {
+            return $this->renderMultiStepForm(
+                $rawData,
+                $formId,
+                $nonce,
+                $ajaxUrl,
+                $extraClass,
+                $formElId,
+                $wrapId,
+                $styleSettings,
+                $scopedCss
+            );
         }
 
         ob_start();
@@ -757,6 +787,10 @@ class ContactFormAjaxHandler
         // "content" không có name/label/placeholder — chỉ in ra ghi chú tĩnh
         // (admin tự viết, hỗ trợ <a>/<strong>/<em> qua nút soạn thảo), không
         // thu thập dữ liệu nên tách riêng khỏi luồng render field thông thường.
+        if (($field['type'] ?? '') === 'step_break') {
+            return;
+        }
+
         if (($field['type'] ?? '') === 'content') {
             $content = wp_kses_post($field['content'] ?? '');
             if ($content !== '') {
@@ -779,7 +813,7 @@ class ContactFormAjaxHandler
         $reqMark      = $required ? ' <span class="laca-cf-required" aria-hidden="true">*</span>' : '';
         $fieldId      = 'laca-cf-field-' . esc_attr($name) . '-' . uniqid('', true);
         ?>
-        <div class="laca-cf-form-row laca-cf-type-<?php echo esc_attr($type); ?> laca-cf-col-<?php echo esc_attr($colWidth); ?>">
+        <div class="laca-cf-form-row laca-cf-type-<?php echo esc_attr($type); ?> laca-cf-col-<?php echo esc_attr($colWidth); ?>"<?php echo self::buildConditionAttributes($field); ?>>
             <?php if ($type !== 'hidden'): ?>
                 <label for="<?php echo esc_attr($fieldId); ?>" class="<?php echo esc_attr($labelClass); ?>">
                     <?php echo $displayLabel . $reqMark; ?>
@@ -1016,7 +1050,7 @@ class ContactFormAjaxHandler
                 foreach ($col['fields'] ?? [] as $field) {
                     // "content" là ghi chú tĩnh, không thu thập dữ liệu — bỏ
                     // qua ở đây để không bị validate/submit như field thật.
-                    if (($field['type'] ?? '') === 'content') {
+                    if (in_array($field['type'] ?? '', ['content', 'step_break'], true)) {
                         continue;
                     }
                     $fields[] = $field;
@@ -1237,4 +1271,55 @@ class ContactFormAjaxHandler
         // Không đọc X-Forwarded-For / CF-Connecting-IP trực tiếp — client tự gửi được (giả IP).
         return \App\Helpers\ClientIp::get();
     }
+
+
+    private static function buildConditionAttributes(array $field): string
+    {
+        $condition = $field['condition'] ?? [];
+        if (empty($condition['field'])) {
+            return '';
+        }
+
+        $operator = $condition['operator'] ?? 'equals';
+        if (!in_array($operator, ['equals', 'not_equals', 'contains', 'not_empty', 'empty'], true)) {
+            $operator = 'equals';
+        }
+
+        return sprintf(
+            ' data-condition-field="%s" data-condition-operator="%s" data-condition-value="%s"',
+            esc_attr($condition['field']),
+            esc_attr($operator),
+            esc_attr($condition['value'] ?? '')
+        );
+    }
+
+    private static function isFieldConditionMatched(array $field, array $source): bool
+    {
+        $condition = $field['condition'] ?? [];
+        if (empty($condition['field'])) {
+            return true;
+        }
+
+        $operator = $condition['operator'] ?? 'equals';
+        $expected = (string) ($condition['value'] ?? '');
+        $actual = $source[$condition['field']] ?? '';
+
+        if (is_array($actual)) {
+            $actualValues = array_map('strval', $actual);
+            $actualString = implode(', ', $actualValues);
+        } else {
+            $actualValues = [(string) $actual];
+            $actualString = (string) $actual;
+        }
+
+        return match ($operator) {
+            'not_equals' => !in_array($expected, $actualValues, true),
+            'contains' => $expected !== '' && str_contains($actualString, $expected),
+            'not_empty' => trim($actualString) !== '',
+            'empty' => trim($actualString) === '',
+            default => in_array($expected, $actualValues, true),
+        };
+    }
+
+
 }

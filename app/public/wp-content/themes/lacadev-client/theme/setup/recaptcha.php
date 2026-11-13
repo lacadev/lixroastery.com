@@ -31,6 +31,9 @@ class Laca_Recaptcha {
      */
     public static function config(): array {
         $get = static function ($key) {
+            if (function_exists('laca_theme_option')) {
+                return laca_theme_option($key);
+            }
             return function_exists('carbon_get_theme_option') ? carbon_get_theme_option($key) : null;
         };
         // Ô number ở trình duyệt tiếng Việt có thể gửi "0,5".
