@@ -14,3 +14,5 @@ local-phpinfo.php
 node_modules/
 /scratch/
 /app/public/.htaccess.bk
+app/public/wp-content/laca-backups/
+
