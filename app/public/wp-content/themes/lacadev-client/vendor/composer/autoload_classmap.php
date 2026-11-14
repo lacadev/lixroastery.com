@@ -8,6 +8,7 @@ $baseDir = dirname($vendorDir);
 return array(
     'App\\Abstracts\\AbstractPostType' => $baseDir . '/app/src/Abstracts/AbstractPostType.php',
     'App\\Abstracts\\AbstractTaxonomy' => $baseDir . '/app/src/Abstracts/AbstractTaxonomy.php',
+    'App\\Cli\\LacaCryptoCommand' => $baseDir . '/app/src/Cli/LacaCryptoCommand.php',
     'App\\Cli\\LacaSyncCommand' => $baseDir . '/app/src/Cli/LacaSyncCommand.php',
     'App\\Cli\\LacaThemeCommand' => $baseDir . '/app/src/Cli/LacaThemeCommand.php',
     'App\\Cli\\Sync\\DbPuller' => $baseDir . '/app/src/Cli/Sync/DbPuller.php',
@@ -27,6 +28,7 @@ return array(
     'App\\Features\\ContactForm\\ContactFormEmailService' => $baseDir . '/app/src/Features/ContactForm/ContactFormEmailService.php',
     'App\\Features\\ContactForm\\ContactFormManager' => $baseDir . '/app/src/Features/ContactForm/ContactFormManager.php',
     'App\\Features\\ContactForm\\ContactFormPopupSettings' => $baseDir . '/app/src/Features/ContactForm/ContactFormPopupSettings.php',
+    'App\\Features\\ContactForm\\FooterContactHandler' => $baseDir . '/app/src/Features/ContactForm/FooterContactHandler.php',
     'App\\Features\\Dev\\LocalMediaProxy' => $baseDir . '/app/src/Features/Dev/LocalMediaProxy.php',
     'App\\Features\\DiscordHub\\ActivityLog' => $baseDir . '/app/src/Features/DiscordHub/ActivityLog.php',
     'App\\Features\\DiscordHub\\AdminPage' => $baseDir . '/app/src/Features/DiscordHub/AdminPage.php',

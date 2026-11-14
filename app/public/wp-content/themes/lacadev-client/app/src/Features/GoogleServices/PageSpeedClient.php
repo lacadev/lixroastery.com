@@ -292,9 +292,21 @@ class PageSpeedClient
         }
 
         $raw = (string) $opts['pagespeed_api_key'];
-        $decrypted = GscCrypto::decrypt($raw);
+        $decrypted = GscCrypto::decrypt($raw, false);
+        if (!is_string($decrypted) || trim($decrypted) === '') {
+            return '';
+        }
 
-        return is_string($decrypted) ? trim($decrypted) : '';
+        $clean = trim($decrypted);
+        if (GscCrypto::needsRehash($raw)) {
+            $rehashed = GscCrypto::encrypt($clean);
+            if ($rehashed !== '') {
+                $opts['pagespeed_api_key'] = $rehashed;
+                update_option(self::OPTION_KEY, $opts, false);
+            }
+        }
+
+        return $clean;
     }
 
     /**
@@ -311,7 +323,11 @@ class PageSpeedClient
         if ($cleanKey === '') {
             unset($opts['pagespeed_api_key']);
         } else {
-            $opts['pagespeed_api_key'] = GscCrypto::encrypt($cleanKey);
+            $encrypted = GscCrypto::encrypt($cleanKey);
+            if ($encrypted === '') {
+                return;
+            }
+            $opts['pagespeed_api_key'] = $encrypted;
         }
 
         update_option(self::OPTION_KEY, $opts, false);

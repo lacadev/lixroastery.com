@@ -11456,3 +11456,75 @@ msgstr "Your Google email address has not been verified."
 #: theme/setup/users/auth.php:482
 msgid "Phiên xác thực Google đã hết hạn hoặc không hợp lệ. Vui lòng thử lại."
 msgstr "Google authentication session expired or is invalid. Please try again."
+
+#: app/src/Helpers/Crypto.php:82
+msgid "Không thể mã hoá dữ liệu nhạy cảm: thiếu AUTH_KEY hợp lệ hoặc LACA_CRYPTO_KEY (base64 32 byte) trong wp-config.php."
+msgstr "Cannot encrypt sensitive data: missing valid AUTH_KEY or LACA_CRYPTO_KEY (32-byte base64) in wp-config.php."
+
+#: app/src/Features/GoogleServices/GscCrypto.php:79
+msgid "Không thể mã hoá thông tin kết nối Google Services: thiếu AUTH_KEY hợp lệ hoặc LACA_CRYPTO_KEY (base64 32 byte) trong wp-config.php."
+msgstr "Cannot encrypt Google Services credentials: missing valid AUTH_KEY or LACA_CRYPTO_KEY (32-byte base64) in wp-config.php."
+
+#: app/src/Features/ContactForm/FooterContactHandler.php:31
+msgid "Phiên làm việc đã hết hạn, vui lòng tải lại trang và thử lại."
+msgstr "Your session has expired, please reload the page and try again."
+
+#: app/src/Features/ContactForm/FooterContactHandler.php:51
+msgid "Bạn đã gửi quá nhiều yêu cầu. Vui lòng thử lại sau ít phút."
+msgstr "You have submitted too many requests. Please try again in a few minutes."
+
+#: app/src/Features/ContactForm/FooterContactHandler.php:83
+msgid "Vui lòng điền đầy đủ thông tin bắt buộc."
+msgstr "Please fill in all required fields."
+
+#: app/src/Features/ContactForm/FooterContactHandler.php:94
+msgid "Số điện thoại không hợp lệ. Vui lòng kiểm tra lại."
+msgstr "Invalid phone number. Please check and try again."
+
+#: app/src/Features/ContactForm/FooterContactHandler.php:107
+msgid "Không thể lưu yêu cầu lúc này. Vui lòng thử lại sau."
+msgstr "Unable to save your request right now. Please try again later."
+
+#: app/src/Features/ContactForm/FooterContactHandler.php:160
+msgid "Cảm ơn bạn! Yêu cầu tư vấn đã được ghi nhận, chúng tôi sẽ liên hệ sớm nhất."
+msgstr "Thank you! Your consultation request has been received; we will contact you shortly."
+
+#: app/src/Features/ContactForm/FooterContactHandler.php:179
+msgid "Form liên hệ footer"
+msgstr "Footer Contact Form"
+
+#: app/src/Features/ContactForm/FooterContactHandler.php:195
+msgid "Số điện thoại liên hệ"
+msgstr "Phone Number"
+
+#: app/src/Features/ContactForm/FooterContactHandler.php:196
+msgid "Địa chỉ xây dựng"
+msgstr "Project Address"
+
+#: app/src/Features/ContactForm/FooterContactHandler.php:197
+msgid "Quy mô xây dựng"
+msgstr "Project Scale"
+
+#: app/src/Features/ContactForm/FooterContactHandler.php:198
+msgid "Ngân sách"
+msgstr "Budget"
+
+#: app/src/Features/ContactForm/FooterContactHandler.php:201
+msgid "Yêu cầu tư vấn mới [$tf_name - $tf_phone]"
+msgstr "New consultation request [$tf_name - $tf_phone]"
+
+#: app/src/Settings/ThemeSnapshot.php:295
+msgid "Không tìm thấy bản sao lưu cũ hơn phiên bản đang chạy để khôi phục."
+msgstr "No snapshot older than the currently running version was found to restore."
+
+#: lacadev-client-child/theme/footer.php:107
+msgid "Gửi thành công!"
+msgstr "Submitted successfully!"
+
+#: lacadev-client-child/theme/footer.php:108
+msgid "Có lỗi, vui lòng thử lại."
+msgstr "An error occurred, please try again."
+
+#: lacadev-client-child/theme/footer.php:109
+msgid "Lỗi kết nối."
+msgstr "Connection error."

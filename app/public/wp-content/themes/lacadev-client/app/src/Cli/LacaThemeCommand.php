@@ -60,7 +60,7 @@ class LacaThemeCommand
 
         if ($manifest !== null && $blockedMsg === null) {
             $manifestVer = (string) ($manifest->version ?? '');
-            if ($manifestVer !== '' && $installedVersion !== '' && version_compare($manifestVer, $installedVersion, '>')) {
+            if ($manifestVer !== '' && $installedVersion !== '' && ThemeSnapshot::compareVersions($manifestVer, $installedVersion, '>')) {
                 $updateAvailable = true;
             }
         }
@@ -196,7 +196,7 @@ class LacaThemeCommand
             return;
         }
 
-        \WP_CLI\Utils\format_items('table', $items, ['file', 'version', 'size', 'created_at']);
+        \WP_CLI\Utils\format_items('table', $items, ['file', 'version', 'type', 'size', 'created_at']);
     }
 
     /**

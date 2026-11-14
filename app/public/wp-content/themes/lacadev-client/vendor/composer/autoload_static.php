@@ -377,6 +377,7 @@ class ComposerStaticInit5535de50cb51bb3aff884d02687f512c
     public static $classMap = array (
         'App\\Abstracts\\AbstractPostType' => __DIR__ . '/../..' . '/app/src/Abstracts/AbstractPostType.php',
         'App\\Abstracts\\AbstractTaxonomy' => __DIR__ . '/../..' . '/app/src/Abstracts/AbstractTaxonomy.php',
+        'App\\Cli\\LacaCryptoCommand' => __DIR__ . '/../..' . '/app/src/Cli/LacaCryptoCommand.php',
         'App\\Cli\\LacaSyncCommand' => __DIR__ . '/../..' . '/app/src/Cli/LacaSyncCommand.php',
         'App\\Cli\\LacaThemeCommand' => __DIR__ . '/../..' . '/app/src/Cli/LacaThemeCommand.php',
         'App\\Cli\\Sync\\DbPuller' => __DIR__ . '/../..' . '/app/src/Cli/Sync/DbPuller.php',
@@ -396,6 +397,7 @@ class ComposerStaticInit5535de50cb51bb3aff884d02687f512c
         'App\\Features\\ContactForm\\ContactFormEmailService' => __DIR__ . '/../..' . '/app/src/Features/ContactForm/ContactFormEmailService.php',
         'App\\Features\\ContactForm\\ContactFormManager' => __DIR__ . '/../..' . '/app/src/Features/ContactForm/ContactFormManager.php',
         'App\\Features\\ContactForm\\ContactFormPopupSettings' => __DIR__ . '/../..' . '/app/src/Features/ContactForm/ContactFormPopupSettings.php',
+        'App\\Features\\ContactForm\\FooterContactHandler' => __DIR__ . '/../..' . '/app/src/Features/ContactForm/FooterContactHandler.php',
         'App\\Features\\Dev\\LocalMediaProxy' => __DIR__ . '/../..' . '/app/src/Features/Dev/LocalMediaProxy.php',
         'App\\Features\\DiscordHub\\ActivityLog' => __DIR__ . '/../..' . '/app/src/Features/DiscordHub/ActivityLog.php',
         'App\\Features\\DiscordHub\\AdminPage' => __DIR__ . '/../..' . '/app/src/Features/DiscordHub/AdminPage.php',

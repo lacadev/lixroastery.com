@@ -1266,7 +1266,7 @@ class ContactFormAjaxHandler
         return $css;
     }
 
-    private static function getClientIp(): string
+    public static function getClientIp(): string
     {
         // Không đọc X-Forwarded-For / CF-Connecting-IP trực tiếp — client tự gửi được (giả IP).
         return \App\Helpers\ClientIp::get();

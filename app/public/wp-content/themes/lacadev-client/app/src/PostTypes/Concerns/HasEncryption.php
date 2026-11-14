@@ -2,10 +2,12 @@
 
 namespace App\PostTypes\Concerns;
 
+use App\Helpers\Crypto;
+
 /**
  * Trait HasEncryption
  *
- * Mã hóa / giải mã các field mật khẩu khi lưu/load qua Carbon Fields.
+ * Mã hóa / giải mã các field mật khẩu khi lưu/load qua Carbon Fields (AEAD v2 + lazy rehash).
  * Used by: App\PostTypes\Project
  */
 trait HasEncryption
@@ -14,6 +16,7 @@ trait HasEncryption
     private array $encryptedFields = [
         '_domain_password',
         '_hosting_password',
+        '_cpanel_password',
         '_ftp_password',
         '_db_password',
     ];
@@ -22,22 +25,43 @@ trait HasEncryption
 
     public function encryptPasswordsOnSave($value, $name, $id, $type)
     {
-        if (in_array($name, $this->encryptedFields, true) && !empty($value)) {
-            if (!\App\Helpers\Crypto::isEncrypted($value)) {
-                return \App\Helpers\Crypto::encrypt($value);
+        if (!in_array($name, $this->encryptedFields, true) || !is_string($value) || $value === '') {
+            return $value;
+        }
+
+        if (!Crypto::isEncrypted($value)) {
+            return Crypto::encrypt($value);
+        }
+
+        if (Crypto::needsRehash($value)) {
+            $plain = Crypto::decrypt($value);
+            if ($plain !== '') {
+                $rehashed = Crypto::encrypt($plain);
+                if ($rehashed !== '') {
+                    return $rehashed;
+                }
             }
         }
+
         return $value;
     }
 
     public function decryptPasswordsOnLoad($value, $name, $id, $type)
     {
-        if (empty($value)) {
+        if (!is_string($value) || $value === '' || !in_array($name, $this->encryptedFields, true)) {
             return $value;
         }
 
-        if (in_array($name, $this->encryptedFields, true) && \App\Helpers\Crypto::isEncrypted($value)) {
-            return \App\Helpers\Crypto::decrypt($value);
+        if (Crypto::isEncrypted($value)) {
+            $decrypted = Crypto::decrypt($value);
+            if ($decrypted !== '' && Crypto::needsRehash($value) && is_numeric($id) && (int) $id > 0) {
+                $rehashed = Crypto::encrypt($decrypted);
+                if ($rehashed !== '') {
+                    update_post_meta((int) $id, $name, $rehashed);
+                }
+            }
+
+            return $decrypted;
         }
 
         return $value;

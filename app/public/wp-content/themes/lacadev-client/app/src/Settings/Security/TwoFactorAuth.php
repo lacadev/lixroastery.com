@@ -67,9 +67,12 @@ class TwoFactorAuth
             return null;
         }
 
-        // Đã mã hoá bằng tagged encryption
+        // Đã mã hoá bằng tagged encryption (laca:v2: hoặc laca:v1:)
         if (Crypto::isTagged($raw)) {
             $decrypted = Crypto::decryptTagged($raw);
+            if ($decrypted !== null && Crypto::needsRehash($raw)) {
+                $this->storeUserSecret($userId, $decrypted);
+            }
             // Giải mã thất bại → KHÔNG trả về plaintext để tránh bypass 2FA
             return $decrypted; // null khi thất bại
         }

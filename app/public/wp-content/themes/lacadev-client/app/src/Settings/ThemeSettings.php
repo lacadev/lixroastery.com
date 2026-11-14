@@ -33,8 +33,8 @@ class ThemeSettings {
                 $phpmailer->Port       = get_option('_smtp_port');
                 $phpmailer->Username   = get_option('_smtp_username');
 
-                // Giải mã mật khẩu SMTP (hỗ trợ cả plaintext cũ lẫn tagged encryption)
-                $rawPassword = get_option('_smtp_password');
+                // Giải mã mật khẩu SMTP (hỗ trợ cả plaintext cũ lẫn tagged encryption + lazy rehash v2)
+                $rawPassword = (string) get_option('_smtp_password', '');
                 if (Crypto::isTagged($rawPassword)) {
                     $password = Crypto::decryptTagged($rawPassword);
                     if ($password === null) {
@@ -45,6 +45,13 @@ class ThemeSettings {
                             echo '</p></div>';
                         });
                         return; // Bỏ qua cấu hình SMTP
+                    }
+
+                    if (Crypto::needsRehash($rawPassword)) {
+                        $rehashed = Crypto::encryptTagged($password);
+                        if ($rehashed !== '') {
+                            update_option('_smtp_password', $rehashed, false);
+                        }
                     }
                 } else {
                     $password = $rawPassword;

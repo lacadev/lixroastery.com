@@ -2,14 +2,14 @@
 # This file is distributed under the same license as the La Cà Dev - Client theme.
 msgid ""
 msgstr ""
-"Project-Id-Version: La Cà Dev - Client 3.9\n"
+"Project-Id-Version: La Cà Dev - Client 3.9.1\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/theme/lacadev-client\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-11-13T13:33:32+00:00\n"
+"POT-Creation-Date: 2026-11-14T08:27:26+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: laca\n"
@@ -354,6 +354,88 @@ msgstr ""
 
 #: app/src/Abstracts/AbstractTaxonomy.php:111
 msgid "Popular items"
+msgstr ""
+
+#: app/src/Cli/LacaCryptoCommand.php:68
+msgid "Thiếu AUTH_KEY hợp lệ hoặc LACA_CRYPTO_KEY (base64 32 byte) trong wp-config.php — dừng migration."
+msgstr ""
+
+#: app/src/Cli/LacaCryptoCommand.php:79
+msgid "DRY-RUN (không ghi DB)"
+msgstr ""
+
+#: app/src/Cli/LacaCryptoCommand.php:80
+msgid "APPLY (ghi DB)"
+msgstr ""
+
+#. translators: %s: chế độ chạy migration (DRY-RUN hoặc APPLY)
+#: app/src/Cli/LacaCryptoCommand.php:82
+#, php-format
+msgid "Bắt đầu kiểm tra / di trú Crypto v2 — chế độ: %s"
+msgstr ""
+
+#. translators: %s: định danh trường dữ liệu
+#: app/src/Cli/LacaCryptoCommand.php:103
+#: app/src/Cli/LacaCryptoCommand.php:307
+#, php-format
+msgid "[plaintext_skipped] %s (chưa gắn tag mã hoá, giữ nguyên)"
+msgstr ""
+
+#. translators: %s: định danh trường dữ liệu
+#: app/src/Cli/LacaCryptoCommand.php:111
+#: app/src/Cli/LacaCryptoCommand.php:188
+#: app/src/Cli/LacaCryptoCommand.php:255
+#: app/src/Cli/LacaCryptoCommand.php:315
+#: app/src/Cli/LacaCryptoCommand.php:393
+#, php-format
+msgid "[failed] Không giải mã được %s — giữ nguyên giá trị cũ."
+msgstr ""
+
+#. translators: %s: định danh trường dữ liệu
+#: app/src/Cli/LacaCryptoCommand.php:119
+#: app/src/Cli/LacaCryptoCommand.php:196
+#: app/src/Cli/LacaCryptoCommand.php:261
+#: app/src/Cli/LacaCryptoCommand.php:323
+#: app/src/Cli/LacaCryptoCommand.php:401
+#, php-format
+msgid "[failed] Mã hoá lại v2 không khớp cho %s — giữ nguyên giá trị cũ."
+msgstr ""
+
+#. translators: %s: định danh trường dữ liệu
+#: app/src/Cli/LacaCryptoCommand.php:154
+#: app/src/Cli/LacaCryptoCommand.php:231
+#: app/src/Cli/LacaCryptoCommand.php:276
+#: app/src/Cli/LacaCryptoCommand.php:356
+#: app/src/Cli/LacaCryptoCommand.php:434
+#, php-format
+msgid "[failed] Đọc lại xác minh thất bại cho %s — đã khôi phục bản gốc."
+msgstr ""
+
+#. translators: %s: định danh trường dữ liệu
+#: app/src/Cli/LacaCryptoCommand.php:180
+#: app/src/Cli/LacaCryptoCommand.php:249
+#, php-format
+msgid "[plaintext_skipped] %s (không phải envelope GscCrypto, giữ nguyên)"
+msgstr ""
+
+#. translators: %s: định danh trường dữ liệu
+#: app/src/Cli/LacaCryptoCommand.php:385
+#, php-format
+msgid "[plaintext_skipped] %s (chưa mã hoá, giữ nguyên)"
+msgstr ""
+
+#. translators: %d: số bản ghi lỗi không thể di trú
+#: app/src/Cli/LacaCryptoCommand.php:451
+#, php-format
+msgid "Migration hoàn tất với %d trường giải mã thất bại (đã giữ nguyên dữ liệu gốc)."
+msgstr ""
+
+#: app/src/Cli/LacaCryptoCommand.php:455
+msgid "Dry-run hoàn tất — không có thay đổi nào được ghi vào DB."
+msgstr ""
+
+#: app/src/Cli/LacaCryptoCommand.php:457
+msgid "Di trú Crypto v2 hoàn tất."
 msgstr ""
 
 #: app/src/Cli/LacaSyncCommand.php:37
@@ -869,6 +951,7 @@ msgstr ""
 
 #: app/src/Databases/ContactFormTable.php:145
 #: app/src/Databases/ContactFormTable.php:154
+#: app/src/Features/ContactForm/FooterContactHandler.php:197
 #: theme/page_templates/template-contact.php:129
 msgid "Họ và tên"
 msgstr ""
@@ -882,7 +965,7 @@ msgstr ""
 #: app/src/Databases/ContactFormTable.php:147
 #: app/src/Databases/ContactFormTable.php:156
 #: app/src/Features/LacaSeo/Modules/LocalSeo/Address.php:28
-#: app/src/Settings/AdminSettings.php:1704
+#: app/src/Settings/AdminSettings.php:1714
 #: theme/page_templates/template-contact.php:52
 msgid "Email"
 msgstr ""
@@ -1088,7 +1171,7 @@ msgstr ""
 #: app/src/Settings/LacaAdmin/GoogleServicesPage.php:325
 #: app/src/Settings/LacaAdmin/ReleaseChecklist.php:950
 #: app/src/Settings/LacaAdmin/ReleaseChecklist.php:952
-#: app/src/Settings/LacaTools/Management/SiteConfig/SiteConfigExporter.php:309
+#: app/src/Settings/LacaTools/Management/SiteConfig/SiteConfigExporter.php:307
 #: app/src/Settings/Security/SecurityManager.php:1124
 msgid "Bạn không có quyền thực hiện thao tác này."
 msgstr ""
@@ -1208,6 +1291,56 @@ msgstr ""
 #: app/src/Settings/LacaTools/Management/DatabaseCleaner.php:889
 #: app/src/Settings/Security/LoginGuard.php:275
 msgid "Không có quyền."
+msgstr ""
+
+#: app/src/Features/ContactForm/FooterContactHandler.php:31
+msgid "Phiên làm việc đã hết hạn, vui lòng tải lại trang và thử lại."
+msgstr ""
+
+#: app/src/Features/ContactForm/FooterContactHandler.php:51
+msgid "Bạn đã gửi quá nhiều yêu cầu. Vui lòng thử lại sau ít phút."
+msgstr ""
+
+#: app/src/Features/ContactForm/FooterContactHandler.php:83
+msgid "Vui lòng điền đầy đủ thông tin bắt buộc."
+msgstr ""
+
+#: app/src/Features/ContactForm/FooterContactHandler.php:94
+msgid "Số điện thoại không hợp lệ. Vui lòng kiểm tra lại."
+msgstr ""
+
+#: app/src/Features/ContactForm/FooterContactHandler.php:107
+#: app/src/Features/ContactForm/FooterContactHandler.php:126
+#: app/src/Features/ContactForm/FooterContactHandler.php:133
+msgid "Không thể lưu yêu cầu lúc này. Vui lòng thử lại sau."
+msgstr ""
+
+#: app/src/Features/ContactForm/FooterContactHandler.php:163
+msgid "Cảm ơn bạn! Yêu cầu tư vấn đã được ghi nhận, chúng tôi sẽ liên hệ sớm nhất."
+msgstr ""
+
+#: app/src/Features/ContactForm/FooterContactHandler.php:182
+msgid "Form liên hệ footer"
+msgstr ""
+
+#: app/src/Features/ContactForm/FooterContactHandler.php:198
+msgid "Số điện thoại liên hệ"
+msgstr ""
+
+#: app/src/Features/ContactForm/FooterContactHandler.php:199
+msgid "Địa chỉ xây dựng"
+msgstr ""
+
+#: app/src/Features/ContactForm/FooterContactHandler.php:200
+msgid "Quy mô xây dựng"
+msgstr ""
+
+#: app/src/Features/ContactForm/FooterContactHandler.php:201
+msgid "Ngân sách"
+msgstr ""
+
+#: app/src/Features/ContactForm/FooterContactHandler.php:204
+msgid "Yêu cầu tư vấn mới [$tf_name - $tf_phone]"
 msgstr ""
 
 #: app/src/Features/Dev/LocalMediaProxy.php:303
@@ -1956,6 +2089,10 @@ msgstr ""
 msgid "Phản hồi sitemaps không hợp lệ."
 msgstr ""
 
+#: app/src/Features/GoogleServices/GscCrypto.php:86
+msgid "Không thể mã hoá thông tin kết nối Google Services: thiếu AUTH_KEY hợp lệ hoặc LACA_CRYPTO_KEY (base64 32 byte) trong wp-config.php."
+msgstr ""
+
 #: app/src/Features/GoogleServices/GuideContent.php:51
 msgid "0. Nguyên tắc vàng (đọc trước)"
 msgstr ""
@@ -2378,23 +2515,23 @@ msgstr ""
 
 #: app/src/Features/GoogleServices/PageSpeedClient.php:164
 #: app/src/Features/GoogleServices/PageSpeedClient.php:215
-#: app/src/Features/GoogleServices/PageSpeedClient.php:350
-#: app/src/Features/GoogleServices/PageSpeedClient.php:378
+#: app/src/Features/GoogleServices/PageSpeedClient.php:366
+#: app/src/Features/GoogleServices/PageSpeedClient.php:394
 #: app/src/Features/GoogleServices/views/partials/pagespeed-panel.php:63
 #: app/src/Features/GoogleServices/views/partials/pagespeed-panel.php:138
 msgid "LCP (Nội dung lớn nhất)"
 msgstr ""
 
 #: app/src/Features/GoogleServices/PageSpeedClient.php:177
-#: app/src/Features/GoogleServices/PageSpeedClient.php:357
+#: app/src/Features/GoogleServices/PageSpeedClient.php:373
 #: app/src/Features/GoogleServices/views/partials/pagespeed-panel.php:73
 msgid "INP (Tương tác đến phản hồi)"
 msgstr ""
 
 #: app/src/Features/GoogleServices/PageSpeedClient.php:190
 #: app/src/Features/GoogleServices/PageSpeedClient.php:224
-#: app/src/Features/GoogleServices/PageSpeedClient.php:364
-#: app/src/Features/GoogleServices/PageSpeedClient.php:383
+#: app/src/Features/GoogleServices/PageSpeedClient.php:380
+#: app/src/Features/GoogleServices/PageSpeedClient.php:399
 #: app/src/Features/GoogleServices/views/partials/pagespeed-panel.php:83
 #: app/src/Features/GoogleServices/views/partials/pagespeed-panel.php:148
 msgid "CLS (Dịch chuyển bố cục)"
@@ -2402,11 +2539,11 @@ msgstr ""
 
 #: app/src/Features/GoogleServices/PageSpeedClient.php:207
 #: app/src/Features/GoogleServices/PageSpeedClient.php:264
-#: app/src/Features/GoogleServices/PageSpeedClient.php:347
-#: app/src/Features/GoogleServices/PageSpeedClient.php:353
-#: app/src/Features/GoogleServices/PageSpeedClient.php:360
-#: app/src/Features/GoogleServices/PageSpeedClient.php:367
-#: app/src/Features/GoogleServices/PageSpeedClient.php:374
+#: app/src/Features/GoogleServices/PageSpeedClient.php:363
+#: app/src/Features/GoogleServices/PageSpeedClient.php:369
+#: app/src/Features/GoogleServices/PageSpeedClient.php:376
+#: app/src/Features/GoogleServices/PageSpeedClient.php:383
+#: app/src/Features/GoogleServices/PageSpeedClient.php:390
 #: app/src/Settings/LacaAdmin/LacaDashboard.php:180
 #: app/src/Settings/LacaAdmin/LacaDashboard.php:710
 msgid "Tốt"
@@ -2414,7 +2551,7 @@ msgstr ""
 
 #: app/src/Features/GoogleServices/PageSpeedClient.php:207
 #: app/src/Features/GoogleServices/PageSpeedClient.php:265
-#: app/src/Features/GoogleServices/PageSpeedClient.php:374
+#: app/src/Features/GoogleServices/PageSpeedClient.php:390
 msgid "Cần cải thiện"
 msgstr ""
 
@@ -2424,13 +2561,13 @@ msgid "Kém"
 msgstr ""
 
 #: app/src/Features/GoogleServices/PageSpeedClient.php:233
-#: app/src/Features/GoogleServices/PageSpeedClient.php:388
+#: app/src/Features/GoogleServices/PageSpeedClient.php:404
 #: app/src/Features/GoogleServices/views/partials/pagespeed-panel.php:158
 msgid "TBT (Thời gian chặn)"
 msgstr ""
 
 #: app/src/Features/GoogleServices/PageSpeedClient.php:242
-#: app/src/Features/GoogleServices/PageSpeedClient.php:393
+#: app/src/Features/GoogleServices/PageSpeedClient.php:409
 #: app/src/Features/GoogleServices/views/partials/pagespeed-panel.php:168
 msgid "FCP (Nội dung đầu tiên)"
 msgstr ""
@@ -4381,7 +4518,7 @@ msgstr ""
 #: app/src/Settings/LacaAdmin/LacaDashboard.php:495
 #: app/src/Settings/LacaAdmin/UiKitPage.php:289
 #: app/src/Settings/LacaTools/Management/ConfigPage.php:177
-#: app/src/Settings/LacaTools/Management/SiteConfig/SiteConfigImporter.php:863
+#: app/src/Settings/LacaTools/Management/SiteConfig/SiteConfigImporter.php:876
 msgid "Laca SEO"
 msgstr ""
 
@@ -4988,7 +5125,7 @@ msgid "Cấu hình %s"
 msgstr ""
 
 #: app/src/Features/PostAudio/PostAudioManager.php:274
-#: app/src/Settings/AdminSettings.php:1231
+#: app/src/Settings/AdminSettings.php:1241
 msgid "API Key"
 msgstr ""
 
@@ -5186,7 +5323,7 @@ msgstr ""
 
 #: app/src/Features/PostAudio/PostAudioManager.php:613
 #: app/src/Settings/Security/LoginHoneypot.php:66
-#: app/src/Settings/Security/TwoFactorAuth.php:214
+#: app/src/Settings/Security/TwoFactorAuth.php:217
 msgid "Lỗi:"
 msgstr ""
 
@@ -5437,6 +5574,10 @@ msgstr ""
 msgid "Google TTS không trả về dữ liệu âm thanh."
 msgstr ""
 
+#: app/src/Helpers/Crypto.php:90
+msgid "Không thể mã hoá dữ liệu nhạy cảm: thiếu AUTH_KEY hợp lệ hoặc LACA_CRYPTO_KEY (base64 32 byte) trong wp-config.php."
+msgstr ""
+
 #: app/src/Security/ClientRoleManager.php:113
 msgid "Khách hàng"
 msgstr ""
@@ -5578,754 +5719,754 @@ msgstr ""
 msgid "Mở Widget Gửi Yêu Cầu Hỗ Trợ"
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:204
+#: app/src/Settings/AdminSettings.php:214
 msgid "LacaDev | Quản lý dự án"
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:254
+#: app/src/Settings/AdminSettings.php:264
 msgid "Tổng dự án"
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:258
+#: app/src/Settings/AdminSettings.php:268
 msgid "Đang làm"
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:262
+#: app/src/Settings/AdminSettings.php:272
 msgid "Hoàn thành"
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:267
+#: app/src/Settings/AdminSettings.php:277
 #: app/src/Settings/LacaAdmin/LacaDashboard.php:185
 msgid "Cần chú ý"
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:270
+#: app/src/Settings/AdminSettings.php:280
 #, php-format
 msgid "Có %d dịch vụ sắp/đã hết hạn (≤ 7 ngày)"
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:273
+#: app/src/Settings/AdminSettings.php:283
 #, php-format
 msgid "Có %d dịch vụ sắp gia hạn (≤ 30 ngày)"
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:276
+#: app/src/Settings/AdminSettings.php:286
 #, php-format
 msgid "Có %d cảnh báo lỗi/bảo mật chưa xử lý"
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:279
+#: app/src/Settings/AdminSettings.php:289
 msgid "Mọi thứ đều ổn, không có cảnh báo nào."
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:285
+#: app/src/Settings/AdminSettings.php:295
 msgid "Xem tất cả dự án"
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:954
+#: app/src/Settings/AdminSettings.php:964
 #: app/src/Settings/LacaAdmin/LacaAdminMenuOrganizer.php:194
 msgid "Laca Admin"
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:955
+#: app/src/Settings/AdminSettings.php:965
 msgid "laca-admin"
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:957
+#: app/src/Settings/AdminSettings.php:967
 msgid "ADMIN"
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:958
+#: app/src/Settings/AdminSettings.php:968
 msgid "Bật chế độ bảo trì"
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:965
+#: app/src/Settings/AdminSettings.php:975
 msgid "Tắt chức năng chỉnh sửa code"
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:971
+#: app/src/Settings/AdminSettings.php:981
 msgid "Tắt chức năng xác thực email khi thay đổi email admin"
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:977
+#: app/src/Settings/AdminSettings.php:987
 msgid "Tắt chức năng sử dụng mật khẩu yếu"
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:983
+#: app/src/Settings/AdminSettings.php:993
 msgid "Ẩn menu bài viết mặc định"
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:989
+#: app/src/Settings/AdminSettings.php:999
 msgid "Ẩn menu bình luận mặc định"
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:996
+#: app/src/Settings/AdminSettings.php:1006
 msgid "SMTP"
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:997
+#: app/src/Settings/AdminSettings.php:1007
 msgid "Sử dụng SMTP để gửi mail"
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:999
+#: app/src/Settings/AdminSettings.php:1009
 msgid "Thông tin máy chủ SMTP"
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:1000
+#: app/src/Settings/AdminSettings.php:1010
 msgid "Địa chỉ máy chủ"
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:1003
+#: app/src/Settings/AdminSettings.php:1013
 msgid "Cổng máy chủ"
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:1006
+#: app/src/Settings/AdminSettings.php:1016
 msgid "Phương thức mã hóa"
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:1010
+#: app/src/Settings/AdminSettings.php:1020
 msgid "Thông tin email hệ thống"
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:1011
+#: app/src/Settings/AdminSettings.php:1021
 msgid "Địa chỉ email"
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:1013
+#: app/src/Settings/AdminSettings.php:1023
 msgid "Mật khẩu"
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:1018
+#: app/src/Settings/AdminSettings.php:1028
 msgid "LOGIN"
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:1019
+#: app/src/Settings/AdminSettings.php:1029
 msgid "Login logo"
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:1023
+#: app/src/Settings/AdminSettings.php:1033
 msgid "Lời chào (VI)"
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:1028
+#: app/src/Settings/AdminSettings.php:1038
 msgid "Welcome text (EN)"
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:1033
+#: app/src/Settings/AdminSettings.php:1043
 msgid "Label user (VI)"
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:1036
+#: app/src/Settings/AdminSettings.php:1046
 msgid "Label user (EN)"
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:1040
+#: app/src/Settings/AdminSettings.php:1050
 msgid "Label password (VI)"
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:1043
+#: app/src/Settings/AdminSettings.php:1053
 msgid "Label password (EN)"
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:1047
+#: app/src/Settings/AdminSettings.php:1057
 msgid "Placeholder user (VI)"
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:1050
+#: app/src/Settings/AdminSettings.php:1060
 msgid "Placeholder user (EN)"
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:1054
+#: app/src/Settings/AdminSettings.php:1064
 msgid "Placeholder password (VI)"
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:1057
+#: app/src/Settings/AdminSettings.php:1067
 msgid "Placeholder password (EN)"
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:1061
+#: app/src/Settings/AdminSettings.php:1071
 msgid "Label rớt chìa khoá (VI)"
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:1064
+#: app/src/Settings/AdminSettings.php:1074
 msgid "Forgot label (EN)"
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:1068
+#: app/src/Settings/AdminSettings.php:1078
 msgid "Label rời khỏi trạm (VI)"
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:1071
+#: app/src/Settings/AdminSettings.php:1081
 msgid "Back label (EN)"
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:1076
-#: app/src/Settings/AdminSettings.php:1079
+#: app/src/Settings/AdminSettings.php:1086
+#: app/src/Settings/AdminSettings.php:1089
 msgid "Tối ưu hóa"
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:1078
+#: app/src/Settings/AdminSettings.php:1088
 msgid "laca-tools"
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:1086
+#: app/src/Settings/AdminSettings.php:1096
 msgid "Gỡ oEmbed, ẩn phiên bản WordPress, tắt pingback nằm ở"
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:1088
+#: app/src/Settings/AdminSettings.php:1098
 msgid "Bảo mật → Gia cố →"
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:1092
+#: app/src/Settings/AdminSettings.php:1102
 msgid "Tắt thành phần không cần thiết"
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:1093
+#: app/src/Settings/AdminSettings.php:1103
 msgid "Bỏ thư viện JavaScript cũ (jQuery Migrate)"
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:1097
+#: app/src/Settings/AdminSettings.php:1107
 msgid "Chỉ cần cho theme/plugin rất cũ (~10KB). Bật xong kiểm tra site; nếu gặp lỗi giao diện thì tắt lại."
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:1099
+#: app/src/Settings/AdminSettings.php:1109
 msgid "Tắt CSS Gutenberg ngoài Frontend"
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:1103
+#: app/src/Settings/AdminSettings.php:1113
 msgid "Bỏ nạp file block-library CSS mặc định nếu theme tự xây dựng style riêng. Giúp giảm tải CSS."
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:1105
+#: app/src/Settings/AdminSettings.php:1115
 msgid "Tắt CSS Classic Theme"
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:1109
+#: app/src/Settings/AdminSettings.php:1119
 msgid "Bỏ nạp file CSS tương thích theme cổ điển không dùng đến."
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:1111
+#: app/src/Settings/AdminSettings.php:1121
 msgid "Tắt Emoji của WordPress"
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:1115
+#: app/src/Settings/AdminSettings.php:1125
 msgid "Bỏ ~15KB script/CSS emoji; biểu tượng cảm xúc vẫn hiển thị tốt bằng font tích hợp sẵn trên thiết bị."
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:1118
+#: app/src/Settings/AdminSettings.php:1128
 msgid "Thư viện tối ưu trải nghiệm"
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:1119
+#: app/src/Settings/AdminSettings.php:1129
 msgid "Tải trước trang khi rê chuột (Instant.page)"
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:1123
+#: app/src/Settings/AdminSettings.php:1133
 msgid "Tải ngầm dữ liệu trang khi người xem rê chuột lên liên kết. Nhấp chuột trang sẽ hiện gần như tức thì."
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:1125
+#: app/src/Settings/AdminSettings.php:1135
 msgid "Cuộn trang mượt mà (Smooth Scroll)"
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:1129
+#: app/src/Settings/AdminSettings.php:1139
 msgid "Tạo hiệu ứng cuộn trang mượt mà khi người dùng điều hướng trên website."
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:1132
+#: app/src/Settings/AdminSettings.php:1142
 msgid "Tối ưu HTML & Hình ảnh"
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:1133
+#: app/src/Settings/AdminSettings.php:1143
 msgid "Xoá chú thích (comment) trong HTML, JS và CSS"
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:1134
+#: app/src/Settings/AdminSettings.php:1144
 msgid "Bỏ thẻ đóng XHTML ở phần tử rỗng (HTML5 chuẩn)"
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:1135
+#: app/src/Settings/AdminSettings.php:1145
 msgid "Chuyển URL nội bộ thành đường dẫn tương đối (bỏ domain)"
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:1136
+#: app/src/Settings/AdminSettings.php:1146
 msgid "Dùng URL trung lập giao thức (bỏ http: và https:)"
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:1137
+#: app/src/Settings/AdminSettings.php:1147
 msgid "Hỗ trợ mã hoá UTF-8 nhiều byte (khi thấy ký tự lạ)"
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:1139
+#: app/src/Settings/AdminSettings.php:1149
 msgid "Tối ưu nạp trước tài nguyên (Resource Hints)"
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:1143
+#: app/src/Settings/AdminSettings.php:1153
 msgid "Thêm các chỉ dẫn dns-prefetch và preconnect giúp trình duyệt kết nối sớm tới các tài nguyên bên thứ ba."
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:1145
+#: app/src/Settings/AdminSettings.php:1155
 msgid "Tải ảnh chậm (Lazy Load) cho ảnh đại diện"
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:1149
+#: app/src/Settings/AdminSettings.php:1159
 msgid "Chỉ tải ảnh khi người xem cuộn tới. Trang hiện nhanh hơn, tiết kiệm băng thông đáng kể."
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:1151
+#: app/src/Settings/AdminSettings.php:1161
 msgid "Tải ảnh chậm cho ảnh trong bài viết"
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:1155
+#: app/src/Settings/AdminSettings.php:1165
 msgid "Tự động tải chậm (lazy load) toàn bộ hình ảnh nằm trong nội dung bài viết."
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:1157
+#: app/src/Settings/AdminSettings.php:1167
 msgid "Bật Service Worker Cache"
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:1161
+#: app/src/Settings/AdminSettings.php:1171
 msgid "Lưu bộ nhớ đệm offline qua trình duyệt giúp tải lại trang cực nhanh. Yêu cầu website hoạt động trên giao thức HTTPS."
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:1164
+#: app/src/Settings/AdminSettings.php:1174
 msgid "Tối ưu hóa Database & Bộ nhớ"
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:1165
+#: app/src/Settings/AdminSettings.php:1175
 msgid "Tối ưu hóa truy vấn Database"
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:1169
+#: app/src/Settings/AdminSettings.php:1179
 msgid "Tự động giãn cách thời gian lưu nháp tự động và tối ưu hoá bộ đệm đối tượng (object cache)."
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:1171
+#: app/src/Settings/AdminSettings.php:1181
 msgid "Ghi nhật ký (log) truy vấn SQL chậm"
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:1175
+#: app/src/Settings/AdminSettings.php:1185
 msgid "Ghi nhận các truy vấn cơ sở dữ liệu chạy lâu bất thường vào log để hỗ trợ chẩn đoán hiệu năng."
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:1177
+#: app/src/Settings/AdminSettings.php:1187
 msgid "Tối ưu hóa phân bổ bộ nhớ PHP"
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:1181
+#: app/src/Settings/AdminSettings.php:1191
 msgid "Tự động kích hoạt bộ thu gom rác (garbage collection) và tối ưu hoá giới hạn bộ nhớ PHP khi xử lý dữ liệu lớn."
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:1183
+#: app/src/Settings/AdminSettings.php:1193
 msgid "Giải phóng bộ nhớ cuối request"
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:1187
+#: app/src/Settings/AdminSettings.php:1197
 msgid "Giải phóng các biến tạm cuối chu trình tạo trang để giảm thiểu tối đa hiện tượng rò rỉ bộ nhớ (memory leak)."
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:1189
+#: app/src/Settings/AdminSettings.php:1199
 msgid "Theo dõi hiệu năng thực thi (Server-Timing)"
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:1193
+#: app/src/Settings/AdminSettings.php:1203
 msgid "Đo lường thời gian thực thi PHP và truy vấn DB, xuất ra HTTP header Server-Timing để dễ kiểm tra."
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:1195
+#: app/src/Settings/AdminSettings.php:1205
 msgid "Số bản sửa (revision) giữ lại"
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:1197
+#: app/src/Settings/AdminSettings.php:1207
 msgid "Mặc định WordPress"
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:1198
+#: app/src/Settings/AdminSettings.php:1208
 msgid "Không lưu"
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:1207
+#: app/src/Settings/AdminSettings.php:1217
 msgid "Kiểm soát WordPress Heartbeat"
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:1209
+#: app/src/Settings/AdminSettings.php:1219
 msgid "Mặc định (15–60 giây)"
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:1210
+#: app/src/Settings/AdminSettings.php:1220
 msgid "Chậm (60 giây)"
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:1211
+#: app/src/Settings/AdminSettings.php:1221
 msgid "Chỉ trong trình soạn bài"
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:1216
+#: app/src/Settings/AdminSettings.php:1226
 msgid "Đếm lượt xem bài viết"
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:1220
+#: app/src/Settings/AdminSettings.php:1230
 msgid "Đếm lượt xem bất đồng bộ bằng Beacon/REST API và gom bộ đệm ghi theo lô mỗi 5 phút, không làm chậm trang và hoàn toàn tương thích bộ nhớ đệm (cache)."
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:1225
+#: app/src/Settings/AdminSettings.php:1235
 msgid "Đồng bộ Block"
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:1227
+#: app/src/Settings/AdminSettings.php:1237
 msgid "laca-block-sync"
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:1229
+#: app/src/Settings/AdminSettings.php:1239
 msgid "Block Sync — Nhận blocks từ lacadev.com"
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:1251
+#: app/src/Settings/AdminSettings.php:1261
 msgid "Block Catalog — chỉ dùng trên clients.lacadev.com"
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:1253
-#: app/src/Settings/AdminSettings.php:1558
+#: app/src/Settings/AdminSettings.php:1263
+#: app/src/Settings/AdminSettings.php:1568
 msgid "Catalog Key"
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:1276
+#: app/src/Settings/AdminSettings.php:1286
 msgid "Site Tracker"
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:1278
+#: app/src/Settings/AdminSettings.php:1288
 msgid "laca-tracker"
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:1298
+#: app/src/Settings/AdminSettings.php:1308
 msgid "⚡ Dán cấu hình nhanh từ Hub (Laca CMS)"
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:1300
+#: app/src/Settings/AdminSettings.php:1310
 msgid "Dán cấu hình JSON từ Hub"
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:1305
+#: app/src/Settings/AdminSettings.php:1315
 msgid "Chi tiết kết nối & Khóa bảo mật (HMAC)"
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:1307
+#: app/src/Settings/AdminSettings.php:1317
 msgid "Tracker Endpoint URL"
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:1312
+#: app/src/Settings/AdminSettings.php:1322
 msgid "Public Project ID"
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:1317
+#: app/src/Settings/AdminSettings.php:1327
 msgid "Tracker Key"
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:1323
+#: app/src/Settings/AdminSettings.php:1333
 msgid "Block Catalog Key"
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:1329
+#: app/src/Settings/AdminSettings.php:1339
 msgid "Remote Update Key"
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:1335
+#: app/src/Settings/AdminSettings.php:1345
 msgid "Secret Key dự phòng (Legacy)"
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:1341
+#: app/src/Settings/AdminSettings.php:1351
 msgid "Kiểm tra sâu (nâng cao)"
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:1343
+#: app/src/Settings/AdminSettings.php:1353
 msgid "Bật kiểm tra sâu mã nguồn (FIM)"
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:1356
+#: app/src/Settings/AdminSettings.php:1366
 msgid "Cron hệ thống thật (site ít traffic)"
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:1364
+#: app/src/Settings/AdminSettings.php:1374
 msgid "Cron URL"
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:1371
+#: app/src/Settings/AdminSettings.php:1381
 msgid "Google reCAPTCHA"
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:1373
+#: app/src/Settings/AdminSettings.php:1383
 msgid "laca-recaptcha"
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:1378
+#: app/src/Settings/AdminSettings.php:1388
 msgid "Site Key"
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:1382
+#: app/src/Settings/AdminSettings.php:1392
 msgid "Secret Key"
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:1387
+#: app/src/Settings/AdminSettings.php:1397
 msgid "Cấu hình hiển thị"
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:1389
+#: app/src/Settings/AdminSettings.php:1399
 msgid "Kích hoạt cho Đăng nhập"
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:1393
+#: app/src/Settings/AdminSettings.php:1403
 msgid "Kích hoạt cho Đăng ký"
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:1397
+#: app/src/Settings/AdminSettings.php:1407
 msgid "Kích hoạt cho Bình luận"
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:1401
+#: app/src/Settings/AdminSettings.php:1411
 msgid "Kích hoạt cho Form liên hệ"
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:1406
+#: app/src/Settings/AdminSettings.php:1416
 msgid "Điểm tối thiểu (0.0 - 1.0)"
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:1417
+#: app/src/Settings/AdminSettings.php:1427
 msgid "LacaDev PM & Bots"
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:1419
+#: app/src/Settings/AdminSettings.php:1429
 msgid "laca-project-notifications"
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:1420
+#: app/src/Settings/AdminSettings.php:1430
 msgid "Zalo OA (Project Manager)"
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:1424
+#: app/src/Settings/AdminSettings.php:1434
 msgid "Bật thông báo Zalo"
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:1426
+#: app/src/Settings/AdminSettings.php:1436
 msgid "Access Token"
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:1429
+#: app/src/Settings/AdminSettings.php:1439
 msgid "Refresh Token"
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:1432
+#: app/src/Settings/AdminSettings.php:1442
 msgid "Zalo User ID nhận mặc định"
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:1435
+#: app/src/Settings/AdminSettings.php:1445
 msgid "Email (Project Manager)"
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:1436
+#: app/src/Settings/AdminSettings.php:1446
 msgid "Bật thông báo qua Email"
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:1438
+#: app/src/Settings/AdminSettings.php:1448
 msgid "Email nhận thông báo"
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:1442
+#: app/src/Settings/AdminSettings.php:1452
 msgid "Telegram (Project Manager)"
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:1443
+#: app/src/Settings/AdminSettings.php:1453
 msgid "Bật thông báo Telegram"
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:1444
+#: app/src/Settings/AdminSettings.php:1454
 msgid "Bot Token"
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:1446
+#: app/src/Settings/AdminSettings.php:1456
 msgid "Chat ID"
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:1450
+#: app/src/Settings/AdminSettings.php:1460
 msgid "Slack (Project Manager)"
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:1451
+#: app/src/Settings/AdminSettings.php:1461
 msgid "Bật thông báo Slack"
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:1452
+#: app/src/Settings/AdminSettings.php:1462
 msgid "Webhook URL"
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:1455
+#: app/src/Settings/AdminSettings.php:1465
 msgid "Định tuyến thông báo"
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:1458
+#: app/src/Settings/AdminSettings.php:1468
 msgid "📡 Bảng ma trận định tuyến thông báo (Notification Bus)"
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:1459
+#: app/src/Settings/AdminSettings.php:1469
 msgid "Tuỳ biến các kênh nhận thông báo (Email, Zalo, Telegram, Slack, Discord) cho từng loại sự kiện hệ thống. Hệ thống tự động khử trùng lặp (dedup) theo loại sự kiện."
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:1462
+#: app/src/Settings/AdminSettings.php:1472
 msgid "Cảnh báo dự án (project_alert)"
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:1472
+#: app/src/Settings/AdminSettings.php:1482
 msgid "Website không truy cập được (uptime_down)"
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:1482
+#: app/src/Settings/AdminSettings.php:1492
 msgid "Website hoạt động trở lại (uptime_up)"
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:1492
+#: app/src/Settings/AdminSettings.php:1502
 msgid "Cron hệ thống bị trễ (cron_late)"
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:1502
+#: app/src/Settings/AdminSettings.php:1512
 msgid "Sao lưu quá hạn (backup_outdated)"
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:1512
+#: app/src/Settings/AdminSettings.php:1522
 msgid "Cập nhật từ xa thành công (deployment)"
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:1522
+#: app/src/Settings/AdminSettings.php:1532
 msgid "Yêu cầu hỗ trợ từ khách hàng (client_request)"
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:1539
+#: app/src/Settings/AdminSettings.php:1549
 msgid "🗂️ Block Catalog Source"
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:1541
+#: app/src/Settings/AdminSettings.php:1551
 msgid "laca-block-catalog-source"
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:1548
+#: app/src/Settings/AdminSettings.php:1558
 msgid "Nguồn danh mục Block"
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:1549
+#: app/src/Settings/AdminSettings.php:1559
 msgid "Cấu hình DUY NHẤT 1 lần để hub đọc danh mục Gutenberg block từ clients.lacadev.com. Lấy Catalog Endpoint URL và Catalog Key từ trang Laca Theme → 🧩 LacaDev trên chính site clients.lacadev.com."
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:1553
+#: app/src/Settings/AdminSettings.php:1563
 msgid "Catalog Endpoint URL"
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:1566
+#: app/src/Settings/AdminSettings.php:1576
 msgid "Làm mới danh mục ngay"
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:1568
+#: app/src/Settings/AdminSettings.php:1578
 msgid "Danh mục được cache 6 tiếng để đỡ tải clients.lacadev.com — bấm nút này nếu vừa thêm block mới bên đó và muốn site khách thấy ngay, không cần chờ."
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:1590
+#: app/src/Settings/AdminSettings.php:1600
 msgid "Login Socials"
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:1592
+#: app/src/Settings/AdminSettings.php:1602
 msgid "laca-login-socials"
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:1593
+#: app/src/Settings/AdminSettings.php:1603
 msgid "Google"
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:1597
+#: app/src/Settings/AdminSettings.php:1607
 msgid "Bật Login Google"
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:1598
+#: app/src/Settings/AdminSettings.php:1608
 msgid "Client ID"
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:1600
+#: app/src/Settings/AdminSettings.php:1610
 msgid "Client Secret"
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:1602
+#: app/src/Settings/AdminSettings.php:1612
 msgid "Redirect URI"
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:1658
+#: app/src/Settings/AdminSettings.php:1668
 msgid "Quản trị & HD Sử dụng"
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:1660
+#: app/src/Settings/AdminSettings.php:1670
 msgid "laca-management-settings"
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:1661
+#: app/src/Settings/AdminSettings.php:1671
 msgid "Dashboard Widget"
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:1665
+#: app/src/Settings/AdminSettings.php:1675
 msgid "Các Post Type hiển thị"
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:1676
+#: app/src/Settings/AdminSettings.php:1686
 msgid "Để trống để tự động hiển thị tất cả các loại nội dung quan trọng (Posts, Services, Projects, Properties...)."
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:1679
+#: app/src/Settings/AdminSettings.php:1689
 msgid "Số lượng bài hiển thị"
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:1684
+#: app/src/Settings/AdminSettings.php:1694
 msgid "Nội dung HD Sử dụng"
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:1688
+#: app/src/Settings/AdminSettings.php:1698
 msgid "Tiêu đề trang"
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:1691
+#: app/src/Settings/AdminSettings.php:1701
 msgid "Đoạn giới thiệu"
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:1694
+#: app/src/Settings/AdminSettings.php:1704
 msgid "Các khối hướng dẫn (Blog, WooCommerce...)"
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:1697
+#: app/src/Settings/AdminSettings.php:1707
 msgid "Tiêu đề khối"
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:1698
+#: app/src/Settings/AdminSettings.php:1708
 msgid "Màu viền (Border top)"
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:1699
+#: app/src/Settings/AdminSettings.php:1709
 msgid "Nội dung hướng dẫn (Link, Video, Text)"
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:1702
+#: app/src/Settings/AdminSettings.php:1712
 msgid "Thông tin hỗ trợ kỹ thuật"
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:1703
+#: app/src/Settings/AdminSettings.php:1713
 msgid "Điện thoại/Zalo"
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:1705
+#: app/src/Settings/AdminSettings.php:1715
 msgid "Website"
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:1707
+#: app/src/Settings/AdminSettings.php:1717
 msgid "Vai trò Khách hàng"
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:1711
+#: app/src/Settings/AdminSettings.php:1721
 msgid "Gán vai trò Khách hàng cho người dùng"
 msgstr ""
 
-#: app/src/Settings/AdminSettings.php:1724
+#: app/src/Settings/AdminSettings.php:1734
 msgid "Chọn các tài khoản thuộc nhóm khách hàng để áp dụng phân quyền an toàn."
 msgstr ""
 
@@ -7996,32 +8137,32 @@ msgid "Chọn các phần cấu hình cần xuất:"
 msgstr ""
 
 #: app/src/Settings/LacaTools/Management/ConfigPage.php:153
-#: app/src/Settings/LacaTools/Management/SiteConfig/SiteConfigImporter.php:857
+#: app/src/Settings/LacaTools/Management/SiteConfig/SiteConfigImporter.php:870
 msgid "Giao diện & Laca Theme"
 msgstr ""
 
 #: app/src/Settings/LacaTools/Management/ConfigPage.php:157
-#: app/src/Settings/LacaTools/Management/SiteConfig/SiteConfigImporter.php:858
+#: app/src/Settings/LacaTools/Management/SiteConfig/SiteConfigImporter.php:871
 msgid "Bảo mật & Đăng nhập"
 msgstr ""
 
 #: app/src/Settings/LacaTools/Management/ConfigPage.php:161
-#: app/src/Settings/LacaTools/Management/SiteConfig/SiteConfigImporter.php:859
+#: app/src/Settings/LacaTools/Management/SiteConfig/SiteConfigImporter.php:872
 msgid "Công cụ & Tối ưu"
 msgstr ""
 
 #: app/src/Settings/LacaTools/Management/ConfigPage.php:165
-#: app/src/Settings/LacaTools/Management/SiteConfig/SiteConfigImporter.php:860
+#: app/src/Settings/LacaTools/Management/SiteConfig/SiteConfigImporter.php:873
 msgid "Thông báo (Discord/Zalo/PM)"
 msgstr ""
 
 #: app/src/Settings/LacaTools/Management/ConfigPage.php:169
-#: app/src/Settings/LacaTools/Management/SiteConfig/SiteConfigImporter.php:861
+#: app/src/Settings/LacaTools/Management/SiteConfig/SiteConfigImporter.php:874
 msgid "Mẫu Form liên hệ"
 msgstr ""
 
 #: app/src/Settings/LacaTools/Management/ConfigPage.php:173
-#: app/src/Settings/LacaTools/Management/SiteConfig/SiteConfigImporter.php:862
+#: app/src/Settings/LacaTools/Management/SiteConfig/SiteConfigImporter.php:875
 msgid "Custom Post Types động"
 msgstr ""
 
@@ -8764,7 +8905,7 @@ msgstr ""
 #: app/src/Settings/LacaTools/Management/LargeFileScanner.php:513
 #: app/src/Settings/LacaTools/Management/SiteConfig/SiteConfigImporter.php:44
 #: app/src/Settings/LacaTools/Management/SiteConfig/SiteConfigImporter.php:311
-#: app/src/Settings/LacaTools/Management/SiteConfig/SiteConfigImporter.php:761
+#: app/src/Settings/LacaTools/Management/SiteConfig/SiteConfigImporter.php:774
 msgid "Không có quyền hoặc phiên làm việc hết hạn."
 msgstr ""
 
@@ -8933,31 +9074,31 @@ msgstr ""
 msgid "Mật khẩu/khoá API không được nhập, cần điền lại thủ công"
 msgstr ""
 
-#: app/src/Settings/LacaTools/Management/SiteConfig/SiteConfigImporter.php:481
+#: app/src/Settings/LacaTools/Management/SiteConfig/SiteConfigImporter.php:494
 msgid "Bản sao"
 msgstr ""
 
-#: app/src/Settings/LacaTools/Management/SiteConfig/SiteConfigImporter.php:545
+#: app/src/Settings/LacaTools/Management/SiteConfig/SiteConfigImporter.php:558
 msgid "Đã áp dụng bộ cấu hình site thành công!"
 msgstr ""
 
-#: app/src/Settings/LacaTools/Management/SiteConfig/SiteConfigImporter.php:766
+#: app/src/Settings/LacaTools/Management/SiteConfig/SiteConfigImporter.php:779
 msgid "Mã bản sao lưu không hợp lệ."
 msgstr ""
 
-#: app/src/Settings/LacaTools/Management/SiteConfig/SiteConfigImporter.php:771
+#: app/src/Settings/LacaTools/Management/SiteConfig/SiteConfigImporter.php:784
 msgid "Không tìm thấy danh sách bản sao lưu."
 msgstr ""
 
-#: app/src/Settings/LacaTools/Management/SiteConfig/SiteConfigImporter.php:783
+#: app/src/Settings/LacaTools/Management/SiteConfig/SiteConfigImporter.php:796
 msgid "Không tìm thấy bản sao lưu được chọn."
 msgstr ""
 
-#: app/src/Settings/LacaTools/Management/SiteConfig/SiteConfigImporter.php:837
+#: app/src/Settings/LacaTools/Management/SiteConfig/SiteConfigImporter.php:850
 msgid "Đã khôi phục thành công website về trạng thái trước đó!"
 msgstr ""
 
-#: app/src/Settings/LacaTools/Management/SiteConfig/SiteConfigImporter.php:864
+#: app/src/Settings/LacaTools/Management/SiteConfig/SiteConfigImporter.php:877
 msgid "Cấu hình khác"
 msgstr ""
 
@@ -10396,19 +10537,19 @@ msgstr ""
 msgid "File SVG chứa mã độc và đã bị chặn."
 msgstr ""
 
-#: app/src/Settings/Security/TwoFactorAuth.php:215
+#: app/src/Settings/Security/TwoFactorAuth.php:218
 msgid "Không thể giải mã secret 2FA. Vui lòng dùng mã dự phòng hoặc nhờ quản trị viên reset 2FA."
 msgstr ""
 
-#: app/src/Settings/Security/TwoFactorAuth.php:414
+#: app/src/Settings/Security/TwoFactorAuth.php:417
 msgid "Chưa có secret key."
 msgstr ""
 
-#: app/src/Settings/Security/TwoFactorAuth.php:416
+#: app/src/Settings/Security/TwoFactorAuth.php:419
 msgid "Mã không đúng. Kiểm tra đồng hồ điện thoại và thử lại."
 msgstr ""
 
-#: app/src/Settings/Security/TwoFactorAuth.php:436
+#: app/src/Settings/Security/TwoFactorAuth.php:439
 msgid "2FA đã được tắt thành công."
 msgstr ""
 
@@ -10420,47 +10561,48 @@ msgstr ""
 msgid "Không thể giải mã mật khẩu SMTP. Vui lòng vào Laca Admin → Email để nhập lại."
 msgstr ""
 
-#: app/src/Settings/ThemeSnapshot.php:61
+#: app/src/Settings/ThemeSnapshot.php:102
 msgid "Máy chủ thiếu tiện ích mở rộng ZipArchive để tạo bản sao lưu theme."
 msgstr ""
 
-#: app/src/Settings/ThemeSnapshot.php:69
+#: app/src/Settings/ThemeSnapshot.php:110
 msgid "Không tìm thấy thư mục gốc của parent theme để tạo snapshot."
 msgstr ""
 
-#: app/src/Settings/ThemeSnapshot.php:90
+#: app/src/Settings/ThemeSnapshot.php:134
 msgid "Không thể khởi tạo file zip snapshot cho theme."
 msgstr ""
 
-#: app/src/Settings/ThemeSnapshot.php:123
+#: app/src/Settings/ThemeSnapshot.php:167
 msgid "Không thể hoàn tất ghi dữ liệu snapshot cho theme."
 msgstr ""
 
-#: app/src/Settings/ThemeSnapshot.php:211
-msgid "Chưa có bản sao lưu snapshot nào để khôi phục."
-msgstr ""
-
-#: app/src/Settings/ThemeSnapshot.php:234
-msgid "Tên file snapshot không hợp lệ."
-msgstr ""
-
-#: app/src/Settings/ThemeSnapshot.php:248
-msgid "Không tìm thấy file snapshot được yêu cầu."
-msgstr ""
-
-#: app/src/Settings/ThemeSnapshot.php:261
-msgid "Không khởi tạo được WP_Filesystem để khôi phục theme."
-msgstr ""
-
-#: app/src/Settings/ThemeSnapshot.php:285
-msgid "Gói snapshot không hợp lệ: thiếu lacadev-client/theme/style.css."
+#: app/src/Settings/ThemeSnapshot.php:295
+msgid "Không tìm thấy bản sao lưu cũ hơn phiên bản đang chạy để khôi phục."
 msgstr ""
 
 #: app/src/Settings/ThemeSnapshot.php:303
-msgid "Không thể tạm dời thư mục theme hiện tại để khôi phục."
+msgid "Tên file snapshot không hợp lệ."
 msgstr ""
 
 #: app/src/Settings/ThemeSnapshot.php:316
+#: app/src/Settings/ThemeSnapshot.php:324
+msgid "Không tìm thấy file snapshot được yêu cầu."
+msgstr ""
+
+#: app/src/Settings/ThemeSnapshot.php:337
+msgid "Không khởi tạo được WP_Filesystem để khôi phục theme."
+msgstr ""
+
+#: app/src/Settings/ThemeSnapshot.php:361
+msgid "Gói snapshot không hợp lệ: thiếu lacadev-client/theme/style.css."
+msgstr ""
+
+#: app/src/Settings/ThemeSnapshot.php:389
+msgid "Không thể tạm dời thư mục theme hiện tại để khôi phục."
+msgstr ""
+
+#: app/src/Settings/ThemeSnapshot.php:402
 msgid "Không thể chuyển bản snapshot vào thư mục themes/lacadev-client."
 msgstr ""
 
@@ -10912,58 +11054,58 @@ msgstr ""
 msgid "Site khác (chưa phân loại)"
 msgstr ""
 
-#: theme/setup/gutenberg-blocks.php:492
-#: theme/setup/gutenberg-blocks.php:493
-#: theme/setup/gutenberg-blocks.php:556
+#: theme/setup/gutenberg-blocks.php:497
+#: theme/setup/gutenberg-blocks.php:498
+#: theme/setup/gutenberg-blocks.php:561
 msgid "Block Categories"
 msgstr ""
 
-#: theme/setup/gutenberg-blocks.php:539
+#: theme/setup/gutenberg-blocks.php:544
 msgid "Đã lưu mapping block category."
 msgstr ""
 
-#: theme/setup/gutenberg-blocks.php:557
+#: theme/setup/gutenberg-blocks.php:562
 msgid "Chọn category cho từng block. Nếu để \"Mặc định\", hệ thống sẽ tự gán theo nguồn block."
 msgstr ""
 
-#: theme/setup/gutenberg-blocks.php:560
+#: theme/setup/gutenberg-blocks.php:565
 msgid "Block local của dự án: mặc định vào PĐN Blocks."
 msgstr ""
 
-#: theme/setup/gutenberg-blocks.php:561
+#: theme/setup/gutenberg-blocks.php:566
 msgid "Block sync từ lacadev: mặc định vào La Cà Blocks."
 msgstr ""
 
-#: theme/setup/gutenberg-blocks.php:575
+#: theme/setup/gutenberg-blocks.php:580
 msgid "Block"
 msgstr ""
 
-#: theme/setup/gutenberg-blocks.php:576
+#: theme/setup/gutenberg-blocks.php:581
 msgid "Nguồn"
 msgstr ""
 
-#: theme/setup/gutenberg-blocks.php:577
-#: theme/setup/gutenberg-blocks.php:603
+#: theme/setup/gutenberg-blocks.php:582
+#: theme/setup/gutenberg-blocks.php:608
 msgid "Mặc định"
 msgstr ""
 
-#: theme/setup/gutenberg-blocks.php:578
+#: theme/setup/gutenberg-blocks.php:583
 msgid "Category áp dụng"
 msgstr ""
 
-#: theme/setup/gutenberg-blocks.php:584
+#: theme/setup/gutenberg-blocks.php:589
 msgid "Chưa tìm thấy block nào."
 msgstr ""
 
-#: theme/setup/gutenberg-blocks.php:592
+#: theme/setup/gutenberg-blocks.php:597
 msgid "Sync từ lacadev"
 msgstr ""
 
-#: theme/setup/gutenberg-blocks.php:592
+#: theme/setup/gutenberg-blocks.php:597
 msgid "Local dự án"
 msgstr ""
 
-#: theme/setup/gutenberg-blocks.php:618
+#: theme/setup/gutenberg-blocks.php:623
 msgid "Lưu cấu hình"
 msgstr ""
 
@@ -11229,150 +11371,98 @@ msgstr ""
 msgid "✨ Dịch ngay"
 msgstr ""
 
-#: block-gutenberg/block-seo-faq/build/index.js:1
 #: block-gutenberg/block-seo-faq/edit.js:36
-#: block-gutenberg/block-seo-faq/build/index.js:36
 msgid "Cài đặt FAQ"
 msgstr ""
 
-#: block-gutenberg/block-seo-faq/build/index.js:1
 #: block-gutenberg/block-seo-faq/edit.js:38
-#: block-gutenberg/block-seo-faq/build/index.js:38
 msgid "Thẻ tiêu đề câu hỏi"
 msgstr ""
 
-#: block-gutenberg/block-seo-faq/build/index.js:1
 #: block-gutenberg/block-seo-faq/edit.js:51
-#: block-gutenberg/block-seo-toc/build/index.js:1
 #: block-gutenberg/block-seo-toc/edit.js:28
-#: block-gutenberg/block-seo-faq/build/index.js:51
-#: block-gutenberg/block-seo-toc/build/index.js:28
 msgid "Kiểu danh sách"
 msgstr ""
 
-#: block-gutenberg/block-seo-faq/build/index.js:1
 #: block-gutenberg/block-seo-faq/edit.js:54
-#: block-gutenberg/block-seo-faq/build/index.js:54
 msgid "Không có (Mặc định)"
 msgstr ""
 
-#: block-gutenberg/block-seo-faq/build/index.js:1
 #: block-gutenberg/block-seo-faq/edit.js:55
-#: block-gutenberg/block-seo-toc/build/index.js:1
 #: block-gutenberg/block-seo-toc/edit.js:32
-#: block-gutenberg/block-seo-faq/build/index.js:55
-#: block-gutenberg/block-seo-toc/build/index.js:32
 msgid "Số thứ tự (OL)"
 msgstr ""
 
-#: block-gutenberg/block-seo-faq/build/index.js:1
 #: block-gutenberg/block-seo-faq/edit.js:56
-#: block-gutenberg/block-seo-toc/build/index.js:1
 #: block-gutenberg/block-seo-toc/edit.js:31
-#: block-gutenberg/block-seo-faq/build/index.js:56
-#: block-gutenberg/block-seo-toc/build/index.js:31
 msgid "Dấu chấm (UL)"
 msgstr ""
 
-#: block-gutenberg/block-seo-faq/build/index.js:1
 #: block-gutenberg/block-seo-faq/edit.js:69
-#: block-gutenberg/block-seo-faq/build/index.js:69
 msgid "Tiêu đề FAQ…"
 msgstr ""
 
-#: block-gutenberg/block-seo-faq/build/index.js:1
 #: block-gutenberg/block-seo-faq/edit.js:79
-#: block-gutenberg/block-seo-faq/build/index.js:79
 msgid "Nhập câu hỏi…"
 msgstr ""
 
-#: block-gutenberg/block-seo-faq/build/index.js:1
 #: block-gutenberg/block-seo-faq/edit.js:86
-#: block-gutenberg/block-seo-faq/build/index.js:86
 msgid "Nhập câu trả lời…"
 msgstr ""
 
-#: block-gutenberg/block-seo-faq/build/index.js:1
 #: block-gutenberg/block-seo-faq/edit.js:94
-#: block-gutenberg/block-seo-faq/build/index.js:94
 msgid "Xóa câu hỏi"
 msgstr ""
 
-#: block-gutenberg/block-seo-faq/build/index.js:1
 #: block-gutenberg/block-seo-faq/edit.js:99
-#: block-gutenberg/block-seo-faq/build/index.js:99
 msgid "+ Thêm câu hỏi"
 msgstr ""
 
-#: block-gutenberg/block-seo-howto/build/index.js:1
 #: block-gutenberg/block-seo-howto/edit.js:36
-#: block-gutenberg/block-seo-howto/build/index.js:36
 msgid "Cài đặt HowTo"
 msgstr ""
 
-#: block-gutenberg/block-seo-howto/build/index.js:1
 #: block-gutenberg/block-seo-howto/edit.js:38
-#: block-gutenberg/block-seo-howto/build/index.js:38
 msgid "Tổng thời gian (ISO 8601, vd PT30M)"
 msgstr ""
 
-#: block-gutenberg/block-seo-howto/build/index.js:1
 #: block-gutenberg/block-seo-howto/edit.js:51
-#: block-gutenberg/block-seo-howto/build/index.js:51
 msgid "Tiêu đề hướng dẫn (How To)…"
 msgstr ""
 
-#: block-gutenberg/block-seo-howto/build/index.js:1
 #: block-gutenberg/block-seo-howto/edit.js:58
-#: block-gutenberg/block-seo-howto/build/index.js:58
 msgid "Mô tả tổng quan…"
 msgstr ""
 
-#: block-gutenberg/block-seo-howto/build/index.js:1
 #: block-gutenberg/block-seo-howto/edit.js:69
-#: block-gutenberg/block-seo-howto/build/index.js:69
 msgid "Tiêu đề bước…"
 msgstr ""
 
-#: block-gutenberg/block-seo-howto/build/index.js:1
 #: block-gutenberg/block-seo-howto/edit.js:76
-#: block-gutenberg/block-seo-howto/build/index.js:76
 msgid "Nội dung chi tiết bước…"
 msgstr ""
 
-#: block-gutenberg/block-seo-howto/build/index.js:1
 #: block-gutenberg/block-seo-howto/edit.js:84
-#: block-gutenberg/block-seo-howto/build/index.js:84
 msgid "Xóa bước"
 msgstr ""
 
-#: block-gutenberg/block-seo-howto/build/index.js:1
 #: block-gutenberg/block-seo-howto/edit.js:89
-#: block-gutenberg/block-seo-howto/build/index.js:89
 msgid "+ Thêm bước"
 msgstr ""
 
-#: block-gutenberg/block-seo-toc/build/index.js:1
 #: block-gutenberg/block-seo-toc/edit.js:12
-#: block-gutenberg/block-seo-toc/build/index.js:12
 msgid "Cài đặt Mục lục (TOC)"
 msgstr ""
 
-#: block-gutenberg/block-seo-toc/build/index.js:1
 #: block-gutenberg/block-seo-toc/edit.js:14
-#: block-gutenberg/block-seo-toc/build/index.js:14
 msgid "Thẻ tiêu đề"
 msgstr ""
 
-#: block-gutenberg/block-seo-toc/build/index.js:1
 #: block-gutenberg/block-seo-toc/edit.js:45
-#: block-gutenberg/block-seo-toc/build/index.js:45
 msgid "Tiêu đề mục lục…"
 msgstr ""
 
-#: block-gutenberg/block-seo-toc/build/index.js:1
 #: block-gutenberg/block-seo-toc/edit.js:49
-#: block-gutenberg/block-seo-toc/build/index.js:49
 msgid "Mục lục sẽ tự động quét danh sách heading trong bài viết ngoài frontend."
 msgstr ""
 

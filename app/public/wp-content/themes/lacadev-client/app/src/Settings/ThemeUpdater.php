@@ -485,7 +485,7 @@ class ThemeUpdater
         }
 
         $currentVersion = (string) ($transient->checked[$this->themeSlug] ?? $this->getCurrentVersion());
-        if ($currentVersion === '' || !version_compare((string) $remoteInfo->version, $currentVersion, '>')) {
+        if ($currentVersion === '' || !ThemeSnapshot::compareVersions((string) $remoteInfo->version, $currentVersion, '>')) {
             delete_transient(self::BLOCKED_TRANSIENT);
             unset($transient->response[$this->themeSlug]);
             return $transient;

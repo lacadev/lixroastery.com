@@ -110,9 +110,19 @@ class AdminSettings
 			if ($option !== '_smtp_password') {
 				return;
 			}
-			// Đã tagged → không encrypt lại (update_option bên dưới bắn lại hook này và dừng ở đây)
-			if (!is_string($newValue) || $newValue === '' || Crypto::isTagged($newValue)) {
+			if (!is_string($newValue) || $newValue === '') {
 				return;
+			}
+			// Đã ở định dạng laca:v2: → dừng tại đây để tránh vòng lặp hook
+			if (Crypto::isTagged($newValue)) {
+				if (!Crypto::needsRehash($newValue)) {
+					return;
+				}
+				$plain = Crypto::decryptTagged($newValue);
+				if ($plain === null) {
+					return;
+				}
+				$newValue = $plain;
 			}
 			$encrypted = Crypto::encryptTagged($newValue);
 			if (!empty($encrypted)) {

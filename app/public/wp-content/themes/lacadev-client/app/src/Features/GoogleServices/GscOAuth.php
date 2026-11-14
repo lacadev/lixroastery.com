@@ -381,6 +381,9 @@ class GscOAuth
         $raw = get_option(self::OPTION_KEY, null);
         $data = (is_string($raw) && $raw !== '') ? GscCrypto::decrypt($raw, true) : null;
         if (is_array($data) && (!empty($data['access_token']) || !empty($data['refresh_token']))) {
+            if (is_string($raw) && GscCrypto::needsRehash($raw)) {
+                self::saveCredentials($data);
+            }
             return $data;
         }
 
@@ -389,8 +392,14 @@ class GscOAuth
         if (is_string($legacyRaw) && $legacyRaw !== '') {
             $legacyData = GscCrypto::decrypt($legacyRaw, true);
             if (is_array($legacyData) && (!empty($legacyData['access_token']) || !empty($legacyData['refresh_token']))) {
-                // Backfill to new option so next read is fast and migrated
-                update_option(self::OPTION_KEY, $legacyRaw, false);
+                // Backfill to new option encrypted with v2 AEAD
+                self::saveCredentials($legacyData);
+                if (GscCrypto::needsRehash($legacyRaw)) {
+                    $rehashedLegacy = GscCrypto::encrypt($legacyData);
+                    if ($rehashedLegacy !== '') {
+                        update_option(self::LEGACY_OPTION_KEY, $rehashedLegacy, false);
+                    }
+                }
                 return $legacyData;
             }
         }
@@ -404,6 +413,9 @@ class GscOAuth
     public static function saveCredentials(array $data): bool
     {
         $encrypted = GscCrypto::encrypt($data);
+        if ($encrypted === '') {
+            return false;
+        }
         return update_option(self::OPTION_KEY, $encrypted, false);
     }
 

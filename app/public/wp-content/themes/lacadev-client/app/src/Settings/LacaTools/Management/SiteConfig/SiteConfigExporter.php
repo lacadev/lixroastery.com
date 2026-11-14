@@ -138,21 +138,19 @@ class SiteConfigExporter
                             $rawVal = $plain;
                         }
 
-                        // Nếu giá trị đã được mã hoá laca:v1: -> tiến hành giải mã để xuất dạng đọc được
-                        if (is_string($rawVal) && str_starts_with($rawVal, 'laca:v1:')) {
-                            if (class_exists(Crypto::class)) {
-                                $decrypted = Crypto::decryptTagged($rawVal);
-                                if ($decrypted !== null) {
-                                    $rawVal = $decrypted;
-                                } else {
-                                    // Giải mã lỗi -> bỏ field này và ghi nhận manual_fields
-                                    $manualFields[] = [
-                                        'option' => $optName,
-                                        'label'  => self::getOptionLabel($optName),
-                                        'reason' => 'secret_decrypt_failed',
-                                    ];
-                                    continue;
-                                }
+                        // Nếu giá trị đã được mã hoá (laca:v2:/laca:v1:) -> tiến hành giải mã để xuất dạng đọc được
+                        if (is_string($rawVal) && class_exists(Crypto::class) && Crypto::isTagged($rawVal)) {
+                            $decrypted = Crypto::decryptTagged($rawVal);
+                            if ($decrypted !== null) {
+                                $rawVal = $decrypted;
+                            } else {
+                                // Giải mã lỗi -> bỏ field này và ghi nhận manual_fields
+                                $manualFields[] = [
+                                    'option' => $optName,
+                                    'label'  => self::getOptionLabel($optName),
+                                    'reason' => 'secret_decrypt_failed',
+                                ];
+                                continue;
                             }
                         }
                     }

@@ -422,8 +422,21 @@ class SiteConfigImporter
                 // Mã hoá lại secret theo ĐÚNG cơ chế mà nơi đọc option đó dùng (đa số secret lưu thô; mã hoá bừa sẽ làm hỏng tính năng)
                 if (ConfigRegistry::isSecret((string) $optName) && is_string($val) && $val !== '') {
                     if ($optName === '_smtp_password') {
-                        if (class_exists(Crypto::class) && !str_starts_with($val, 'laca:v1:')) {
-                            $val = Crypto::encryptTagged($val);
+                        if (class_exists(Crypto::class)) {
+                            if (!Crypto::isTagged($val)) {
+                                $encrypted = Crypto::encryptTagged($val);
+                                if ($encrypted !== '') {
+                                    $val = $encrypted;
+                                }
+                            } elseif (Crypto::needsRehash($val)) {
+                                $plain = Crypto::decryptTagged($val);
+                                if ($plain !== null) {
+                                    $encrypted = Crypto::encryptTagged($plain);
+                                    if ($encrypted !== '') {
+                                        $val = $encrypted;
+                                    }
+                                }
+                            }
                         }
                     } elseif (in_array($optName, ConfigRegistry::POST_AUDIO_ENCRYPTED, true)
                         && class_exists(\App\Features\PostAudio\PostAudioSecurity::class)) {

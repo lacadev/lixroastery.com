@@ -315,9 +315,10 @@ function lacadev_get_bucket_category_info(string $bucketDir): array
  * Tự phát hiện category từ các thư mục "bucket" theo site nằm dưới
  * block-gutenberg/ của child theme — 1 thư mục KHÔNG có block.json trực
  * tiếp nhưng có ít nhất 1 block con = 1 bucket. Slug = tên thư mục bucket
- * (sanitize_key), title/icon lấy từ lacadev_get_bucket_category_info(). Nhờ
- * vậy chỉ cần git mv 1 block vào 1 thư mục mới là nó tự có category, không
- * cần đăng ký gì thêm ở đây.
+ * (sanitize_key), title/icon lấy từ lacadev_get_bucket_category_info().
+ * Lưu ý: category của từng block luôn ưu tiên đọc từ field "category" trong
+ * block.json (xem RULE_BLOCK_GUTENBERG.md mục 2); slug bucket này phục vụ các
+ * block khai báo category trùng tên bucket hoặc không khai báo "category".
  *
  * @return array[] Mỗi entry: ['slug' => ..., 'title' => ..., 'icon' => ...]
  */
@@ -454,12 +455,16 @@ function lacadev_collect_blocks_for_category_mapping()
                 continue;
             }
 
-            if ($source === 'synced' && strpos($entry, '/') !== false) {
-                $default_slug = sanitize_key(dirname($entry));
-            } elseif ($source === 'synced') {
-                $default_slug = !empty($metadata['category']) ? sanitize_key((string) $metadata['category']) : 'site-unclassified';
+            if ($source === 'synced') {
+                if (!empty($metadata['category'])) {
+                    $default_slug = sanitize_key((string) $metadata['category']);
+                } elseif (strpos($entry, '/') !== false) {
+                    $default_slug = sanitize_key(dirname($entry));
+                } else {
+                    $default_slug = 'site-unclassified';
+                }
             } else {
-                $default_slug = 'pdn-blocks';
+                $default_slug = !empty($metadata['category']) ? sanitize_key((string) $metadata['category']) : 'pdn-blocks';
             }
             $title = !empty($metadata['title']) ? (string) $metadata['title'] : $block_name;
 
@@ -873,14 +878,15 @@ function lacadev_child_register_synced_blocks(): void
             $blockArgs['editor_script'] = $scriptHandle;
         }
 
-        // Block nằm trong 1 bucket theo site → category = tên thư mục bucket
-        // (tự động, xem lacadev_discover_bucket_categories()). Block phẳng
-        // (chưa phân loại site) → giữ hành vi cũ: đọc field "category" khai
-        // báo tay trong block.json, không có thì rơi về site-unclassified.
-        if (strpos($blockRelPath, '/') !== false) {
+        // Ưu tiên field "category" khai báo trong block.json (theo RULE_BLOCK_GUTENBERG.md mục 2).
+        // Chỉ khi block.json không khai báo category: block nằm trong bucket rơi về tên thư mục
+        // bucket, còn block phẳng rơi về site-unclassified.
+        if (!empty($metadata['category'])) {
+            $declaredCategory = sanitize_key((string) $metadata['category']);
+        } elseif (strpos($blockRelPath, '/') !== false) {
             $declaredCategory = sanitize_key(dirname($blockRelPath));
         } else {
-            $declaredCategory = !empty($metadata['category']) ? sanitize_key((string) $metadata['category']) : 'site-unclassified';
+            $declaredCategory = 'site-unclassified';
         }
         $blockArgs['category'] = lacadev_resolve_block_category($registered_block_name, $declaredCategory);
 

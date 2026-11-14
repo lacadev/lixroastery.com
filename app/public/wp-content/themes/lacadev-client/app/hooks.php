@@ -392,6 +392,9 @@ add_action('init', function () {
     if (class_exists('\App\Features\ContactForm\ContactFormAjaxHandler')) {
         (new \App\Features\ContactForm\ContactFormAjaxHandler())->init();
     }
+    if (class_exists('\App\Features\ContactForm\FooterContactHandler')) {
+        (new \App\Features\ContactForm\FooterContactHandler())->init();
+    }
 }, 10);
 
 /**
@@ -544,6 +547,9 @@ add_action('after_setup_theme', function () {
 if (defined('WP_CLI') && \WP_CLI) {
     if (class_exists('\App\Cli\LacaSyncCommand')) {
         \WP_CLI::add_command('laca', \App\Cli\LacaSyncCommand::class);
+    }
+    if (class_exists('\App\Cli\LacaCryptoCommand')) {
+        \WP_CLI::add_command('laca crypto', \App\Cli\LacaCryptoCommand::class);
     }
     if (class_exists('\App\Cli\LacaThemeCommand')) {
         \WP_CLI::add_command('laca-theme', \App\Cli\LacaThemeCommand::class);

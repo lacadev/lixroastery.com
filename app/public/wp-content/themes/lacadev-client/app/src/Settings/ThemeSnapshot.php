@@ -11,7 +11,46 @@ if (!defined('ABSPATH')) {
  */
 class ThemeSnapshot
 {
-    public const MAX_SNAPSHOTS = 3;
+    public const TYPE_UPDATE               = 'update';
+    public const TYPE_PRE_ROLLBACK         = 'pre-rollback';
+    public const MAX_SNAPSHOTS             = 3;
+    public const MAX_UPDATE_SNAPSHOTS      = 3;
+    public const MAX_PRE_ROLLBACK_SNAPSHOTS = 2;
+
+    /**
+     * Chuẩn hoá chuỗi phiên bản để so sánh đúng cả hậu tố kiểm thử sau phát hành (vd `3.9.1-testA`, `3.9.1-testB`).
+     */
+    public static function normalizeVersionForCompare(string $version): string
+    {
+        $trimmed = trim($version);
+        if ($trimmed === '') {
+            return '0';
+        }
+
+        return (string) preg_replace_callback('/-test([A-Za-z0-9._-]*)$/i', static function (array $matches): string {
+            $tail = $matches[1];
+            if ($tail === '') {
+                return '.0.0.1';
+            }
+            $ords = implode('.', array_map('ord', str_split($tail)));
+            return '.0.0.2.' . $ords;
+        }, $trimmed);
+    }
+
+    /**
+     * So sánh 2 chuỗi phiên bản theo chuẩn SemVer/WP kèm hỗ trợ hậu tố `-test*`.
+     */
+    public static function compareVersions(string $v1, string $v2, ?string $operator = null): int|bool
+    {
+        $n1 = self::normalizeVersionForCompare($v1);
+        $n2 = self::normalizeVersionForCompare($v2);
+
+        if ($operator !== null) {
+            return version_compare($n1, $n2, $operator);
+        }
+
+        return version_compare($n1, $n2);
+    }
 
     /**
      * Trả về thư mục lưu trữ snapshot của theme (kèm .htaccess và index.php bảo vệ).
@@ -42,18 +81,20 @@ class ThemeSnapshot
             @file_put_contents($indexFile, "<?php\n// Silence is golden.\n");
         }
 
-        $htaccessFile = $dir . '/htaccess.tmp';
         $targetHtaccess = $dir . '/.htaccess';
         if (!file_exists($targetHtaccess)) {
-            unset($htaccessFile);
             @file_put_contents($targetHtaccess, "Require all denied\n");
         }
     }
 
     /**
-     * Đóng gói thư mục hiện tại của lacadev-client thành gói snapshot zip trước khi cập nhật.
+     * Đóng gói thư mục hiện tại của lacadev-client thành gói snapshot zip.
+     *
+     * @param string $themeRoot Thư mục gốc của parent theme.
+     * @param string $version   Phiên bản đang chạy.
+     * @param string $type      Loại snapshot (`update` hoặc `pre-rollback`).
      */
-    public static function create(string $themeRoot, string $version): string|\WP_Error
+    public static function create(string $themeRoot, string $version, string $type = self::TYPE_UPDATE): string|\WP_Error
     {
         if (!class_exists('\ZipArchive')) {
             return new \WP_Error(
@@ -70,15 +111,18 @@ class ThemeSnapshot
             );
         }
 
+        $normalizedType = ($type === self::TYPE_PRE_ROLLBACK) ? self::TYPE_PRE_ROLLBACK : self::TYPE_UPDATE;
+        $typeSuffix     = ($normalizedType === self::TYPE_PRE_ROLLBACK) ? '-pre-rollback' : '';
+
         $safeVer = preg_replace('/[^a-zA-Z0-9._-]/', '-', trim($version)) ?: 'unknown';
         $stamp   = gmdate('Ymd-His');
         $snapDir = self::dir();
 
-        $fileName = "lacadev-client-{$safeVer}-{$stamp}.zip";
+        $fileName = "lacadev-client-{$safeVer}-{$stamp}{$typeSuffix}.zip";
         $zipPath  = $snapDir . '/' . $fileName;
         $counter  = 1;
         while (file_exists($zipPath)) {
-            $fileName = "lacadev-client-{$safeVer}-{$stamp}-{$counter}.zip";
+            $fileName = "lacadev-client-{$safeVer}-{$stamp}-{$counter}{$typeSuffix}.zip";
             $zipPath  = $snapDir . '/' . $fileName;
             $counter++;
         }
@@ -132,7 +176,7 @@ class ThemeSnapshot
     /**
      * Liệt kê các bản snapshot hiện có (mới nhất lên đầu).
      *
-     * @return array<int, array{file: string, path: string, version: string, size: int, mtime: int, created_at: string}>
+     * @return array<int, array{file: string, path: string, version: string, type: string, size: int, mtime: int, created_at: string}>
      */
     public static function list(): array
     {
@@ -148,7 +192,7 @@ class ThemeSnapshot
 
         $items = [];
         foreach ($entries as $entry) {
-            if (!preg_match('/^lacadev-client-(.+)-(\d{8}-\d{6})(?:-\d+)?\.zip$/', $entry, $matches)) {
+            if (!preg_match('/^lacadev-client-(.+)-(\d{8}-\d{6})(?:-\d+)?(-pre-rollback)?\.zip$/', $entry, $matches)) {
                 continue;
             }
 
@@ -157,11 +201,14 @@ class ThemeSnapshot
                 continue;
             }
 
-            $mtime   = (int) (@filemtime($fullPath) ?: 0);
+            $mtime    = (int) (@filemtime($fullPath) ?: 0);
+            $snapType = !empty($matches[3]) ? self::TYPE_PRE_ROLLBACK : self::TYPE_UPDATE;
+
             $items[] = [
                 'file'       => $entry,
                 'path'       => $fullPath,
                 'version'    => $matches[1],
+                'type'       => $snapType,
                 'size'       => (int) (@filesize($fullPath) ?: 0),
                 'mtime'      => $mtime,
                 'created_at' => gmdate('Y-m-d H:i:s', $mtime),
@@ -172,6 +219,10 @@ class ThemeSnapshot
             if ($b['mtime'] !== $a['mtime']) {
                 return $b['mtime'] <=> $a['mtime'];
             }
+            $verCmp = self::compareVersions($b['version'], $a['version']);
+            if ($verCmp !== 0) {
+                return $verCmp;
+            }
             return strcmp($b['file'], $a['file']);
         });
 
@@ -179,17 +230,36 @@ class ThemeSnapshot
     }
 
     /**
-     * Giữ tối đa MAX_SNAPSHOTS bản mới nhất do chính lớp này tạo trong dir().
+     * Giữ tối đa 3 bản `update` và 2 bản `pre-rollback` mới nhất trong dir().
      */
     private static function pruneOldSnapshots(): void
     {
         $items = self::list();
-        if (count($items) <= self::MAX_SNAPSHOTS) {
+        if (empty($items)) {
+            return;
+        }
+
+        $updates      = [];
+        $preRollbacks = [];
+        foreach ($items as $item) {
+            if (($item['type'] ?? self::TYPE_UPDATE) === self::TYPE_PRE_ROLLBACK) {
+                $preRollbacks[] = $item;
+            } else {
+                $updates[] = $item;
+            }
+        }
+
+        $toDelete = array_merge(
+            array_slice($updates, self::MAX_UPDATE_SNAPSHOTS),
+            array_slice($preRollbacks, self::MAX_PRE_ROLLBACK_SNAPSHOTS)
+        );
+
+        if (empty($toDelete)) {
             return;
         }
 
         $snapDir = trailingslashit(realpath(self::dir()) ?: self::dir());
-        foreach (array_slice($items, self::MAX_SNAPSHOTS) as $old) {
+        foreach ($toDelete as $old) {
             $realOld = realpath($old['path']);
             if ($realOld !== false && str_starts_with($realOld, $snapDir) && str_starts_with(basename($realOld), 'lacadev-client-')) {
                 wp_delete_file($realOld);
@@ -198,33 +268,32 @@ class ThemeSnapshot
     }
 
     /**
-     * Khôi phục parent theme từ một file snapshot (hoặc bản mới nhất nếu để trống $file).
+     * Khôi phục parent theme từ một file snapshot (hoặc bản `update` cũ hơn mới nhất nếu để trống $file).
      */
     public static function restore(string $file = ''): true|\WP_Error
     {
-        $startTime = microtime(true);
-        $snapshots = self::list();
-
-        if (empty($snapshots)) {
-            return new \WP_Error(
-                'laca_snapshot_empty',
-                __('Chưa có bản sao lưu snapshot nào để khôi phục.', 'laca')
-            );
-        }
-
+        $startTime    = microtime(true);
+        $snapshots    = self::list();
         $currentTheme = wp_get_theme('lacadev-client/theme');
         $fromVersion  = $currentTheme->exists() ? (string) $currentTheme->get('Version') : '';
 
         $selected = null;
         if ($file === '') {
             foreach ($snapshots as $item) {
-                if ($fromVersion === '' || $item['version'] !== $fromVersion) {
+                if (($item['type'] ?? self::TYPE_UPDATE) !== self::TYPE_UPDATE) {
+                    continue;
+                }
+                if ($fromVersion === '' || self::compareVersions($item['version'], $fromVersion, '<')) {
                     $selected = $item;
                     break;
                 }
             }
+
             if ($selected === null) {
-                $selected = $snapshots[0];
+                return new \WP_Error(
+                    'laca_snapshot_no_older',
+                    __('Không tìm thấy bản sao lưu cũ hơn phiên bản đang chạy để khôi phục.', 'laca')
+                );
             }
         } else {
             $baseFile = basename($file);
@@ -240,9 +309,16 @@ class ThemeSnapshot
                     break;
                 }
             }
+
+            if ($selected === null || !is_file($selected['path'])) {
+                return new \WP_Error(
+                    'laca_snapshot_not_found',
+                    __('Không tìm thấy file snapshot được yêu cầu.', 'laca')
+                );
+            }
         }
 
-        if ($selected === null || !is_file($selected['path'])) {
+        if (!is_file($selected['path'])) {
             return new \WP_Error(
                 'laca_snapshot_not_found',
                 __('Không tìm thấy file snapshot được yêu cầu.', 'laca')
@@ -292,8 +368,18 @@ class ThemeSnapshot
         }
 
         $targetDir = trailingslashit($themesRoot) . 'lacadev-client';
-        $holdDir   = self::dir() . '/lacadev-client.rollback-' . time() . '-' . wp_generate_password(4, false, false);
-        $movedOld  = false;
+
+        // Tạo snapshot `pre-rollback` của bản đang chạy trước khi ghi đè để luôn hoàn tác được.
+        if (is_dir($targetDir)) {
+            $preRollbackSnap = self::create($targetDir, $fromVersion ?: 'unknown', self::TYPE_PRE_ROLLBACK);
+            if (is_wp_error($preRollbackSnap)) {
+                $wp_filesystem->delete($tmpExtract, true);
+                return $preRollbackSnap;
+            }
+        }
+
+        $holdDir  = self::dir() . '/lacadev-client.rollback-' . time() . '-' . wp_generate_password(4, false, false);
+        $movedOld = false;
 
         if ($wp_filesystem->is_dir($targetDir)) {
             if (!$wp_filesystem->move($targetDir, $holdDir, true)) {
@@ -317,17 +403,12 @@ class ThemeSnapshot
             );
         }
 
-        // Dọn thư mục tạm sau khi đổi chỗ thành công.
+        // Dọn thư mục tạm sau khi đổi chỗ thành công (KHÔNG xoá file snapshot vừa dùng).
         if ($movedOld && $wp_filesystem->is_dir($holdDir)) {
             $wp_filesystem->delete($holdDir, true);
         }
         if ($wp_filesystem->is_dir($tmpExtract)) {
             $wp_filesystem->delete($tmpExtract, true);
-        }
-
-        // Khi gọi rollback mặc định (không chỉ định file), pop bản snapshot vừa dùng để các lần rollback kế tiếp lùi tiếp trên stack.
-        if ($file === '' && is_file($selected['path'])) {
-            wp_delete_file($selected['path']);
         }
 
         wp_clean_themes_cache();
