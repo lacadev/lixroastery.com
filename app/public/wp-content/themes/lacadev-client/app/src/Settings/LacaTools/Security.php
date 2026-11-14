@@ -88,7 +88,9 @@ class Security
             wp_deregister_script('wp-embed');
             remove_action('wp_head', 'wp_oembed_add_discovery_links');
             remove_action('wp_head', 'wp_oembed_add_host_js');
-            remove_filter('the_content', [GLOBALS['wp_embed'] ?? null, 'autoembed'], 8);
+            if (isset($GLOBALS['wp_embed'])) {
+                remove_filter('the_content', [$GLOBALS['wp_embed'], 'autoembed'], 8);
+            }
         });
     }
 
