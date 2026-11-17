@@ -94,10 +94,8 @@ class OrderProcessor
         try {
             $order = $this->session_handler->order();
             if (!$order) {
-                $order_id = $wc_order->get_meta(PayPalGateway::ORDER_ID_META_KEY);
-                if (!$order_id) {
-                    $order_id = $this->posted_session_order_id();
-                }
+                // phpcs:ignore WordPress.Security.NonceVerification
+                $order_id = $wc_order->get_meta(PayPalGateway::ORDER_ID_META_KEY) ?: wc_clean(wp_unslash($_POST['paypal_order_id'] ?? ''));
                 if (is_string($order_id) && $order_id) {
                     try {
                         $order = $this->order_endpoint->order($order_id);
@@ -177,22 +175,16 @@ class OrderProcessor
     /**
      * Creates a PayPal order for the given WC order.
      *
-     * @param WC_Order    $wc_order The WC order.
-     * @param string      $funding_source The funding source (e.g. 'paypal', 'venmo').
-     * @param string|null $landing_page An ExperienceContext::LANDING_PAGE_* value to
-     *                                  use instead of the merchant's setting.
+     * @param WC_Order $wc_order The WC order.
+     * @param string   $funding_source The funding source (e.g. 'paypal', 'venmo').
      * @return Order
      * @throws RuntimeException If order creation fails.
      */
-    public function create_order(WC_Order $wc_order, string $funding_source = 'paypal', ?string $landing_page = null): Order
+    public function create_order(WC_Order $wc_order, string $funding_source = 'paypal'): Order
     {
         $pu = $this->purchase_unit_factory->from_wc_order($wc_order);
         $shipping_preference = $this->shipping_preference_factory->from_state($pu, 'checkout');
-        $experience_context = $this->experience_context_builder->with_default_paypal_config($shipping_preference, ExperienceContext::USER_ACTION_PAY_NOW);
-        if ($landing_page) {
-            $experience_context = $experience_context->with_landing_page($landing_page);
-        }
-        $order = $this->order_endpoint->create(array($pu), $shipping_preference, $this->payer_factory->from_wc_order($wc_order), $wc_order->get_payment_method(), array('funding_source' => $funding_source), new PaymentSource($funding_source, (object) array('experience_context' => $experience_context->build()->to_array())));
+        $order = $this->order_endpoint->create(array($pu), $shipping_preference, $this->payer_factory->from_wc_order($wc_order), $wc_order->get_payment_method(), array('funding_source' => $funding_source), new PaymentSource($funding_source, (object) array('experience_context' => $this->experience_context_builder->with_default_paypal_config($shipping_preference, ExperienceContext::USER_ACTION_PAY_NOW)->build()->to_array())));
         return $order;
     }
     /**
@@ -209,10 +201,6 @@ class OrderProcessor
         $this->apply_outbound_order_filters($wc_order);
         $updated_order = $this->order_factory->from_wc_order($wc_order, $order);
         $this->restore_order_from_filters($wc_order);
-        $amount_unchanged = $this->order_amount_unchanged($order, $updated_order);
-        if (!$amount_unchanged) {
-            $this->log_amount_change($wc_order, $order, $updated_order);
-        }
         try {
             $order = $this->order_endpoint->patch_order_with($order, $updated_order);
         } catch (PayPalApiException $exception) {
@@ -226,7 +214,7 @@ class OrderProcessor
              * unchanged it is therefore safe to skip the patch and capture the order
              * as-is. Any other failure (including an actual amount change) is re-thrown.
              */
-            if ($exception->status_code() !== 422 || !$amount_unchanged) {
+            if ($exception->status_code() !== 422 || !$this->order_amount_unchanged($order, $updated_order)) {
                 throw $exception;
             }
             $this->logger->warning(sprintf('Skipping order patch for order #%1$d: PayPal rejected it because the order is locked after confirming a vaulted payment, and the amount is unchanged so capture can proceed. %2$s', $wc_order->get_id(), $exception->getMessage()));
@@ -260,34 +248,6 @@ class OrderProcessor
             }
         }
         return \true;
-    }
-    /**
-     * Returns the posted PayPal order ID only if this session created it, so a request
-     * cannot attach a foreign PayPal order.
-     */
-    private function posted_session_order_id(): string
-    {
-        // phpcs:ignore WordPress.Security.NonceVerification.Missing
-        $order_id = wc_clean(wp_unslash($_POST['paypal_order_id'] ?? ''));
-        if (!is_string($order_id) || !$this->session_handler->is_created_order($order_id)) {
-            return '';
-        }
-        return $order_id;
-    }
-    /**
-     * A higher amount after approval can fail the capture with PAYER_ACTION_REQUIRED.
-     */
-    private function log_amount_change(WC_Order $wc_order, Order $approved_order, Order $updated_order): void
-    {
-        $this->logger->warning(sprintf('PayPal order %1$s: amount changed after approval from %2$s to %3$s (WC order #%4$d).', $approved_order->id(), $this->purchase_unit_amount($approved_order), $this->purchase_unit_amount($updated_order), $wc_order->get_id()));
-    }
-    private function purchase_unit_amount(Order $order): string
-    {
-        $unit = $order->purchase_units()[0] ?? null;
-        if (!$unit instanceof PurchaseUnit) {
-            return '-';
-        }
-        return $unit->amount()->value_str() . ' ' . $unit->amount()->currency_code();
     }
     /**
      * Verifies whether the order can be processed.

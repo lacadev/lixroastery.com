@@ -15,6 +15,7 @@ use WooCommerce\PayPalCommerce\PayLaterConfigurator\Endpoint\GetConfig;
 use WooCommerce\PayPalCommerce\PayLaterConfigurator\Factory\ConfigFactory;
 use WooCommerce\PayPalCommerce\Vendor\Psr\Container\ContainerInterface;
 use WooCommerce\PayPalCommerce\Button\Helper\MessagesApply;
+use WooCommerce\PayPalCommerce\WcGateway\Helper\DCCProductStatus;
 use WooCommerce\PayPalCommerce\Settings\Data\SettingsProvider;
 use WooCommerce\PayPalCommerce\Settings\Data\PayLaterMessagingSettings;
 return array('paylater-configurator.asset_getter' => static function (ContainerInterface $container): AssetGetter {
@@ -30,7 +31,11 @@ return array('paylater-configurator.asset_getter' => static function (ContainerI
 }, 'paylater-configurator.is-available' => static function (ContainerInterface $container): bool {
     $messages_apply = $container->get('button.helper.messages-apply');
     assert($messages_apply instanceof MessagesApply);
-    return $messages_apply->for_country();
+    $settings_provider = $container->get('settings.settings-provider');
+    assert($settings_provider instanceof SettingsProvider);
+    $dcc_product_status = $container->get('wcgateway.helper.dcc-product-status');
+    assert($dcc_product_status instanceof DCCProductStatus);
+    return !$settings_provider->pay_later_disabled_by_vaulting() && $messages_apply->for_country();
 }, 'paylater-configurator.messaging-locations' => static function (ContainerInterface $container): array {
     $settings_provider = $container->get('settings.settings-provider');
     assert($settings_provider instanceof SettingsProvider);

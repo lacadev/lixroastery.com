@@ -11,7 +11,7 @@ use WooCommerce\PayPalCommerce\Vendor\Inpsyde\Modularity\Module\ExtendingModule;
 use WooCommerce\PayPalCommerce\Vendor\Inpsyde\Modularity\Module\ModuleClassNameIdTrait;
 use WooCommerce\PayPalCommerce\Vendor\Inpsyde\Modularity\Module\ServiceModule;
 use WooCommerce\PayPalCommerce\Vendor\Psr\Container\ContainerInterface;
-use WP_REST_Request;
+use WP_Error;
 class FraudProtectionModule implements ServiceModule, ExtendingModule, ExecutableModule
 {
     use ModuleClassNameIdTrait;
@@ -62,24 +62,6 @@ class FraudProtectionModule implements ServiceModule, ExtendingModule, Executabl
                 echo $recaptcha->render_v2_container();
             }, $priority);
         }
-        add_filter(
-            'render_block_data',
-            /**
-             * This filter runs before the inner blocks render. Thus, the express
-             * payment block below already gets the v2 container.
-             *
-             * @param array $parsed_block
-             * @return array
-             * @psalm-suppress MissingClosureParamType
-             * @psalm-suppress MissingClosureReturnType
-             */
-            static function ($parsed_block) use ($container) {
-                $recaptcha = $container->get('fraud-protection.recaptcha');
-                assert($recaptcha instanceof Recaptcha);
-                $recaptcha->handle_block_render($parsed_block);
-                return $parsed_block;
-            }
-        );
         foreach (array('render_block_woocommerce/checkout-express-payment-block', 'render_block_woocommerce/proceed-to-checkout-block') as $filter) {
             add_filter(
                 $filter,
@@ -109,23 +91,20 @@ class FraudProtectionModule implements ServiceModule, ExtendingModule, Executabl
         add_action('woocommerce_blocks_loaded', function (): void {
             $this->register_recaptcha_blocks_extension();
         });
-        add_action(
-            'woocommerce_store_api_checkout_update_order_from_request',
+        add_filter(
+            'rest_authentication_errors',
             /**
-             * @param WC_Order $order
-             * @param WP_REST_Request $request
+             * @param WP_Error|null|true $errors
+             * @return WP_Error|null|true WP_Error
              * @psalm-suppress MissingClosureParamType
+             * @psalm-suppress MissingClosureReturnType
              */
-            static function ($order, $request) use ($container): void {
-                if (!$order instanceof WC_Order || !$request instanceof WP_REST_Request) {
-                    return;
-                }
+            static function ($errors) use ($container) {
                 $recaptcha = $container->get('fraud-protection.recaptcha');
                 assert($recaptcha instanceof Recaptcha);
-                $recaptcha->validate_store_api_checkout($order, $request);
+                return $recaptcha->validate_blocks_request($errors);
             },
-            10,
-            2
+            99
         );
         add_action(
             'woocommerce_new_order',

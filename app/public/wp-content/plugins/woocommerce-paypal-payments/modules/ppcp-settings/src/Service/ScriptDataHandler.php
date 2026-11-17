@@ -32,11 +32,7 @@ class ScriptDataHandler
      * Whether the SDK v6 module is loaded. Defaulted for existing callers.
      */
     private bool $is_sdk_v6_active;
-    /**
-     * Whether the request renders the plugin's own settings screen.
-     */
-    private bool $is_plugin_settings_page;
-    public function __construct(AssetGetter $asset_getter, bool $paylater_is_available, string $store_country, string $merchant_id, array $button_language_choices, PartnerAttribution $partner_attribution, SettingsProvider $settings_provider, PaymentLevelEligibility $payment_level_eligibility, bool $is_bcdc_override_flag_enabled, AgenticBetaBannerEligibility $agentic_beta_banner_eligibility, bool $is_sdk_v6_active = \false, bool $is_plugin_settings_page = \false)
+    public function __construct(AssetGetter $asset_getter, bool $paylater_is_available, string $store_country, string $merchant_id, array $button_language_choices, PartnerAttribution $partner_attribution, SettingsProvider $settings_provider, PaymentLevelEligibility $payment_level_eligibility, bool $is_bcdc_override_flag_enabled, AgenticBetaBannerEligibility $agentic_beta_banner_eligibility, bool $is_sdk_v6_active = \false)
     {
         $this->asset_getter = $asset_getter;
         $this->paylater_is_available = $paylater_is_available;
@@ -49,7 +45,6 @@ class ScriptDataHandler
         $this->is_bcdc_override_flag_enabled = $is_bcdc_override_flag_enabled;
         $this->agentic_beta_banner_eligibility = $agentic_beta_banner_eligibility;
         $this->is_sdk_v6_active = $is_sdk_v6_active;
-        $this->is_plugin_settings_page = $is_plugin_settings_page;
     }
     /**
      * Localize scripts.
@@ -63,9 +58,7 @@ class ScriptDataHandler
          *
          * @psalm-suppress MissingClosureParamType
          */
-        // Every WooCommerce settings tab shares this hook suffix, but only the
-        // PayPal screen prints the container the app mounts into.
-        if ('woocommerce_page_wc-settings' !== $hook_suffix || !$this->is_plugin_settings_page) {
+        if ('woocommerce_page_wc-settings' !== $hook_suffix) {
             return;
         }
         /**

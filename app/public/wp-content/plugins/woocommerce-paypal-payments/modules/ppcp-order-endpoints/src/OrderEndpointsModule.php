@@ -3,7 +3,10 @@
 /**
  * The order endpoints module.
  *
- * Home of the WC-AJAX endpoints shared by the v5 and v6 SDK frontends.
+ * Home of the WC-AJAX order endpoints shared by the v5 and v6 SDK frontends
+ * (ppc-create-order, ppc-approve-order, ppc-change-cart, ppc-update-shipping).
+ *
+ * @package WooCommerce\PayPalCommerce\OrderEndpoints
  */
 declare (strict_types=1);
 namespace WooCommerce\PayPalCommerce\OrderEndpoints;
@@ -11,7 +14,6 @@ namespace WooCommerce\PayPalCommerce\OrderEndpoints;
 use WooCommerce\PayPalCommerce\OrderEndpoints\Endpoint\ApproveOrderEndpoint;
 use WooCommerce\PayPalCommerce\OrderEndpoints\Endpoint\ChangeCartEndpoint;
 use WooCommerce\PayPalCommerce\OrderEndpoints\Endpoint\CreateOrderEndpoint;
-use WooCommerce\PayPalCommerce\OrderEndpoints\Endpoint\FrontendLogEndpoint;
 use WooCommerce\PayPalCommerce\OrderEndpoints\Endpoint\UpdateShippingEndpoint;
 use WooCommerce\PayPalCommerce\Vendor\Inpsyde\Modularity\Module\ExecutableModule;
 use WooCommerce\PayPalCommerce\Vendor\Inpsyde\Modularity\Module\ModuleClassNameIdTrait;
@@ -39,11 +41,6 @@ class OrderEndpointsModule implements ServiceModule, ExecutableModule
         add_action('wc_ajax_' . CreateOrderEndpoint::ENDPOINT, static function () use ($c) {
             $endpoint = $c->get('order-endpoints.endpoint.create-order');
             assert($endpoint instanceof CreateOrderEndpoint);
-            $endpoint->handle_request();
-        });
-        add_action('wc_ajax_' . FrontendLogEndpoint::ENDPOINT, static function () use ($c) {
-            $endpoint = $c->get('order-endpoints.endpoint.frontend-log');
-            assert($endpoint instanceof FrontendLogEndpoint);
             $endpoint->handle_request();
         });
         add_action('wc_ajax_' . UpdateShippingEndpoint::ENDPOINT, static function () use ($c) {
