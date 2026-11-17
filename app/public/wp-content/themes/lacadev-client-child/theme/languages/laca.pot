@@ -3,13 +3,13 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: La Cà Dev - Client Child 1.0\n"
-"Report-Msgid-Bugs-To: \n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/theme/lacadev-client-child\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-10-30T05:01:16+00:00\n"
+"POT-Creation-Date: 2026-11-17T01:29:07+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: laca\n"
@@ -545,23 +545,49 @@ msgstr ""
 msgid "Sau"
 msgstr ""
 
-#: theme/archive-glossary.php:63
+#: block-gutenberg/lixroastery-blocks-site/block-top-hero/render.php:193
+msgid "Ảnh nổi bật"
+msgstr ""
+
+#: block-gutenberg/lixroastery-blocks-site/block-top-hero/render.php:236
+msgid "Ảnh trước"
+msgstr ""
+
+#: block-gutenberg/lixroastery-blocks-site/block-top-hero/render.php:237
+msgid "Ảnh tiếp theo"
+msgstr ""
+
+#. translators: %d: số thứ tự ảnh trong slide
+#: block-gutenberg/lixroastery-blocks-site/block-top-hero/render.php:242
+#, php-format
+msgid "Xem ảnh %d"
+msgstr ""
+
+#: block-gutenberg/lixroastery-blocks-site/block-top-hero/render.php:248
+msgid "Tạm dừng video"
+msgstr ""
+
+#: block-gutenberg/lixroastery-blocks-site/block-top-hero/render.php:248
+msgid "Phát video"
+msgstr ""
+
+#: theme/archive-glossary.php:85
 msgid "Thuật ngữ"
 msgstr ""
 
-#: theme/archive-glossary.php:67
+#: theme/archive-glossary.php:89
 msgid "Bảng chữ cái"
 msgstr ""
 
-#: theme/archive-glossary.php:125
+#: theme/archive-glossary.php:136
 msgid "Đọc thêm"
 msgstr ""
 
-#: theme/archive-glossary.php:130
+#: theme/archive-glossary.php:141
 msgid "Bài viết liên quan:"
 msgstr ""
 
-#: theme/archive-glossary.php:148
+#: theme/archive-glossary.php:157
 msgid "Chưa có thuật ngữ nào."
 msgstr ""
 

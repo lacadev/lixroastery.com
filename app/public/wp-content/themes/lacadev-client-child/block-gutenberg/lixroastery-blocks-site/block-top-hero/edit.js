@@ -57,6 +57,12 @@ const DIRECTION_OPTIONS = [
 	{ label: __( 'Phải → trái', 'laca' ), value: '270' },
 ];
 
+const MEDIA_TYPE_OPTIONS = [
+	{ label: __( 'Một ảnh', 'laca' ), value: 'image' },
+	{ label: __( 'Slide nhiều ảnh', 'laca' ), value: 'slider' },
+	{ label: __( 'Video', 'laca' ), value: 'video' },
+];
+
 // { pc: attributes.foo, tablet: attributes.fooTablet, mobile: attributes.fooMobile }
 function byDevice( attributes, key ) {
 	return Object.fromEntries(
@@ -137,6 +143,132 @@ function ImagePicker( { imageUrl, imageId, onSelect, label } ) {
 	);
 }
 
+function SlidesPicker( { slides, onChange } ) {
+	return (
+		<MediaUploadCheck>
+			<MediaUpload
+				multiple
+				gallery
+				allowedTypes={ [ 'image' ] }
+				value={ slides.map( ( slide ) => slide.id ) }
+				onSelect={ ( media ) =>
+					onChange(
+						media.map( ( item ) => ( {
+							id: item.id,
+							url: item.url,
+						} ) )
+					)
+				}
+				render={ ( { open } ) => (
+					<div style={ { marginBottom: 12 } }>
+						{ slides.length > 0 && (
+							<div
+								style={ {
+									display: 'grid',
+									gridTemplateColumns: 'repeat(3, 1fr)',
+									gap: 4,
+									marginBottom: 8,
+								} }
+							>
+								{ slides.map( ( slide, index ) => (
+									<div
+										key={ slide.id || slide.url }
+										style={ { position: 'relative' } }
+									>
+										<img
+											src={ slide.url }
+											alt=""
+											style={ {
+												width: '100%',
+												aspectRatio: '1',
+												objectFit: 'cover',
+												borderRadius: 4,
+												display: 'block',
+											} }
+										/>
+										<Button
+											icon="no-alt"
+											size="small"
+											label={ __( 'Bỏ ảnh này', 'laca' ) }
+											onClick={ () =>
+												onChange(
+													slides.filter(
+														( _, i ) => i !== index
+													)
+												)
+											}
+											style={ {
+												position: 'absolute',
+												top: 2,
+												right: 2,
+												background: '#fff',
+												minWidth: 0,
+												padding: 0,
+												height: 20,
+												width: 20,
+											} }
+										/>
+									</div>
+								) ) }
+							</div>
+						) }
+						<Button variant="secondary" onClick={ open }>
+							{ slides.length
+								? __( 'Sửa / sắp xếp ảnh', 'laca' )
+								: __( 'Chọn nhiều ảnh', 'laca' ) }
+						</Button>
+					</div>
+				) }
+			/>
+		</MediaUploadCheck>
+	);
+}
+
+function VideoPicker( { videoId, videoUrl, onSelect, onRemove } ) {
+	return (
+		<MediaUploadCheck>
+			<MediaUpload
+				allowedTypes={ [ 'video' ] }
+				value={ videoId }
+				onSelect={ onSelect }
+				render={ ( { open } ) => (
+					<div style={ { marginBottom: 12 } }>
+						{ videoUrl && (
+							<video
+								src={ videoUrl }
+								muted
+								style={ {
+									width: '100%',
+									maxHeight: 120,
+									objectFit: 'cover',
+									marginBottom: 4,
+									borderRadius: 4,
+									display: 'block',
+								} }
+							/>
+						) }
+						<Button variant="secondary" onClick={ open }>
+							{ videoUrl
+								? __( 'Đổi video', 'laca' )
+								: __( 'Chọn video', 'laca' ) }
+						</Button>
+						{ videoUrl && (
+							<Button
+								variant="link"
+								isDestructive
+								onClick={ onRemove }
+								style={ { marginLeft: 8 } }
+							>
+								{ __( 'Gỡ video', 'laca' ) }
+							</Button>
+						) }
+					</div>
+				) }
+			/>
+		</MediaUploadCheck>
+	);
+}
+
 export default function Edit( { attributes, setAttributes } ) {
 	const isPreview = useInserterPreview( attributes );
 	const blockProps = useBlockProps();
@@ -156,6 +288,15 @@ export default function Edit( { attributes, setAttributes } ) {
 		containerMode = 'inherit',
 		heroImageId,
 		heroImageUrl,
+		mediaType = 'image',
+		slides = [],
+		slideInterval,
+		slideAutoplay,
+		slideShowDots,
+		slideShowArrows,
+		videoId,
+		videoUrl,
+		videoLoop,
 		headline,
 		description,
 		overlayType,
@@ -178,10 +319,24 @@ export default function Edit( { attributes, setAttributes } ) {
 	const setByDevice = ( key ) => ( device, value ) =>
 		setAttributes( { [ key + TIERS[ device ] ]: value } );
 
+	// Giống render.php: thiếu dữ liệu cho chế độ đã chọn thì rơi về 1 ảnh.
+	const isSlider = mediaType === 'slider' && slides.length > 1;
+	const isVideo = mediaType === 'video' && !! videoUrl;
+	let bgImageUrl = heroImageUrl;
+	if ( mediaType === 'slider' && slides.length ) {
+		bgImageUrl = slides[ 0 ].url;
+	}
+	let activeMedia = 'image';
+	if ( isSlider ) {
+		activeMedia = 'slider';
+	} else if ( isVideo ) {
+		activeMedia = 'video';
+	}
+
 	let sectionStyle;
 	if ( heightMode === 'custom' ) {
 		sectionStyle = { minHeight: `${ minHeight }px` };
-	} else if ( ! heroImageUrl ) {
+	} else if ( ! bgImageUrl && ! isVideo ) {
 		sectionStyle = { minHeight: '400px' };
 	}
 
@@ -191,6 +346,7 @@ export default function Edit( { attributes, setAttributes } ) {
 		blockProps.className,
 		`block-top-hero--${ heightMode }`,
 		fullBleed ? 'block-top-hero--bleed' : '',
+		`block-top-hero--media-${ activeMedia }`,
 		layoutClass,
 	];
 	const contentStyle = {};
@@ -350,20 +506,145 @@ export default function Edit( { attributes, setAttributes } ) {
 					/>
 				</PanelBody>
 
-				<PanelBody
-					title={ __( 'Ảnh nền', 'laca' ) }
-					initialOpen={ true }
-				>
-					<ImagePicker
-						imageUrl={ heroImageUrl }
-						imageId={ heroImageId }
-						onSelect={ ( media ) =>
-							setAttributes( {
-								heroImageId: media.id,
-								heroImageUrl: media.url,
-							} )
-						}
+				<PanelBody title={ __( 'Nền', 'laca' ) } initialOpen={ true }>
+					<SelectControl
+						label={ __( 'Loại nền', 'laca' ) }
+						value={ mediaType }
+						options={ MEDIA_TYPE_OPTIONS }
+						onChange={ ( v ) => setAttributes( { mediaType: v } ) }
 					/>
+
+					{ mediaType === 'image' && (
+						<ImagePicker
+							imageUrl={ heroImageUrl }
+							imageId={ heroImageId }
+							onSelect={ ( media ) =>
+								setAttributes( {
+									heroImageId: media.id,
+									heroImageUrl: media.url,
+								} )
+							}
+						/>
+					) }
+
+					{ mediaType === 'slider' && (
+						<>
+							<SlidesPicker
+								slides={ slides }
+								onChange={ ( v ) =>
+									setAttributes( { slides: v } )
+								}
+							/>
+							{ slides.length < 2 && (
+								<p
+									style={ {
+										fontSize: 12,
+										color: '#757575',
+										marginTop: 0,
+									} }
+								>
+									{ __(
+										'Cần ít nhất 2 ảnh để chạy slide. Kéo thả trong cửa sổ chọn ảnh để đổi thứ tự.',
+										'laca'
+									) }
+								</p>
+							) }
+							<ToggleControl
+								label={ __( 'Tự chuyển ảnh', 'laca' ) }
+								help={ __(
+									'Tạm dừng khi rê chuột vào hero; không tự chạy nếu máy người xem bật "giảm chuyển động".',
+									'laca'
+								) }
+								checked={ !! slideAutoplay }
+								onChange={ ( v ) =>
+									setAttributes( { slideAutoplay: v } )
+								}
+							/>
+							{ slideAutoplay && (
+								<RangeControl
+									label={ __(
+										'Thời gian mỗi ảnh (giây)',
+										'laca'
+									) }
+									value={ slideInterval }
+									min={ 2 }
+									max={ 20 }
+									step={ 1 }
+									onChange={ ( v ) =>
+										setAttributes( { slideInterval: v } )
+									}
+								/>
+							) }
+							<ToggleControl
+								label={ __( 'Hiện chấm chuyển ảnh', 'laca' ) }
+								checked={ !! slideShowDots }
+								onChange={ ( v ) =>
+									setAttributes( { slideShowDots: v } )
+								}
+							/>
+							<ToggleControl
+								label={ __( 'Hiện mũi tên trái/phải', 'laca' ) }
+								checked={ !! slideShowArrows }
+								onChange={ ( v ) =>
+									setAttributes( { slideShowArrows: v } )
+								}
+							/>
+						</>
+					) }
+
+					{ mediaType === 'video' && (
+						<>
+							<VideoPicker
+								videoId={ videoId }
+								videoUrl={ videoUrl }
+								onSelect={ ( media ) =>
+									setAttributes( {
+										videoId: media.id,
+										videoUrl: media.url,
+									} )
+								}
+								onRemove={ () =>
+									setAttributes( {
+										videoId: 0,
+										videoUrl: '',
+									} )
+								}
+							/>
+							<p
+								style={ {
+									fontSize: 12,
+									color: '#757575',
+									marginTop: 0,
+								} }
+							>
+								{ __(
+									'Video tự phát, tắt tiếng. Nên dùng MP4 dưới ~10MB, 1920px. Ngoài trang có nút dừng video.',
+									'laca'
+								) }
+							</p>
+							<ToggleControl
+								label={ __( 'Phát lặp lại', 'laca' ) }
+								checked={ !! videoLoop }
+								onChange={ ( v ) =>
+									setAttributes( { videoLoop: v } )
+								}
+							/>
+							<ImagePicker
+								label={ __(
+									'Ảnh chờ (hiện khi video đang tải hoặc máy chặn tự phát)',
+									'laca'
+								) }
+								imageUrl={ heroImageUrl }
+								imageId={ heroImageId }
+								onSelect={ ( media ) =>
+									setAttributes( {
+										heroImageId: media.id,
+										heroImageUrl: media.url,
+									} )
+								}
+							/>
+						</>
+					) }
 				</PanelBody>
 
 				<PanelBody
@@ -533,9 +814,21 @@ export default function Edit( { attributes, setAttributes } ) {
 				className={ classNames.filter( Boolean ).join( ' ' ) }
 				style={ { ...blockProps.style, ...sectionStyle } }
 			>
-				{ heroImageUrl && (
+				{ isVideo && (
+					<video
+						key={ videoUrl }
+						className="block-top-hero__bg block-top-hero__video"
+						src={ videoUrl }
+						poster={ heroImageUrl || undefined }
+						autoPlay
+						muted
+						loop
+						playsInline
+					/>
+				) }
+				{ ! isVideo && bgImageUrl && (
 					<img
-						src={ heroImageUrl }
+						src={ bgImageUrl }
 						alt=""
 						className="block-top-hero__bg"
 					/>
@@ -567,6 +860,36 @@ export default function Edit( { attributes, setAttributes } ) {
 						placeholder={ __( 'Nhập mô tả ngắn…', 'laca' ) }
 					/>
 				</div>
+
+				{ /* Editor chỉ hiện ảnh đầu; chấm/mũi tên tĩnh để thấy bố cục. */ }
+				{ isSlider && slideShowArrows && (
+					<>
+						<span
+							className="block-top-hero__arrow block-top-hero__arrow--prev"
+							aria-hidden="true"
+						>
+							&#8249;
+						</span>
+						<span
+							className="block-top-hero__arrow block-top-hero__arrow--next"
+							aria-hidden="true"
+						>
+							&#8250;
+						</span>
+					</>
+				) }
+				{ isSlider && slideShowDots && (
+					<div className="block-top-hero__dots" aria-hidden="true">
+						{ slides.map( ( slide, index ) => (
+							<span
+								key={ slide.id || slide.url }
+								className={ `block-top-hero__dot${
+									index === 0 ? ' is-active' : ''
+								}` }
+							/>
+						) ) }
+					</div>
+				) }
 			</section>
 		</>
 	);

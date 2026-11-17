@@ -19,6 +19,40 @@ $percent = static function (string $key, int $default, int $min, int $max) use (
     return max($min, min($max, intval($attributes[$key] ?? $default)));
 };
 
+// Nền: 1 ảnh (mặc định, giữ hành vi cũ) / slide nhiều ảnh / video. Thiếu dữ
+// liệu cho chế độ đã chọn thì rơi về ảnh đơn để hero không bị trống.
+$media_type = $pick('mediaType', ['image', 'slider', 'video'], 'image');
+$slides = [];
+if ($media_type === 'slider') {
+    foreach ((array) ($attributes['slides'] ?? []) as $slide) {
+        $slide_id  = intval($slide['id'] ?? 0);
+        $slide_url = esc_url_raw($slide['url'] ?? '');
+        if ($slide_id || $slide_url) {
+            $slides[] = ['id' => $slide_id, 'url' => $slide_url];
+        }
+    }
+    if (count($slides) < 2) {
+        if ($slides) {
+            $hero_image_url = $slides[0]['url'];
+            $attributes['heroImageId'] = $slides[0]['id'];
+        }
+        $slides = [];
+        $media_type = 'image';
+    }
+}
+$video_url = '';
+if ($media_type === 'video') {
+    $video_id  = intval($attributes['videoId'] ?? 0);
+    $video_url = $video_id ? (string) wp_get_attachment_url($video_id) : '';
+    if (!$video_url) {
+        $video_url = (string) ($attributes['videoUrl'] ?? '');
+    }
+    if (!$video_url) {
+        $media_type = 'image';
+    }
+}
+$has_media = $hero_image_url || $slides || $video_url;
+
 $hex_to_rgba = static function (string $hex, int $opacity_percent): string {
     $hex = preg_match('/^#[0-9a-fA-F]{6}$/', $hex) ? $hex : '#000000';
     return sprintf(
@@ -59,11 +93,11 @@ if ($full_bleed) {
 // Hiệu ứng (JS: resources/scripts/theme/components/hero-effects.js).
 // Parallax: ảnh phóng to sẵn đúng phần sẽ dịch chuyển để không lộ mép khi trôi.
 $parallax_strength = 0;
-if (!empty($attributes['parallax']) && $hero_image_url) {
+if (!empty($attributes['parallax']) && $has_media) {
     $parallax_strength = $percent('parallaxStrength', 30, 10, 50);
     $classes[] = 'block-top-hero--parallax';
 }
-if (!empty($attributes['zoomIn']) && $hero_image_url) {
+if (!empty($attributes['zoomIn']) && $has_media) {
     $classes[] = 'block-top-hero--zoom';
 }
 if (!empty($attributes['textReveal'])) {
@@ -74,6 +108,7 @@ if (!empty($attributes['scrollDarken'])) {
     $darken_max = $percent('scrollDarkenMax', 60, 10, 90);
     $classes[] = 'block-top-hero--darken';
 }
+$classes[] = 'block-top-hero--media-' . $media_type;
 
 foreach ($tiers as $tier => $suffix) {
     $classes[] = 'block-top-hero--v-' . $tier . '-' . $pick('contentVertical' . $suffix, ['top', 'center', 'bottom'], $vertical_defaults[$tier]);
@@ -117,7 +152,7 @@ if (!$full_bleed) {
 // không bị sập xuống 0px.
 $section_style = $height_mode === 'custom'
     ? 'min-height:' . $min_height . 'px;'
-    : (!$hero_image_url ? 'min-height:400px;' : '');
+    : (!$has_media ? 'min-height:400px;' : '');
 if ($parallax_strength) {
     $section_style .= '--parallax-scale:' . (1 + $parallax_strength / 100) . ';';
 }
@@ -128,25 +163,55 @@ $lix_hero_instance++;
 $is_first_hero = ($lix_hero_instance === 1);
 $hero_loading = $is_first_hero ? 'eager' : 'lazy';
 $hero_priority = $is_first_hero ? 'high' : 'auto';
-?>
-<section <?php echo $wrapper_attrs; ?> style="<?php echo esc_attr($section_style); ?>"<?php if ($parallax_strength) : ?> data-parallax="<?php echo esc_attr($parallax_strength / 100); ?>"<?php endif; ?><?php if ($darken_max) : ?> data-darken="<?php echo esc_attr($darken_max / 100); ?>"<?php endif; ?>>
-    <?php
-    $hero_image_id = intval($attributes['heroImageId'] ?? 0);
-    if ($hero_image_id) {
-        echo wp_get_attachment_image($hero_image_id, 'full', false, [
-            'class'         => 'block-top-hero__bg',
+
+$render_bg_image = static function (int $id, string $url, string $class, string $loading, string $priority): void {
+    if ($id) {
+        echo wp_get_attachment_image($id, 'full', false, [
+            'class'         => $class,
             'alt'           => '',
-            'loading'       => $hero_loading,
-            'fetchpriority' => $hero_priority,
+            'loading'       => $loading,
+            'fetchpriority' => $priority,
             'decoding'      => 'async',
             'sizes'         => '100vw',
         ]);
-    } elseif ($hero_image_url) {
+    } elseif ($url) {
         ?>
-        <img src="<?php echo $hero_image_url; ?>" alt="" class="block-top-hero__bg" loading="<?php echo esc_attr($hero_loading); ?>" fetchpriority="<?php echo esc_attr($hero_priority); ?>" decoding="async" />
+        <img src="<?php echo esc_url($url); ?>" alt="" class="<?php echo esc_attr($class); ?>" loading="<?php echo esc_attr($loading); ?>" fetchpriority="<?php echo esc_attr($priority); ?>" decoding="async" />
         <?php
     }
-    ?>
+};
+
+$slider_attrs = '';
+if ($slides) {
+    $interval = max(2, min(20, intval($attributes['slideInterval'] ?? 5)));
+    $slider_attrs = ' data-hero-slider data-interval="' . esc_attr($interval * 1000) . '"'
+        . (($attributes['slideAutoplay'] ?? true) ? ' data-autoplay' : '');
+}
+?>
+<section <?php echo $wrapper_attrs; ?> style="<?php echo esc_attr($section_style); ?>"<?php if ($parallax_strength) : ?> data-parallax="<?php echo esc_attr($parallax_strength / 100); ?>"<?php endif; ?><?php if ($darken_max) : ?> data-darken="<?php echo esc_attr($darken_max / 100); ?>"<?php endif; ?><?php echo $slider_attrs; ?>>
+    <?php if ($slides) : ?>
+        <div class="block-top-hero__slides" role="group" aria-roledescription="carousel" aria-label="<?php esc_attr_e('Ảnh nổi bật', 'laca'); ?>">
+            <?php
+            foreach ($slides as $i => $slide) {
+                // Chỉ ảnh đầu được ưu tiên tải (LCP); các ảnh sau tải trễ.
+                $render_bg_image(
+                    $slide['id'],
+                    $slide['url'],
+                    'block-top-hero__bg block-top-hero__slide' . ($i === 0 ? ' is-active' : ''),
+                    $i === 0 ? $hero_loading : 'lazy',
+                    $i === 0 ? $hero_priority : 'auto'
+                );
+            }
+            ?>
+        </div>
+    <?php elseif ($video_url) : ?>
+        <?php // muted + playsinline bắt buộc để trình duyệt (nhất là iOS) cho tự phát. ?>
+        <video class="block-top-hero__bg block-top-hero__video" autoplay muted playsinline<?php echo ($attributes['videoLoop'] ?? true) ? ' loop' : ''; ?> preload="metadata"<?php if ($hero_image_url) : ?> poster="<?php echo esc_url($hero_image_url); ?>"<?php endif; ?> aria-hidden="true">
+            <source src="<?php echo esc_url($video_url); ?>" type="<?php echo esc_attr(wp_check_filetype($video_url)['type'] ?: 'video/mp4'); ?>" />
+        </video>
+    <?php else : ?>
+        <?php $render_bg_image(intval($attributes['heroImageId'] ?? 0), $hero_image_url, 'block-top-hero__bg', $hero_loading, $hero_priority); ?>
+    <?php endif; ?>
     <div class="block-top-hero__overlay" style="<?php echo esc_attr($overlay_style); ?>"></div>
     <?php if ($darken_max) : ?>
         <div class="block-top-hero__shade" aria-hidden="true"></div>
@@ -165,5 +230,23 @@ $hero_priority = $is_first_hero ? 'high' : 'auto';
         </div>
     <?php if ($full_bleed) : ?>
     </div>
+    <?php endif; ?>
+
+    <?php if ($slides && !empty($attributes['slideShowArrows'])) : ?>
+        <button type="button" class="block-top-hero__arrow block-top-hero__arrow--prev" data-hero-prev aria-label="<?php esc_attr_e('Ảnh trước', 'laca'); ?>"><span aria-hidden="true">&#8249;</span></button>
+        <button type="button" class="block-top-hero__arrow block-top-hero__arrow--next" data-hero-next aria-label="<?php esc_attr_e('Ảnh tiếp theo', 'laca'); ?>"><span aria-hidden="true">&#8250;</span></button>
+    <?php endif; ?>
+    <?php if ($slides && ($attributes['slideShowDots'] ?? true)) : ?>
+        <div class="block-top-hero__dots">
+            <?php foreach ($slides as $i => $slide) : ?>
+                <button type="button" class="block-top-hero__dot<?php echo $i === 0 ? ' is-active' : ''; ?>" data-hero-dot="<?php echo esc_attr($i); ?>" aria-label="<?php /* translators: %d: số thứ tự ảnh trong slide */ echo esc_attr(sprintf(__('Xem ảnh %d', 'laca'), $i + 1)); ?>"<?php echo $i === 0 ? ' aria-current="true"' : ''; ?>></button>
+            <?php endforeach; ?>
+        </div>
+    <?php endif; ?>
+    <?php if ($video_url) : ?>
+        <?php // Video tự phát > 5 giây phải có nút dừng (WCAG 2.2.2). ?>
+        <button type="button" class="block-top-hero__video-toggle" data-hero-video-toggle aria-pressed="false" aria-label="<?php esc_attr_e('Tạm dừng video', 'laca'); ?>" data-label-pause="<?php esc_attr_e('Tạm dừng video', 'laca'); ?>" data-label-play="<?php esc_attr_e('Phát video', 'laca'); ?>">
+            <span class="block-top-hero__video-icon" aria-hidden="true"></span>
+        </button>
     <?php endif; ?>
 </section>

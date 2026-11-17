@@ -2062,3 +2062,22 @@ msgstr ""
 msgctxt "block title"
 msgid "Top Hero"
 msgstr ""
+
+msgid "Ảnh nổi bật"
+msgstr "Featured images"
+
+msgid "Ảnh trước"
+msgstr "Previous image"
+
+msgid "Ảnh tiếp theo"
+msgstr "Next image"
+
+#. translators: %d: số thứ tự ảnh trong slide
+msgid "Xem ảnh %d"
+msgstr "Go to image %d"
+
+msgid "Tạm dừng video"
+msgstr "Pause video"
+
+msgid "Phát video"
+msgstr "Play video"

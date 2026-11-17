@@ -46,9 +46,159 @@ body:not(.home) main#main_content > .block-top-hero:first-child {
         height: auto;
     }
 
+    // Slide: các ảnh chồng lên nhau, chỉ ảnh .is-active hiện (chuyển mờ dần).
+    // Chế độ "full": ảnh đầu nằm trong luồng để giữ chiều cao theo ảnh gốc.
+    &__slides {
+        position: absolute;
+        inset: 0;
+    }
+
+    &--full &__slides {
+        position: relative;
+    }
+
+    &__slide {
+        opacity: 0;
+        transition: opacity 1s ease;
+
+        &.is-active {
+            opacity: 1;
+        }
+    }
+
+    &--full &__slide:not(:first-child) {
+        position: absolute;
+        inset: 0;
+        height: 100%;
+        object-fit: cover;
+    }
+
     &__overlay {
         position: absolute;
         inset: 0;
+    }
+
+    &__dots {
+        position: absolute;
+        bottom: rem(16);
+        left: 50%;
+        display: flex;
+        gap: rem(4);
+        transform: translateX(-50%);
+    }
+
+    // Vùng bấm 24px (WCAG 2.5.8), chấm hiển thị 10px vẽ bằng ::before.
+    &__dot {
+        display: grid;
+        width: rem(24);
+        height: rem(24);
+        padding: 0;
+        border: 0;
+        background: none;
+        cursor: pointer;
+        place-items: center;
+
+        &::before {
+            content: "";
+            width: rem(10);
+            height: rem(10);
+            border: 1px solid $lightColor;
+            border-radius: 50%;
+            transition: background-color 0.3s ease;
+        }
+
+        &.is-active::before {
+            background-color: $lightColor;
+        }
+    }
+
+    &__arrow,
+    &__video-toggle {
+        position: absolute;
+        display: grid;
+        width: rem(44);
+        height: rem(44);
+        padding: 0;
+        border: 1px solid rgba($lightColor, 0.5);
+        border-radius: 50%;
+        background-color: rgba($darkColor, 0.35);
+        color: $lightColor;
+        cursor: pointer;
+        place-items: center;
+        transition: background-color 0.2s ease;
+
+        &:hover {
+            background-color: rgba($darkColor, 0.6);
+        }
+
+        @include maxWidth($sm) {
+            width: rem(36);
+            height: rem(36);
+        }
+    }
+
+    &__dot:focus-visible,
+    &__arrow:focus-visible,
+    &__video-toggle:focus-visible {
+        outline: 2px solid $lightColor;
+        outline-offset: 2px;
+    }
+
+    &__arrow {
+        top: 50%;
+        font-size: rem(28);
+        line-height: 1;
+        transform: translateY(-50%);
+
+        &--prev {
+            left: rem(20);
+        }
+
+        &--next {
+            right: rem(20);
+        }
+
+        @include maxWidth($sm) {
+            font-size: rem(22);
+
+            &--prev {
+                left: rem(8);
+            }
+
+            &--next {
+                right: rem(8);
+            }
+        }
+    }
+
+    &__video-toggle {
+        right: rem(20);
+        bottom: rem(20);
+        width: rem(40);
+        height: rem(40);
+
+        @include maxWidth($sm) {
+            right: rem(12);
+            bottom: rem(12);
+        }
+    }
+
+    // Đang phát: 2 vạch (dừng). Đã dừng: tam giác (phát).
+    &__video-icon {
+        width: rem(10);
+        height: rem(12);
+        border-right: 3px solid currentcolor;
+        border-left: 3px solid currentcolor;
+    }
+
+    &__video-toggle.is-paused &__video-icon {
+        width: 0;
+        height: 0;
+        margin-left: rem(3);
+        border-top: rem(7) solid transparent;
+        border-right: 0;
+        border-bottom: rem(7) solid transparent;
+        border-left: rem(11) solid currentcolor;
     }
 
     // Độ rộng mặc định giữ đúng như trước khi có control (60% / 80% laptop /
@@ -184,6 +334,16 @@ body:not(.editor-styles-wrapper) .block-top-hero--parallax .block-top-hero__bg {
     }
 }
 
+@keyframes heroZoomScale {
+    from {
+        scale: 1.12;
+    }
+
+    to {
+        scale: 1;
+    }
+}
+
 @keyframes heroFadeUp {
     from {
         opacity: 0;
@@ -199,6 +359,12 @@ body:not(.editor-styles-wrapper) .block-top-hero--parallax .block-top-hero__bg {
 @media (prefers-reduced-motion: no-preference) {
     body:not(.editor-styles-wrapper) .block-top-hero--zoom .block-top-hero__bg {
         animation: heroZoomIn 2.4s cubic-bezier(0.22, 0.61, 0.36, 1) both;
+    }
+
+    // Slide: chỉ zoom, không animate opacity — fill-mode "both" giữ opacity 1
+    // sẽ làm hiện cùng lúc mọi ảnh đang ẩn.
+    body:not(.editor-styles-wrapper) .block-top-hero--zoom .block-top-hero__slide {
+        animation-name: heroZoomScale;
     }
 
     body:not(.editor-styles-wrapper) .block-top-hero--reveal .block-top-hero__headline,

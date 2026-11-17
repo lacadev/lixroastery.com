@@ -29,6 +29,42 @@
             "type": "string",
             "default": ""
         },
+        "mediaType": {
+            "type": "string",
+            "default": "image"
+        },
+        "slides": {
+            "type": "array",
+            "default": []
+        },
+        "slideInterval": {
+            "type": "number",
+            "default": 5
+        },
+        "slideAutoplay": {
+            "type": "boolean",
+            "default": true
+        },
+        "slideShowDots": {
+            "type": "boolean",
+            "default": true
+        },
+        "slideShowArrows": {
+            "type": "boolean",
+            "default": false
+        },
+        "videoId": {
+            "type": "number",
+            "default": 0
+        },
+        "videoUrl": {
+            "type": "string",
+            "default": ""
+        },
+        "videoLoop": {
+            "type": "boolean",
+            "default": true
+        },
         "headline": {
             "type": "string",
             "translatable": true,
