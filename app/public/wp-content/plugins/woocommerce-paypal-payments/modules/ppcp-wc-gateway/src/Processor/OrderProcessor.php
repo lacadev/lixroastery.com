@@ -28,6 +28,7 @@ use WooCommerce\PayPalCommerce\ApiClient\Helper\OrderHelper;
 use WooCommerce\PayPalCommerce\Button\Helper\ThreeDSecure;
 use WooCommerce\PayPalCommerce\WcGateway\Helper\Environment;
 use WooCommerce\PayPalCommerce\Session\SessionHandler;
+use WooCommerce\PayPalCommerce\Webhooks\CustomIds;
 use WooCommerce\PayPalCommerce\WcSubscriptions\Helper\SubscriptionHelper;
 use WooCommerce\PayPalCommerce\Settings\Data\SettingsProvider;
 use WooCommerce\PayPalCommerce\WcGateway\Exception\PayPalOrderMissingException;
@@ -94,8 +95,10 @@ class OrderProcessor
         try {
             $order = $this->session_handler->order();
             if (!$order) {
-                // phpcs:ignore WordPress.Security.NonceVerification
-                $order_id = $wc_order->get_meta(PayPalGateway::ORDER_ID_META_KEY) ?: wc_clean(wp_unslash($_POST['paypal_order_id'] ?? ''));
+                $order_id = $wc_order->get_meta(PayPalGateway::ORDER_ID_META_KEY);
+                if (!$order_id) {
+                    $order_id = $this->posted_session_order_id();
+                }
                 if (is_string($order_id) && $order_id) {
                     try {
                         $order = $this->order_endpoint->order($order_id);
@@ -175,16 +178,22 @@ class OrderProcessor
     /**
      * Creates a PayPal order for the given WC order.
      *
-     * @param WC_Order $wc_order The WC order.
-     * @param string   $funding_source The funding source (e.g. 'paypal', 'venmo').
+     * @param WC_Order    $wc_order The WC order.
+     * @param string      $funding_source The funding source (e.g. 'paypal', 'venmo').
+     * @param string|null $landing_page An ExperienceContext::LANDING_PAGE_* value to
+     *                                  use instead of the merchant's setting.
      * @return Order
      * @throws RuntimeException If order creation fails.
      */
-    public function create_order(WC_Order $wc_order, string $funding_source = 'paypal'): Order
+    public function create_order(WC_Order $wc_order, string $funding_source = 'paypal', ?string $landing_page = null): Order
     {
         $pu = $this->purchase_unit_factory->from_wc_order($wc_order);
         $shipping_preference = $this->shipping_preference_factory->from_state($pu, 'checkout');
-        $order = $this->order_endpoint->create(array($pu), $shipping_preference, $this->payer_factory->from_wc_order($wc_order), $wc_order->get_payment_method(), array('funding_source' => $funding_source), new PaymentSource($funding_source, (object) array('experience_context' => $this->experience_context_builder->with_default_paypal_config($shipping_preference, ExperienceContext::USER_ACTION_PAY_NOW)->build()->to_array())));
+        $experience_context = $this->experience_context_builder->with_default_paypal_config($shipping_preference, ExperienceContext::USER_ACTION_PAY_NOW);
+        if ($landing_page) {
+            $experience_context = $experience_context->with_landing_page($landing_page);
+        }
+        $order = $this->order_endpoint->create(array($pu), $shipping_preference, $this->payer_factory->from_wc_order($wc_order), $wc_order->get_payment_method(), array('funding_source' => $funding_source), new PaymentSource($funding_source, (object) array('experience_context' => $experience_context->build()->to_array())));
         return $order;
     }
     /**
@@ -201,6 +210,10 @@ class OrderProcessor
         $this->apply_outbound_order_filters($wc_order);
         $updated_order = $this->order_factory->from_wc_order($wc_order, $order);
         $this->restore_order_from_filters($wc_order);
+        $amount_unchanged = $this->order_amount_unchanged($order, $updated_order);
+        if (!$amount_unchanged) {
+            $this->log_amount_change($wc_order, $order, $updated_order);
+        }
         try {
             $order = $this->order_endpoint->patch_order_with($order, $updated_order);
         } catch (PayPalApiException $exception) {
@@ -213,13 +226,45 @@ class OrderProcessor
              * final when the order was created from the cart. When the amount is
              * unchanged it is therefore safe to skip the patch and capture the order
              * as-is. Any other failure (including an actual amount change) is re-thrown.
+             *
+             * This does not hold for an order that was created for another WooCommerce
+             * order (pay for order): the webhooks complete the order named by custom_id,
+             * so capturing it as-is would mark both orders as paid. The PayPal order ID
+             * is removed again so that a retry, void, or tracking does not act on the
+             * other order's PayPal order.
              */
-            if ($exception->status_code() !== 422 || !$this->order_amount_unchanged($order, $updated_order)) {
+            if ($exception->status_code() !== 422 || !$amount_unchanged) {
+                throw $exception;
+            }
+            if ($this->is_bound_to_other_wc_order($order, $updated_order)) {
+                $this->logger->warning(sprintf('Not skipping the rejected order patch for order #%1$d: PayPal order %2$s belongs to another WooCommerce order.', $wc_order->get_id(), $order->id()));
+                $wc_order->delete_meta_data(PayPalGateway::ORDER_ID_META_KEY);
+                $wc_order->save();
                 throw $exception;
             }
             $this->logger->warning(sprintf('Skipping order patch for order #%1$d: PayPal rejected it because the order is locked after confirming a vaulted payment, and the amount is unchanged so capture can proceed. %2$s', $wc_order->get_id(), $exception->getMessage()));
         }
         return $order;
+    }
+    /**
+     * Determines whether the custom_id of the PayPal order (as it exists at PayPal)
+     * differs from the one built for the WooCommerce order being paid, which already
+     * includes any filtered custom_id. An empty custom_id (product and cart buttons)
+     * or a session ID (checkout) names no WooCommerce order.
+     */
+    private function is_bound_to_other_wc_order(Order $order, Order $updated_order): bool
+    {
+        $own_custom_ids = array_map(static fn(PurchaseUnit $purchase_unit): string => $purchase_unit->custom_id(), $updated_order->purchase_units());
+        foreach ($order->purchase_units() as $purchase_unit) {
+            $custom_id = $purchase_unit->custom_id();
+            if (!$custom_id || strpos($custom_id, CustomIds::CUSTOMER_ID_PREFIX) === 0) {
+                continue;
+            }
+            if (!in_array($custom_id, $own_custom_ids, \true)) {
+                return \true;
+            }
+        }
+        return \false;
     }
     /**
      * Determines whether the purchase unit amounts of two orders are identical,
@@ -250,15 +295,48 @@ class OrderProcessor
         return \true;
     }
     /**
+     * Returns the posted PayPal order ID only if this session created it, so a request
+     * cannot attach a foreign PayPal order.
+     */
+    private function posted_session_order_id(): string
+    {
+        // phpcs:ignore WordPress.Security.NonceVerification.Missing
+        $order_id = wc_clean(wp_unslash($_POST['paypal_order_id'] ?? ''));
+        if (!is_string($order_id) || !$this->session_handler->is_created_order($order_id)) {
+            return '';
+        }
+        return $order_id;
+    }
+    /**
+     * A higher amount after approval can fail the capture with PAYER_ACTION_REQUIRED.
+     */
+    private function log_amount_change(WC_Order $wc_order, Order $approved_order, Order $updated_order): void
+    {
+        $this->logger->warning(sprintf('PayPal order %1$s: amount changed after approval from %2$s to %3$s (WC order #%4$d).', $approved_order->id(), $this->purchase_unit_amount($approved_order), $this->purchase_unit_amount($updated_order), $wc_order->get_id()));
+    }
+    private function purchase_unit_amount(Order $order): string
+    {
+        $unit = $order->purchase_units()[0] ?? null;
+        if (!$unit instanceof PurchaseUnit) {
+            return '-';
+        }
+        return $unit->amount()->value_str() . ' ' . $unit->amount()->currency_code();
+    }
+    /**
      * Verifies whether the order can be processed.
+     *
+     * A transaction ID alone does not mean the order was paid: another gateway
+     * may have stored one for a payment that was later cancelled. Only a paid or
+     * on-hold order is skipped.
      *
      * @param WC_Order $wc_order The WooCommerce order.
      * @return bool
      */
     private function verify_order_can_be_processed(WC_Order $wc_order): bool
     {
-        if ($wc_order->get_transaction_id()) {
-            $this->logger->info(sprintf('Order #%d already has transaction ID "%s", skipping payment processing.', $wc_order->get_id(), $wc_order->get_transaction_id()));
+        $settled_statuses = array_merge((array) wc_get_is_paid_statuses(), array('on-hold'));
+        if ($wc_order->get_transaction_id() && $wc_order->has_status($settled_statuses)) {
+            $this->logger->info(sprintf('Order #%d already has transaction ID "%s" and status "%s", skipping payment processing.', $wc_order->get_id(), $wc_order->get_transaction_id(), $wc_order->get_status()));
             return \false;
         }
         return \true;

@@ -96,7 +96,7 @@ return array(
         return $factory->for_module('ppcp-settings');
     },
     'settings.settings-provider' => static function (ContainerInterface $container): SettingsProvider {
-        return new SettingsProvider($container->get('settings.data.general'), $container->get('settings.data.onboarding'), $container->get('settings.data.payment'), $container->get('settings.data.settings'), $container->get('settings.data.styling'), $container->get('settings.data.fastlane'), $container->get('settings.data.paylater-messaging-settings'), $container->get('button.helper.messages-apply'));
+        return new SettingsProvider($container->get('settings.data.general'), $container->get('settings.data.onboarding'), $container->get('settings.data.payment'), $container->get('settings.data.settings'), $container->get('settings.data.styling'), $container->get('settings.data.fastlane'), $container->get('settings.data.paylater-messaging-settings'));
     },
     'settings.data.onboarding' => static function (ContainerInterface $container): OnboardingProfile {
         $can_use_casual_selling = $container->get('settings.casual-selling.eligible');
@@ -244,7 +244,7 @@ return array(
         return new DataSanitizer();
     },
     'settings.service.data-manager' => static function (ContainerInterface $container): SettingsDataManager {
-        return new SettingsDataManager($container->get('settings.data.definition.methods'), $container->get('settings.data.onboarding'), $container->get('settings.data.general'), $container->get('settings.data.settings'), $container->get('settings.data.styling'), $container->get('settings.data.payment'), $container->get('settings.data.paylater-messaging'), $container->get('settings.settings-provider'), $container->get('settings.data.todos'));
+        return new SettingsDataManager($container->get('settings.data.definition.methods'), $container->get('settings.data.onboarding'), $container->get('settings.data.general'), $container->get('settings.data.settings'), $container->get('settings.data.styling'), $container->get('settings.data.payment'), $container->get('settings.data.paylater-messaging'), $container->get('settings.data.todos'));
     },
     'settings.service.agentic-beta-eligibility' => static function (ContainerInterface $container): AgenticBetaBannerEligibility {
         return new AgenticBetaBannerEligibility($container->get('settings.data.general'), $container->get('wcgateway.store-country'));
@@ -266,7 +266,8 @@ return array(
             // The module registers its services only behind its feature flag, so
             // presence means v6 is active; has() does not instantiate it. Per-page
             // ownership is moot: one admin screen configures every page.
-            $container->has('sdk-v6.owns-current-page')
+            $container->has('sdk-v6.owns-current-page'),
+            $container->get('wcgateway.is-plugin-settings-page')
         );
     },
     'settings.service.data-migration' => static fn(ContainerInterface $c): MigrationManager => new MigrationManager($c->get('settings.service.data-migration.general-settings'), $c->get('settings.service.data-migration.settings-tab'), $c->get('settings.service.data-migration.styling'), $c->get('settings.service.data-migration.payment-settings'), $c->get('settings.service.data-migration.fastlane'), $c->get('settings.data.onboarding'), $c->get('woocommerce.logger.woocommerce')),
@@ -287,10 +288,19 @@ return array(
         return new TodosDefinition($container->get('settings.service.todos_eligibilities'), $container->get('settings.data.general'), $container->get('settings.data.todos'));
     },
     'settings.data.definition.methods' => static function (ContainerInterface $container): PaymentMethodsDefinition {
-        return new PaymentMethodsDefinition($container->get('settings.data.payment'), $container->get('settings.data.general'), $container->get('axo.checkout-config-notice.raw'), $container->get('axo.incompatible-plugins-notice.raw'));
+        return new PaymentMethodsDefinition(
+            $container->get('settings.data.payment'),
+            $container->get('settings.data.general'),
+            $container->get('axo.checkout-config-notice.raw'),
+            $container->get('axo.incompatible-plugins-notice.raw'),
+            // The module registers its services only behind its feature flag, so
+            // presence means v6 is active; has() does not instantiate it. Per-page
+            // ownership is moot: one admin screen configures every page.
+            $container->has('sdk-v6.owns-current-page')
+        );
     },
     'settings.data.definition.method_dependencies' => static function (ContainerInterface $container): PaymentMethodsDependenciesDefinition {
-        return new PaymentMethodsDependenciesDefinition($container->get('settings.settings-provider'));
+        return new PaymentMethodsDependenciesDefinition();
     },
     'settings.service.pay_later_status' => static function (ContainerInterface $container): array {
         $pay_later_endpoint = $container->get('settings.rest.pay_later_messaging');
@@ -443,7 +453,7 @@ return array(
             // Pay with Crypto eligibility.
             FeaturesDefinition::FEATURE_PAY_UPON_INVOICE => $capabilities[FeaturesDefinition::FEATURE_PAY_UPON_INVOICE],
         );
-        return new FeaturesDefinition($container->get('settings.service.features_eligibilities'), $container->get('settings.data.general'), $merchant_capabilities, $container->get('woocommerce.logger.woocommerce'), $container->get('settings.settings-provider'));
+        return new FeaturesDefinition($container->get('settings.service.features_eligibilities'), $container->get('settings.data.general'), $merchant_capabilities, $container->get('woocommerce.logger.woocommerce'));
     },
     'settings.service.features_eligibilities' => static function (ContainerInterface $container): FeaturesEligibilityService {
         $messages_apply = $container->get('button.helper.messages-apply');

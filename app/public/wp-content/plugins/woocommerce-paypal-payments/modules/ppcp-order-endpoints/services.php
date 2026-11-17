@@ -2,8 +2,6 @@
 
 /**
  * The order endpoints module services.
- *
- * @package WooCommerce\PayPalCommerce\OrderEndpoints
  */
 declare (strict_types=1);
 namespace WooCommerce\PayPalCommerce\OrderEndpoints;
@@ -12,10 +10,12 @@ use WooCommerce\PayPalCommerce\Button\Exception\RuntimeException;
 use WooCommerce\PayPalCommerce\OrderEndpoints\Endpoint\ApproveOrderEndpoint;
 use WooCommerce\PayPalCommerce\OrderEndpoints\Endpoint\ChangeCartEndpoint;
 use WooCommerce\PayPalCommerce\OrderEndpoints\Endpoint\CreateOrderEndpoint;
+use WooCommerce\PayPalCommerce\OrderEndpoints\Endpoint\FrontendLogEndpoint;
 use WooCommerce\PayPalCommerce\OrderEndpoints\Endpoint\RequestData;
 use WooCommerce\PayPalCommerce\OrderEndpoints\Endpoint\UpdateShippingEndpoint;
 use WooCommerce\PayPalCommerce\OrderEndpoints\Helper\CartProductsHelper;
 use WooCommerce\PayPalCommerce\OrderEndpoints\Helper\EarlyOrderHandler;
+use WooCommerce\PayPalCommerce\OrderEndpoints\Helper\PayNowOrderHandler;
 use WooCommerce\PayPalCommerce\OrderEndpoints\Helper\WooCommerceOrderCreator;
 use WooCommerce\PayPalCommerce\Vendor\Psr\Container\ContainerInterface;
 return array(
@@ -55,15 +55,15 @@ return array(
         $settings_model = $container->get('settings.data.settings');
         $dcc_applies = $container->get('api.helpers.dccapplies');
         $order_helper = $container->get('api.order-helper');
-        $final_review_enabled = $container->get('blocks.settings.final_review_enabled');
-        $wc_order_creator = $container->get('order-endpoints.helper.wc-order-creator');
-        $gateway = $container->get('wcgateway.paypal-gateway');
+        $pay_now_handler = $container->get('order-endpoints.helper.pay-now-order-handler');
         $logger = $container->get('woocommerce.logger.woocommerce');
-        $context = $container->get('button.helper.context');
-        return new ApproveOrderEndpoint($request_data, $order_endpoint, $session_handler, $three_d_secure, $settings_provider, $settings_model, $dcc_applies, $order_helper, $final_review_enabled, $gateway, $wc_order_creator, $logger, $context);
+        return new ApproveOrderEndpoint($request_data, $order_endpoint, $session_handler, $three_d_secure, $settings_provider, $settings_model, $dcc_applies, $order_helper, $pay_now_handler, $logger);
     },
     'order-endpoints.endpoint.update-shipping' => static function (ContainerInterface $container): UpdateShippingEndpoint {
         return new UpdateShippingEndpoint($container->get('order-endpoints.request-data'), $container->get('api.endpoint.order'), $container->get('api.factory.purchase-unit'), $container->get('session.handler'), $container->get('woocommerce.logger.woocommerce'));
+    },
+    'order-endpoints.endpoint.frontend-log' => static function (ContainerInterface $container): FrontendLogEndpoint {
+        return new FrontendLogEndpoint($container->get('order-endpoints.request-data'), $container->get('woocommerce.logger.woocommerce'));
     },
     'order-endpoints.is-logged-in' => static function (ContainerInterface $container): bool {
         return is_user_logged_in();
@@ -105,5 +105,8 @@ return array(
     },
     'order-endpoints.helper.wc-order-creator' => static function (ContainerInterface $container): WooCommerceOrderCreator {
         return new WooCommerceOrderCreator($container->get('wcgateway.funding-source.renderer'), $container->get('session.handler'), $container->get('wc-subscriptions.helper'), $container->get('button.session.factory.card-data'), $container->get('api.factory.shipping'), $container->get('api.factory.payer'));
+    },
+    'order-endpoints.helper.pay-now-order-handler' => static function (ContainerInterface $container): PayNowOrderHandler {
+        return new PayNowOrderHandler($container->get('order-endpoints.helper.wc-order-creator'), $container->get('wcgateway.paypal-gateway'), $container->get('settings.settings-provider'), $container->get('button.helper.context'));
     },
 );

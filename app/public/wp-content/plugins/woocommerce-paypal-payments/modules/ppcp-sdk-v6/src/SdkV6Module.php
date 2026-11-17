@@ -252,6 +252,9 @@ class SdkV6Module implements ServiceModule, ExtendingModule, ExecutableModule
             return;
         }
         add_action($hook['name'], static fn() => $manager->render_message_wrapper(), $hook['priority']);
+        // Gives the message a variation price on the same tax basis as its
+        // opening amount; the callback withdraws where that is not wanted.
+        add_filter('woocommerce_available_variation', array($manager, 'add_variation_message_amount'), 10, 3);
         $this->maybe_relocate_pay_order_message($hook['name']);
     }
     /**
@@ -309,7 +312,7 @@ document.querySelector("#payment").before(document.querySelector(".ppcp-messages
                 if (!is_cart()) {
                     return;
                 }
-                $manager->render_wrapper();
+                $manager->render_cart_wrapper();
             }, 20);
         }
         if ($places['checkout']) {

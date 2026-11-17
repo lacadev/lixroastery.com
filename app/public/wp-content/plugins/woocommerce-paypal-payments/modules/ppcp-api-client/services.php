@@ -69,12 +69,14 @@ use WooCommerce\PayPalCommerce\ApiClient\Helper\Cache;
 use WooCommerce\PayPalCommerce\ApiClient\Helper\CurrencyGetter;
 use WooCommerce\PayPalCommerce\ApiClient\Helper\DccApplies;
 use WooCommerce\PayPalCommerce\ApiClient\Helper\FailureRegistry;
+use WooCommerce\PayPalCommerce\ApiClient\Helper\InvoicePrefixGetter;
 use WooCommerce\PayPalCommerce\ApiClient\Helper\OrderHelper;
 use WooCommerce\PayPalCommerce\ApiClient\Helper\OrderTransient;
 use WooCommerce\PayPalCommerce\ApiClient\Helper\PartnerAttribution;
 use WooCommerce\PayPalCommerce\ApiClient\Helper\PaymentLevelEligibility;
 use WooCommerce\PayPalCommerce\ApiClient\Helper\PaymentLevelHelper;
 use WooCommerce\PayPalCommerce\ApiClient\Helper\PurchaseUnitSanitizer;
+use WooCommerce\PayPalCommerce\ApiClient\Helper\ReturnUrlSecret;
 use WooCommerce\PayPalCommerce\ApiClient\Helper\ReferenceTransactionStatus;
 use WooCommerce\PayPalCommerce\ApiClient\Helper\ProductStatusResultCache;
 use WooCommerce\PayPalCommerce\ApiClient\Repository\CustomerRepository;
@@ -142,8 +144,8 @@ return array(
     'api.secret' => static function (): string {
         return '';
     },
-    'api.prefix' => static function (): string {
-        return 'WC-';
+    'api.prefix' => static function (ContainerInterface $container): InvoicePrefixGetter {
+        return new InvoicePrefixGetter($container->get('settings.settings-provider'));
     },
     'api.bearer' => static function (ContainerInterface $container): Bearer {
         $is_connected = $container->get('settings.flag.is-connected');
@@ -484,6 +486,9 @@ return array(
         $cache = $container->get('api.paypal-bearer-cache');
         $purchase_unit_sanitizer = $container->get('api.helper.purchase-unit-sanitizer');
         return new OrderTransient($cache, $purchase_unit_sanitizer);
+    },
+    'api.helper.return-url-secret' => static function (ContainerInterface $container): ReturnUrlSecret {
+        return new ReturnUrlSecret();
     },
     'api.helper.failure-registry' => static function (ContainerInterface $container): FailureRegistry {
         $cache = new Cache('ppcp-paypal-api-status-cache');
