@@ -38,6 +38,7 @@ class SecurityManager
         // ── AJAX: FIM ─────────────────────────────────────────────────────────
         add_action('wp_ajax_laca_fim_scan',              [$this, 'ajaxFimScan']);
         add_action('wp_ajax_laca_fim_update_baseline',   [$this, 'ajaxFimUpdateBaseline']);
+        add_action('wp_ajax_laca_core_checksum_scan',    [$this, 'ajaxCoreChecksum']);
 
         // ── AJAX: Malware Scanner ─────────────────────────────────────────────
         add_action('wp_ajax_laca_malware_init',          [$this, 'ajaxMalwareInit']);
@@ -166,6 +167,9 @@ class SecurityManager
                 'statusSent'    => __('Đang gửi', 'laca'),
                 'statusMissing' => __('Không có', 'laca'),
                 'netError'      => __('Lỗi kết nối máy chủ.', 'laca'),
+                'scanningCore'  => __('Đang đối chiếu…', 'laca'),
+                'scanCoreBtn'   => __('Đối chiếu ngay', 'laca'),
+                'rescanCoreBtn' => __('Quét lại (bỏ bộ đệm)', 'laca'),
             ],
         ]) . ';', 'before');
     }
@@ -245,6 +249,27 @@ class SecurityManager
         <?php endif; ?>
         <div id="fim-progress" class="laca-security-progress" style="display:none; /* động */">Đang quét...</div>
         <div id="fim-result" class="laca-security-result"></div>
+
+        <div class="laca-card laca-mt-3">
+            <div class="laca-card__header">
+                <h2 class="laca-card__header-title"><?php echo esc_html__('Đối chiếu file Core với WordPress.org', 'laca'); ?></h2>
+                <p class="laca-card__header-description">
+                    <?php echo esc_html__('So sánh mã băm MD5 chính thức từ WordPress.org theo đúng phiên bản hiện tại, đồng thời tìm file PHP lạ trong wp-admin và wp-includes (bộ đệm 15 phút).', 'laca'); ?>
+                </p>
+            </div>
+            <div class="laca-card__body">
+                <div class="laca-security-flex">
+                    <button type="button" id="btn-core-checksum-scan" class="laca-btn laca-btn--solid laca-btn--sm">
+                        <?php echo esc_html__('Đối chiếu ngay', 'laca'); ?>
+                    </button>
+                    <button type="button" id="btn-core-checksum-force" class="laca-btn laca-btn--outline laca-btn--sm">
+                        <?php echo esc_html__('Quét lại (bỏ bộ đệm)', 'laca'); ?>
+                    </button>
+                </div>
+                <div id="core-checksum-alert" class="laca-alert-slot"></div>
+                <div id="core-checksum-result" class="laca-security-result"></div>
+            </div>
+        </div>
         <?php
     }
 
@@ -1045,6 +1070,126 @@ class SecurityManager
         return ob_get_clean();
     }
 
+    public function ajaxCoreChecksum(): void
+    {
+        $this->checkNonce();
+        @set_time_limit(120);
+
+        $force  = !empty($_POST['force']);
+        $result = \App\Settings\Security\TrafficMonitor\CoreChecksum::scan($force);
+
+        if (!empty($result['error'])) {
+            wp_send_json_error($result['error']);
+        }
+
+        wp_send_json_success([
+            'html' => $this->renderCoreChecksumResult($result),
+        ]);
+    }
+
+    /**
+     * @param array<string, mixed> $r
+     */
+    private function renderCoreChecksumResult(array $r): string
+    {
+        $checked  = (int) ($r['checked'] ?? 0);
+        $modified = is_array($r['modified'] ?? null) ? $r['modified'] : [];
+        $missing  = is_array($r['missing'] ?? null) ? $r['missing'] : [];
+        $unknown  = is_array($r['unknown'] ?? null) ? $r['unknown'] : [];
+        $timeStr  = (string) ($r['scanned_at'] ?? '');
+
+        ob_start();
+        ?>
+        <p class="laca-mt-2">
+            <?php
+            echo esc_html(
+                sprintf(
+                    /* translators: 1: số file đã đối chiếu, 2: số file khác bản gốc, 3: số file thiếu, 4: số file PHP lạ, 5: thời điểm quét */
+                    __('Đã đối chiếu: %1$s file · Khác bản gốc: %2$d · Thiếu: %3$d · PHP lạ: %4$d (%5$s)', 'laca'),
+                    number_format_i18n($checked),
+                    count($modified),
+                    count($missing),
+                    count($unknown),
+                    $timeStr
+                )
+            );
+            ?>
+        </p>
+        <?php
+        if ($modified === [] && $missing === [] && $unknown === []) {
+            ?>
+            <div class="laca-alert laca-alert--success laca-mt-2">
+                <div class="laca-alert__content">
+                    <p class="laca-alert__description">
+                        <?php echo esc_html__('Không phát hiện file Core bị sửa đổi, bị thiếu hoặc file PHP lạ trong wp-admin / wp-includes.', 'laca'); ?>
+                    </p>
+                </div>
+            </div>
+            <?php
+            return (string) ob_get_clean();
+        }
+
+        $groups = [
+            'modified' => [
+                'title' => __('File Core khác mã băm gốc', 'laca'),
+                'files' => $modified,
+            ],
+            'missing' => [
+                'title' => __('File Core bị thiếu', 'laca'),
+                'files' => $missing,
+            ],
+            'unknown' => [
+                'title' => __('File PHP không thuộc danh sách Core', 'laca'),
+                'files' => $unknown,
+            ],
+        ];
+
+        foreach ($groups as $grp) {
+            if ($grp['files'] === []) {
+                continue;
+            }
+            $totalGrp = count($grp['files']);
+            $sliced   = array_slice($grp['files'], 0, 200);
+            ?>
+            <h4 class="laca-mt-3">
+                <?php
+                echo esc_html(
+                    sprintf(
+                        /* translators: 1: tiêu đề nhóm file Core, 2: số lượng file */
+                        __('%1$s (%2$d)', 'laca'),
+                        $grp['title'],
+                        $totalGrp
+                    )
+                );
+                ?>
+            </h4>
+            <div class="laca-table-wrap laca-mt-2">
+                <table class="laca-table">
+                    <thead>
+                        <tr>
+                            <th><?php echo esc_html__('Đường dẫn tương đối', 'laca'); ?></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($sliced as $relFile): ?>
+                            <tr>
+                                <td><code class="laca-mono"><?php echo esc_html((string) $relFile); ?></code></td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
+            <?php if ($totalGrp > 200): ?>
+                <p class="laca-field__help laca-mt-2">
+                    <?php echo esc_html__('Chỉ hiển thị 200 file đầu tiên.', 'laca'); ?>
+                </p>
+            <?php endif; ?>
+            <?php
+        }
+
+        return (string) ob_get_clean();
+    }
+
     // Malware
 
     public function ajaxMalwareInit(): void
@@ -1584,6 +1729,38 @@ class SecurityManager
                     if (res.success) location.reload();
                 });
             });
+
+            function runCoreChecksum(forceScan) {
+                var $btnScan  = $('#btn-core-checksum-scan');
+                var $btnForce = $('#btn-core-checksum-force');
+                var $active   = forceScan ? $btnForce : $btnScan;
+                $btnScan.prop('disabled', true);
+                $btnForce.prop('disabled', true);
+                $active.text(lacaSecurity.i18n.scanningCore);
+                $('#core-checksum-alert').hide().empty();
+                $('#core-checksum-result').empty();
+
+                $.post(ajaxUrl, {
+                    action: 'laca_core_checksum_scan',
+                    nonce:  nonce,
+                    force:  forceScan ? 1 : 0
+                }, function(res){
+                    $btnScan.prop('disabled', false).text(lacaSecurity.i18n.scanCoreBtn);
+                    $btnForce.prop('disabled', false).text(lacaSecurity.i18n.rescanCoreBtn);
+                    if (!res.success || !res.data) {
+                        showAlert($('#core-checksum-alert'), 'danger', res.data);
+                        return;
+                    }
+                    $('#core-checksum-result').html(res.data.html);
+                }).fail(function(){
+                    $btnScan.prop('disabled', false).text(lacaSecurity.i18n.scanCoreBtn);
+                    $btnForce.prop('disabled', false).text(lacaSecurity.i18n.rescanCoreBtn);
+                    showAlert($('#core-checksum-alert'), 'danger', lacaSecurity.i18n.netError);
+                });
+            }
+
+            $('#btn-core-checksum-scan').on('click', function(){ runCoreChecksum(false); });
+            $('#btn-core-checksum-force').on('click', function(){ runCoreChecksum(true); });
 
             // ── Malware Scanner ───────────────────────────────────────────────
             var scanId = null;

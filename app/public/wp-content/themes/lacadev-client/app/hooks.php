@@ -482,6 +482,40 @@ add_action('init', function () {
 });
 
 /**
+ * Giám sát truy cập & chặn IP (port từ plugin Lamvt WP Security Monitor).
+ * Bỏ qua khi plugin còn bật hoặc bật kill-switch LACA_TM_DISABLE để không ghi/chặn 2 lần.
+ */
+add_action('after_setup_theme', function () {
+    if (defined('LBM_PATH') || (defined('LACA_TM_DISABLE') && LACA_TM_DISABLE)) {
+        return;
+    }
+    if (class_exists('\App\Settings\Security\TrafficMonitor\IpBlocklist')) {
+        (new \App\Settings\Security\TrafficMonitor\IpBlocklist())->register();
+    }
+    if (class_exists('\App\Settings\Security\TrafficMonitor\TrafficTable')) {
+        (new \App\Settings\Security\TrafficMonitor\TrafficTable())->register();
+    }
+    if (class_exists('\App\Settings\Security\TrafficMonitor\TrafficTracker')) {
+        (new \App\Settings\Security\TrafficMonitor\TrafficTracker())->register();
+    }
+    if (class_exists('\App\Settings\Security\TrafficMonitor\RequestFirewall')) {
+        (new \App\Settings\Security\TrafficMonitor\RequestFirewall())->register();
+    }
+    if (class_exists('\App\Settings\Security\TrafficMonitor\TrafficDigest')) {
+        (new \App\Settings\Security\TrafficMonitor\TrafficDigest())->register();
+    }
+    if (class_exists('\App\Settings\Security\TrafficMonitor\NetworkTypeScanner')) {
+        (new \App\Settings\Security\TrafficMonitor\NetworkTypeScanner())->register();
+    }
+}, 0);
+
+add_action('init', function () {
+    if (is_admin() && class_exists('\App\Settings\Security\TrafficMonitor\TrafficAdminPage')) {
+        (new \App\Settings\Security\TrafficMonitor\TrafficAdminPage())->register();
+    }
+});
+
+/**
  * Chống brute-force (khoá IP sau nhiều lần đăng nhập sai) + chặn dò username.
  * Đăng ký vô điều kiện, sớm (trước khi wp-login.php/XML-RPC xác thực), độc lập với Discord Hub.
  */

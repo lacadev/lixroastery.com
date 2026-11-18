@@ -522,8 +522,12 @@ msgstr ""
 #: app/src/Settings/LacaAdmin/ReleaseChecklist.php:952
 #: app/src/Settings/LacaTools/Management/SiteConfig/SiteConfigExporter.php:309
 #: app/src/Settings/Security/SecurityManager.php:1124
+#: app/src/Settings/LacaTools/Management/SiteConfig/SiteConfigExporter.php:307
+#: app/src/Settings/Security/SecurityManager.php:1269
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:1916
+#: app/src/Settings/Security/TrafficMonitor/TrafficDigest.php:178
 msgid "Bạn không có quyền thực hiện thao tác này."
-msgstr ""
+msgstr "You do not have permission to perform this action."
 
 #: app/src/Features/ClientSupport/ClientSupportManager.php:329
 msgid "Vui lòng điền đầy đủ tiêu đề và nội dung mô tả."
@@ -576,6 +580,8 @@ msgstr ""
 #: app/src/Settings/LacaAdmin/LacaDashboard.php:87
 #: app/src/Settings/LacaTools/Management/ConfigPage.php:48
 #: app/src/Settings/LacaTools/Management/SystemInfoPage.php:78
+#: app/src/Settings/LacaAdmin/LacaDashboard.php:88
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:121
 msgid "Bạn không có quyền truy cập trang này."
 msgstr "You do not have permission to access this page."
 
@@ -1773,12 +1779,15 @@ msgstr ""
 #: app/src/Features/GoogleServices/PageSpeedClient.php:378
 #: app/src/Features/GoogleServices/views/partials/pagespeed-panel.php:63
 #: app/src/Features/GoogleServices/views/partials/pagespeed-panel.php:138
+#: app/src/Features/GoogleServices/PageSpeedClient.php:366
+#: app/src/Features/GoogleServices/PageSpeedClient.php:394
 msgid "LCP (Nội dung lớn nhất)"
 msgstr ""
 
 #: app/src/Features/GoogleServices/PageSpeedClient.php:177
 #: app/src/Features/GoogleServices/PageSpeedClient.php:357
 #: app/src/Features/GoogleServices/views/partials/pagespeed-panel.php:73
+#: app/src/Features/GoogleServices/PageSpeedClient.php:373
 msgid "INP (Tương tác đến phản hồi)"
 msgstr ""
 
@@ -1788,6 +1797,8 @@ msgstr ""
 #: app/src/Features/GoogleServices/PageSpeedClient.php:383
 #: app/src/Features/GoogleServices/views/partials/pagespeed-panel.php:83
 #: app/src/Features/GoogleServices/views/partials/pagespeed-panel.php:148
+#: app/src/Features/GoogleServices/PageSpeedClient.php:380
+#: app/src/Features/GoogleServices/PageSpeedClient.php:399
 msgid "CLS (Dịch chuyển bố cục)"
 msgstr ""
 
@@ -1800,12 +1811,20 @@ msgstr ""
 #: app/src/Features/GoogleServices/PageSpeedClient.php:374
 #: app/src/Settings/LacaAdmin/LacaDashboard.php:180
 #: app/src/Settings/LacaAdmin/LacaDashboard.php:710
+#: app/src/Features/GoogleServices/PageSpeedClient.php:363
+#: app/src/Features/GoogleServices/PageSpeedClient.php:369
+#: app/src/Features/GoogleServices/PageSpeedClient.php:376
+#: app/src/Features/GoogleServices/PageSpeedClient.php:383
+#: app/src/Features/GoogleServices/PageSpeedClient.php:390
+#: app/src/Settings/LacaAdmin/LacaDashboard.php:181
+#: app/src/Settings/LacaAdmin/LacaDashboard.php:712
 msgid "Tốt"
 msgstr ""
 
 #: app/src/Features/GoogleServices/PageSpeedClient.php:207
 #: app/src/Features/GoogleServices/PageSpeedClient.php:265
 #: app/src/Features/GoogleServices/PageSpeedClient.php:374
+#: app/src/Features/GoogleServices/PageSpeedClient.php:390
 msgid "Cần cải thiện"
 msgstr ""
 
@@ -1817,12 +1836,14 @@ msgstr ""
 #: app/src/Features/GoogleServices/PageSpeedClient.php:233
 #: app/src/Features/GoogleServices/PageSpeedClient.php:388
 #: app/src/Features/GoogleServices/views/partials/pagespeed-panel.php:158
+#: app/src/Features/GoogleServices/PageSpeedClient.php:404
 msgid "TBT (Thời gian chặn)"
 msgstr ""
 
 #: app/src/Features/GoogleServices/PageSpeedClient.php:242
 #: app/src/Features/GoogleServices/PageSpeedClient.php:393
 #: app/src/Features/GoogleServices/views/partials/pagespeed-panel.php:168
+#: app/src/Features/GoogleServices/PageSpeedClient.php:409
 msgid "FCP (Nội dung đầu tiên)"
 msgstr ""
 
@@ -1858,8 +1879,10 @@ msgstr ""
 
 #: app/src/Features/GoogleServices/views/partials/google-report.php:48
 #: app/src/Features/GoogleServices/views/search-console.php:107
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:393
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:976
 msgid "Khoảng thời gian"
-msgstr ""
+msgstr "Time range"
 
 #: app/src/Features/GoogleServices/views/partials/google-report.php:73
 #: app/src/Features/GoogleServices/views/search-console.php:121
@@ -1933,8 +1956,9 @@ msgstr ""
 
 #: app/src/Features/GoogleServices/views/partials/google-report.php:315
 #: app/src/Features/GoogleServices/views/partials/google-report.php:606
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:133
 msgid "Cài đặt"
-msgstr ""
+msgstr "Settings"
 
 #: app/src/Features/GoogleServices/views/partials/google-report.php:323
 msgid "Chưa kết nối Google Search Console"
@@ -2301,6 +2325,8 @@ msgstr ""
 #: app/src/Features/GoogleServices/views/partials/pagespeed-panel.php:180
 #: app/src/Settings/LacaAdmin/LacaDashboard.php:62
 #: app/src/Settings/LacaAdmin/LacaDashboard.php:235
+#: app/src/Settings/LacaAdmin/LacaDashboard.php:63
+#: app/src/Settings/LacaAdmin/LacaDashboard.php:236
 msgid "Kiểm tra lại"
 msgstr ""
 
@@ -3728,6 +3754,8 @@ msgstr ""
 #: app/src/Settings/LacaAdmin/UiKitPage.php:289
 #: app/src/Settings/LacaTools/Management/ConfigPage.php:177
 #: app/src/Settings/LacaTools/Management/SiteConfig/SiteConfigImporter.php:863
+#: app/src/Settings/LacaAdmin/LacaDashboard.php:496
+#: app/src/Settings/LacaTools/Management/SiteConfig/SiteConfigImporter.php:876
 msgid "Laca SEO"
 msgstr ""
 
@@ -3830,6 +3858,7 @@ msgstr ""
 #: app/src/Features/LacaSeo/Modules/LocalSeo/Address.php:28
 #: app/src/Settings/AdminSettings.php:1704
 #: theme/page_templates/template-contact.php:52
+#: app/src/Settings/AdminSettings.php:1716
 msgid "Email"
 msgstr ""
 
@@ -4265,6 +4294,7 @@ msgid "Cài đặt Nghe bài viết"
 msgstr "Listen to Article Settings"
 
 #: app/src/Features/PostAudio/PostAudioManager.php:185
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:2313
 msgid "Đã lưu cấu hình thành công."
 msgstr "Settings saved successfully."
 
@@ -4320,6 +4350,7 @@ msgstr "%s settings"
 
 #: app/src/Features/PostAudio/PostAudioManager.php:274
 #: app/src/Settings/AdminSettings.php:1231
+#: app/src/Settings/AdminSettings.php:1243
 msgid "API Key"
 msgstr "API Key"
 
@@ -4368,6 +4399,9 @@ msgstr "The player is inserted automatically at the top of the post. To place it
 #: app/src/Features/PostAudio/PostAudioManager.php:330
 #: app/src/Settings/Security/SecurityManager.php:155
 #: app/src/Settings/Security/SecurityManager.php:423
+#: app/src/Settings/Security/SecurityManager.php:156
+#: app/src/Settings/Security/SecurityManager.php:448
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:1836
 msgid "Lưu cài đặt"
 msgstr "Save Settings"
 
@@ -4518,6 +4552,7 @@ msgstr "Duration: %s"
 #: app/src/Features/PostAudio/PostAudioManager.php:613
 #: app/src/Settings/Security/LoginHoneypot.php:66
 #: app/src/Settings/Security/TwoFactorAuth.php:214
+#: app/src/Settings/Security/TwoFactorAuth.php:217
 msgid "Lỗi:"
 msgstr "Error:"
 
@@ -4907,407 +4942,510 @@ msgstr ""
 
 #: app/src/Settings/AdminSettings.php:954
 #: app/src/Settings/LacaAdmin/LacaAdminMenuOrganizer.php:194
+#: app/src/Settings/AdminSettings.php:966
+#: app/src/Settings/LacaAdmin/LacaAdminMenuOrganizer.php:195
 msgid "Laca Admin"
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:955
+#: app/src/Settings/AdminSettings.php:967
 msgid "laca-admin"
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:957
+#: app/src/Settings/AdminSettings.php:969
 msgid "ADMIN"
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:958
+#: app/src/Settings/AdminSettings.php:970
 msgid "Bật chế độ bảo trì"
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:965
+#: app/src/Settings/AdminSettings.php:977
 msgid "Tắt chức năng chỉnh sửa code"
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:971
+#: app/src/Settings/AdminSettings.php:983
 msgid "Tắt chức năng xác thực email khi thay đổi email admin"
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:977
+#: app/src/Settings/AdminSettings.php:989
 msgid "Tắt chức năng sử dụng mật khẩu yếu"
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:983
+#: app/src/Settings/AdminSettings.php:995
 msgid "Ẩn menu bài viết mặc định"
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:989
+#: app/src/Settings/AdminSettings.php:1001
 msgid "Ẩn menu bình luận mặc định"
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:996
+#: app/src/Settings/AdminSettings.php:1008
 msgid "SMTP"
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:997
+#: app/src/Settings/AdminSettings.php:1009
 msgid "Sử dụng SMTP để gửi mail"
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:999
+#: app/src/Settings/AdminSettings.php:1011
 msgid "Thông tin máy chủ SMTP"
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:1000
+#: app/src/Settings/AdminSettings.php:1012
 msgid "Địa chỉ máy chủ"
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:1003
+#: app/src/Settings/AdminSettings.php:1015
 msgid "Cổng máy chủ"
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:1006
+#: app/src/Settings/AdminSettings.php:1018
 msgid "Phương thức mã hóa"
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:1010
+#: app/src/Settings/AdminSettings.php:1022
 msgid "Thông tin email hệ thống"
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:1011
+#: app/src/Settings/AdminSettings.php:1023
 msgid "Địa chỉ email"
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:1013
+#: app/src/Settings/AdminSettings.php:1025
 msgid "Mật khẩu"
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:1018
+#: app/src/Settings/AdminSettings.php:1030
 msgid "LOGIN"
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:1019
+#: app/src/Settings/AdminSettings.php:1031
 msgid "Login logo"
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:1023
+#: app/src/Settings/AdminSettings.php:1035
 msgid "Lời chào (VI)"
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:1028
+#: app/src/Settings/AdminSettings.php:1040
 msgid "Welcome text (EN)"
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:1033
+#: app/src/Settings/AdminSettings.php:1045
 msgid "Label user (VI)"
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:1036
+#: app/src/Settings/AdminSettings.php:1048
 msgid "Label user (EN)"
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:1040
+#: app/src/Settings/AdminSettings.php:1052
 msgid "Label password (VI)"
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:1043
+#: app/src/Settings/AdminSettings.php:1055
 msgid "Label password (EN)"
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:1047
+#: app/src/Settings/AdminSettings.php:1059
 msgid "Placeholder user (VI)"
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:1050
+#: app/src/Settings/AdminSettings.php:1062
 msgid "Placeholder user (EN)"
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:1054
+#: app/src/Settings/AdminSettings.php:1066
 msgid "Placeholder password (VI)"
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:1057
+#: app/src/Settings/AdminSettings.php:1069
 msgid "Placeholder password (EN)"
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:1061
+#: app/src/Settings/AdminSettings.php:1073
 msgid "Label rớt chìa khoá (VI)"
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:1064
+#: app/src/Settings/AdminSettings.php:1076
 msgid "Forgot label (EN)"
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:1068
+#: app/src/Settings/AdminSettings.php:1080
 msgid "Label rời khỏi trạm (VI)"
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:1071
+#: app/src/Settings/AdminSettings.php:1083
 msgid "Back label (EN)"
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:1078
+#: app/src/Settings/AdminSettings.php:1090
 msgid "laca-tools"
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:1164
+#: app/src/Settings/AdminSettings.php:1176
 msgid "Tối ưu hóa Database & Bộ nhớ"
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:1225
+#: app/src/Settings/AdminSettings.php:1237
 msgid "Đồng bộ Block"
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:1227
+#: app/src/Settings/AdminSettings.php:1239
 msgid "laca-block-sync"
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:1229
+#: app/src/Settings/AdminSettings.php:1241
 msgid "Block Sync — Nhận blocks từ lacadev.com"
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:1251
+#: app/src/Settings/AdminSettings.php:1263
 msgid "Block Catalog — chỉ dùng trên clients.lacadev.com"
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:1253
 #: app/src/Settings/AdminSettings.php:1558
+#: app/src/Settings/AdminSettings.php:1265
+#: app/src/Settings/AdminSettings.php:1570
 msgid "Catalog Key"
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:1278
+#: app/src/Settings/AdminSettings.php:1290
 msgid "laca-tracker"
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:1298
+#: app/src/Settings/AdminSettings.php:1310
 msgid "⚡ Dán cấu hình nhanh từ Hub (Laca CMS)"
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:1300
+#: app/src/Settings/AdminSettings.php:1312
 msgid "Dán cấu hình JSON từ Hub"
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:1305
+#: app/src/Settings/AdminSettings.php:1317
 msgid "Chi tiết kết nối & Khóa bảo mật (HMAC)"
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:1307
+#: app/src/Settings/AdminSettings.php:1319
 msgid "Tracker Endpoint URL"
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:1312
+#: app/src/Settings/AdminSettings.php:1324
 msgid "Public Project ID"
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:1317
+#: app/src/Settings/AdminSettings.php:1329
 msgid "Tracker Key"
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:1323
+#: app/src/Settings/AdminSettings.php:1335
 msgid "Block Catalog Key"
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:1329
+#: app/src/Settings/AdminSettings.php:1341
 msgid "Remote Update Key"
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:1335
+#: app/src/Settings/AdminSettings.php:1347
 msgid "Secret Key dự phòng (Legacy)"
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:1341
+#: app/src/Settings/AdminSettings.php:1353
 msgid "Kiểm tra sâu (nâng cao)"
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:1343
+#: app/src/Settings/AdminSettings.php:1355
 msgid "Bật kiểm tra sâu mã nguồn (FIM)"
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:1356
+#: app/src/Settings/AdminSettings.php:1368
 msgid "Cron hệ thống thật (site ít traffic)"
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:1364
+#: app/src/Settings/AdminSettings.php:1376
 msgid "Cron URL"
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:1371
+#: app/src/Settings/AdminSettings.php:1383
 msgid "Google reCAPTCHA"
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:1373
+#: app/src/Settings/AdminSettings.php:1385
 msgid "laca-recaptcha"
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:1378
+#: app/src/Settings/AdminSettings.php:1390
 msgid "Site Key"
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:1382
+#: app/src/Settings/AdminSettings.php:1394
 msgid "Secret Key"
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:1387
+#: app/src/Settings/AdminSettings.php:1399
 msgid "Cấu hình hiển thị"
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:1389
+#: app/src/Settings/AdminSettings.php:1401
 msgid "Kích hoạt cho Đăng nhập"
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:1393
+#: app/src/Settings/AdminSettings.php:1405
 msgid "Kích hoạt cho Đăng ký"
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:1397
+#: app/src/Settings/AdminSettings.php:1409
 msgid "Kích hoạt cho Bình luận"
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:1401
+#: app/src/Settings/AdminSettings.php:1413
 msgid "Kích hoạt cho Form liên hệ"
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:1406
+#: app/src/Settings/AdminSettings.php:1418
 msgid "Điểm tối thiểu (0.0 - 1.0)"
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:1417
+#: app/src/Settings/AdminSettings.php:1429
 msgid "LacaDev PM & Bots"
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:1419
+#: app/src/Settings/AdminSettings.php:1431
 msgid "laca-project-notifications"
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:1420
+#: app/src/Settings/AdminSettings.php:1432
 msgid "Zalo OA (Project Manager)"
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:1424
+#: app/src/Settings/AdminSettings.php:1436
 msgid "Bật thông báo Zalo"
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:1426
+#: app/src/Settings/AdminSettings.php:1438
 msgid "Access Token"
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:1429
+#: app/src/Settings/AdminSettings.php:1441
 msgid "Refresh Token"
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:1432
+#: app/src/Settings/AdminSettings.php:1444
 msgid "Zalo User ID nhận mặc định"
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:1435
+#: app/src/Settings/AdminSettings.php:1447
 msgid "Email (Project Manager)"
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:1436
+#: app/src/Settings/AdminSettings.php:1448
 msgid "Bật thông báo qua Email"
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:1438
+#: app/src/Settings/AdminSettings.php:1450
 msgid "Email nhận thông báo"
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:1590
+#: app/src/Settings/AdminSettings.php:1602
 msgid "Login Socials"
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:1592
+#: app/src/Settings/AdminSettings.php:1604
 msgid "laca-login-socials"
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:1593
+#: app/src/Settings/AdminSettings.php:1605
 msgid "Google"
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:1597
+#: app/src/Settings/AdminSettings.php:1609
 msgid "Bật Login Google"
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:1598
+#: app/src/Settings/AdminSettings.php:1610
 msgid "Client ID"
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:1600
+#: app/src/Settings/AdminSettings.php:1612
 msgid "Client Secret"
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:1602
+#: app/src/Settings/AdminSettings.php:1614
 msgid "Redirect URI"
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:1658
+#: app/src/Settings/AdminSettings.php:1670
 msgid "Quản trị & HD Sử dụng"
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:1660
+#: app/src/Settings/AdminSettings.php:1672
 msgid "laca-management-settings"
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:1661
+#: app/src/Settings/AdminSettings.php:1673
 msgid "Dashboard Widget"
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:1665
+#: app/src/Settings/AdminSettings.php:1677
 msgid "Các Post Type hiển thị"
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:1676
+#: app/src/Settings/AdminSettings.php:1688
 msgid "Để trống để tự động hiển thị tất cả các loại nội dung quan trọng (Posts, Services, Projects, Properties...)."
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:1679
+#: app/src/Settings/AdminSettings.php:1691
 msgid "Số lượng bài hiển thị"
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:1684
+#: app/src/Settings/AdminSettings.php:1696
 msgid "Nội dung HD Sử dụng"
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:1688
+#: app/src/Settings/AdminSettings.php:1700
 msgid "Tiêu đề trang"
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:1691
+#: app/src/Settings/AdminSettings.php:1703
 msgid "Đoạn giới thiệu"
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:1694
+#: app/src/Settings/AdminSettings.php:1706
 msgid "Các khối hướng dẫn (Blog, WooCommerce...)"
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:1697
+#: app/src/Settings/AdminSettings.php:1709
 msgid "Tiêu đề khối"
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:1698
+#: app/src/Settings/AdminSettings.php:1710
 msgid "Màu viền (Border top)"
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:1699
+#: app/src/Settings/AdminSettings.php:1711
 msgid "Nội dung hướng dẫn (Link, Video, Text)"
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:1702
+#: app/src/Settings/AdminSettings.php:1714
 msgid "Thông tin hỗ trợ kỹ thuật"
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:1703
+#: app/src/Settings/AdminSettings.php:1715
 msgid "Điện thoại/Zalo"
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:1705
+#: app/src/Settings/AdminSettings.php:1717
 msgid "Website"
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:1707
+#: app/src/Settings/AdminSettings.php:1719
 msgid "Vai trò Khách hàng"
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:1711
+#: app/src/Settings/AdminSettings.php:1723
 msgid "Gán vai trò Khách hàng cho người dùng"
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:1724
+#: app/src/Settings/AdminSettings.php:1736
 msgid "Chọn các tài khoản thuộc nhóm khách hàng để áp dụng phân quyền an toàn."
 msgstr ""
 
@@ -5875,6 +6013,7 @@ msgid "Chưa sẵn sàng"
 msgstr ""
 
 #: app/src/Settings/LacaAdmin/LacaAdminMenuOrganizer.php:197
+#: app/src/Settings/LacaAdmin/LacaAdminMenuOrganizer.php:198
 msgid "Menu Laca Admin"
 msgstr ""
 
@@ -6137,8 +6276,11 @@ msgid "Cài đặt đã được lưu an toàn vào cơ sở dữ liệu."
 msgstr ""
 
 #: app/src/Settings/LacaAdmin/UiKitPage.php:249
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:890
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:1659
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:1899
 msgid "Cảnh báo"
-msgstr ""
+msgstr "Alert"
 
 #: app/src/Settings/LacaAdmin/UiKitPage.php:250
 msgid "Tính năng admin color đã được gỡ bỏ để đảm bảo tính nhất quán."
@@ -6167,6 +6309,7 @@ msgstr ""
 #: app/src/Settings/LacaAdmin/UiKitPage.php:275
 #: app/src/Settings/LacaTools/Management/ConfigPage.php:308
 #: app/src/Settings/Security/SecurityManager.php:165
+#: app/src/Settings/Security/SecurityManager.php:166
 msgid "Trạng thái"
 msgstr ""
 
@@ -6175,8 +6318,10 @@ msgstr ""
 #: app/src/Settings/LacaTools/Management/DatabaseCleaner.php:240
 #: app/src/Settings/Security/MalwareScanner.php:591
 #: app/src/Settings/Security/SecurityManager.php:361
+#: app/src/Settings/Security/SecurityManager.php:386
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:1420
 msgid "Thao tác"
-msgstr ""
+msgstr "Actions"
 
 #: app/src/Settings/LacaAdmin/UiKitPage.php:281
 msgid "Laca Admin Core"
@@ -6281,6 +6426,7 @@ msgstr ""
 #: app/src/Settings/LacaTools/Management/ListTableInlineEditor.php:426
 #: app/src/Settings/LacaTools/Management/SystemInfoPage.php:173
 #: app/src/Settings/LacaTools/Management/SystemInfoPage.php:174
+#: app/src/Settings/LacaAdmin/LacaDashboard.php:573
 msgid "Bật"
 msgstr ""
 
@@ -6294,6 +6440,8 @@ msgstr ""
 #: app/src/Settings/LacaTools/Management/SystemInfoPage.php:175
 #: app/src/Settings/LacaTools/Management/SystemInfoPage.php:536
 #: app/src/Settings/Security/SecurityManager.php:583
+#: app/src/Settings/LacaAdmin/LacaDashboard.php:573
+#: app/src/Settings/Security/SecurityManager.php:608
 msgid "Tắt"
 msgstr ""
 
@@ -6555,29 +6703,37 @@ msgstr ""
 #: app/src/Settings/Security/SecurityManager.php:89
 #: app/src/Settings/Security/SecurityManager.php:90
 #: app/src/Settings/Security/SecurityManager.php:124
+#: app/src/Settings/Security/SecurityManager.php:91
+#: app/src/Settings/Security/SecurityManager.php:125
 msgid "Xác thực 2 bước (2FA)"
 msgstr "Two-factor authentication (2FA)"
 
 #: app/src/Settings/Security/SecurityManager.php:98
 #: app/src/Settings/Security/SecurityManager.php:99
 #: app/src/Settings/Security/SecurityManager.php:133
+#: app/src/Settings/Security/SecurityManager.php:100
+#: app/src/Settings/Security/SecurityManager.php:134
 msgid "Super User"
 msgstr "Super User"
 
 #: app/src/Settings/Security/SecurityManager.php:1129
+#: app/src/Settings/Security/SecurityManager.php:1274
 msgid "Đường dẫn file không hợp lệ."
 msgstr ""
 
 #: app/src/Settings/LacaTools/Management/LargeFileScanner.php:97
 #: app/src/Settings/Security/SecurityManager.php:1135
+#: app/src/Settings/Security/SecurityManager.php:1280
 msgid "File không tồn tại trên hệ thống."
 msgstr ""
 
 #: app/src/Settings/Security/SecurityManager.php:1140
+#: app/src/Settings/Security/SecurityManager.php:1285
 msgid "Không thể tạo mã băm cho file."
 msgstr ""
 
 #: app/src/Settings/Security/SecurityManager.php:1152
+#: app/src/Settings/Security/SecurityManager.php:1297
 msgid "Đã thêm vào danh sách an toàn."
 msgstr ""
 
@@ -6602,8 +6758,11 @@ msgid "Mục lục"
 msgstr ""
 
 #: theme/404.php:48
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:488
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:1185
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:2162
 msgid "404"
-msgstr ""
+msgstr "404"
 
 #: theme/404.php:49
 msgid "La cà hơi xa rồi bạn ơi!"
@@ -6640,6 +6799,8 @@ msgstr ""
 #: app/src/Settings/LacaAdmin/LacaDashboard.php:453
 #: app/src/Settings/Security/SecurityManager.php:188
 #: theme/comments.php:62
+#: app/src/Settings/LacaAdmin/LacaDashboard.php:454
+#: app/src/Settings/Security/SecurityManager.php:192
 msgid "Bảo mật"
 msgstr ""
 
@@ -6773,6 +6934,7 @@ msgstr ""
 #: app/src/Databases/ContactFormTable.php:145
 #: app/src/Databases/ContactFormTable.php:154
 #: theme/page_templates/template-contact.php:129
+#: app/src/Features/ContactForm/FooterContactHandler.php:197
 msgid "Họ và tên"
 msgstr ""
 
@@ -6970,55 +7132,71 @@ msgstr ""
 #: theme/setup/gutenberg-blocks.php:492
 #: theme/setup/gutenberg-blocks.php:493
 #: theme/setup/gutenberg-blocks.php:556
+#: theme/setup/gutenberg-blocks.php:497
+#: theme/setup/gutenberg-blocks.php:498
+#: theme/setup/gutenberg-blocks.php:561
 msgid "Block Categories"
 msgstr ""
 
 #: theme/setup/gutenberg-blocks.php:539
+#: theme/setup/gutenberg-blocks.php:544
 msgid "Đã lưu mapping block category."
 msgstr ""
 
 #: theme/setup/gutenberg-blocks.php:557
+#: theme/setup/gutenberg-blocks.php:562
 msgid "Chọn category cho từng block. Nếu để \"Mặc định\", hệ thống sẽ tự gán theo nguồn block."
 msgstr ""
 
 #: theme/setup/gutenberg-blocks.php:560
+#: theme/setup/gutenberg-blocks.php:565
 msgid "Block local của dự án: mặc định vào PĐN Blocks."
 msgstr ""
 
 #: theme/setup/gutenberg-blocks.php:561
+#: theme/setup/gutenberg-blocks.php:566
 msgid "Block sync từ lacadev: mặc định vào La Cà Blocks."
 msgstr ""
 
 #: theme/setup/gutenberg-blocks.php:575
+#: theme/setup/gutenberg-blocks.php:580
 msgid "Block"
 msgstr ""
 
 #: theme/setup/gutenberg-blocks.php:576
+#: theme/setup/gutenberg-blocks.php:581
 msgid "Nguồn"
 msgstr ""
 
 #: theme/setup/gutenberg-blocks.php:577
 #: theme/setup/gutenberg-blocks.php:603
+#: theme/setup/gutenberg-blocks.php:582
+#: theme/setup/gutenberg-blocks.php:608
 msgid "Mặc định"
 msgstr ""
 
 #: theme/setup/gutenberg-blocks.php:578
+#: theme/setup/gutenberg-blocks.php:583
 msgid "Category áp dụng"
 msgstr ""
 
 #: theme/setup/gutenberg-blocks.php:584
+#: theme/setup/gutenberg-blocks.php:589
 msgid "Chưa tìm thấy block nào."
 msgstr ""
 
 #: theme/setup/gutenberg-blocks.php:592
+#: theme/setup/gutenberg-blocks.php:597
 msgid "Sync từ lacadev"
 msgstr ""
 
 #: theme/setup/gutenberg-blocks.php:592
+#: theme/setup/gutenberg-blocks.php:597
 msgid "Local dự án"
 msgstr ""
 
 #: theme/setup/gutenberg-blocks.php:618
+#: theme/setup/gutenberg-blocks.php:623
 msgid "Lưu cấu hình"
 msgstr ""
 
@@ -7454,20 +7632,26 @@ msgstr ""
 
 #: app/src/Settings/AdminSettings.php:1076
 #: app/src/Settings/AdminSettings.php:1079
+#: app/src/Settings/AdminSettings.php:1088
+#: app/src/Settings/AdminSettings.php:1091
 msgid "Tối ưu hóa"
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:1092
+#: app/src/Settings/AdminSettings.php:1104
 msgid "Tắt thành phần không cần thiết"
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:1137
+#: app/src/Settings/AdminSettings.php:1149
 msgid "Hỗ trợ mã hoá UTF-8 nhiều byte (khi thấy ký tự lạ)"
 msgstr ""
 
 #: app/src/Settings/LacaAdmin/LacaAdminMenuOrganizer.php:267
 #: app/src/Settings/LacaAdmin/LacaDashboard.php:32
 #: app/src/Settings/LacaAdmin/LacaDashboard.php:33
+#: app/src/Settings/LacaAdmin/LacaAdminMenuOrganizer.php:268
+#: app/src/Settings/LacaAdmin/LacaDashboard.php:34
 msgid "Tổng quan"
 msgstr ""
 
@@ -7475,22 +7659,27 @@ msgstr ""
 #: app/src/Settings/LacaTools/Management/ConfigPage.php:1044
 #: app/src/Settings/LacaTools/Management/SystemInfoPage.php:37
 #: app/src/Settings/LacaTools/Management/SystemInfoPage.php:38
+#: app/src/Settings/LacaAdmin/LacaAdminMenuOrganizer.php:269
 msgid "Hệ thống"
 msgstr ""
 
 #: app/src/Settings/LacaAdmin/LacaAdminMenuOrganizer.php:269
+#: app/src/Settings/LacaAdmin/LacaAdminMenuOrganizer.php:270
 msgid "Người dùng & đăng nhập"
 msgstr ""
 
 #: app/src/Settings/LacaAdmin/LacaAdminMenuOrganizer.php:270
+#: app/src/Settings/LacaAdmin/LacaAdminMenuOrganizer.php:271
 msgid "Nội dung & Form"
 msgstr ""
 
 #: app/src/Settings/LacaAdmin/LacaAdminMenuOrganizer.php:271
+#: app/src/Settings/LacaAdmin/LacaAdminMenuOrganizer.php:272
 msgid "Kết nối & dịch vụ"
 msgstr ""
 
 #: app/src/Settings/LacaAdmin/LacaAdminMenuOrganizer.php:272
+#: app/src/Settings/LacaAdmin/LacaAdminMenuOrganizer.php:273
 msgid "Marketing & AI"
 msgstr ""
 
@@ -7579,6 +7768,7 @@ msgstr ""
 
 #: app/src/Settings/LacaAdmin/LacaDashboard.php:763
 #: app/src/Settings/LacaTools/Management/DashboardWidgets.php:187
+#: app/src/Settings/LacaAdmin/LacaDashboard.php:765
 msgid "Đang tắt"
 msgstr ""
 
@@ -7642,6 +7832,7 @@ msgid "Thống kê dự án"
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:1276
+#: app/src/Settings/AdminSettings.php:1288
 msgid "Site Tracker"
 msgstr ""
 
@@ -7781,162 +7972,202 @@ msgid "Nút gửi ở bước cuối"
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:204
+#: app/src/Settings/AdminSettings.php:214
 msgid "LacaDev | Quản lý dự án"
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:254
+#: app/src/Settings/AdminSettings.php:264
 msgid "Tổng dự án"
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:258
+#: app/src/Settings/AdminSettings.php:268
 msgid "Đang làm"
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:262
+#: app/src/Settings/AdminSettings.php:272
 msgid "Hoàn thành"
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:267
 #: app/src/Settings/LacaAdmin/LacaDashboard.php:185
+#: app/src/Settings/AdminSettings.php:277
+#: app/src/Settings/LacaAdmin/LacaDashboard.php:186
 msgid "Cần chú ý"
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:270
+#: app/src/Settings/AdminSettings.php:280
 #, php-format
 msgid "Có %d dịch vụ sắp/đã hết hạn (≤ 7 ngày)"
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:273
+#: app/src/Settings/AdminSettings.php:283
 #, php-format
 msgid "Có %d dịch vụ sắp gia hạn (≤ 30 ngày)"
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:276
+#: app/src/Settings/AdminSettings.php:286
 #, php-format
 msgid "Có %d cảnh báo lỗi/bảo mật chưa xử lý"
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:279
+#: app/src/Settings/AdminSettings.php:289
 msgid "Mọi thứ đều ổn, không có cảnh báo nào."
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:285
+#: app/src/Settings/AdminSettings.php:295
 msgid "Xem tất cả dự án"
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:1195
+#: app/src/Settings/AdminSettings.php:1207
 msgid "Số bản sửa (revision) giữ lại"
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:1197
+#: app/src/Settings/AdminSettings.php:1209
 msgid "Mặc định WordPress"
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:1198
+#: app/src/Settings/AdminSettings.php:1210
 msgid "Không lưu"
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:1210
+#: app/src/Settings/AdminSettings.php:1222
 msgid "Chậm (60 giây)"
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:1211
+#: app/src/Settings/AdminSettings.php:1223
 msgid "Chỉ trong trình soạn bài"
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:1442
+#: app/src/Settings/AdminSettings.php:1454
 msgid "Telegram (Project Manager)"
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:1443
+#: app/src/Settings/AdminSettings.php:1455
 msgid "Bật thông báo Telegram"
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:1444
+#: app/src/Settings/AdminSettings.php:1456
 msgid "Bot Token"
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:1446
+#: app/src/Settings/AdminSettings.php:1458
 msgid "Chat ID"
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:1450
+#: app/src/Settings/AdminSettings.php:1462
 msgid "Slack (Project Manager)"
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:1451
+#: app/src/Settings/AdminSettings.php:1463
 msgid "Bật thông báo Slack"
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:1452
+#: app/src/Settings/AdminSettings.php:1464
 msgid "Webhook URL"
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:1455
+#: app/src/Settings/AdminSettings.php:1467
 msgid "Định tuyến thông báo"
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:1458
+#: app/src/Settings/AdminSettings.php:1470
 msgid "📡 Bảng ma trận định tuyến thông báo (Notification Bus)"
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:1459
+#: app/src/Settings/AdminSettings.php:1471
 msgid "Tuỳ biến các kênh nhận thông báo (Email, Zalo, Telegram, Slack, Discord) cho từng loại sự kiện hệ thống. Hệ thống tự động khử trùng lặp (dedup) theo loại sự kiện."
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:1462
+#: app/src/Settings/AdminSettings.php:1474
 msgid "Cảnh báo dự án (project_alert)"
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:1472
+#: app/src/Settings/AdminSettings.php:1484
 msgid "Website không truy cập được (uptime_down)"
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:1482
+#: app/src/Settings/AdminSettings.php:1494
 msgid "Website hoạt động trở lại (uptime_up)"
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:1492
+#: app/src/Settings/AdminSettings.php:1504
 msgid "Cron hệ thống bị trễ (cron_late)"
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:1502
+#: app/src/Settings/AdminSettings.php:1514
 msgid "Sao lưu quá hạn (backup_outdated)"
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:1512
+#: app/src/Settings/AdminSettings.php:1524
 msgid "Cập nhật từ xa thành công (deployment)"
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:1522
+#: app/src/Settings/AdminSettings.php:1534
 msgid "Yêu cầu hỗ trợ từ khách hàng (client_request)"
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:1539
+#: app/src/Settings/AdminSettings.php:1551
 msgid "🗂️ Block Catalog Source"
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:1541
+#: app/src/Settings/AdminSettings.php:1553
 msgid "laca-block-catalog-source"
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:1548
+#: app/src/Settings/AdminSettings.php:1560
 msgid "Nguồn danh mục Block"
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:1549
+#: app/src/Settings/AdminSettings.php:1561
 msgid "Cấu hình DUY NHẤT 1 lần để hub đọc danh mục Gutenberg block từ clients.lacadev.com. Lấy Catalog Endpoint URL và Catalog Key từ trang Laca Theme → 🧩 LacaDev trên chính site clients.lacadev.com."
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:1553
+#: app/src/Settings/AdminSettings.php:1565
 msgid "Catalog Endpoint URL"
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:1566
+#: app/src/Settings/AdminSettings.php:1578
 msgid "Làm mới danh mục ngay"
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:1568
+#: app/src/Settings/AdminSettings.php:1580
 msgid "Danh mục được cache 6 tiếng để đỡ tải clients.lacadev.com — bấm nút này nếu vừa thêm block mới bên đó và muốn site khách thấy ngay, không cần chờ."
 msgstr ""
 
@@ -8018,6 +8249,7 @@ msgstr ""
 #: app/src/Settings/LacaTools/Management/ConfigPage.php:983
 #: app/src/Settings/LacaTools/Management/DashboardWidgets.php:709
 #: app/src/Settings/Security/SecurityManager.php:168
+#: app/src/Settings/Security/SecurityManager.php:169
 msgid "Lỗi kết nối máy chủ."
 msgstr ""
 
@@ -8079,8 +8311,11 @@ msgstr ""
 #: app/src/Settings/LacaTools/Management/ConfigPage.php:365
 #: app/src/Settings/LacaTools/Management/ConfigPage.php:1033
 #: app/src/Settings/Security/AdminLoginAlert.php:84
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:842
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:1616
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:1876
 msgid "Thời gian"
-msgstr ""
+msgstr "Time"
 
 #: app/src/Settings/LacaTools/Management/ConfigPage.php:1034
 msgid "Người đổi"
@@ -8088,8 +8323,14 @@ msgstr ""
 
 #: app/src/Settings/LacaTools/Management/ConfigPage.php:1035
 #: app/src/Settings/Security/SecurityManager.php:358
+#: app/src/Settings/Security/SecurityManager.php:383
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:483
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:1181
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:1617
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:1877
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:2158
 msgid "IP"
-msgstr ""
+msgstr "IP"
 
 #: app/src/Settings/LacaTools/Management/ConfigPage.php:1037
 msgid "Cũ → Mới"
@@ -8166,6 +8407,7 @@ msgstr ""
 #: app/src/Settings/LacaAdmin/LacaDashboard.php:396
 #: app/src/Settings/LacaTools/Management/DashboardWidgets.php:354
 #: app/src/Settings/LacaTools/Management/SystemInfoPage.php:930
+#: app/src/Settings/LacaAdmin/LacaDashboard.php:397
 msgid "Tổng dung lượng"
 msgstr ""
 
@@ -8264,6 +8506,7 @@ msgstr ""
 #: app/src/Settings/LacaAdmin/LacaDashboard.php:465
 #: app/src/Settings/LacaTools/Management/DatabaseCleaner.php:62
 #: app/src/Settings/LacaTools/Management/DatabaseCleaner.php:115
+#: app/src/Settings/LacaAdmin/LacaDashboard.php:466
 msgid "Dọn dẹp Database"
 msgstr ""
 
@@ -8344,6 +8587,7 @@ msgstr ""
 
 #: app/src/Settings/LacaTools/Management/DatabaseCleaner.php:101
 #: app/src/Settings/Security/SecurityManager.php:153
+#: app/src/Settings/Security/SecurityManager.php:154
 msgid "Đang lưu…"
 msgstr ""
 
@@ -8353,6 +8597,10 @@ msgstr ""
 #: app/src/Settings/Security/SecurityManager.php:490
 #: app/src/Settings/Security/SecurityManager.php:509
 #: app/src/Settings/Security/SecurityManager.php:906
+#: app/src/Settings/Security/SecurityManager.php:155
+#: app/src/Settings/Security/SecurityManager.php:515
+#: app/src/Settings/Security/SecurityManager.php:534
+#: app/src/Settings/Security/SecurityManager.php:931
 msgid "Lưu"
 msgstr ""
 
@@ -8370,6 +8618,7 @@ msgstr ""
 #: app/src/Settings/LacaAdmin/LacaDashboard.php:755
 #: app/src/Settings/LacaTools/Management/DatabaseCleaner.php:109
 #: app/src/Settings/LacaTools/Management/DatabaseCleaner.php:204
+#: app/src/Settings/LacaAdmin/LacaDashboard.php:757
 #, php-format
 msgid "Lần chạy tới: %s"
 msgstr ""
@@ -8524,6 +8773,8 @@ msgstr ""
 #: app/src/Settings/LacaAdmin/LacaDashboard.php:379
 #: app/src/Settings/LacaTools/Management/StorageHealth.php:410
 #: app/src/Settings/LacaTools/Management/SystemInfoPage.php:686
+#: app/src/Settings/LacaAdmin/LacaDashboard.php:64
+#: app/src/Settings/LacaAdmin/LacaDashboard.php:380
 msgid "Tính ngay"
 msgstr ""
 
@@ -8556,12 +8807,14 @@ msgstr ""
 #. translators: %s: timestamp
 #: app/src/Settings/LacaAdmin/LacaDashboard.php:434
 #: app/src/Settings/LacaTools/Management/StorageHealth.php:478
+#: app/src/Settings/LacaAdmin/LacaDashboard.php:435
 #, php-format
 msgid "Cập nhật lúc %s"
 msgstr ""
 
 #: app/src/Settings/LacaAdmin/LacaDashboard.php:438
 #: app/src/Settings/LacaTools/Management/StorageHealth.php:485
+#: app/src/Settings/LacaAdmin/LacaDashboard.php:439
 msgid "Tính lại"
 msgstr ""
 
@@ -8570,8 +8823,10 @@ msgid "Dọn dẹp DB →"
 msgstr ""
 
 #: app/src/Settings/Security/LoginGuard.php:281
+#: app/src/Settings/Security/TrafficMonitor/IpBlocklist.php:651
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:612
 msgid "Địa chỉ IP không hợp lệ."
-msgstr ""
+msgstr "Invalid IP address."
 
 #. translators: %s: IP address
 #: app/src/Settings/Security/LoginGuard.php:289
@@ -8585,424 +8840,531 @@ msgstr ""
 
 #: app/src/Settings/Security/SecurityManager.php:156
 #: app/src/Settings/Security/SecurityManager.php:784
+#: app/src/Settings/Security/SecurityManager.php:157
+#: app/src/Settings/Security/SecurityManager.php:809
 msgid "Lưu thiết lập bảo vệ"
 msgstr ""
 
 #: app/src/Settings/Security/SecurityManager.php:157
 #: app/src/Settings/Security/SecurityManager.php:385
+#: app/src/Settings/Security/SecurityManager.php:158
+#: app/src/Settings/Security/SecurityManager.php:410
 msgid "Mở khoá"
 msgstr ""
 
 #: app/src/Settings/Security/SecurityManager.php:158
+#: app/src/Settings/Security/SecurityManager.php:159
 msgid "Đang mở khoá…"
 msgstr ""
 
 #: app/src/Settings/Security/SecurityManager.php:159
+#: app/src/Settings/Security/SecurityManager.php:160
 msgid "Đang gửi…"
 msgstr ""
 
 #: app/src/Settings/Security/SecurityManager.php:160
 #: app/src/Settings/Security/SecurityManager.php:651
+#: app/src/Settings/Security/SecurityManager.php:161
+#: app/src/Settings/Security/SecurityManager.php:676
 msgid "Gửi thử"
 msgstr ""
 
 #: app/src/Settings/LacaAdmin/LacaDashboard.php:60
 #: app/src/Settings/Security/SecurityManager.php:161
+#: app/src/Settings/LacaAdmin/LacaDashboard.php:61
+#: app/src/Settings/Security/SecurityManager.php:162
 msgid "Đang kiểm tra…"
 msgstr ""
 
 #: app/src/Settings/Security/SecurityManager.php:162
 #: app/src/Settings/Security/SecurityManager.php:905
+#: app/src/Settings/Security/SecurityManager.php:163
+#: app/src/Settings/Security/SecurityManager.php:930
 msgid "Kiểm tra header"
 msgstr ""
 
 #: app/src/Settings/Security/SecurityManager.php:163
+#: app/src/Settings/Security/SecurityManager.php:164
 msgid "Header"
 msgstr ""
 
 #: app/src/Settings/Security/SecurityManager.php:164
+#: app/src/Settings/Security/SecurityManager.php:165
 msgid "Giá trị"
 msgstr ""
 
 #: app/src/Settings/Security/SecurityManager.php:166
+#: app/src/Settings/Security/SecurityManager.php:167
 msgid "Đang gửi"
 msgstr ""
 
 #: app/src/Settings/Security/SecurityManager.php:167
+#: app/src/Settings/Security/SecurityManager.php:168
 msgid "Không có"
 msgstr ""
 
 #: app/src/Settings/Security/SecurityManager.php:179
+#: app/src/Settings/Security/SecurityManager.php:183
 msgid "Kiểm tra bảo mật"
 msgstr ""
 
 #: app/src/Settings/Security/SecurityManager.php:180
+#: app/src/Settings/Security/SecurityManager.php:184
 msgid "Giám sát file"
 msgstr ""
 
 #: app/src/Settings/Security/SecurityManager.php:181
+#: app/src/Settings/Security/SecurityManager.php:185
 msgid "Quét mã độc"
 msgstr ""
 
 #: app/src/Settings/Security/SecurityManager.php:182
+#: app/src/Settings/Security/SecurityManager.php:186
 msgid "User ẩn"
 msgstr ""
 
 #: app/src/Settings/Security/SecurityManager.php:183
+#: app/src/Settings/Security/SecurityManager.php:187
 msgid "Đăng nhập"
 msgstr ""
 
 #: app/src/Settings/Security/SecurityManager.php:184
+#: app/src/Settings/Security/SecurityManager.php:188
 msgid "Gia cố"
 msgstr ""
 
 #: app/src/Settings/Security/SecurityManager.php:189
+#: app/src/Settings/Security/SecurityManager.php:193
 msgid "Trang này tập hợp các công cụ giúp bảo vệ site: kiểm tra điểm bảo mật tổng quan, giám sát file bị thay đổi, quét mã độc, phát hiện tài khoản admin ẩn, bảo vệ đăng nhập và gia cố hệ thống. Xác thực 2 bước (2FA) và Super User nằm ở menu riêng."
 msgstr ""
 
 #: app/src/Settings/Security/SecurityManager.php:341
+#: app/src/Settings/Security/SecurityManager.php:366
 msgid "IP đang bị khoá"
 msgstr ""
 
 #: app/src/Settings/Security/SecurityManager.php:344
+#: app/src/Settings/Security/SecurityManager.php:369
 msgid "Danh sách địa chỉ IP đang bị khoá tạm thời do đăng nhập sai quá ngưỡng."
 msgstr ""
 
 #: app/src/Settings/Security/SecurityManager.php:351
+#: app/src/Settings/Security/SecurityManager.php:376
 msgid "Không có IP nào đang bị khoá."
 msgstr ""
 
 #: app/src/Settings/Security/SecurityManager.php:359
+#: app/src/Settings/Security/SecurityManager.php:384
 msgid "Khoá đến"
 msgstr ""
 
 #: app/src/Settings/Security/SecurityManager.php:360
+#: app/src/Settings/Security/SecurityManager.php:385
 msgid "Còn lại"
 msgstr ""
 
 #. translators: %d: số giờ còn lại
 #: app/src/Settings/Security/SecurityManager.php:370
+#: app/src/Settings/Security/SecurityManager.php:395
 #, php-format
 msgid "%d giờ"
 msgstr ""
 
 #. translators: %d: số phút còn lại
 #: app/src/Settings/Security/SecurityManager.php:373
+#: app/src/Settings/Security/SecurityManager.php:398
 #, php-format
 msgid "%d phút"
 msgstr ""
 
 #: app/src/Settings/Security/SecurityManager.php:399
+#: app/src/Settings/Security/SecurityManager.php:424
 msgid "Tùy chỉnh URL đăng nhập"
 msgstr ""
 
 #: app/src/Settings/Security/SecurityManager.php:400
+#: app/src/Settings/Security/SecurityManager.php:425
 msgid "Ẩn <code>/wp-login.php</code> và phục vụ trang đăng nhập qua URL tùy chỉnh. URL cũ trả 404."
 msgstr ""
 
 #: app/src/Settings/Security/SecurityManager.php:405
+#: app/src/Settings/Security/SecurityManager.php:430
 msgid "Bật tính năng"
 msgstr ""
 
 #: app/src/Settings/Security/SecurityManager.php:409
+#: app/src/Settings/Security/SecurityManager.php:434
 msgid "Bật URL đăng nhập tùy chỉnh"
 msgstr ""
 
 #: app/src/Settings/Security/SecurityManager.php:414
+#: app/src/Settings/Security/SecurityManager.php:439
 msgid "Slug đăng nhập"
 msgstr ""
 
 #: app/src/Settings/Security/SecurityManager.php:418
+#: app/src/Settings/Security/SecurityManager.php:443
 msgid "my-login"
 msgstr ""
 
 #: app/src/Settings/Security/SecurityManager.php:419
+#: app/src/Settings/Security/SecurityManager.php:444
 msgid "⚠️ Lưu slug này cẩn thận — nếu quên sẽ không vào được admin!"
 msgstr ""
 
 #: app/src/Settings/Security/SecurityManager.php:428
+#: app/src/Settings/Security/SecurityManager.php:453
 msgid "⚠️ Lưu ý quan trọng:"
 msgstr ""
 
 #: app/src/Settings/Security/SecurityManager.php:430
+#: app/src/Settings/Security/SecurityManager.php:455
 msgid "Sau khi lưu, cài đặt chỉ có hiệu lực khi <strong>làm mới lại trang</strong> (do hook <code>plugins_loaded</code>)."
 msgstr ""
 
 #: app/src/Settings/Security/SecurityManager.php:431
+#: app/src/Settings/Security/SecurityManager.php:456
 msgid "Ghi nhớ slug mới trước khi lưu. Nếu quên, vào DB xóa option <code>laca_login_slug</code>."
 msgstr ""
 
 #: app/src/Settings/Security/SecurityManager.php:432
+#: app/src/Settings/Security/SecurityManager.php:457
 msgid "URL hiện tại:"
 msgstr ""
 
 #: app/src/Settings/Security/SecurityManager.php:432
+#: app/src/Settings/Security/SecurityManager.php:457
 msgid "(chưa cài đặt)"
 msgstr ""
 
 #: app/src/Settings/Security/SecurityManager.php:442
+#: app/src/Settings/Security/SecurityManager.php:467
 msgid "Giới hạn đăng nhập sai"
 msgstr ""
 
 #: app/src/Settings/Security/SecurityManager.php:443
+#: app/src/Settings/Security/SecurityManager.php:468
 msgid "Tự động khoá IP khi đăng nhập sai nhiều lần liên tiếp (áp dụng cho wp-login.php, URL tuỳ chỉnh, WooCommerce và XML-RPC)."
 msgstr ""
 
 #: app/src/Settings/Security/SecurityManager.php:448
+#: app/src/Settings/Security/SecurityManager.php:473
 msgid "Số lần sai tối đa (3–20)"
 msgstr ""
 
 #: app/src/Settings/Security/SecurityManager.php:452
+#: app/src/Settings/Security/SecurityManager.php:477
 msgid "Trong khoảng (phút)"
 msgstr ""
 
 #: app/src/Settings/Security/SecurityManager.php:456
+#: app/src/Settings/Security/SecurityManager.php:481
 msgid "Khoá trong (phút)"
 msgstr ""
 
 #: app/src/Settings/Security/SecurityManager.php:460
+#: app/src/Settings/Security/SecurityManager.php:485
 msgid "Khoá dài sau N lần bị khoá"
 msgstr ""
 
 #: app/src/Settings/Security/SecurityManager.php:464
+#: app/src/Settings/Security/SecurityManager.php:489
 msgid "Thời gian khoá dài (giờ)"
 msgstr ""
 
 #: app/src/Settings/Security/SecurityManager.php:470
+#: app/src/Settings/Security/SecurityManager.php:495
 msgid "IP luôn được phép"
 msgstr ""
 
 #: app/src/Settings/Security/SecurityManager.php:473
+#: app/src/Settings/Security/SecurityManager.php:498
 msgid "Mỗi dòng 1 địa chỉ IP (IPv4 hoặc IPv6). Các dòng sai định dạng sẽ tự động bị bỏ qua khi lưu."
 msgstr ""
 
 #. translators: %s: địa chỉ IP hiện tại của admin
 #: app/src/Settings/Security/SecurityManager.php:480
+#: app/src/Settings/Security/SecurityManager.php:505
 #, php-format
 msgid "Thêm IP của tôi (%s)"
 msgstr ""
 
 #: app/src/Settings/Security/SecurityManager.php:497
+#: app/src/Settings/Security/SecurityManager.php:522
 msgid "Chống bot"
 msgstr ""
 
 #: app/src/Settings/Security/SecurityManager.php:503
+#: app/src/Settings/Security/SecurityManager.php:528
 msgid "Honeypot form đăng nhập"
 msgstr ""
 
 #: app/src/Settings/Security/SecurityManager.php:505
+#: app/src/Settings/Security/SecurityManager.php:530
 msgid "Chèn trường ẩn vào form đăng nhập để tự động phát hiện và từ chối bot điền tự động, hoạt cả khi không bật reCAPTCHA."
 msgstr ""
 
 #: app/src/Settings/Security/SecurityManager.php:626
+#: app/src/Settings/Security/SecurityManager.php:651
 msgid "Thông báo đăng nhập"
 msgstr ""
 
 #: app/src/Settings/Security/SecurityManager.php:627
+#: app/src/Settings/Security/SecurityManager.php:652
 msgid "Gửi cảnh báo qua Discord (kênh Security) khi phát hiện khoá IP hoặc tấn công dò mật khẩu."
 msgstr ""
 
 #: app/src/Settings/Security/SecurityManager.php:632
+#: app/src/Settings/Security/SecurityManager.php:657
 msgid "Chưa cấu hình kênh Security trên Discord Hub"
 msgstr ""
 
 #: app/src/Settings/Security/SecurityManager.php:645
+#: app/src/Settings/Security/SecurityManager.php:670
 msgid "Cấu hình Discord Hub →"
 msgstr ""
 
 #: app/src/Settings/Security/SecurityManager.php:724
+#: app/src/Settings/Security/SecurityManager.php:749
 msgid "Thiết lập bảo vệ hệ thống"
 msgstr ""
 
 #: app/src/Settings/Security/SecurityManager.php:725
+#: app/src/Settings/Security/SecurityManager.php:750
 msgid "Vô hiệu hóa các endpoint và tính năng mặc định dễ bị khai thác tấn công nếu website không cần dùng đến."
 msgstr ""
 
 #: app/src/Settings/Security/SecurityManager.php:730
+#: app/src/Settings/Security/SecurityManager.php:755
 msgid "REST API"
 msgstr ""
 
 #: app/src/Settings/Security/SecurityManager.php:734
+#: app/src/Settings/Security/SecurityManager.php:759
 msgid "Tắt REST API đối với khách vãng lai"
 msgstr ""
 
 #: app/src/Settings/Security/SecurityManager.php:736
+#: app/src/Settings/Security/SecurityManager.php:761
 msgid "Chỉ người dùng đã đăng nhập mới có thể truy vấn REST API. Ngăn chặn quét thông tin người dùng và bài viết ngoài luồng."
 msgstr ""
 
 #: app/src/Settings/Security/SecurityManager.php:740
+#: app/src/Settings/Security/SecurityManager.php:765
 msgid "XML-RPC"
 msgstr ""
 
 #: app/src/Settings/Security/SecurityManager.php:744
+#: app/src/Settings/Security/SecurityManager.php:769
 msgid "Tắt hoàn toàn XML-RPC (xmlrpc.php)"
 msgstr ""
 
 #: app/src/Settings/Security/SecurityManager.php:746
+#: app/src/Settings/Security/SecurityManager.php:771
 msgid "XML-RPC thường bị bot lạm dụng để dò mật khẩu (brute-force) hoặc tấn công DDoS. Khuyến cáo tắt nếu không dùng app WordPress trên điện thoại."
 msgstr ""
 
 #: app/src/Settings/Security/SecurityManager.php:750
+#: app/src/Settings/Security/SecurityManager.php:775
 msgid "WP-Embed"
 msgstr ""
 
 #: app/src/Settings/Security/SecurityManager.php:754
+#: app/src/Settings/Security/SecurityManager.php:779
 msgid "Tắt WP-Embed"
 msgstr ""
 
 #: app/src/Settings/Security/SecurityManager.php:756
+#: app/src/Settings/Security/SecurityManager.php:781
 msgid "Tắt script wp-embed.js và các liên kết oEmbed khám phá nếu website không cần nhúng nội dung sang các blog khác."
 msgstr ""
 
 #: app/src/Settings/Security/SecurityManager.php:760
+#: app/src/Settings/Security/SecurityManager.php:785
 msgid "X-Pingback"
 msgstr ""
 
 #: app/src/Settings/Security/SecurityManager.php:764
+#: app/src/Settings/Security/SecurityManager.php:789
 msgid "Tắt Header X-Pingback"
 msgstr ""
 
 #: app/src/Settings/Security/SecurityManager.php:766
+#: app/src/Settings/Security/SecurityManager.php:791
 msgid "Gỡ bỏ header thông báo pingback giúp tránh spam trackback và các cuộc tấn công khuếch đại pingback."
 msgstr ""
 
 #: app/src/Settings/Security/SecurityManager.php:770
+#: app/src/Settings/Security/SecurityManager.php:795
 msgid "WordPress Bloat"
 msgstr ""
 
 #: app/src/Settings/Security/SecurityManager.php:774
+#: app/src/Settings/Security/SecurityManager.php:799
 msgid "Loại bỏ thành phần thừa (Bloat) của WordPress"
 msgstr ""
 
 #: app/src/Settings/Security/SecurityManager.php:776
+#: app/src/Settings/Security/SecurityManager.php:801
 msgid "Gỡ bỏ emoji scripts, RSD link, wlwmanifest và thẻ generator version WordPress trong HTML header để tăng tính bảo mật và giảm tải."
 msgstr ""
 
 #: app/src/Settings/Security/SecurityManager.php:791
+#: app/src/Settings/Security/SecurityManager.php:816
 msgid "HTTP Security Headers"
 msgstr ""
 
 #: app/src/Settings/Security/SecurityManager.php:792
+#: app/src/Settings/Security/SecurityManager.php:817
 msgid "Bật hoặc tắt từng HTTP header bảo mật gửi kèm phản hồi từ website."
 msgstr ""
 
 #: app/src/Settings/Security/SecurityManager.php:804
+#: app/src/Settings/Security/SecurityManager.php:829
 msgid "Chặn nhúng trang vào iframe trên website khác (SAMEORIGIN) để chống clickjacking."
 msgstr ""
 
 #: app/src/Settings/Security/SecurityManager.php:816
+#: app/src/Settings/Security/SecurityManager.php:841
 msgid "Ngăn trình duyệt tự suy đoán kiểu MIME của tài nguyên (nosniff)."
 msgstr ""
 
 #: app/src/Settings/Security/SecurityManager.php:828
+#: app/src/Settings/Security/SecurityManager.php:853
 msgid "Chỉ gửi thông tin nguồn (referrer) đầy đủ khi điều hướng cùng tên miền (strict-origin-when-cross-origin)."
 msgstr ""
 
 #: app/src/Settings/Security/SecurityManager.php:840
+#: app/src/Settings/Security/SecurityManager.php:865
 msgid "Tắt quyền truy cập vị trí, micro và camera mặc định trên trình duyệt."
 msgstr ""
 
 #: app/src/Settings/Security/SecurityManager.php:852
+#: app/src/Settings/Security/SecurityManager.php:877
 msgid "Bắt buộc trình duyệt kết nối bằng HTTPS. Chỉ gửi khi site chạy HTTPS."
 msgstr ""
 
 #: app/src/Settings/Security/SecurityManager.php:855
+#: app/src/Settings/Security/SecurityManager.php:880
 msgid "Thời hạn:"
 msgstr ""
 
 #: app/src/Settings/Security/SecurityManager.php:857
+#: app/src/Settings/Security/SecurityManager.php:882
 msgid "6 tháng"
 msgstr ""
 
 #: app/src/Settings/Security/SecurityManager.php:858
+#: app/src/Settings/Security/SecurityManager.php:883
 msgid "1 năm"
 msgstr ""
 
 #: app/src/Settings/Security/SecurityManager.php:859
+#: app/src/Settings/Security/SecurityManager.php:884
 msgid "2 năm"
 msgstr ""
 
 #: app/src/Settings/Security/SecurityManager.php:865
+#: app/src/Settings/Security/SecurityManager.php:890
 msgid "Áp dụng cho subdomain"
 msgstr ""
 
 #: app/src/Settings/Security/SecurityManager.php:879
+#: app/src/Settings/Security/SecurityManager.php:904
 msgid "Kiểm soát các nguồn tải script, style, ảnh và iframe hợp lệ trên frontend."
 msgstr ""
 
 #: app/src/Settings/Security/SecurityManager.php:882
+#: app/src/Settings/Security/SecurityManager.php:907
 msgid "Nếu video/iframe/script bên ngoài bị chặn, thêm domain qua filter <code>laca_csp_frame_src</code> hoặc tắt CSP."
 msgstr ""
 
 #: app/src/Settings/Security/SecurityManager.php:894
+#: app/src/Settings/Security/SecurityManager.php:919
 msgid "Ẩn X-Powered-By"
 msgstr ""
 
 #: app/src/Settings/Security/SecurityManager.php:896
+#: app/src/Settings/Security/SecurityManager.php:921
 msgid "Gỡ bỏ header X-Powered-By để tránh lộ phiên bản PHP của máy chủ."
 msgstr ""
 
 #: app/src/Settings/Security/SecurityManager.php:1178
+#: app/src/Settings/Security/SecurityManager.php:1323
 msgid "Slug không được để trống khi bật tính năng."
 msgstr ""
 
 #: app/src/Settings/Security/SecurityManager.php:1181
+#: app/src/Settings/Security/SecurityManager.php:1326
 msgid "Slug trùng với query var hệ thống của WordPress, vui lòng chọn slug khác."
 msgstr ""
 
 #: app/src/Settings/Security/SecurityManager.php:1185
+#: app/src/Settings/Security/SecurityManager.php:1330
 msgid "Cài đặt đã lưu. Tải lại trang để áp dụng."
 msgstr ""
 
 #: app/src/Settings/Security/SecurityManager.php:1338
+#: app/src/Settings/Security/SecurityManager.php:1483
 msgid "Đã lưu cài đặt chống bot."
 msgstr ""
 
 #. translators: %s: danh sách dòng IP không hợp lệ bị bỏ qua
 #: app/src/Settings/Security/SecurityManager.php:1384
+#: app/src/Settings/Security/SecurityManager.php:1529
 #, php-format
 msgid "Đã lưu cài đặt. Đã bỏ qua các dòng IP không hợp lệ: %s"
 msgstr ""
 
 #: app/src/Settings/Security/SecurityManager.php:1388
+#: app/src/Settings/Security/SecurityManager.php:1533
 msgid "Đã lưu cài đặt giới hạn đăng nhập sai."
 msgstr ""
 
 #: app/src/Settings/Security/SecurityManager.php:1406
+#: app/src/Settings/Security/SecurityManager.php:1551
 msgid "Discord Hub không khả dụng."
 msgstr ""
 
 #: app/src/Settings/Security/SecurityManager.php:1413
+#: app/src/Settings/Security/SecurityManager.php:1558
 msgid "Kênh Security trên Discord Hub chưa được cấu hình hoặc chưa cho phép gửi ở môi trường hiện tại."
 msgstr ""
 
 #: app/src/Settings/Security/SecurityManager.php:1420
+#: app/src/Settings/Security/SecurityManager.php:1565
 msgid "[Thử] 🔒 Thông báo bảo mật đăng nhập"
 msgstr ""
 
 #: app/src/Settings/Security/SecurityManager.php:1423
+#: app/src/Settings/Security/SecurityManager.php:1568
 msgid "[Thử] Đây là tin nhắn kiểm tra cảnh báo đăng nhập từ trang Bảo mật."
 msgstr ""
 
 #: app/src/Settings/Security/SecurityManager.php:1424
+#: app/src/Settings/Security/SecurityManager.php:1569
 msgid "Người gửi thử"
 msgstr ""
 
 #: app/src/Settings/Security/SecurityManager.php:1426
+#: app/src/Settings/Security/SecurityManager.php:1571
 msgid "Kênh"
 msgstr ""
 
 #. translators: %s: chi tiết lỗi từ Discord
 #: app/src/Settings/Security/SecurityManager.php:1434
+#: app/src/Settings/Security/SecurityManager.php:1579
 #, php-format
 msgid "Gửi thử thất bại: %s"
 msgstr ""
 
 #: app/src/Settings/Security/SecurityManager.php:1438
+#: app/src/Settings/Security/SecurityManager.php:1583
 msgid "Đã gửi tin thử [Thử] tới kênh Security trên Discord."
 msgstr ""
 
 #: app/src/Settings/Security/SecurityManager.php:1469
+#: app/src/Settings/Security/SecurityManager.php:1614
 msgid "Đã lưu cấu hình HTTP Security Headers."
 msgstr ""
 
@@ -9019,18 +9381,22 @@ msgid "File SVG chứa mã độc và đã bị chặn."
 msgstr ""
 
 #: app/src/Settings/Security/TwoFactorAuth.php:215
+#: app/src/Settings/Security/TwoFactorAuth.php:218
 msgid "Không thể giải mã secret 2FA. Vui lòng dùng mã dự phòng hoặc nhờ quản trị viên reset 2FA."
 msgstr ""
 
 #: app/src/Settings/Security/TwoFactorAuth.php:414
+#: app/src/Settings/Security/TwoFactorAuth.php:417
 msgid "Chưa có secret key."
 msgstr ""
 
 #: app/src/Settings/Security/TwoFactorAuth.php:416
+#: app/src/Settings/Security/TwoFactorAuth.php:419
 msgid "Mã không đúng. Kiểm tra đồng hồ điện thoại và thử lại."
 msgstr ""
 
 #: app/src/Settings/Security/TwoFactorAuth.php:436
+#: app/src/Settings/Security/TwoFactorAuth.php:439
 msgid "2FA đã được tắt thành công."
 msgstr ""
 
@@ -9543,8 +9909,10 @@ msgid "URL production khớp: %s"
 msgstr ""
 
 #: app/src/Cli/Sync/SyncChecker.php:155
+#: app/src/Settings/Security/TrafficMonitor/TrafficClassifier.php:201
+#: app/src/Settings/Security/TrafficMonitor/TrafficClassifier.php:209
 msgid "Không xác định"
-msgstr ""
+msgstr "Unknown"
 
 #: app/src/Cli/Sync/SyncChecker.php:159
 msgid "Dung lượng ổ đĩa local"
@@ -9610,170 +9978,212 @@ msgid "Mỗi 5 phút (Laca)"
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:1086
+#: app/src/Settings/AdminSettings.php:1098
 msgid "Gỡ oEmbed, ẩn phiên bản WordPress, tắt pingback nằm ở"
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:1088
+#: app/src/Settings/AdminSettings.php:1100
 msgid "Bảo mật → Gia cố →"
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:1093
+#: app/src/Settings/AdminSettings.php:1105
 msgid "Bỏ thư viện JavaScript cũ (jQuery Migrate)"
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:1097
+#: app/src/Settings/AdminSettings.php:1109
 msgid "Chỉ cần cho theme/plugin rất cũ (~10KB). Bật xong kiểm tra site; nếu gặp lỗi giao diện thì tắt lại."
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:1099
+#: app/src/Settings/AdminSettings.php:1111
 msgid "Tắt CSS Gutenberg ngoài Frontend"
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:1103
+#: app/src/Settings/AdminSettings.php:1115
 msgid "Bỏ nạp file block-library CSS mặc định nếu theme tự xây dựng style riêng. Giúp giảm tải CSS."
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:1105
+#: app/src/Settings/AdminSettings.php:1117
 msgid "Tắt CSS Classic Theme"
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:1109
+#: app/src/Settings/AdminSettings.php:1121
 msgid "Bỏ nạp file CSS tương thích theme cổ điển không dùng đến."
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:1111
+#: app/src/Settings/AdminSettings.php:1123
 msgid "Tắt Emoji của WordPress"
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:1115
+#: app/src/Settings/AdminSettings.php:1127
 msgid "Bỏ ~15KB script/CSS emoji; biểu tượng cảm xúc vẫn hiển thị tốt bằng font tích hợp sẵn trên thiết bị."
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:1118
+#: app/src/Settings/AdminSettings.php:1130
 msgid "Thư viện tối ưu trải nghiệm"
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:1119
+#: app/src/Settings/AdminSettings.php:1131
 msgid "Tải trước trang khi rê chuột (Instant.page)"
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:1123
+#: app/src/Settings/AdminSettings.php:1135
 msgid "Tải ngầm dữ liệu trang khi người xem rê chuột lên liên kết. Nhấp chuột trang sẽ hiện gần như tức thì."
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:1125
+#: app/src/Settings/AdminSettings.php:1137
 msgid "Cuộn trang mượt mà (Smooth Scroll)"
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:1129
+#: app/src/Settings/AdminSettings.php:1141
 msgid "Tạo hiệu ứng cuộn trang mượt mà khi người dùng điều hướng trên website."
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:1132
+#: app/src/Settings/AdminSettings.php:1144
 msgid "Tối ưu HTML & Hình ảnh"
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:1133
+#: app/src/Settings/AdminSettings.php:1145
 msgid "Xoá chú thích (comment) trong HTML, JS và CSS"
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:1134
+#: app/src/Settings/AdminSettings.php:1146
 msgid "Bỏ thẻ đóng XHTML ở phần tử rỗng (HTML5 chuẩn)"
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:1135
+#: app/src/Settings/AdminSettings.php:1147
 msgid "Chuyển URL nội bộ thành đường dẫn tương đối (bỏ domain)"
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:1136
+#: app/src/Settings/AdminSettings.php:1148
 msgid "Dùng URL trung lập giao thức (bỏ http: và https:)"
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:1139
+#: app/src/Settings/AdminSettings.php:1151
 msgid "Tối ưu nạp trước tài nguyên (Resource Hints)"
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:1143
+#: app/src/Settings/AdminSettings.php:1155
 msgid "Thêm các chỉ dẫn dns-prefetch và preconnect giúp trình duyệt kết nối sớm tới các tài nguyên bên thứ ba."
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:1145
+#: app/src/Settings/AdminSettings.php:1157
 msgid "Tải ảnh chậm (Lazy Load) cho ảnh đại diện"
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:1149
+#: app/src/Settings/AdminSettings.php:1161
 msgid "Chỉ tải ảnh khi người xem cuộn tới. Trang hiện nhanh hơn, tiết kiệm băng thông đáng kể."
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:1151
+#: app/src/Settings/AdminSettings.php:1163
 msgid "Tải ảnh chậm cho ảnh trong bài viết"
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:1155
+#: app/src/Settings/AdminSettings.php:1167
 msgid "Tự động tải chậm (lazy load) toàn bộ hình ảnh nằm trong nội dung bài viết."
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:1157
+#: app/src/Settings/AdminSettings.php:1169
 msgid "Bật Service Worker Cache"
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:1161
+#: app/src/Settings/AdminSettings.php:1173
 msgid "Lưu bộ nhớ đệm offline qua trình duyệt giúp tải lại trang cực nhanh. Yêu cầu website hoạt động trên giao thức HTTPS."
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:1165
+#: app/src/Settings/AdminSettings.php:1177
 msgid "Tối ưu hóa truy vấn Database"
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:1169
+#: app/src/Settings/AdminSettings.php:1181
 msgid "Tự động giãn cách thời gian lưu nháp tự động và tối ưu hoá bộ đệm đối tượng (object cache)."
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:1171
+#: app/src/Settings/AdminSettings.php:1183
 msgid "Ghi nhật ký (log) truy vấn SQL chậm"
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:1175
+#: app/src/Settings/AdminSettings.php:1187
 msgid "Ghi nhận các truy vấn cơ sở dữ liệu chạy lâu bất thường vào log để hỗ trợ chẩn đoán hiệu năng."
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:1177
+#: app/src/Settings/AdminSettings.php:1189
 msgid "Tối ưu hóa phân bổ bộ nhớ PHP"
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:1181
+#: app/src/Settings/AdminSettings.php:1193
 msgid "Tự động kích hoạt bộ thu gom rác (garbage collection) và tối ưu hoá giới hạn bộ nhớ PHP khi xử lý dữ liệu lớn."
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:1183
+#: app/src/Settings/AdminSettings.php:1195
 msgid "Giải phóng bộ nhớ cuối request"
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:1187
+#: app/src/Settings/AdminSettings.php:1199
 msgid "Giải phóng các biến tạm cuối chu trình tạo trang để giảm thiểu tối đa hiện tượng rò rỉ bộ nhớ (memory leak)."
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:1189
+#: app/src/Settings/AdminSettings.php:1201
 msgid "Theo dõi hiệu năng thực thi (Server-Timing)"
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:1193
+#: app/src/Settings/AdminSettings.php:1205
 msgid "Đo lường thời gian thực thi PHP và truy vấn DB, xuất ra HTTP header Server-Timing để dễ kiểm tra."
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:1207
+#: app/src/Settings/AdminSettings.php:1219
 msgid "Kiểm soát WordPress Heartbeat"
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:1209
+#: app/src/Settings/AdminSettings.php:1221
 msgid "Mặc định (15–60 giây)"
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:1216
+#: app/src/Settings/AdminSettings.php:1228
 msgid "Đếm lượt xem bài viết"
 msgstr ""
 
 #: app/src/Settings/AdminSettings.php:1220
+#: app/src/Settings/AdminSettings.php:1232
 msgid "Đếm lượt xem bất đồng bộ bằng Beacon/REST API và gom bộ đệm ghi theo lô mỗi 5 phút, không làm chậm trang và hoàn toàn tương thích bộ nhớ đệm (cache)."
 msgstr ""
 
@@ -9904,324 +10314,402 @@ msgid "Theme con được build theo parent %1$s, parent hiện tại %2$s — c
 msgstr "Child theme was built against parent %1$s, current parent is %2$s — please rebuild child theme (yarn build) and deploy."
 
 #: app/src/Settings/LacaAdmin/LacaDashboard.php:61
+#: app/src/Settings/LacaAdmin/LacaDashboard.php:62
 msgid "Đang tính…"
 msgstr ""
 
 #: app/src/Settings/LacaAdmin/LacaDashboard.php:70
+#: app/src/Settings/LacaAdmin/LacaDashboard.php:71
 msgid "Không có quyền truy cập."
 msgstr ""
 
 #: app/src/Settings/LacaAdmin/LacaDashboard.php:94
+#: app/src/Settings/LacaAdmin/LacaDashboard.php:95
 msgid "Tổng quan Laca Admin"
 msgstr ""
 
 #: app/src/Settings/LacaAdmin/LacaDashboard.php:108
+#: app/src/Settings/LacaAdmin/LacaDashboard.php:109
 msgid "Việc nên làm"
 msgstr ""
 
 #: app/src/Settings/LacaAdmin/LacaDashboard.php:112
+#: app/src/Settings/LacaAdmin/LacaDashboard.php:113
 msgid "Các khuyến nghị bảo mật và tối ưu cần xử lý để website hoạt động an toàn, trơn tru."
 msgstr ""
 
 #: app/src/Settings/LacaAdmin/LacaDashboard.php:125
+#: app/src/Settings/LacaAdmin/LacaDashboard.php:126
 msgid "Dung lượng website"
 msgstr ""
 
 #: app/src/Settings/LacaAdmin/LacaDashboard.php:126
+#: app/src/Settings/LacaAdmin/LacaDashboard.php:127
 msgid "Phân bổ dữ liệu giữa mã nguồn, media và cơ sở dữ liệu."
 msgstr ""
 
 #: app/src/Settings/LacaAdmin/LacaDashboard.php:129
 #: app/src/Settings/LacaTools/Management/StorageHealth.php:490
+#: app/src/Settings/LacaAdmin/LacaDashboard.php:130
 msgid "Chi tiết →"
 msgstr ""
 
 #: app/src/Settings/LacaAdmin/LacaDashboard.php:141
+#: app/src/Settings/LacaAdmin/LacaDashboard.php:142
 msgid "Chức năng quản trị"
 msgstr ""
 
 #: app/src/Settings/LacaAdmin/LacaDashboard.php:142
+#: app/src/Settings/LacaAdmin/LacaDashboard.php:143
 msgid "Truy cập nhanh các công cụ cấu hình, bảo mật và vận hành hệ thống."
 msgstr ""
 
 #: app/src/Settings/LacaAdmin/LacaDashboard.php:153
 #: app/src/Settings/LacaTools/Management/SystemInfoPage.php:231
+#: app/src/Settings/LacaAdmin/LacaDashboard.php:154
 msgid "Môi trường máy chủ"
 msgstr ""
 
 #: app/src/Settings/LacaAdmin/LacaDashboard.php:154
+#: app/src/Settings/LacaAdmin/LacaDashboard.php:155
 msgid "Thông số cấu hình môi trường hosting đang chạy website."
 msgstr ""
 
 #: app/src/Settings/LacaAdmin/LacaDashboard.php:157
+#: app/src/Settings/LacaAdmin/LacaDashboard.php:158
 msgid "Xem chi tiết →"
 msgstr ""
 
 #: app/src/Settings/LacaAdmin/LacaDashboard.php:179
+#: app/src/Settings/LacaAdmin/LacaDashboard.php:180
 msgid "Website đang ổn định"
 msgstr ""
 
 #: app/src/Settings/LacaAdmin/LacaDashboard.php:184
+#: app/src/Settings/LacaAdmin/LacaDashboard.php:185
 msgid "Website cần chú ý"
 msgstr ""
 
 #: app/src/Settings/LacaAdmin/LacaDashboard.php:189
+#: app/src/Settings/LacaAdmin/LacaDashboard.php:190
 msgid "Website cần xử lý ngay"
 msgstr ""
 
 #: app/src/Settings/LacaAdmin/LacaDashboard.php:190
+#: app/src/Settings/LacaAdmin/LacaDashboard.php:191
 msgid "Nguy hiểm"
 msgstr ""
 
 #: app/src/Settings/LacaAdmin/LacaDashboard.php:195
+#: app/src/Settings/LacaAdmin/LacaDashboard.php:196
 msgid "Website chưa được kiểm tra sức khoẻ"
 msgstr ""
 
 #: app/src/Settings/LacaAdmin/LacaDashboard.php:196
+#: app/src/Settings/LacaAdmin/LacaDashboard.php:197
 msgid "Chưa kiểm tra"
 msgstr ""
 
 #: app/src/Settings/LacaAdmin/LacaDashboard.php:205
+#: app/src/Settings/LacaAdmin/LacaDashboard.php:206
 #, php-format
 msgid "Còn %d việc nên làm để website an toàn và chạy nhanh hơn."
 msgstr ""
 
 #: app/src/Settings/LacaAdmin/LacaDashboard.php:206
+#: app/src/Settings/LacaAdmin/LacaDashboard.php:207
 msgid "Không còn việc nào cần xử lý. Website đang ở trạng thái tốt."
 msgstr ""
 
 #. translators: %s: user email
 #: app/src/Settings/LacaAdmin/LacaDashboard.php:223
 #: theme/setup/users/auth.php:84
+#: app/src/Settings/LacaAdmin/LacaDashboard.php:224
 #, php-format
 msgid "Xin chào, %s"
 msgstr "Hello, %s"
 
 #: app/src/Settings/LacaAdmin/LacaDashboard.php:230
+#: app/src/Settings/LacaAdmin/LacaDashboard.php:231
 msgid "Xem việc nên làm ↓"
 msgstr ""
 
 #: app/src/Settings/LacaAdmin/LacaDashboard.php:241
+#: app/src/Settings/LacaAdmin/LacaDashboard.php:242
 #, php-format
 msgid "Điểm sức khoẻ %s trên 100"
 msgstr ""
 
 #: app/src/Settings/LacaAdmin/LacaDashboard.php:251
+#: app/src/Settings/LacaAdmin/LacaDashboard.php:252
 msgid "Điểm sức khoẻ"
 msgstr ""
 
 #: app/src/Settings/LacaAdmin/LacaDashboard.php:265
+#: app/src/Settings/LacaAdmin/LacaDashboard.php:266
 msgid "Lớp bảo mật"
 msgstr ""
 
 #: app/src/Settings/LacaAdmin/LacaDashboard.php:284
+#: app/src/Settings/LacaAdmin/LacaDashboard.php:285
 msgid "Gửi email"
 msgstr ""
 
 #: app/src/Settings/LacaAdmin/LacaDashboard.php:296
+#: app/src/Settings/LacaAdmin/LacaDashboard.php:297
 msgid "Dọn dẹp tự động"
 msgstr ""
 
 #: app/src/Settings/LacaAdmin/LacaDashboard.php:308
+#: app/src/Settings/LacaAdmin/LacaDashboard.php:309
 msgid "Cập nhật hệ thống"
 msgstr ""
 
 #: app/src/Settings/LacaAdmin/LacaDashboard.php:329
+#: app/src/Settings/LacaAdmin/LacaDashboard.php:330
 msgid "Chưa có kết quả kiểm tra sức khoẻ hệ thống."
 msgstr ""
 
 #: app/src/Settings/LacaAdmin/LacaDashboard.php:331
+#: app/src/Settings/LacaAdmin/LacaDashboard.php:332
 msgid "Kiểm tra ngay"
 msgstr ""
 
 #: app/src/Settings/LacaAdmin/LacaDashboard.php:339
+#: app/src/Settings/LacaAdmin/LacaDashboard.php:340
 msgid "Không còn việc nào cần làm. Website đang ở trạng thái tốt!"
 msgstr ""
 
 #: app/src/Settings/LacaAdmin/LacaDashboard.php:358
+#: app/src/Settings/LacaAdmin/LacaDashboard.php:359
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:1621
 msgid "Xử lý"
-msgstr ""
+msgstr "Action"
 
 #: app/src/Settings/LacaAdmin/LacaDashboard.php:377
+#: app/src/Settings/LacaAdmin/LacaDashboard.php:378
 msgid "Chưa có số liệu dung lượng lưu trữ."
 msgstr ""
 
 #: app/src/Settings/LacaAdmin/LacaDashboard.php:401
+#: app/src/Settings/LacaAdmin/LacaDashboard.php:402
 msgid "Phân bổ dung lượng"
 msgstr ""
 
 #: app/src/Settings/LacaAdmin/LacaDashboard.php:402
+#: app/src/Settings/LacaAdmin/LacaDashboard.php:403
 #, php-format
 msgid "Mã nguồn: %s%%"
 msgstr ""
 
 #: app/src/Settings/LacaAdmin/LacaDashboard.php:403
+#: app/src/Settings/LacaAdmin/LacaDashboard.php:404
 #, php-format
 msgid "Media: %s%%"
 msgstr ""
 
 #: app/src/Settings/LacaAdmin/LacaDashboard.php:404
+#: app/src/Settings/LacaAdmin/LacaDashboard.php:405
 #, php-format
 msgid "Database: %s%%"
 msgstr ""
 
 #: app/src/Settings/LacaAdmin/LacaDashboard.php:412
+#: app/src/Settings/LacaAdmin/LacaDashboard.php:413
 msgid "Mã nguồn (Plugins + Themes)"
 msgstr ""
 
 #: app/src/Settings/LacaAdmin/LacaDashboard.php:419
+#: app/src/Settings/LacaAdmin/LacaDashboard.php:420
 msgid "Media (Uploads)"
 msgstr ""
 
 #: app/src/Settings/LacaAdmin/LacaDashboard.php:426
+#: app/src/Settings/LacaAdmin/LacaDashboard.php:427
 msgid "Cơ sở dữ liệu (MySQL)"
 msgstr ""
 
 #: app/src/Settings/LacaAdmin/LacaDashboard.php:454
+#: app/src/Settings/LacaAdmin/LacaDashboard.php:455
 msgid "Khoá IP, URL đăng nhập riêng, 2FA, honeypot, security headers, quét mã độc."
 msgstr ""
 
 #: app/src/Settings/LacaAdmin/LacaDashboard.php:459
+#: app/src/Settings/LacaAdmin/LacaDashboard.php:460
 msgid "Tối ưu tốc độ"
 msgstr ""
 
 #: app/src/Settings/LacaAdmin/LacaDashboard.php:460
+#: app/src/Settings/LacaAdmin/LacaDashboard.php:461
 msgid "Tải ảnh chậm, giảm Heartbeat, gỡ Emoji/oEmbed/jQuery Migrate, giới hạn revision."
 msgstr ""
 
 #: app/src/Settings/LacaAdmin/LacaDashboard.php:466
+#: app/src/Settings/LacaAdmin/LacaDashboard.php:467
 msgid "Dọn revision, bản nháp tự động, thùng rác, spam và lịch dọn tự động."
 msgstr ""
 
 #: app/src/Settings/LacaAdmin/LacaDashboard.php:471
+#: app/src/Settings/LacaAdmin/LacaDashboard.php:472
 msgid "Hệ thống & dung lượng"
 msgstr ""
 
 #: app/src/Settings/LacaAdmin/LacaDashboard.php:472
+#: app/src/Settings/LacaAdmin/LacaDashboard.php:473
 msgid "Thông số máy chủ, giới hạn PHP, dung lượng từng phần, file lớn."
 msgstr ""
 
 #: app/src/Settings/LacaAdmin/LacaDashboard.php:477
+#: app/src/Settings/LacaAdmin/LacaDashboard.php:478
 msgid "Gửi mail & Nhật ký"
 msgstr ""
 
 #: app/src/Settings/LacaAdmin/LacaDashboard.php:478
+#: app/src/Settings/LacaAdmin/LacaDashboard.php:479
 msgid "Cấu hình SMTP và xem danh sách email hệ thống đã gửi."
 msgstr ""
 
 #: app/src/Settings/LacaAdmin/LacaDashboard.php:483
+#: app/src/Settings/LacaAdmin/LacaDashboard.php:484
 msgid "Sao lưu cấu hình"
 msgstr ""
 
 #: app/src/Settings/LacaAdmin/LacaDashboard.php:484
+#: app/src/Settings/LacaAdmin/LacaDashboard.php:485
 msgid "Xuất/nhập toàn bộ cấu hình (Laca Admin + SEO) để dựng site mới nhanh."
 msgstr ""
 
 #: app/src/Settings/LacaAdmin/LacaDashboard.php:489
+#: app/src/Settings/LacaAdmin/LacaDashboard.php:490
 msgid "Form liên hệ"
 msgstr ""
 
 #: app/src/Settings/LacaAdmin/LacaDashboard.php:490
+#: app/src/Settings/LacaAdmin/LacaDashboard.php:491
 msgid "Tạo form liên hệ, tuỳ chỉnh các trường và xem tin nhắn khách gửi."
 msgstr ""
 
 #: app/src/Settings/LacaAdmin/LacaDashboard.php:496
+#: app/src/Settings/LacaAdmin/LacaDashboard.php:497
 msgid "Tối ưu thẻ meta, sitemap XML, kiểm tra điểm SEO bài viết và chuyển hướng."
 msgstr ""
 
 #: app/src/Settings/LacaAdmin/LacaDashboard.php:501
+#: app/src/Settings/LacaAdmin/LacaDashboard.php:502
 msgid "Bảo trì website"
 msgstr ""
 
 #: app/src/Settings/LacaAdmin/LacaDashboard.php:502
+#: app/src/Settings/LacaAdmin/LacaDashboard.php:503
 msgid "Bật chế độ bảo trì, tuỳ biến trang thông báo và giới hạn IP xem site."
 msgstr ""
 
 #: app/src/Settings/LacaAdmin/LacaDashboard.php:519
+#: app/src/Settings/LacaAdmin/LacaDashboard.php:520
 msgid "Mở →"
 msgstr ""
 
 #: app/src/Settings/LacaAdmin/LacaDashboard.php:566
 #: app/src/Settings/LacaTools/Management/SystemInfoPage.php:169
+#: app/src/Settings/LacaAdmin/LacaDashboard.php:567
 msgid "Đã bật"
 msgstr ""
 
 #: app/src/Settings/LacaAdmin/LacaDashboard.php:566
+#: app/src/Settings/LacaAdmin/LacaDashboard.php:567
 msgid "Chưa bật"
 msgstr ""
 
 #: app/src/Settings/LacaAdmin/LacaDashboard.php:631
+#: app/src/Settings/LacaAdmin/LacaDashboard.php:632
 msgid "Lịch dọn dẹp Database tự động đang tắt"
 msgstr ""
 
 #: app/src/Settings/LacaAdmin/LacaDashboard.php:632
+#: app/src/Settings/LacaAdmin/LacaDashboard.php:633
 msgid "Nên bật lịch dọn dẹp tự động hằng ngày hoặc hằng tuần để tránh DB phình to do revisions và spam."
 msgstr ""
 
 #: app/src/Settings/LacaAdmin/LacaDashboard.php:644
+#: app/src/Settings/LacaAdmin/LacaDashboard.php:645
 msgid "Chưa cấu hình gửi email qua SMTP"
 msgstr ""
 
 #: app/src/Settings/LacaAdmin/LacaDashboard.php:645
+#: app/src/Settings/LacaAdmin/LacaDashboard.php:646
 msgid "Website đang dùng hàm gửi mail mặc định, dễ bị rơi vào thư rác hoặc bị chặn gửi."
 msgstr ""
 
 #: app/src/Settings/LacaAdmin/LacaDashboard.php:713
+#: app/src/Settings/LacaAdmin/LacaDashboard.php:715
 msgid "Trung bình"
 msgstr ""
 
 #: app/src/Settings/LacaAdmin/LacaDashboard.php:716
+#: app/src/Settings/LacaAdmin/LacaDashboard.php:718
 msgid "Yếu"
 msgstr ""
 
 #: app/src/Settings/LacaAdmin/LacaDashboard.php:736
+#: app/src/Settings/LacaAdmin/LacaDashboard.php:738
 msgid "Đã cấu hình SMTP"
 msgstr ""
 
 #: app/src/Settings/LacaAdmin/LacaDashboard.php:742
+#: app/src/Settings/LacaAdmin/LacaDashboard.php:744
 msgid "Chưa cấu hình"
 msgstr ""
 
 #: app/src/Settings/LacaAdmin/LacaDashboard.php:743
+#: app/src/Settings/LacaAdmin/LacaDashboard.php:745
 msgid "Dùng mail mặc định máy chủ"
 msgstr ""
 
 #: app/src/Settings/LacaAdmin/LacaDashboard.php:751
+#: app/src/Settings/LacaAdmin/LacaDashboard.php:753
 msgid "hằng tuần"
 msgstr ""
 
 #: app/src/Settings/LacaAdmin/LacaDashboard.php:751
+#: app/src/Settings/LacaAdmin/LacaDashboard.php:753
 msgid "hằng ngày"
 msgstr ""
 
 #: app/src/Settings/LacaAdmin/LacaDashboard.php:755
+#: app/src/Settings/LacaAdmin/LacaDashboard.php:757
 msgid "Đang hoạt động"
 msgstr ""
 
 #: app/src/Settings/LacaAdmin/LacaDashboard.php:757
+#: app/src/Settings/LacaAdmin/LacaDashboard.php:759
 #, php-format
 msgid "Đang bật · %s"
 msgstr ""
 
 #: app/src/Settings/LacaAdmin/LacaDashboard.php:764
+#: app/src/Settings/LacaAdmin/LacaDashboard.php:766
 msgid "Chưa có lịch chạy tự động"
 msgstr ""
 
 #: app/src/Settings/LacaAdmin/LacaDashboard.php:788
+#: app/src/Settings/LacaAdmin/LacaDashboard.php:790
 #, php-format
 msgid "%d bản cập nhật"
 msgstr ""
 
 #: app/src/Settings/LacaAdmin/LacaDashboard.php:789
+#: app/src/Settings/LacaAdmin/LacaDashboard.php:791
 #, php-format
 msgid "Core: %d · Plugin: %d · Theme: %d"
 msgstr ""
 
 #: app/src/Settings/LacaAdmin/LacaDashboard.php:794
+#: app/src/Settings/LacaAdmin/LacaDashboard.php:796
 msgid "Đã cập nhật đủ"
 msgstr ""
 
 #: app/src/Settings/LacaAdmin/LacaDashboard.php:795
+#: app/src/Settings/LacaAdmin/LacaDashboard.php:797
 msgid "Mọi thành phần đều mới nhất"
 msgstr ""
 
@@ -10328,31 +10816,37 @@ msgstr ""
 
 #: app/src/Settings/LacaTools/Management/ConfigPage.php:153
 #: app/src/Settings/LacaTools/Management/SiteConfig/SiteConfigImporter.php:857
+#: app/src/Settings/LacaTools/Management/SiteConfig/SiteConfigImporter.php:870
 msgid "Giao diện & Laca Theme"
 msgstr ""
 
 #: app/src/Settings/LacaTools/Management/ConfigPage.php:157
 #: app/src/Settings/LacaTools/Management/SiteConfig/SiteConfigImporter.php:858
+#: app/src/Settings/LacaTools/Management/SiteConfig/SiteConfigImporter.php:871
 msgid "Bảo mật & Đăng nhập"
 msgstr ""
 
 #: app/src/Settings/LacaTools/Management/ConfigPage.php:161
 #: app/src/Settings/LacaTools/Management/SiteConfig/SiteConfigImporter.php:859
+#: app/src/Settings/LacaTools/Management/SiteConfig/SiteConfigImporter.php:872
 msgid "Công cụ & Tối ưu"
 msgstr ""
 
 #: app/src/Settings/LacaTools/Management/ConfigPage.php:165
 #: app/src/Settings/LacaTools/Management/SiteConfig/SiteConfigImporter.php:860
+#: app/src/Settings/LacaTools/Management/SiteConfig/SiteConfigImporter.php:873
 msgid "Thông báo (Discord/Zalo/PM)"
 msgstr ""
 
 #: app/src/Settings/LacaTools/Management/ConfigPage.php:169
 #: app/src/Settings/LacaTools/Management/SiteConfig/SiteConfigImporter.php:861
+#: app/src/Settings/LacaTools/Management/SiteConfig/SiteConfigImporter.php:874
 msgid "Mẫu Form liên hệ"
 msgstr ""
 
 #: app/src/Settings/LacaTools/Management/ConfigPage.php:173
 #: app/src/Settings/LacaTools/Management/SiteConfig/SiteConfigImporter.php:862
+#: app/src/Settings/LacaTools/Management/SiteConfig/SiteConfigImporter.php:875
 msgid "Custom Post Types động"
 msgstr ""
 
@@ -10516,6 +11010,7 @@ msgstr ""
 #: app/src/Settings/LacaTools/Management/SiteConfig/SiteConfigImporter.php:44
 #: app/src/Settings/LacaTools/Management/SiteConfig/SiteConfigImporter.php:311
 #: app/src/Settings/LacaTools/Management/SiteConfig/SiteConfigImporter.php:761
+#: app/src/Settings/LacaTools/Management/SiteConfig/SiteConfigImporter.php:774
 msgid "Không có quyền hoặc phiên làm việc hết hạn."
 msgstr ""
 
@@ -10625,30 +11120,37 @@ msgid "Mật khẩu/khoá API không được nhập, cần điền lại thủ 
 msgstr ""
 
 #: app/src/Settings/LacaTools/Management/SiteConfig/SiteConfigImporter.php:481
+#: app/src/Settings/LacaTools/Management/SiteConfig/SiteConfigImporter.php:494
 msgid "Bản sao"
 msgstr ""
 
 #: app/src/Settings/LacaTools/Management/SiteConfig/SiteConfigImporter.php:545
+#: app/src/Settings/LacaTools/Management/SiteConfig/SiteConfigImporter.php:558
 msgid "Đã áp dụng bộ cấu hình site thành công!"
 msgstr ""
 
 #: app/src/Settings/LacaTools/Management/SiteConfig/SiteConfigImporter.php:766
+#: app/src/Settings/LacaTools/Management/SiteConfig/SiteConfigImporter.php:779
 msgid "Mã bản sao lưu không hợp lệ."
 msgstr ""
 
 #: app/src/Settings/LacaTools/Management/SiteConfig/SiteConfigImporter.php:771
+#: app/src/Settings/LacaTools/Management/SiteConfig/SiteConfigImporter.php:784
 msgid "Không tìm thấy danh sách bản sao lưu."
 msgstr ""
 
 #: app/src/Settings/LacaTools/Management/SiteConfig/SiteConfigImporter.php:783
+#: app/src/Settings/LacaTools/Management/SiteConfig/SiteConfigImporter.php:796
 msgid "Không tìm thấy bản sao lưu được chọn."
 msgstr ""
 
 #: app/src/Settings/LacaTools/Management/SiteConfig/SiteConfigImporter.php:837
+#: app/src/Settings/LacaTools/Management/SiteConfig/SiteConfigImporter.php:850
 msgid "Đã khôi phục thành công website về trạng thái trước đó!"
 msgstr ""
 
 #: app/src/Settings/LacaTools/Management/SiteConfig/SiteConfigImporter.php:864
+#: app/src/Settings/LacaTools/Management/SiteConfig/SiteConfigImporter.php:877
 msgid "Cấu hình khác"
 msgstr ""
 
@@ -11052,8 +11554,9 @@ msgid "Tên file"
 msgstr ""
 
 #: app/src/Settings/LacaTools/Management/SystemInfoPage.php:962
+#: app/src/Settings/Security/SecurityManager.php:1170
 msgid "Đường dẫn tương đối"
-msgstr ""
+msgstr "Relative path"
 
 #: app/src/Settings/LacaTools/Management/SystemInfoPage.php:963
 msgid "Dung lượng"
@@ -11215,6 +11718,7 @@ msgstr ""
 #: app/src/Settings/Security/SecurityAudit.php:295
 #: app/src/Settings/Security/SecurityAudit.php:299
 #: app/src/Settings/Security/SecurityManager.php:579
+#: app/src/Settings/Security/SecurityManager.php:604
 msgid "Kiểm tra mật khẩu bị lộ (Have I Been Pwned)"
 msgstr ""
 
@@ -11233,6 +11737,7 @@ msgstr ""
 #: app/src/Settings/Security/SecurityAudit.php:310
 #: app/src/Settings/Security/SecurityAudit.php:321
 #: app/src/Settings/Security/SecurityManager.php:572
+#: app/src/Settings/Security/SecurityManager.php:597
 msgid "Tắt Mật khẩu ứng dụng (Application Passwords)"
 msgstr ""
 
@@ -11253,114 +11758,142 @@ msgid "Mật khẩu ứng dụng đang bật nhưng không có tài khoản nào
 msgstr ""
 
 #: app/src/Settings/Security/SecurityManager.php:516
+#: app/src/Settings/Security/SecurityManager.php:541
 msgid "Chính sách đăng nhập"
 msgstr ""
 
 #: app/src/Settings/Security/SecurityManager.php:517
+#: app/src/Settings/Security/SecurityManager.php:542
 msgid "Quy định nghiêm ngặt cho quá trình đăng nhập và bảo vệ tài khoản (chống brute-force nâng cao, mật khẩu lộ, ép 2FA)."
 msgstr ""
 
 #: app/src/Settings/Security/SecurityManager.php:525
+#: app/src/Settings/Security/SecurityManager.php:550
 msgid "Khoá IP ngay khi đăng nhập bằng username không tồn tại"
 msgstr ""
 
 #: app/src/Settings/Security/SecurityManager.php:527
+#: app/src/Settings/Security/SecurityManager.php:552
 msgid "Ngăn kẻ tấn công dùng từ điển dò username. Nếu tên người dùng không tồn tại trong hệ thống, IP sẽ bị khoá ngay ở lần thử đầu tiên."
 msgstr ""
 
 #: app/src/Settings/Security/SecurityManager.php:532
+#: app/src/Settings/Security/SecurityManager.php:557
 msgid "Danh sách username cấm dùng"
 msgstr ""
 
 #: app/src/Settings/Security/SecurityManager.php:534
+#: app/src/Settings/Security/SecurityManager.php:559
 msgid "Mỗi dòng một username. Đăng nhập bằng tên trong danh sách này sẽ bị khoá IP ngay lập tức. Người dùng mới cũng không thể đăng ký bằng các tên này."
 msgstr ""
 
 #: app/src/Settings/Security/SecurityManager.php:539
+#: app/src/Settings/Security/SecurityManager.php:564
 msgid "Bắt buộc xác thực 2 bước (2FA) theo vai trò"
 msgstr ""
 
 #: app/src/Settings/Security/SecurityManager.php:542
+#: app/src/Settings/Security/SecurityManager.php:567
 msgid "Tính năng Xác thực 2 bước tổng thể đang tắt (xem tab Xác thực 2 bước). Bật 2FA để chính sách này có hiệu lực."
 msgstr ""
 
 #: app/src/Settings/Security/SecurityManager.php:554
+#: app/src/Settings/Security/SecurityManager.php:579
 msgid "Thời gian ân hạn (ngày)"
 msgstr ""
 
 #: app/src/Settings/Security/SecurityManager.php:556
+#: app/src/Settings/Security/SecurityManager.php:581
 msgid "Số ngày cho phép tài khoản đăng nhập sau khi tạo trước khi bị ép buộc phải cấu hình 2FA (0 = bắt buộc ngay)."
 msgstr ""
 
 #: app/src/Settings/Security/SecurityManager.php:562
+#: app/src/Settings/Security/SecurityManager.php:587
 msgid "Giới hạn yêu cầu quên mật khẩu (lần/giờ/IP)"
 msgstr ""
 
 #: app/src/Settings/Security/SecurityManager.php:564
+#: app/src/Settings/Security/SecurityManager.php:589
 msgid "Số lần tối đa một địa chỉ IP có thể gửi yêu cầu đặt lại mật khẩu trong 1 giờ. Nhập 0 để tắt giới hạn."
 msgstr ""
 
 #: app/src/Settings/Security/SecurityManager.php:574
+#: app/src/Settings/Security/SecurityManager.php:599
 msgid "Vô hiệu hoá tính năng Mật khẩu ứng dụng của WordPress để đóng hoàn toàn bề mặt tấn công xác thực qua REST API."
 msgstr ""
 
 #: app/src/Settings/Security/SecurityManager.php:586
+#: app/src/Settings/Security/SecurityManager.php:611
 msgid "Chỉ Quản trị viên"
 msgstr ""
 
 #: app/src/Settings/Security/SecurityManager.php:589
+#: app/src/Settings/Security/SecurityManager.php:614
 msgid "Mọi người dùng"
 msgstr ""
 
 #: app/src/Settings/Security/SecurityManager.php:593
+#: app/src/Settings/Security/SecurityManager.php:618
 msgid "Sử dụng mô hình k-Anonymity (chỉ gửi 5 ký tự đầu của hash SHA-1) để kiểm tra mật khẩu trong cơ sở dữ liệu Have I Been Pwned mà không làm lộ mật khẩu thực tế."
 msgstr ""
 
 #: app/src/Settings/Security/SecurityManager.php:601
+#: app/src/Settings/Security/SecurityManager.php:626
 msgid "Cảnh báo khi admin đăng nhập từ IP mới"
 msgstr ""
 
 #: app/src/Settings/Security/SecurityManager.php:603
+#: app/src/Settings/Security/SecurityManager.php:628
 msgid "Gửi thông báo Discord khi tài khoản quản trị đăng nhập thành công từ một địa chỉ IP chưa từng xuất hiện trong 10 phiên gần nhất."
 msgstr ""
 
 #: app/src/Settings/Security/SecurityManager.php:609
+#: app/src/Settings/Security/SecurityManager.php:634
 msgid "Lối thoát khẩn cấp (Emergency Bypass):"
 msgstr ""
 
 #: app/src/Settings/Security/SecurityManager.php:611
+#: app/src/Settings/Security/SecurityManager.php:636
 msgid "Nếu bạn hoặc quản trị viên bị khoá ngoài trang quản trị do cấu hình sai hoặc quên IP, hãy thêm dòng sau vào file <code>wp-config.php</code>:<br><code>define('LACA_SECURITY_BYPASS', true);</code><br>Khi hằng số này được bật, toàn bộ cơ chế khoá IP, kiểm tra username cấm và ép buộc chuyển hướng sẽ được vô hiệu hoá tạm thời."
 msgstr ""
 
 #: app/src/Settings/Security/SecurityManager.php:619
+#: app/src/Settings/Security/SecurityManager.php:644
 msgid "Lưu chính sách"
 msgstr ""
 
 #: app/src/Settings/Security/SecurityManager.php:637
+#: app/src/Settings/Security/SecurityManager.php:662
 msgid "Đã kết nối kênh Security"
 msgstr ""
 
 #: app/src/Settings/Security/SecurityManager.php:640
+#: app/src/Settings/Security/SecurityManager.php:665
 msgid "Webhook kênh Security bị lỗi, cần nhập lại"
 msgstr ""
 
 #: app/src/Settings/Security/SecurityManager.php:1252
+#: app/src/Settings/Security/SecurityManager.php:1397
 msgid "Đã lưu chính sách đăng nhập thành công."
 msgstr ""
 
 #: app/src/Settings/ThemeSnapshot.php:61
+#: app/src/Settings/ThemeSnapshot.php:102
 msgid "Máy chủ thiếu tiện ích mở rộng ZipArchive để tạo bản sao lưu theme."
 msgstr "Server is missing the ZipArchive extension required for theme snapshots."
 
 #: app/src/Settings/ThemeSnapshot.php:69
+#: app/src/Settings/ThemeSnapshot.php:110
 msgid "Không tìm thấy thư mục gốc của parent theme để tạo snapshot."
 msgstr "Parent theme root directory not found for snapshot creation."
 
 #: app/src/Settings/ThemeSnapshot.php:90
+#: app/src/Settings/ThemeSnapshot.php:134
 msgid "Không thể khởi tạo file zip snapshot cho theme."
 msgstr "Unable to initialize snapshot zip file for theme."
 
 #: app/src/Settings/ThemeSnapshot.php:123
+#: app/src/Settings/ThemeSnapshot.php:167
 msgid "Không thể hoàn tất ghi dữ liệu snapshot cho theme."
 msgstr "Unable to finalize writing theme snapshot archive."
 
@@ -11369,26 +11902,33 @@ msgid "Chưa có bản sao lưu snapshot nào để khôi phục."
 msgstr "No theme snapshot backup available to restore."
 
 #: app/src/Settings/ThemeSnapshot.php:234
+#: app/src/Settings/ThemeSnapshot.php:303
 msgid "Tên file snapshot không hợp lệ."
 msgstr "Invalid snapshot filename."
 
 #: app/src/Settings/ThemeSnapshot.php:248
+#: app/src/Settings/ThemeSnapshot.php:316
+#: app/src/Settings/ThemeSnapshot.php:324
 msgid "Không tìm thấy file snapshot được yêu cầu."
 msgstr "Requested snapshot file not found."
 
 #: app/src/Settings/ThemeSnapshot.php:261
+#: app/src/Settings/ThemeSnapshot.php:337
 msgid "Không khởi tạo được WP_Filesystem để khôi phục theme."
 msgstr "Unable to initialize WP_Filesystem for theme restore."
 
 #: app/src/Settings/ThemeSnapshot.php:285
+#: app/src/Settings/ThemeSnapshot.php:361
 msgid "Gói snapshot không hợp lệ: thiếu lacadev-client/theme/style.css."
 msgstr "Invalid snapshot archive: missing lacadev-client/theme/style.css."
 
 #: app/src/Settings/ThemeSnapshot.php:303
+#: app/src/Settings/ThemeSnapshot.php:389
 msgid "Không thể tạm dời thư mục theme hiện tại để khôi phục."
 msgstr "Unable to temporarily move current theme directory for restore."
 
 #: app/src/Settings/ThemeSnapshot.php:316
+#: app/src/Settings/ThemeSnapshot.php:402
 msgid "Không thể chuyển bản snapshot vào thư mục themes/lacadev-client."
 msgstr "Unable to move snapshot into themes/lacadev-client."
 
@@ -11456,3 +11996,1182 @@ msgstr "Your Google email address has not been verified."
 #: theme/setup/users/auth.php:482
 msgid "Phiên xác thực Google đã hết hạn hoặc không hợp lệ. Vui lòng thử lại."
 msgstr "Google authentication session expired or is invalid. Please try again."
+
+#: app/src/Cli/LacaCryptoCommand.php:68
+msgid "Thiếu AUTH_KEY hợp lệ hoặc LACA_CRYPTO_KEY (base64 32 byte) trong wp-config.php — dừng migration."
+msgstr ""
+
+#: app/src/Cli/LacaCryptoCommand.php:79
+msgid "DRY-RUN (không ghi DB)"
+msgstr ""
+
+#: app/src/Cli/LacaCryptoCommand.php:80
+msgid "APPLY (ghi DB)"
+msgstr ""
+
+#. translators: %s: chế độ chạy migration (DRY-RUN hoặc APPLY)
+#: app/src/Cli/LacaCryptoCommand.php:82
+#, php-format
+msgid "Bắt đầu kiểm tra / di trú Crypto v2 — chế độ: %s"
+msgstr ""
+
+#. translators: %s: định danh trường dữ liệu
+#: app/src/Cli/LacaCryptoCommand.php:103
+#: app/src/Cli/LacaCryptoCommand.php:307
+#, php-format
+msgid "[plaintext_skipped] %s (chưa gắn tag mã hoá, giữ nguyên)"
+msgstr ""
+
+#. translators: %s: định danh trường dữ liệu
+#: app/src/Cli/LacaCryptoCommand.php:111
+#: app/src/Cli/LacaCryptoCommand.php:188
+#: app/src/Cli/LacaCryptoCommand.php:255
+#: app/src/Cli/LacaCryptoCommand.php:315
+#: app/src/Cli/LacaCryptoCommand.php:393
+#, php-format
+msgid "[failed] Không giải mã được %s — giữ nguyên giá trị cũ."
+msgstr ""
+
+#. translators: %s: định danh trường dữ liệu
+#: app/src/Cli/LacaCryptoCommand.php:119
+#: app/src/Cli/LacaCryptoCommand.php:196
+#: app/src/Cli/LacaCryptoCommand.php:261
+#: app/src/Cli/LacaCryptoCommand.php:323
+#: app/src/Cli/LacaCryptoCommand.php:401
+#, php-format
+msgid "[failed] Mã hoá lại v2 không khớp cho %s — giữ nguyên giá trị cũ."
+msgstr ""
+
+#. translators: %s: định danh trường dữ liệu
+#: app/src/Cli/LacaCryptoCommand.php:154
+#: app/src/Cli/LacaCryptoCommand.php:231
+#: app/src/Cli/LacaCryptoCommand.php:276
+#: app/src/Cli/LacaCryptoCommand.php:356
+#: app/src/Cli/LacaCryptoCommand.php:434
+#, php-format
+msgid "[failed] Đọc lại xác minh thất bại cho %s — đã khôi phục bản gốc."
+msgstr ""
+
+#. translators: %s: định danh trường dữ liệu
+#: app/src/Cli/LacaCryptoCommand.php:180
+#: app/src/Cli/LacaCryptoCommand.php:249
+#, php-format
+msgid "[plaintext_skipped] %s (không phải envelope GscCrypto, giữ nguyên)"
+msgstr ""
+
+#. translators: %s: định danh trường dữ liệu
+#: app/src/Cli/LacaCryptoCommand.php:385
+#, php-format
+msgid "[plaintext_skipped] %s (chưa mã hoá, giữ nguyên)"
+msgstr ""
+
+#. translators: %d: số bản ghi lỗi không thể di trú
+#: app/src/Cli/LacaCryptoCommand.php:451
+#, php-format
+msgid "Migration hoàn tất với %d trường giải mã thất bại (đã giữ nguyên dữ liệu gốc)."
+msgstr ""
+
+#: app/src/Cli/LacaCryptoCommand.php:455
+msgid "Dry-run hoàn tất — không có thay đổi nào được ghi vào DB."
+msgstr ""
+
+#: app/src/Cli/LacaCryptoCommand.php:457
+msgid "Di trú Crypto v2 hoàn tất."
+msgstr ""
+
+#: app/src/Features/ContactForm/FooterContactHandler.php:31
+msgid "Phiên làm việc đã hết hạn, vui lòng tải lại trang và thử lại."
+msgstr ""
+
+#: app/src/Features/ContactForm/FooterContactHandler.php:51
+msgid "Bạn đã gửi quá nhiều yêu cầu. Vui lòng thử lại sau ít phút."
+msgstr ""
+
+#: app/src/Features/ContactForm/FooterContactHandler.php:83
+msgid "Vui lòng điền đầy đủ thông tin bắt buộc."
+msgstr ""
+
+#: app/src/Features/ContactForm/FooterContactHandler.php:94
+msgid "Số điện thoại không hợp lệ. Vui lòng kiểm tra lại."
+msgstr ""
+
+#: app/src/Features/ContactForm/FooterContactHandler.php:107
+#: app/src/Features/ContactForm/FooterContactHandler.php:126
+#: app/src/Features/ContactForm/FooterContactHandler.php:133
+msgid "Không thể lưu yêu cầu lúc này. Vui lòng thử lại sau."
+msgstr ""
+
+#: app/src/Features/ContactForm/FooterContactHandler.php:163
+msgid "Cảm ơn bạn! Yêu cầu tư vấn đã được ghi nhận, chúng tôi sẽ liên hệ sớm nhất."
+msgstr ""
+
+#: app/src/Features/ContactForm/FooterContactHandler.php:182
+msgid "Form liên hệ footer"
+msgstr ""
+
+#: app/src/Features/ContactForm/FooterContactHandler.php:198
+msgid "Số điện thoại liên hệ"
+msgstr ""
+
+#: app/src/Features/ContactForm/FooterContactHandler.php:199
+msgid "Địa chỉ xây dựng"
+msgstr ""
+
+#: app/src/Features/ContactForm/FooterContactHandler.php:200
+msgid "Quy mô xây dựng"
+msgstr ""
+
+#: app/src/Features/ContactForm/FooterContactHandler.php:201
+msgid "Ngân sách"
+msgstr ""
+
+#: app/src/Features/ContactForm/FooterContactHandler.php:204
+msgid "Yêu cầu tư vấn mới [$tf_name - $tf_phone]"
+msgstr ""
+
+#: app/src/Features/GoogleServices/GscCrypto.php:86
+msgid "Không thể mã hoá thông tin kết nối Google Services: thiếu AUTH_KEY hợp lệ hoặc LACA_CRYPTO_KEY (base64 32 byte) trong wp-config.php."
+msgstr ""
+
+#: app/src/Helpers/Crypto.php:90
+msgid "Không thể mã hoá dữ liệu nhạy cảm: thiếu AUTH_KEY hợp lệ hoặc LACA_CRYPTO_KEY (base64 32 byte) trong wp-config.php."
+msgstr ""
+
+#: app/src/Settings/LacaAdmin/LacaAdminMenuOrganizer.php:288
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:42
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:43
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:146
+msgid "Giám sát truy cập"
+msgstr "Traffic Monitor"
+
+#: app/src/Settings/Security/SecurityManager.php:170
+msgid "Đang đối chiếu…"
+msgstr "Verifying…"
+
+#: app/src/Settings/Security/SecurityManager.php:171
+#: app/src/Settings/Security/SecurityManager.php:263
+msgid "Đối chiếu ngay"
+msgstr "Verify now"
+
+#: app/src/Settings/Security/SecurityManager.php:172
+#: app/src/Settings/Security/SecurityManager.php:266
+msgid "Quét lại (bỏ bộ đệm)"
+msgstr "Rescan (bypass cache)"
+
+#: app/src/Settings/Security/SecurityManager.php:255
+msgid "Đối chiếu file Core với WordPress.org"
+msgstr "Verify Core Files with WordPress.org"
+
+#: app/src/Settings/Security/SecurityManager.php:257
+msgid "So sánh mã băm MD5 chính thức từ WordPress.org theo đúng phiên bản hiện tại, đồng thời tìm file PHP lạ trong wp-admin và wp-includes (bộ đệm 15 phút)."
+msgstr "Compare official MD5 checksums from WordPress.org for the current version and detect unknown PHP files in wp-admin and wp-includes (cached for 15 minutes)."
+
+#. translators: 1: số file đã đối chiếu, 2: số file khác bản gốc, 3: số file thiếu, 4: số file PHP lạ, 5: thời điểm quét
+#: app/src/Settings/Security/SecurityManager.php:1108
+#, php-format
+msgid "Đã đối chiếu: %1$s file · Khác bản gốc: %2$d · Thiếu: %3$d · PHP lạ: %4$d (%5$s)"
+msgstr "Verified: %1$s files · Modified: %2$d · Missing: %3$d · Unknown PHP: %4$d (%5$s)"
+
+#: app/src/Settings/Security/SecurityManager.php:1124
+msgid "Không phát hiện file Core bị sửa đổi, bị thiếu hoặc file PHP lạ trong wp-admin / wp-includes."
+msgstr "No modified, missing, or unknown PHP files detected in wp-admin / wp-includes."
+
+#: app/src/Settings/Security/SecurityManager.php:1134
+msgid "File Core khác mã băm gốc"
+msgstr "Modified Core files"
+
+#: app/src/Settings/Security/SecurityManager.php:1138
+msgid "File Core bị thiếu"
+msgstr "Missing Core files"
+
+#: app/src/Settings/Security/SecurityManager.php:1142
+msgid "File PHP không thuộc danh sách Core"
+msgstr "Unknown PHP files outside Core list"
+
+#. translators: 1: tiêu đề nhóm file Core, 2: số lượng file
+#: app/src/Settings/Security/SecurityManager.php:1159
+#, php-format
+msgid "%1$s (%2$d)"
+msgstr "%1$s (%2$d)"
+
+#: app/src/Settings/Security/SecurityManager.php:1184
+msgid "Chỉ hiển thị 200 file đầu tiên."
+msgstr "Showing the first 200 files only."
+
+#. translators: %s: thông báo lỗi hệ thống tệp
+#: app/src/Settings/Security/TrafficMonitor/CoreChecksum.php:126
+#, php-format
+msgid "Không thể đọc đầy đủ thư mục Core: %s"
+msgstr "Unable to read Core directory completely: %s"
+
+#. translators: %s: chi tiết lỗi kết nối
+#: app/src/Settings/Security/TrafficMonitor/CoreChecksum.php:161
+#, php-format
+msgid "Không thể kết nối máy chủ checksum WordPress.org: %s"
+msgstr "Unable to connect to WordPress.org checksum server: %s"
+
+#: app/src/Settings/Security/TrafficMonitor/CoreChecksum.php:170
+msgid "Máy chủ checksum WordPress.org không phản hồi thành công."
+msgstr "WordPress.org checksum server did not respond successfully."
+
+#. translators: 1: phiên bản WordPress, 2: mã ngôn ngữ
+#: app/src/Settings/Security/TrafficMonitor/CoreChecksum.php:180
+#, php-format
+msgid "Không tìm thấy bảng checksum chính thức cho WordPress %1$s (%2$s)."
+msgstr "Official checksums not found for WordPress %1$s (%2$s)."
+
+#: app/src/Settings/Security/TrafficMonitor/IpBlocklist.php:97
+#: app/src/Settings/Security/TrafficMonitor/RequestFirewall.php:107
+msgid "403 Không được phép truy cập"
+msgstr "403 Forbidden"
+
+#: app/src/Settings/Security/TrafficMonitor/IpBlocklist.php:409
+#: app/src/Settings/Security/TrafficMonitor/IpBlocklist.php:519
+msgid "Định dạng IP/CIDR không hợp lệ."
+msgstr "Invalid IP/CIDR format."
+
+#: app/src/Settings/Security/TrafficMonitor/IpBlocklist.php:420
+msgid "Dải /8 bao phủ hơn 16 triệu địa chỉ IP. Vui lòng tích xác nhận trước khi chặn."
+msgstr "A /8 range covers over 16 million IP addresses. Please check the confirmation box before blocking."
+
+#: app/src/Settings/Security/TrafficMonitor/IpBlocklist.php:428
+msgid "Không được phép chặn địa chỉ IP nội bộ (private) hoặc dải dự trữ (reserved)."
+msgstr "Blocking private or reserved IP addresses is not permitted."
+
+#: app/src/Settings/Security/TrafficMonitor/IpBlocklist.php:439
+msgid "Không được phép chặn dải chứa địa chỉ IP nội bộ hoặc dự trữ."
+msgstr "Blocking a range containing private or reserved IP addresses is not permitted."
+
+#: app/src/Settings/Security/TrafficMonitor/IpBlocklist.php:449
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:2371
+msgid "Từ chối chặn: dải này chứa địa chỉ IP hiện tại của bạn."
+msgstr "Block refused: this range contains your current IP address."
+
+#: app/src/Settings/Security/TrafficMonitor/IpBlocklist.php:459
+msgid "Từ chối chặn: dải này chứa địa chỉ IP kết nối hiện tại."
+msgstr "Block refused: this range contains the current connection IP address."
+
+#: app/src/Settings/Security/TrafficMonitor/IpBlocklist.php:470
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:2375
+msgid "Từ chối chặn: dải này chứa địa chỉ IP của máy chủ."
+msgstr "Block refused: this range contains the server IP address."
+
+#. translators: %s: địa chỉ IP tin cậy
+#: app/src/Settings/Security/TrafficMonitor/IpBlocklist.php:481
+#, php-format
+msgid "Từ chối chặn: dải này chứa IP tin cậy (%s)."
+msgstr "Block refused: this range contains a trusted IP (%s)."
+
+#: app/src/Settings/Security/TrafficMonitor/IpBlocklist.php:512
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:2387
+msgid "Vui lòng chọn từ 1 đến 50 mục mỗi lần thao tác."
+msgstr "Please select between 1 and 50 items per operation."
+
+#: app/src/Settings/Security/TrafficMonitor/IpBlocklist.php:523
+msgid "Định dạng IP/CIDR hoặc độ dài prefix không được hỗ trợ."
+msgstr "Unsupported IP/CIDR format or prefix length."
+
+#. translators: %d: giới hạn số mục trong danh sách chặn
+#: app/src/Settings/Security/TrafficMonitor/IpBlocklist.php:581
+#, php-format
+msgid "Danh sách chặn đã đạt giới hạn tối đa %d mục."
+msgstr "The blocklist has reached the maximum limit of %d entries."
+
+#. translators: %d: số lượng IP tin cậy tối đa
+#: app/src/Settings/Security/TrafficMonitor/IpBlocklist.php:664
+#, php-format
+msgid "Danh sách IP tin cậy giới hạn tối đa %d địa chỉ."
+msgstr "The trusted IP list is limited to a maximum of %d addresses."
+
+#: app/src/Settings/Security/TrafficMonitor/IpBlocklist.php:753
+msgid "Không thể đọc/ghi file .htaccess tại thư mục gốc WordPress."
+msgstr "Unable to read/write the .htaccess file in the WordPress root directory."
+
+#: app/src/Settings/Security/TrafficMonitor/IpBlocklist.php:758
+msgid "File .htaccess không đọc được hoặc vượt quá giới hạn an toàn 2 MB."
+msgstr "The .htaccess file is unreadable or exceeds the 2 MB safety limit."
+
+#: app/src/Settings/Security/TrafficMonitor/IpBlocklist.php:768
+msgid "Sao lưu .htaccess thất bại; đã huỷ thao tác ghi để đảm bảo an toàn."
+msgstr "Failed to back up .htaccess; write operation aborted for safety."
+
+#: app/src/Settings/Security/TrafficMonitor/IpBlocklist.php:802
+msgid "Đồng bộ .htaccess thất bại; hệ thống đã tự động khôi phục từ bản sao lưu."
+msgstr "Failed to sync .htaccess; automatically restored from backup."
+
+#: app/src/Settings/Security/TrafficMonitor/IpBlocklist.php:805
+msgid "Không xác minh được nội dung .htaccess sau khi ghi; đã khôi phục từ bản sao lưu."
+msgstr "Could not verify .htaccess contents after writing; restored from backup."
+
+#: app/src/Settings/Security/TrafficMonitor/NetworkTypeScanner.php:43
+msgid "Mỗi 15 phút (Laca Giám sát truy cập)"
+msgstr "Every 15 minutes (Laca Traffic Monitor)"
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:129
+msgid "Tổng quan IP"
+msgstr "IP Overview"
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:130
+msgid "Top URL"
+msgstr "Top URLs"
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:131
+msgid "IP đã chặn"
+msgstr "Blocked IPs"
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:132
+msgid "Tường lửa request"
+msgstr "Request Firewall"
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:148
+msgid "Theo dõi lưu lượng truy cập đến PHP WordPress, nhận diện dấu hiệu dò quét, tường lửa đường dẫn/query độc hại và quản lý danh sách chặn IP/CIDR."
+msgstr "Monitor traffic reaching WordPress PHP, detect scanning signals, filter malicious paths/queries, and manage IP/CIDR blocklists."
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:155
+msgid "Đang dùng plugin Lamvt Security — tắt plugin để dùng tính năng của theme. Ở chế độ này trang chỉ cho phép xem và nhập dữ liệu."
+msgstr "Lamvt Security plugin is active — deactivate the plugin to use the theme feature. In this mode, only viewing and importing data are enabled."
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:165
+msgid "Hằng số LACA_TM_DISABLE đang bật trong wp-config.php — toàn bộ bộ ghi nhận, tường lửa request và chặn IP đang tạm dừng."
+msgstr "LACA_TM_DISABLE is enabled in wp-config.php — traffic tracking, request firewall, and IP blocking are currently paused."
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:346
+msgid "Ghi nhận lượt truy cập hiện đang TẮT (mặc định). Vào tab Cài đặt để bật khi cần theo dõi lưu lượng."
+msgstr "Traffic tracking is currently OFF (default). Go to the Settings tab to enable it when needed."
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:357
+msgid "Tổng IP duy nhất"
+msgstr "Total Unique IPs"
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:365
+msgid "Tổng lượt truy cập"
+msgstr "Total Hits"
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:373
+msgid "Lượt nghi ngờ"
+msgstr "Suspicious Hits"
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:381
+msgid "Quy tắc đang chặn"
+msgstr "Active Block Rules"
+
+#. translators: %d: số ngày lọc thống kê
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:401
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:984
+#, php-format
+msgid "%d ngày gần nhất"
+msgid_plural "%d ngày gần nhất"
+msgstr[0] "Last %d day"
+msgstr[1] "Last %d days"
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:410
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:484
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:1182
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:2159
+msgid "Phân loại"
+msgstr "Category"
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:412
+msgid "Mọi phân loại"
+msgstr "All categories"
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:420
+msgid "Tìm địa chỉ IP"
+msgstr "Search IP address"
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:426
+msgid "Tìm theo địa chỉ IP…"
+msgstr "Search by IP address…"
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:428
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:1001
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:1376
+msgid "Lọc"
+msgstr "Filter"
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:437
+msgid "Chặn các địa chỉ IP đã chọn theo dải đã chọn?"
+msgstr "Block the selected IP addresses using the chosen prefix?"
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:443
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:1390
+msgid "Đã chọn:"
+msgstr "Selected:"
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:447
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:1157
+msgid "Độ dài prefix chặn"
+msgstr "Block prefix length"
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:449
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:1159
+msgid "IP đơn (/32 · IPv6 /128)"
+msgstr "Single IP (/32 · IPv6 /128)"
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:450
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:1160
+msgid "Dải IPv4 /24 (256 IP)"
+msgstr "IPv4 /24 range (256 IPs)"
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:451
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:1161
+msgid "Dải IPv4 /16 (65.536 IP)"
+msgstr "IPv4 /16 range (65,536 IPs)"
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:452
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:1162
+msgid "Dải IPv4 /8 (16.777.216 IP)"
+msgstr "IPv4 /8 range (16,777,216 IPs)"
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:453
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:1163
+msgid "Dải IPv6 /64"
+msgstr "IPv6 /64 range"
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:458
+msgid "Tôi hiểu dải này rất rộng (bắt buộc với /8)"
+msgstr "I understand this range is very wide (required for /8)"
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:465
+msgid "Chặn IP đã chọn"
+msgstr "Block selected IPs"
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:480
+msgid "Chọn tất cả IP trên trang"
+msgstr "Select all IPs on this page"
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:485
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:1183
+msgid "Trạng thái chặn"
+msgstr "Block status"
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:486
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:1184
+msgid "Lượt"
+msgstr "Hits"
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:487
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:2161
+#: app/src/Settings/Security/TrafficMonitor/TrafficClassifier.php:199
+msgid "Nghi ngờ"
+msgstr "Suspicious"
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:489
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:1012
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:1187
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:2163
+msgid "Lần cuối"
+msgstr "Last seen"
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:490
+msgid "Lý do / User-Agent"
+msgstr "Reason / User-Agent"
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:496
+msgid "Chưa có dữ liệu truy cập trong khoảng thời gian đã chọn."
+msgstr "No traffic data recorded in the selected period."
+
+#. translators: %s: địa chỉ IP trong bảng tổng quan
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:528
+#, php-format
+msgid "Chọn IP %s"
+msgstr "Select IP %s"
+
+#. translators: %s: tên bot đọc từ User-Agent
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:547
+#, php-format
+msgid "%s (UA tự khai báo)"
+msgstr "%s (self-declared UA)"
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:557
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:1224
+msgid "Tin cậy"
+msgstr "Trusted"
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:559
+msgid "Đã chặn"
+msgstr "Blocked"
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:562
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:1228
+msgid "Chưa chặn"
+msgstr "Unblocked"
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:599
+msgid "Lưu ý: Các request được page cache hoặc CDN trả về trực tiếp không đi qua PHP WordPress nên không được ghi nhận tại đây. Không tự động chặn IP dựa trên điểm nghi vấn."
+msgstr "Note: Requests served directly by page cache or a CDN bypass WordPress PHP and are not recorded here. IPs are never blocked automatically based on risk score."
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:692
+msgid "← Quay lại danh sách IP"
+msgstr "← Back to IP list"
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:695
+msgid "Chi tiết IP:"
+msgstr "IP Details:"
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:699
+msgid "IP tin cậy"
+msgstr "Trusted IP"
+
+#. translators: %s: quy tắc CIDR đang chặn IP
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:706
+#, php-format
+msgid "Đang bị chặn bởi %s"
+msgstr "Blocked by %s"
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:720
+msgid "Đỉnh lượt / phút"
+msgstr "Peak hits / min"
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:728
+msgid "Số lỗi HTTP 4xx / 5xx"
+msgstr "HTTP 4xx / 5xx errors"
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:736
+msgid "Điểm nghi vấn cao nhất"
+msgstr "Max risk score"
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:747
+msgid "Thao tác với địa chỉ IP này"
+msgstr "Actions for this IP address"
+
+#. translators: %s: địa chỉ IPv6 cần chặn
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:760
+#, php-format
+msgid "Chặn IPv6 đơn %s/128?"
+msgstr "Block single IPv6 %s/128?"
+
+#. translators: %s: địa chỉ IPv6 cần chặn theo dải /64
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:762
+#, php-format
+msgid "Chặn dải IPv6 /64 chứa %s?"
+msgstr "Block IPv6 /64 range containing %s?"
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:766
+msgid "Chặn /128"
+msgstr "Block /128"
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:770
+msgid "Chặn /64"
+msgstr "Block /64"
+
+#. translators: %s: địa chỉ IPv4 cần chặn đơn
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:774
+#, php-format
+msgid "Chặn IP đơn %s/32?"
+msgstr "Block single IP %s/32?"
+
+#. translators: %s: địa chỉ IPv4 cần chặn dải /24
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:776
+#, php-format
+msgid "Chặn dải /24 (256 IP) chứa %s?"
+msgstr "Block /24 range (256 IPs) containing %s?"
+
+#. translators: %s: địa chỉ IPv4 cần chặn dải /16
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:778
+#, php-format
+msgid "Chặn dải /16 (65.536 IP) chứa %s?"
+msgstr "Block /16 range (65,536 IPs) containing %s?"
+
+#. translators: %s: địa chỉ IPv4 cần chặn dải /8
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:780
+#, php-format
+msgid "Chặn dải /8 (hơn 16 triệu IP) chứa %s?"
+msgstr "Block /8 range (over 16M IPs) containing %s?"
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:784
+msgid "Chặn /32"
+msgstr "Block /32"
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:788
+msgid "Chặn /24"
+msgstr "Block /24"
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:792
+msgid "Chặn /16"
+msgstr "Block /16"
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:796
+msgid "Chặn /8"
+msgstr "Block /8"
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:800
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:1168
+msgid "Tôi hiểu dải này rất rộng"
+msgstr "I understand this range is very wide"
+
+#. translators: %s: quy tắc CIDR đang chặn
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:807
+#, php-format
+msgid "Bỏ quy tắc chặn %s?"
+msgstr "Remove block rule %s?"
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:816
+msgid "Bỏ chặn quy tắc hiện tại"
+msgstr "Unblock current rule"
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:828
+msgid "Bỏ khỏi IP tin cậy"
+msgstr "Remove from trusted IPs"
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:828
+msgid "Đánh dấu IP tin cậy"
+msgstr "Mark as trusted IP"
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:837
+msgid "200 sự kiện gần nhất"
+msgstr "200 Most Recent Events"
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:843
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:1618
+msgid "Method"
+msgstr "Method"
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:844
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:1619
+msgid "Đường dẫn"
+msgstr "Path"
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:845
+msgid "Status"
+msgstr "Status"
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:846
+msgid "Nguồn (Referrer)"
+msgstr "Referrer"
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:847
+msgid "Điểm"
+msgstr "Score"
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:848
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:1620
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:2165
+msgid "Lý do"
+msgstr "Reason"
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:854
+msgid "Chưa ghi nhận sự kiện chi tiết cho địa chỉ IP này."
+msgstr "No detailed events recorded for this IP address yet."
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:882
+msgid "Trực tiếp / không rõ"
+msgstr "Direct / unknown"
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:993
+msgid "Tìm đường dẫn"
+msgstr "Search path"
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:999
+msgid "Tìm đường dẫn (vd: wp-login.php)…"
+msgstr "Search path (e.g. wp-login.php)…"
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:1008
+msgid "Đường dẫn (bấm để xem IP)"
+msgstr "Path (click to view IPs)"
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:1009
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:2160
+msgid "Lượt truy cập"
+msgstr "Hits"
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:1010
+msgid "Số IP duy nhất"
+msgstr "Unique IPs"
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:1011
+msgid "HTTP 404"
+msgstr "HTTP 404"
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:1018
+msgid "Chưa có dữ liệu đường dẫn trong khoảng thời gian đã chọn."
+msgstr "No path data recorded in the selected period."
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:1137
+msgid "← Quay lại Top URL"
+msgstr "← Back to Top URLs"
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:1140
+msgid "IP truy cập đường dẫn:"
+msgstr "IPs accessing path:"
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:1149
+msgid "Chặn toàn bộ các địa chỉ IP hiển thị trên trang hiện tại?"
+msgstr "Block all IP addresses shown on the current page?"
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:1172
+msgid "Chặn tất cả IP (trang này)"
+msgstr "Block all IPs (this page)"
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:1186
+msgid "Điểm max"
+msgstr "Max score"
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:1188
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:2164
+msgid "User-Agent"
+msgstr "User-Agent"
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:1194
+msgid "Không có địa chỉ IP nào truy cập đường dẫn này trong khoảng đã chọn."
+msgstr "No IP addresses accessed this path in the selected period."
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:1339
+msgid "Chế độ thực thi danh sách chặn:"
+msgstr "Blocklist enforcement mode:"
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:1340
+msgid "Tầng PHP (luôn bật)"
+msgstr "PHP layer (always active)"
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:1342
+msgid "Đồng bộ .htaccess: Đang bật"
+msgstr ".htaccess sync: Enabled"
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:1344
+msgid "Đồng bộ .htaccess: Không khả dụng (máy chủ không phải Apache hoặc thiếu quyền ghi)"
+msgstr ".htaccess sync: Unavailable (non-Apache server or not writable)"
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:1346
+msgid "Đồng bộ .htaccess: Đang tắt"
+msgstr ".htaccess sync: Disabled"
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:1356
+msgid "Nhập quy tắc chặn và IP tin cậy từ Lamvt Security vào theme? Dữ liệu cũ của plugin sẽ được giữ nguyên."
+msgstr "Import block rules and trusted IPs from Lamvt Security into the theme? Original plugin data will remain untouched."
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:1357
+msgid "Nhập từ Lamvt Security"
+msgstr "Import from Lamvt Security"
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:1369
+msgid "Tìm CIDR hoặc ghi chú"
+msgstr "Search CIDR or note"
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:1375
+msgid "Tìm IP, CIDR hoặc ghi chú…"
+msgstr "Search IP, CIDR, or note…"
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:1384
+msgid "Bỏ chặn các quy tắc CIDR đã chọn?"
+msgstr "Unblock the selected CIDR rules?"
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:1397
+msgid "Bỏ chặn mục đã chọn"
+msgstr "Unblock selected"
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:1411
+msgid "Chọn tất cả quy tắc chặn trên trang"
+msgstr "Select all block rules on this page"
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:1414
+msgid "CIDR"
+msgstr "CIDR"
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:1415
+msgid "Số địa chỉ IPv4"
+msgstr "IPv4 addresses"
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:1416
+msgid "Ngày thêm"
+msgstr "Added on"
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:1417
+msgid "Người thêm"
+msgstr "Added by"
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:1418
+msgid "Ghi chú"
+msgstr "Note"
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:1419
+msgid "Phân loại / UA gần nhất"
+msgstr "Latest Category / UA"
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:1426
+msgid "Danh sách chặn hiện đang trống."
+msgstr "The blocklist is currently empty."
+
+#. translators: %s: quy tắc CIDR trong bảng danh sách chặn
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:1445
+#, php-format
+msgid "Chọn %s"
+msgstr "Select %s"
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:1470
+msgid "Dải mạng"
+msgstr "Network range"
+
+#. translators: %s: quy tắc CIDR cần bỏ chặn
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:1478
+#, php-format
+msgid "Bỏ chặn quy tắc %s?"
+msgstr "Unblock rule %s?"
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:1488
+msgid "Bỏ chặn"
+msgstr "Unblock"
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:1534
+msgid "Bảo vệ đường dẫn tệp nhạy cảm (.env, .git, wp-config.php.bak, phpinfo.php, .htaccess)"
+msgstr "Protect sensitive file paths (.env, .git, wp-config.php.bak, phpinfo.php, .htaccess)"
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:1535
+msgid "Chặn thực thi tệp PHP / PHTML / PHAR trong thư mục uploads"
+msgstr "Block PHP / PHTML / PHAR execution in uploads directory"
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:1536
+msgid "Phát hiện dấu hiệu path traversal (../, /etc/passwd, wp-config.php trong query)"
+msgstr "Detect path traversal patterns (../, /etc/passwd, wp-config.php in query)"
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:1537
+msgid "Phát hiện mẫu SQL injection phổ biến (UNION SELECT, SLEEP, BENCHMARK, information_schema…)"
+msgstr "Detect common SQL injection patterns (UNION SELECT, SLEEP, BENCHMARK, information_schema…)"
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:1538
+msgid "Phát hiện mẫu XSS trong query (<script>, javascript:, onerror=, <iframe>/<svg>)"
+msgstr "Detect XSS patterns in query (<script>, javascript:, onerror=, <iframe>/<svg>)"
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:1539
+msgid "Kiểm tra danh sách tên tham số query tùy chỉnh bên dưới"
+msgstr "Inspect the custom query parameter names listed below"
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:1548
+msgid "Cấu hình tường lửa request"
+msgstr "Request Firewall Settings"
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:1550
+msgid "Chạy độc lập với bộ ghi nhận truy cập. Khuyến nghị theo dõi ở chế độ Cảnh báo trước khi bật Chặn HTTP 403."
+msgstr "Runs independently of traffic tracking. Monitoring in Alert mode is recommended before enabling HTTP 403 Blocking."
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:1556
+msgid "Chế độ xử lý"
+msgstr "Handling mode"
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:1559
+msgid "Chỉ ghi cảnh báo (mặc định an toàn)"
+msgstr "Alert only (safe default)"
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:1562
+msgid "Chặn bằng HTTP 403"
+msgstr "Block with HTTP 403"
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:1586
+msgid "Tên tham số query tùy chỉnh (phân cách bằng dấu phẩy)"
+msgstr "Custom query parameter names (comma-separated)"
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:1593
+msgid "debug_cmd, eval_test"
+msgstr "debug_cmd, eval_test"
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:1596
+msgid "Chỉ chấp nhận ký tự a-z, 0-9, gạch dưới và gạch ngang (tối đa 40 tham số, mỗi tham số tối đa 64 ký tự). Không thêm các tham số tìm kiếm hoặc thanh toán hợp lệ."
+msgstr "Accepts lowercase a-z, 0-9, underscore, and hyphen only (up to 40 keys, max 64 chars each). Do not add legitimate search or checkout parameters."
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:1604
+msgid "Lưu cấu hình tường lửa"
+msgstr "Save firewall settings"
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:1611
+msgid "100 sự kiện tường lửa gần nhất"
+msgstr "100 Most Recent Firewall Events"
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:1627
+msgid "Chưa có sự kiện tường lửa nào được ghi nhận."
+msgstr "No firewall events recorded yet."
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:1692
+msgid "Cài đặt giám sát & cảnh báo"
+msgstr "Monitoring & Alert Settings"
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:1706
+msgid "Bật ghi nhận lượt truy cập công khai"
+msgstr "Enable public traffic tracking"
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:1709
+msgid "Mặc định tắt để không ghi DB ngoài ý muốn khi cập nhật theme hàng loạt. Request do page cache hoặc CDN trả về không đi qua PHP nên sẽ không được ghi nhận."
+msgstr "Disabled by default to avoid unintended DB writes across multi-site updates. Requests served by page cache or CDN bypass PHP and are not logged."
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:1716
+msgid "Thời gian lưu nhật ký (1–90 ngày)"
+msgstr "Log retention period (1–90 days)"
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:1738
+msgid "Gửi email tổng hợp cảnh báo mỗi giờ (khi có lượt nghi ngờ / dò quét mới)"
+msgstr "Send hourly alert digest email (when new suspicious/probe events occur)"
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:1753
+msgid "Đồng bộ danh sách chặn vào file .htaccess (Apache 2.4)"
+msgstr "Sync blocklist to .htaccess file (Apache 2.4)"
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:1756
+msgid "Tự động sao lưu tối đa 5 bản .htaccess gần nhất trước khi ghi khối # BEGIN LACA SECURITY và tự khôi phục nếu xác minh thất bại."
+msgstr "Automatically keeps up to 5 recent .htaccess backups before writing # BEGIN LACA SECURITY and restores automatically if verification fails."
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:1760
+msgid "Tuỳ chọn đồng bộ .htaccess đang ẩn vì máy chủ không chạy Apache hoặc file .htaccess không có quyền ghi. Chặn IP ở tầng PHP vẫn hoạt động bình thường trên mọi máy chủ."
+msgstr "The .htaccess sync option is hidden because the server is not Apache or .htaccess is not writable. PHP-layer IP blocking works on all servers."
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:1768
+msgid "Danh sách IP tin cậy (mỗi dòng 1 IP, tối đa 200)"
+msgstr "Trusted IP list (one IP per line, max 200)"
+
+#. translators: %s: địa chỉ IP hiện tại của quản trị viên
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:1782
+#, php-format
+msgid "IP tin cậy không bao giờ bị chặn ở tầng PHP và không thể thêm vào danh sách chặn. IP hiện tại của bạn: %s"
+msgstr "Trusted IPs are never blocked at the PHP layer and cannot be added to the blocklist. Your current IP: %s"
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:1787
+msgid "IP tin cậy không bao giờ bị chặn ở tầng PHP và không thể thêm vào danh sách chặn."
+msgstr "Trusted IPs are never blocked at the PHP layer and cannot be added to the blocklist."
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:1803
+msgid "Bật quét nền loại mạng RDAP mỗi 15 phút (tối đa 3 IP/lần, chỉ cảnh báo)"
+msgstr "Enable background RDAP network-type scan every 15 minutes (max 3 IPs/run, alert only)"
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:1806
+msgid "Gửi IP công cộng đã truy cập tới rdap.org ở nền để phát hiện mạng ALLOCATED PORTABLE (thường gặp ở hạ tầng máy chủ/VPS). Mặc định tắt."
+msgstr "Queries rdap.org in the background for recorded public IPs to detect ALLOCATED PORTABLE networks (common in hosting/VPS ranges). Disabled by default."
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:1812
+msgid "Bỏ qua tra cứu RDAP cho các IP / CIDR sau (mỗi dòng 1 mục)"
+msgstr "Skip RDAP lookups for the following IPs / CIDRs (one per line)"
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:1825
+msgid "Công tắc khẩn cấp (Kill-switch):"
+msgstr "Emergency Kill-Switch:"
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:1827
+msgid "Nếu lỡ cấu hình chặn nhầm và không truy cập được trang quản trị, hãy thêm dòng <code>define('LACA_TM_DISABLE', true);</code> vào file <code>wp-config.php</code> để tạm tắt toàn bộ bộ chặn IP và tường lửa request."
+msgstr "If you accidentally lock yourself out of wp-admin, add <code>define('LACA_TM_DISABLE', true);</code> to <code>wp-config.php</code> to temporarily disable IP blocking and the request firewall."
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:1845
+msgid "Dữ liệu nhật ký"
+msgstr "Log Data"
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:1847
+msgid "Xuất thống kê IP 7 ngày gần nhất ra file CSV hoặc xoá toàn bộ dữ liệu trong hai bảng nhật ký."
+msgstr "Export 7-day IP statistics to CSV or purge all records from both traffic tables."
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:1852
+msgid "Xuất CSV (7 ngày)"
+msgstr "Export CSV (7 days)"
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:1858
+msgid "Xoá toàn bộ dữ liệu nhật ký truy cập và sự kiện? Thao tác này không thể hoàn tác."
+msgstr "Delete all recorded visit and event logs? This action cannot be undone."
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:1862
+msgid "Xoá toàn bộ dữ liệu"
+msgstr "Purge all data"
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:1871
+msgid "Nhật ký cảnh báo loại mạng RDAP (tối đa 200 bản ghi)"
+msgstr "RDAP Network Type Alerts (up to 200 entries)"
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:1878
+msgid "Loại mạng"
+msgstr "Network type"
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:1879
+msgid "Hành động"
+msgstr "Action"
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:1885
+msgid "Chưa có cảnh báo loại mạng RDAP nào."
+msgstr "No RDAP network-type alerts recorded yet."
+
+#. translators: %d: số quy tắc chặn mới được thêm
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:2320
+#, php-format
+msgid "Đã thêm %d quy tắc chặn mới."
+msgid_plural "Đã thêm %d quy tắc chặn mới."
+msgstr[0] "Added %d new block rule."
+msgstr[1] "Added %d new block rules."
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:2323
+msgid "Quy tắc chặn đã nằm trong danh sách hiện có."
+msgstr "Block rule is already covered by the existing list."
+
+#. translators: %d: số quy tắc chặn được gỡ bỏ
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:2329
+#, php-format
+msgid "Đã bỏ chặn %d quy tắc."
+msgid_plural "Đã bỏ chặn %d quy tắc."
+msgstr[0] "Unblocked %d rule."
+msgstr[1] "Unblocked %d rules."
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:2335
+msgid "Không tìm thấy quy tắc cần bỏ chặn trong danh sách."
+msgstr "Rule to unblock was not found in the blocklist."
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:2339
+msgid "Đã thêm địa chỉ IP vào danh sách tin cậy."
+msgstr "Added IP address to the trusted list."
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:2343
+msgid "Đã gỡ địa chỉ IP khỏi danh sách tin cậy."
+msgstr "Removed IP address from the trusted list."
+
+#. translators: %d: tổng số mục được nhập từ plugin Lamvt Security
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:2349
+#, php-format
+msgid "Đã nhập %d mục mới (quy tắc chặn + IP tin cậy) từ Lamvt Security."
+msgstr "Imported %d new items (block rules + trusted IPs) from Lamvt Security."
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:2355
+msgid "Đã xoá toàn bộ dữ liệu nhật ký truy cập."
+msgstr "Purged all traffic monitor log data."
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:2359
+msgid "Plugin Lamvt Security đang bật; hãy tắt plugin trước khi thay đổi cấu hình trên theme."
+msgstr "Lamvt Security plugin is active; deactivate it before changing theme traffic settings."
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:2363
+msgid "Dải /8 bao phủ hơn 16 triệu địa chỉ IP. Vui lòng tích ô xác nhận trước khi chặn."
+msgstr "A /8 range covers over 16 million IP addresses. Please check the confirmation box before blocking."
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:2367
+msgid "Từ chối chặn: không được phép chặn địa chỉ IP nội bộ (private) hoặc dải dự trữ (reserved)."
+msgstr "Block refused: blocking private or reserved IP ranges is not allowed."
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:2379
+msgid "Từ chối chặn: dải này chứa địa chỉ IP đang nằm trong danh sách tin cậy."
+msgstr "Block refused: this range contains a trusted IP address."
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:2383
+msgid "Địa chỉ IP hoặc định dạng CIDR không hợp lệ."
+msgstr "Invalid IP address or CIDR format."
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:2391
+msgid "Danh sách chặn đã đạt giới hạn tối đa 2.000 mục."
+msgstr "The blocklist has reached the maximum limit of 2,000 entries."
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:2395
+msgid "Danh sách IP tin cậy đã đạt giới hạn tối đa 200 mục."
+msgstr "The trusted IP list has reached the maximum limit of 200 entries."
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficAdminPage.php:2399
+msgid "Đã lưu cài đặt trong DB nhưng không thể đồng bộ sang file .htaccess một cách an toàn."
+msgstr "Saved settings in database, but could not safely sync to .htaccess."
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficClassifier.php:106
+msgid "Bot khác (chưa rõ tên)"
+msgstr "Other bot (unidentified)"
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficClassifier.php:196
+msgid "Khách thường"
+msgstr "Regular visitor"
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficClassifier.php:197
+msgid "Bot tự khai báo"
+msgstr "Self-declared bot"
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficClassifier.php:198
+msgid "Bot tìm kiếm (chưa xác minh)"
+msgstr "Search bot (unverified)"
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficClassifier.php:200
+msgid "Dấu hiệu dò quét"
+msgstr "Scanning signal"
+
+#. translators: %s: tên tham số query tùy chỉnh bị phát hiện
+#: app/src/Settings/Security/TrafficMonitor/TrafficClassifier.php:225
+#, php-format
+msgid "Tường lửa: tham số tùy chỉnh (%s)"
+msgstr "Firewall: custom parameter (%s)"
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficClassifier.php:229
+msgid "Dò tệp/đường dẫn nhạy cảm"
+msgstr "Sensitive file/path probe"
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficClassifier.php:230
+msgid "Truy cập điểm đăng nhập/XML-RPC (chưa chứng minh tấn công)"
+msgstr "Login/XML-RPC endpoint access (not proof of attack)"
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficClassifier.php:231
+msgid "User-Agent công cụ quét (có thể giả mạo)"
+msgstr "Scanner User-Agent (may be spoofed)"
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficClassifier.php:232
+msgid "Bot tìm kiếm tự khai báo, chưa xác minh danh tính"
+msgstr "Self-declared search bot, identity unverified"
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficClassifier.php:233
+msgid "User-Agent tự khai báo bot/công cụ tự động"
+msgstr "Self-declared bot/automated tool User-Agent"
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficClassifier.php:234
+msgid "Không có User-Agent"
+msgstr "Empty User-Agent"
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficClassifier.php:235
+msgid "Truy cập ít nhất 5 URL khác nhau trong 10 giây (tốc độ bất thường)"
+msgstr "Accessed at least 5 distinct URLs within 10 seconds (unusual rate)"
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficClassifier.php:236
+msgid "Tường lửa: truy cập tệp nhạy cảm"
+msgstr "Firewall: sensitive file access"
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficClassifier.php:237
+msgid "Tường lửa: thử thực thi PHP trong uploads"
+msgstr "Firewall: attempted PHP execution in uploads"
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficClassifier.php:238
+msgid "Tường lửa: dấu hiệu path traversal / truy cập file"
+msgstr "Firewall: path traversal / file probe signal"
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficClassifier.php:239
+msgid "Tường lửa: dấu hiệu SQL injection"
+msgstr "Firewall: SQL injection signal"
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficClassifier.php:240
+msgid "Tường lửa: dấu hiệu XSS"
+msgstr "Firewall: XSS signal"
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficClassifier.php:241
+msgid "Tường lửa: query vượt giới hạn 8 KB"
+msgstr "Firewall: query string exceeded 8 KB limit"
+
+#. translators: 1: tên website, 2: số lượt truy cập nghi ngờ/tấn công
+#: app/src/Settings/Security/TrafficMonitor/TrafficDigest.php:103
+#, php-format
+msgid "[%1$s] Giám sát truy cập: %2$d lượt nghi ngờ/tấn công"
+msgstr "[%1$s] Traffic Monitor: %2$d suspicious/probe hits"
+
+#. translators: 1: số lượt nghi ngờ/tấn công, 2: số lượng IP duy nhất, 3: danh sách IP mẫu, 4: URL trang quản trị
+#: app/src/Settings/Security/TrafficMonitor/TrafficDigest.php:110
+#, php-format
+msgid ""
+"Hệ thống Giám sát truy cập phát hiện %1$d lượt thuộc nhóm Nghi ngờ / Dấu hiệu dò quét từ %2$d địa chỉ IP trong đợt tổng hợp gần nhất.\n"
+"\n"
+"IP mẫu (tối đa 15):\n"
+"%3$s\n"
+"\n"
+"Xem chi tiết tại: %4$s\n"
+"\n"
+"Lưu ý: Phân loại chỉ dựa trên dấu hiệu kỹ thuật, cần kiểm tra nhật ký trước khi chặn. Email được tổng hợp tối đa mỗi giờ một lần."
+msgstr "Traffic Monitor detected %1$d Suspicious / Scanning hits from %2$d IP addresses in the latest digest.\n\nSample IPs (up to 15):\n%3$s\n\nView details: %4$s\n\nNote: Classification is based on technical signals only; inspect logs before blocking. Digest emails are sent at most once per hour."
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficDigest.php:156
+msgid "Giám sát truy cập:"
+msgstr "Traffic Monitor:"
+
+#. translators: 1: số lượt nghi ngờ/tấn công, 2: số IP
+#: app/src/Settings/Security/TrafficMonitor/TrafficDigest.php:161
+#, php-format
+msgid "%1$d lượt truy cập nghi ngờ/tấn công từ %2$d IP trong đợt tổng hợp gần nhất."
+msgstr "%1$d suspicious/probe hits from %2$d IPs in the latest digest."
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficDigest.php:167
+msgid "Xem nhật ký"
+msgstr "View logs"
+
+#: app/src/Settings/Security/TrafficMonitor/TrafficDigest.php:169
+msgid "Ẩn thông báo"
+msgstr "Dismiss notice"
+
+#: app/src/Settings/ThemeSnapshot.php:295
+msgid "Không tìm thấy bản sao lưu cũ hơn phiên bản đang chạy để khôi phục."
+msgstr ""

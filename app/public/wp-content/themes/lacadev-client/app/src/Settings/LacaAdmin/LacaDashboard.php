@@ -7,6 +7,7 @@ use App\Settings\Security\LoginGuard;
 use App\Settings\Security\UserEnumerationGuard;
 use App\Settings\Security\SvgUploadGuard;
 use App\Settings\Security\LoginPolicy;
+use App\Settings\Security\TrafficMonitor\TrafficSettings;
 use App\Settings\LacaTools\Management\StorageHealth;
 use App\Settings\LacaTools\Management\DatabaseCleaner;
 
@@ -688,6 +689,7 @@ class LacaDashboard
             'xmlrpc'          => !apply_filters('xmlrpc_enabled', true),
             'svg_guard'       => class_exists(SvgUploadGuard::class),
             'breached_pass'   => false,
+            'traffic_monitor' => class_exists(TrafficSettings::class) && (int) (TrafficSettings::settings()['tracking'] ?? 0) === 1,
         ];
 
         // Headers: ít nhất X-Frame và CSP

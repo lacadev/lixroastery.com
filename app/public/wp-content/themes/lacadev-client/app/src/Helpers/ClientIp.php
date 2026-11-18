@@ -75,6 +75,30 @@ final class ClientIp
         return false;
     }
 
+    public static function inCidr(string $ip, string $cidr): bool
+    {
+        $cidr = trim($cidr);
+        if ('' === $cidr || '' === $ip) {
+            return false;
+        }
+        if (!str_contains($cidr, '/')) {
+            if (!filter_var($cidr, FILTER_VALIDATE_IP)) {
+                return false;
+            }
+            $cidr .= str_contains($cidr, ':') ? '/128' : '/32';
+        } else {
+            [$subnet, $bits] = explode('/', $cidr, 2);
+            if (!filter_var($subnet, FILTER_VALIDATE_IP) || !ctype_digit($bits)) {
+                return false;
+            }
+            $maxBits = str_contains($subnet, ':') ? 128 : 32;
+            if ((int) $bits > $maxBits) {
+                return false;
+            }
+        }
+        return self::inRange($ip, $cidr);
+    }
+
     private static function inRange(string $ip, string $cidr): bool
     {
         [$subnet, $bits] = explode('/', $cidr);
