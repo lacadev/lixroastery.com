@@ -19,6 +19,7 @@ module.exports = {
     path.join(parentSrc, 'editor/index.js'),
     utils.srcStylesPath('theme/base/_fonts.scss'),
   ],
+  'editor-quote': path.join(childSrc, 'editor/quote-customization.js'),
   // Child theme: SCSS override + custom JS (archive-gallery, etc.)
   // Dùng array entry để webpack bundle cả 2 vào dist/child.js + dist/styles/child.css
   'child': [

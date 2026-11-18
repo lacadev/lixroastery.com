@@ -339,3 +339,59 @@ add_action('init', function () {
     remove_filter('comment_text_rss', 'wp_staticize_emoji');
     remove_filter('wp_mail', 'wp_staticize_emoji_for_email');
 });
+
+/**
+ * 7. Tùy biến hiển thị khối trích dẫn (core/quote & core/pullquote) theo cài đặt của admin.
+ */
+require_once CHILD_APP_DIR . 'helpers/google-fonts-vi.php';
+
+add_filter('render_block', function (string $block_content, array $block): string {
+    if (!in_array($block['blockName'] ?? '', ['core/quote', 'core/pullquote'], true)) {
+        return $block_content;
+    }
+    $attrs = $block['attrs'] ?? [];
+    $font = (string) ($attrs['lacaFontFamily'] ?? '');
+    if (!in_array($font, laca_google_fonts_vi_list(), true)) {
+        $font = '';
+    }
+    $raw_size = absint($attrs['lacaFontSize'] ?? 0);
+    $size = $raw_size > 0 ? max(14, min(48, $raw_size)) : 0;
+    $color = sanitize_hex_color($attrs['lacaTextColor'] ?? '') ?: '';
+
+    if (!$font && !$size && !$color) {
+        return $block_content;
+    }
+
+    static $printed_fonts = [];
+    $link_tag = '';
+    $styles = [];
+    if ($font) {
+        $styles[] = 'font-family: "' . esc_attr($font) . '", serif !important';
+        if (empty($printed_fonts[$font])) {
+            $printed_fonts[$font] = true;
+            $link_tag = '<link rel="stylesheet" href="' . esc_url(laca_google_font_css_url($font)) . '">';
+        }
+    }
+    if ($size > 0) {
+        $styles[] = 'font-size: ' . $size . 'px !important';
+    }
+    if ($color) {
+        $styles[] = 'color: ' . esc_attr($color) . ' !important';
+    }
+
+    $style_attr = implode('; ', $styles) . ';';
+    if (preg_match('/^(\s*)<([a-z0-9_-]+)\b([^>]*)>/i', $block_content, $m)) {
+        $lead = $m[1];
+        $tag = $m[2];
+        $attrs_str = $m[3];
+        if (preg_match('/\bstyle=(["\'])([^"\']*)\1/i', $attrs_str, $s_match)) {
+            $new_style = rtrim($s_match[2], '; ') . '; ' . $style_attr;
+            $new_attrs = str_replace($s_match[0], 'style="' . esc_attr($new_style) . '"', $attrs_str);
+        } else {
+            $new_attrs = $attrs_str . ' style="' . esc_attr($style_attr) . '"';
+        }
+        $block_content = substr_replace($block_content, "{$lead}{$link_tag}<{$tag}{$new_attrs}>", 0, strlen($m[0]));
+    }
+
+    return $block_content;
+}, 10, 2);

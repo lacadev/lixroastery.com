@@ -101,6 +101,25 @@ function child_enqueue_admin_assets()
 add_action('admin_enqueue_scripts', 'child_enqueue_admin_assets', 20);
 
 /**
+ * Enqueue block editor assets cho child theme.
+ */
+function child_enqueue_block_editor_assets()
+{
+    $child_dir_uri = dirname(get_stylesheet_directory_uri());
+    $quote_custom_js = CHILD_DIST_DIR . 'editor-quote.js';
+    if (file_exists($quote_custom_js)) {
+        wp_enqueue_script(
+            'child-editor-quote',
+            $child_dir_uri . '/dist/editor-quote.js',
+            ['wp-blocks', 'wp-element', 'wp-block-editor', 'wp-components', 'wp-i18n', 'wp-compose', 'wp-hooks'],
+            filemtime($quote_custom_js),
+            true
+        );
+    }
+}
+add_action('enqueue_block_editor_assets', 'child_enqueue_block_editor_assets');
+
+/**
  * Fix favicon ở trang quản trị/đăng nhập.
  *
  * Assets::addFavicon() (vendor htmlburger/wpemerge-theme-core, hook vào
