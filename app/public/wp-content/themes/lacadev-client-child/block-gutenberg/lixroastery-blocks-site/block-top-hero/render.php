@@ -41,17 +41,31 @@ if ($media_type === 'slider') {
     }
 }
 $video_url = '';
+$video_source = $pick('videoSource', ['upload', 'youtube'], 'upload');
+$youtube_url = trim((string) ($attributes['youtubeUrl'] ?? ''));
+$youtube_id = '';
 if ($media_type === 'video') {
-    $video_id  = intval($attributes['videoId'] ?? 0);
-    $video_url = $video_id ? (string) wp_get_attachment_url($video_id) : '';
-    if (!$video_url) {
-        $video_url = (string) ($attributes['videoUrl'] ?? '');
-    }
-    if (!$video_url) {
-        $media_type = 'image';
+    if ($video_source === 'upload') {
+        $video_id  = intval($attributes['videoId'] ?? 0);
+        $video_url = $video_id ? (string) wp_get_attachment_url($video_id) : '';
+        if (!$video_url) {
+            $video_url = (string) ($attributes['videoUrl'] ?? '');
+        }
+        if (!$video_url) {
+            $media_type = 'image';
+        }
+    } elseif ($video_source === 'youtube') {
+        if ($youtube_url && preg_match('%(?:youtube(?:-nocookie)?\.com/(?:[^/]+/.+/|(?:v|e(?:mbed)?)/|.*[?&]v=)|youtu\.be/|youtube\.com/shorts/)([a-zA-Z0-9_-]{11})%i', $youtube_url, $m)) {
+            if (preg_match('/^[A-Za-z0-9_-]{11}$/', $m[1])) {
+                $youtube_id = $m[1];
+            }
+        }
+        if (!$youtube_id) {
+            $media_type = 'image';
+        }
     }
 }
-$has_media = $hero_image_url || $slides || $video_url;
+$has_media = $hero_image_url || $slides || $video_url || ($media_type === 'video' && $video_source === 'youtube' && $youtube_id);
 
 $hex_to_rgba = static function (string $hex, int $opacity_percent): string {
     $hex = preg_match('/^#[0-9a-fA-F]{6}$/', $hex) ? $hex : '#000000';
@@ -108,7 +122,8 @@ if (!empty($attributes['scrollDarken'])) {
     $darken_max = $percent('scrollDarkenMax', 60, 10, 90);
     $classes[] = 'block-top-hero--darken';
 }
-$classes[] = 'block-top-hero--media-' . $media_type;
+$media_class_suffix = ($media_type === 'video' && $video_source === 'youtube' && $youtube_id) ? 'youtube' : $media_type;
+$classes[] = 'block-top-hero--media-' . $media_class_suffix;
 
 foreach ($tiers as $tier => $suffix) {
     $classes[] = 'block-top-hero--v-' . $tier . '-' . $pick('contentVertical' . $suffix, ['top', 'center', 'bottom'], $vertical_defaults[$tier]);
@@ -204,6 +219,11 @@ if ($slides) {
             }
             ?>
         </div>
+    <?php elseif ($media_type === 'video' && $video_source === 'youtube' && $youtube_id) : ?>
+        <?php if ($hero_image_url) : ?>
+            <?php $render_bg_image(intval($attributes['heroImageId'] ?? 0), $hero_image_url, 'block-top-hero__bg block-top-hero__yt-poster', $hero_loading, $hero_priority); ?>
+        <?php endif; ?>
+        <iframe class="block-top-hero__bg block-top-hero__yt" src="https://www.youtube-nocookie.com/embed/<?php echo esc_attr($youtube_id); ?>?autoplay=1&mute=1&loop=1&playlist=<?php echo esc_attr($youtube_id); ?>&controls=0&modestbranding=1&rel=0&playsinline=1" allow="autoplay; encrypted-media" title="<?php esc_attr_e('Video nền', 'laca'); ?>" tabindex="-1" aria-hidden="true"<?php echo $is_first_hero ? '' : ' loading="lazy"'; ?>></iframe>
     <?php elseif ($video_url) : ?>
         <?php // muted + playsinline bắt buộc để trình duyệt (nhất là iOS) cho tự phát. ?>
         <video class="block-top-hero__bg block-top-hero__video" autoplay muted playsinline<?php echo ($attributes['videoLoop'] ?? true) ? ' loop' : ''; ?> preload="metadata"<?php if ($hero_image_url) : ?> poster="<?php echo esc_url($hero_image_url); ?>"<?php endif; ?> aria-hidden="true">
@@ -243,7 +263,7 @@ if ($slides) {
             <?php endforeach; ?>
         </div>
     <?php endif; ?>
-    <?php if ($video_url) : ?>
+    <?php if ($video_url && $video_source === 'upload') : ?>
         <?php // Video tự phát > 5 giây phải có nút dừng (WCAG 2.2.2). ?>
         <button type="button" class="block-top-hero__video-toggle" data-hero-video-toggle aria-pressed="false" aria-label="<?php esc_attr_e('Tạm dừng video', 'laca'); ?>" data-label-pause="<?php esc_attr_e('Tạm dừng video', 'laca'); ?>" data-label-play="<?php esc_attr_e('Phát video', 'laca'); ?>">
             <span class="block-top-hero__video-icon" aria-hidden="true"></span>

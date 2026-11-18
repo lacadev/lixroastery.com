@@ -13,6 +13,7 @@ import {
 	RangeControl,
 	RadioControl,
 	SelectControl,
+	TextControl,
 	ToggleControl,
 } from '@wordpress/components';
 import { useInserterPreview, BlockPreviewMock } from '../../utils/preview';
@@ -297,6 +298,8 @@ export default function Edit( { attributes, setAttributes } ) {
 		videoId,
 		videoUrl,
 		videoLoop,
+		videoSource = 'upload',
+		youtubeUrl = '',
 		headline,
 		description,
 		overlayType,
@@ -321,7 +324,18 @@ export default function Edit( { attributes, setAttributes } ) {
 
 	// Giống render.php: thiếu dữ liệu cho chế độ đã chọn thì rơi về 1 ảnh.
 	const isSlider = mediaType === 'slider' && slides.length > 1;
-	const isVideo = mediaType === 'video' && !! videoUrl;
+	const ytMatch = youtubeUrl
+		? youtubeUrl.match(
+				/(?:youtube(?:-nocookie)?\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/|youtube\.com\/shorts\/)([a-zA-Z0-9_-]{11})/i
+		  )
+		: null;
+	const youtubeId =
+		ytMatch && /^[A-Za-z0-9_-]{11}$/.test( ytMatch[ 1 ] )
+			? ytMatch[ 1 ]
+			: '';
+	const isVideo =
+		mediaType === 'video' &&
+		( videoSource === 'youtube' ? !! youtubeId : !! videoUrl );
 	let bgImageUrl = heroImageUrl;
 	if ( mediaType === 'slider' && slides.length ) {
 		bgImageUrl = slides[ 0 ].url;
@@ -594,41 +608,75 @@ export default function Edit( { attributes, setAttributes } ) {
 
 					{ mediaType === 'video' && (
 						<>
-							<VideoPicker
-								videoId={ videoId }
-								videoUrl={ videoUrl }
-								onSelect={ ( media ) =>
-									setAttributes( {
-										videoId: media.id,
-										videoUrl: media.url,
-									} )
-								}
-								onRemove={ () =>
-									setAttributes( {
-										videoId: 0,
-										videoUrl: '',
-									} )
-								}
-							/>
-							<p
-								style={ {
-									fontSize: 12,
-									color: '#757575',
-									marginTop: 0,
-								} }
-							>
-								{ __(
-									'Video tự phát, tắt tiếng. Nên dùng MP4 dưới ~10MB, 1920px. Ngoài trang có nút dừng video.',
-									'laca'
-								) }
-							</p>
-							<ToggleControl
-								label={ __( 'Phát lặp lại', 'laca' ) }
-								checked={ !! videoLoop }
+							<SelectControl
+								label={ __( 'Nguồn video', 'laca' ) }
+								value={ videoSource }
+								options={ [
+									{
+										label: __( 'Tải lên (MP4)', 'laca' ),
+										value: 'upload',
+									},
+									{
+										label: __( 'YouTube', 'laca' ),
+										value: 'youtube',
+									},
+								] }
 								onChange={ ( v ) =>
-									setAttributes( { videoLoop: v } )
+									setAttributes( { videoSource: v } )
 								}
 							/>
+							{ videoSource === 'upload' && (
+								<>
+									<VideoPicker
+										videoId={ videoId }
+										videoUrl={ videoUrl }
+										onSelect={ ( media ) =>
+											setAttributes( {
+												videoId: media.id,
+												videoUrl: media.url,
+											} )
+										}
+										onRemove={ () =>
+											setAttributes( {
+												videoId: 0,
+												videoUrl: '',
+											} )
+										}
+									/>
+									<p
+										style={ {
+											fontSize: 12,
+											color: '#757575',
+											marginTop: 0,
+										} }
+									>
+										{ __(
+											'Video tự phát, tắt tiếng. Nên dùng MP4 dưới ~10MB, 1920px. Ngoài trang có nút dừng video.',
+											'laca'
+										) }
+									</p>
+									<ToggleControl
+										label={ __( 'Phát lặp lại', 'laca' ) }
+										checked={ !! videoLoop }
+										onChange={ ( v ) =>
+											setAttributes( { videoLoop: v } )
+										}
+									/>
+								</>
+							) }
+							{ videoSource === 'youtube' && (
+								<TextControl
+									label={ __( 'Link YouTube', 'laca' ) }
+									help={ __(
+										'Hỗ trợ link watch?v=, youtu.be, shorts. Video tự động phát ngầm, tắt tiếng và lặp lại; không có nút dừng ngoài trang.',
+										'laca'
+									) }
+									value={ youtubeUrl }
+									onChange={ ( v ) =>
+										setAttributes( { youtubeUrl: v } )
+									}
+								/>
+							) }
 							<ImagePicker
 								label={ __(
 									'Ảnh chờ (hiện khi video đang tải hoặc máy chặn tự phát)',
@@ -814,7 +862,16 @@ export default function Edit( { attributes, setAttributes } ) {
 				className={ classNames.filter( Boolean ).join( ' ' ) }
 				style={ { ...blockProps.style, ...sectionStyle } }
 			>
-				{ isVideo && (
+				{ isVideo && videoSource === 'youtube' && youtubeId && (
+					<iframe
+						className="block-top-hero__bg block-top-hero__yt"
+						src={ `https://www.youtube-nocookie.com/embed/${ youtubeId }?autoplay=0&controls=0&mute=1` }
+						title={ __( 'Video nền YouTube', 'laca' ) }
+						tabIndex={ -1 }
+						aria-hidden="true"
+					/>
+				) }
+				{ isVideo && videoSource === 'upload' && (
 					<video
 						key={ videoUrl }
 						className="block-top-hero__bg block-top-hero__video"
@@ -826,13 +883,15 @@ export default function Edit( { attributes, setAttributes } ) {
 						playsInline
 					/>
 				) }
-				{ ! isVideo && bgImageUrl && (
-					<img
-						src={ bgImageUrl }
-						alt=""
-						className="block-top-hero__bg"
-					/>
-				) }
+				{ ( ! isVideo ||
+					( videoSource === 'youtube' && ! youtubeId ) ) &&
+					Boolean( bgImageUrl ) && (
+						<img
+							src={ bgImageUrl }
+							alt=""
+							className="block-top-hero__bg"
+						/>
+					) }
 
 				<div
 					className="block-top-hero__overlay"

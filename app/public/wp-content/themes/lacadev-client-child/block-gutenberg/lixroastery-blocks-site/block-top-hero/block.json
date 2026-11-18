@@ -65,6 +65,14 @@
             "type": "boolean",
             "default": true
         },
+        "videoSource": {
+            "type": "string",
+            "default": "upload"
+        },
+        "youtubeUrl": {
+            "type": "string",
+            "default": ""
+        },
         "headline": {
             "type": "string",
             "translatable": true,

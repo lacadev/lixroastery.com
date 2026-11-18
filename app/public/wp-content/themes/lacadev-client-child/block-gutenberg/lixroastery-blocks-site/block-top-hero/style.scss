@@ -46,6 +46,46 @@ body:not(.home) main#main_content > .block-top-hero:first-child {
         height: auto;
     }
 
+    &__bg#{&}__yt {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        right: auto;
+        bottom: auto;
+        width: 100vw;
+        height: 56.25vw;
+        min-width: 177.78vh;
+        min-height: 100%;
+        object-fit: unset;
+        transform: translate(-50%, -50%);
+        pointer-events: none;
+        border: 0;
+        z-index: 0;
+
+        @include maxWidth($md) {
+            min-height: 100%;
+        }
+    }
+
+    &__bg#{&}__yt-poster {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+
+        @include maxWidth($md) {
+            min-height: 100%;
+        }
+    }
+
+    &--media-youtube {
+        &.block-top-hero--full {
+            aspect-ratio: 16 / 9;
+            min-height: auto;
+        }
+    }
+
     // Slide: các ảnh chồng lên nhau, chỉ ảnh .is-active hiện (chuyển mờ dần).
     // Chế độ "full": ảnh đầu nằm trong luồng để giữ chiều cao theo ảnh gốc.
     &__slides {
@@ -309,7 +349,7 @@ body:not(.home) main#main_content > .block-top-hero:first-child {
 
 // Parallax: JS chỉ ghi translateY, scale đặt sẵn ở đây để ảnh không "nhảy"
 // cỡ lúc JS chạy. Không áp trong editor (JS frontend không chạy ở đó).
-body:not(.editor-styles-wrapper) .block-top-hero--parallax .block-top-hero__bg {
+body:not(.editor-styles-wrapper) .block-top-hero--parallax .block-top-hero__bg:not(.block-top-hero__yt) {
     transform: translate3d(0, var(--parallax-y, 0), 0) scale(var(--parallax-scale, 1));
     will-change: transform;
 
