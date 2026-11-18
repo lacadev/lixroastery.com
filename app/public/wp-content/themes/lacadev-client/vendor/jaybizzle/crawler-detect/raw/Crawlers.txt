@@ -4,6 +4,7 @@
 ^Amazon-Route53-Health-Check-Service
 ^b0t$
 ^bluefish 
+^Bun\/[0-9]
 ^Calypso v\/
 ^COMODO DCV
 ^Corax
@@ -23,6 +24,7 @@
 ^Hello from Palo Alto Networks
 ^HTTPClient\/
 ^HTTPing
+^IronFountain-Leads
 ^Java\/
 ^Jeode\/
 ^Jetty\/
@@ -35,6 +37,7 @@
 ^NING\/
 ^npm\/
 ^Nuclei
+^opencode(\/|$)
 ^PHP-AYMAPI\/
 ^PHP\/
 ^pip\/
@@ -43,11 +46,13 @@
 ^Ruby|Ruby\/[0-9]
 ^symbolicator\/
 ^Swurl 
+^TheWebReport
 ^TLS tester 
 ^twine\/
 ^ureq
 ^visionheight\.com\/scan
 ^VSE\/[0-9]
+^webshopok-kutatas
 ^WordPress\.com
 ^XRL\/[0-9]
 ^ZmEu
@@ -85,6 +90,7 @@ adstxt\.com
 Adyen HttpClient
 AffiliateLabz\/
 affilimate-puppeteer
+agent-browser\/
 agentslug
 AHC
 Ahrefs
@@ -101,6 +107,7 @@ allloadin
 AllSubmitter
 alyze\.info
 amagit
+amazon-Quick-on-behalf-of
 amphp\/http-client
 Anarchie
 AndroidDownloadManager
@@ -182,6 +189,7 @@ biz_Directory
 BKCTwitterUnshortener\/
 Black Hole
 Blackboard Safeassign
+blackboardally
 BlackWidow
 BlockNote\.Net
 BlogBridge
@@ -214,6 +222,7 @@ CAAM\/[0-9]
 caam dot crwlr at gmail dot com
 CakePHP
 Calculon
+Camoufox
 Canary%20Mail
 CaretNail
 catexplorador
@@ -286,6 +295,7 @@ Curious George
 curl
 cuwhois\/
 cybo\.com
+CyberConvoyScout
 DAP\/NetHTTP
 DareBoost
 DatabaseDriverMysqli
@@ -479,6 +489,7 @@ Google Search Console
 Google Web Preview
 Google-Ads
 Google-Adwords
+Google-Agent
 Google-AMPHTML
 Google-Apps-Script
 Google-Calendar-Importer
@@ -497,6 +508,7 @@ Google-Structured-Data-Testing-Tool
 Google-Transparency-Report
 google-xrawler
 Google-Youtube-Links
+GoogleAgent-Mariner
 GoogleAssociationService
 GoogleDocs
 GoogleHC\/
@@ -518,6 +530,7 @@ GrapeFX
 GreatNews
 Gregarius
 GRequests
+grok-agent
 grokkit
 grouphigh
 grub-client
@@ -532,6 +545,7 @@ hackney\/
 Hadi Agent
 HappyApps-WebCheck
 Hardenize
+HatchFeed
 Hatena
 HaveInListEnricher
 Havij
@@ -602,6 +616,7 @@ ImageEngine\/
 ImageVisu\/
 Imagga
 imagineeasy
+img2dataset
 imgproxy\/[0-9]
 imgsizer
 InAGist
@@ -652,6 +667,7 @@ javelin\.io
 Jbrofuzz
 Jersey\/
 JetCar
+Jetpack by WordPress
 Jigsaw
 Jobboerse
 JobFeed discovery
@@ -767,6 +783,7 @@ MegaIndex\.ru
 MeltwaterNews
 Melvil Rawi
 MemGator
+meta-externalagent
 Metaspinner
 MetaURI
 MFC_Tear_Sample
@@ -786,6 +803,7 @@ Miniflux
 mio_httpc
 Miro-HttpClient
 Mister PiX
+MistralAI-User
 mixdata dot com
 mixed-content-scan
 mixnode
@@ -806,6 +824,7 @@ Morfeus Fucking Scanner
 Morning Paper
 MovableType
 mowser
+Mozlila\/
 Mrcgiguy
 Mr\.4x3 Powered
 MS Web Services Client Protocol
@@ -874,6 +893,7 @@ Norton-Safeweb
 Notifixious
 notifyninja
 NotionEmbedder
+NovaAct
 nuhk
 nutch
 Nuzzel
@@ -937,6 +957,7 @@ peerindex
 Peew
 PeoplePal
 Perlu -
+Perplexity-User
 PhantomJS Screenshoter
 PhantomJS\/
 Photon\/
@@ -1044,6 +1065,7 @@ Robosourcer
 Robozilla
 ROI Hunter
 RPT-HTTPClient
+RSiteAuditor
 RSSMix\/
 RSSOwl
 RuxitSynthetic
@@ -1071,6 +1093,7 @@ ScreenShotService
 Scrubby
 Scrutiny\/
 Search37
+search\.marginalia\.nu
 searchenginepromotionhelp
 Searchestate
 SearchExpress
@@ -1105,6 +1128,7 @@ SEOstats
 servernfo
 sexsearcher
 Seznam
+Shap-User
 Shelob
 Shodan
 Shoppimon
@@ -1114,6 +1138,7 @@ shortURL lengthener
 shrinktheweb
 Sideqik
 Siege
+Silktide
 SimplePie
 SimplyFast
 Siphon
@@ -1372,6 +1397,7 @@ webtech\/
 WebThumbnail
 Webthumb\/
 WebWhacker
+Webzio-Extended
 WebZIP
 WeLikeLinks
 WEPA
@@ -1404,6 +1430,7 @@ worldping-api
 wotbox
 WP Engine Install Performance API
 WP Rocket
+WP-Safe-Scanner
 wpif
 wprecon\.com survey
 WPScan

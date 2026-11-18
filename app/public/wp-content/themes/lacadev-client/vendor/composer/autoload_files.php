@@ -21,6 +21,7 @@ return array(
     '8b0d424e6572b6620fcae6008af510ef' => $vendorDir . '/htmlburger/wpemerge/config.php',
     '270cb6edcaac5923bab5c49ecf5fbd06' => $vendorDir . '/htmlburger/wpemerge/src/functions.php',
     '3336c9935fd0994a30e8c7cc51ee93a7' => $vendorDir . '/htmlburger/wpemerge/src/load.php',
+    '667aeda72477189d0494fecd327c3641' => $vendorDir . '/symfony/var-dumper/Resources/functions/dump.php',
     '1db9a602f20508d50525f9dad168786f' => $vendorDir . '/htmlburger/carbon-field-icon/core/bootstrap.php',
     '1967dd89f918dd1e702a2eb2a5cc4f22' => $vendorDir . '/htmlburger/carbon-pagination/carbon-pagination.php',
     '19e8616eb39c638d5398d219fc54fc75' => $vendorDir . '/htmlburger/wpemerge-theme-core/config.php',

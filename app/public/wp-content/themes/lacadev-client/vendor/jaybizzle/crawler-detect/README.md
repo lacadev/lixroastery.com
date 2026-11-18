@@ -43,9 +43,30 @@ if ($CrawlerDetect->isCrawler('Mozilla/5.0 (compatible; Sosospider/2.0; +http://
     // true if a crawler user agent was detected
 }
 
-// Output the name of the bot that matched (if any)
+// Output the part of the user agent that matched (if any)
 echo $CrawlerDetect->getMatches();
 ```
+
+### Passing headers from a request object
+
+With no arguments, CrawlerDetect reads `$_SERVER`. If your headers come from somewhere else — a PSR-7 request, Symfony's `HeaderBag`, Swoole, or a Lambda event — pass them in directly. Both real header names (`User-Agent`) and PHP's SAPI names (`HTTP_USER_AGENT`) are understood, and values may be strings or arrays of strings.
+
+```php
+// PSR-7 (Slim, Mezzio, Laminas, League)
+$CrawlerDetect = new CrawlerDetect($request->getHeaders());
+
+// Symfony HttpFoundation
+$CrawlerDetect = new CrawlerDetect($request->headers->all());
+
+// Swoole
+$CrawlerDetect = new CrawlerDetect($request->header);
+
+if ($CrawlerDetect->isCrawler()) {
+    // ...
+}
+```
+
+Prefer this over `isCrawler($request->getHeaderLine('User-Agent'))`. Some crawlers — Googlebot in particular — send a genuine browser `User-Agent` and identify themselves in another header such as `From` or `Sec-CH-UA`. Passing the full set lets CrawlerDetect check all of them; passing a single string can only ever check one.
 
 ## Contributing
 
@@ -58,6 +79,8 @@ The `raw/Crawlers.json` and `raw/Crawlers.txt` files are regenerated automatical
 
 If you're not able to submit a PR, open an issue with the user agent string and we'll take it from there.
 
+If you have User-Agents from real visitor traffic, they help stop new signatures flagging real browsers. Share them using the "Contribute real browser user agents" issue form; see [CONTRIBUTING.md](CONTRIBUTING.md) for the format.
+
 ## Ports & Integrations
 
 CrawlerDetect has been ported to a number of other languages and frameworks. If you maintain a port not listed here, please open a PR.
@@ -65,14 +88,23 @@ CrawlerDetect has been ported to a number of other languages and frameworks. If 
 | Platform | Project |
 | --- | --- |
 | Laravel | [Laravel-Crawler-Detect](https://github.com/JayBizzle/Laravel-Crawler-Detect) |
-| Symfony 2 / 3 / 4 | [CrawlerDetectBundle](https://github.com/nicolasmure/CrawlerDetectBundle) |
-| Yii2 | [yii2-crawler-detect](https://github.com/AlikDex/yii2-crawler-detect) |
 | Node.js / ES6 | [es6-crawler-detect](https://github.com/JefferyHus/es6-crawler-detect) |
 | Python | [crawlerdetect](https://github.com/moskrc/CrawlerDetect) |
-| JVM (Java, Scala, Kotlin) | [CrawlerDetect](https://github.com/nekosoftllc/crawler-detect) |
 | .NET / .NET Core | [NetCrawlerDetect](https://github.com/gplumb/NetCrawlerDetect) |
 | Ruby | [crawler_detect](https://github.com/loadkpi/crawler_detect) |
 | Go | [crawlerdetect](https://github.com/x-way/crawlerdetect) |
+
+These ports are no longer maintained and do not receive new crawler signatures:
+
+| Platform | Project | Last updated |
+| --- | --- | --- |
+| Symfony 2 / 3 / 4 | [CrawlerDetectBundle](https://github.com/nicolasmure/CrawlerDetectBundle) | 2021 |
+| Yii2 | [yii2-crawler-detect](https://github.com/AlikDex/yii2-crawler-detect) | 2016 |
+| JVM (Java, Scala, Kotlin) | [CrawlerDetect](https://github.com/nekosoftllc/crawler-detect) | 2022 |
+
+## Security
+
+Please don't report security issues in the public issue tracker. See [SECURITY.md](SECURITY.md) for how to report one privately.
 
 ## Credits
 
