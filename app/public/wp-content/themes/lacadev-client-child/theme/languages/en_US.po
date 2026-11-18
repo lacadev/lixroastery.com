@@ -2081,3 +2081,16 @@ msgstr "Pause video"
 
 msgid "Phát video"
 msgstr "Play video"
+
+msgid "Ảnh sau"
+msgstr "Next image"
+
+msgid "Video nền"
+msgstr "Background video"
+
+msgid "Điều hướng chủ đề"
+msgstr "Topic navigation"
+
+msgid "Tất cả chủ đề"
+msgstr "All topics"
+

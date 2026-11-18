@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-11-17T01:29:07+00:00\n"
+"POT-Creation-Date: 2026-11-17T08:25:03+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: laca\n"
@@ -78,7 +78,7 @@ msgstr ""
 msgid "Quay lại Thuật ngữ"
 msgstr ""
 
-#: app/helpers/journal-single-render.php:210
+#: app/helpers/journal-single-render.php:212
 msgid "Dữ liệu đang được cập nhật"
 msgstr ""
 
@@ -527,6 +527,29 @@ msgstr ""
 msgid "Đang tải thêm…"
 msgstr ""
 
+#: block-gutenberg/lixroastery-blocks-site/block-image-card-grid/render.php:97
+#: block-gutenberg/lixroastery-blocks-site/block-top-hero/render.php:256
+msgid "Ảnh trước"
+msgstr ""
+
+#: block-gutenberg/lixroastery-blocks-site/block-image-card-grid/render.php:97
+#: block-gutenberg/lixroastery-blocks-site/block-tabs/render.php:44
+#: theme/taxonomy-journal-cat.php:122
+#: theme/taxonomy-journal-cat.php:124
+msgid "Trước"
+msgstr ""
+
+#: block-gutenberg/lixroastery-blocks-site/block-image-card-grid/render.php:98
+msgid "Ảnh sau"
+msgstr ""
+
+#: block-gutenberg/lixroastery-blocks-site/block-image-card-grid/render.php:98
+#: block-gutenberg/lixroastery-blocks-site/block-tabs/render.php:45
+#: theme/taxonomy-journal-cat.php:130
+#: theme/taxonomy-journal-cat.php:132
+msgid "Sau"
+msgstr ""
+
 #. translators: %s: số phút đọc.
 #: block-gutenberg/lixroastery-blocks-site/block-journal-grid/render.php:219
 #, php-format
@@ -537,37 +560,29 @@ msgstr ""
 msgid "Product Grid (Cùng Brand): bài viết này chưa chọn Brand nào — vào Journal > Brands (bên phải khung soạn thảo) để chọn."
 msgstr ""
 
-#: block-gutenberg/lixroastery-blocks-site/block-tabs/render.php:44
-msgid "Trước"
-msgstr ""
-
-#: block-gutenberg/lixroastery-blocks-site/block-tabs/render.php:45
-msgid "Sau"
-msgstr ""
-
-#: block-gutenberg/lixroastery-blocks-site/block-top-hero/render.php:193
+#: block-gutenberg/lixroastery-blocks-site/block-top-hero/render.php:208
 msgid "Ảnh nổi bật"
 msgstr ""
 
-#: block-gutenberg/lixroastery-blocks-site/block-top-hero/render.php:236
-msgid "Ảnh trước"
+#: block-gutenberg/lixroastery-blocks-site/block-top-hero/render.php:226
+msgid "Video nền"
 msgstr ""
 
-#: block-gutenberg/lixroastery-blocks-site/block-top-hero/render.php:237
+#: block-gutenberg/lixroastery-blocks-site/block-top-hero/render.php:257
 msgid "Ảnh tiếp theo"
 msgstr ""
 
 #. translators: %d: số thứ tự ảnh trong slide
-#: block-gutenberg/lixroastery-blocks-site/block-top-hero/render.php:242
+#: block-gutenberg/lixroastery-blocks-site/block-top-hero/render.php:262
 #, php-format
 msgid "Xem ảnh %d"
 msgstr ""
 
-#: block-gutenberg/lixroastery-blocks-site/block-top-hero/render.php:248
+#: block-gutenberg/lixroastery-blocks-site/block-top-hero/render.php:268
 msgid "Tạm dừng video"
 msgstr ""
 
-#: block-gutenberg/lixroastery-blocks-site/block-top-hero/render.php:248
+#: block-gutenberg/lixroastery-blocks-site/block-top-hero/render.php:268
 msgid "Phát video"
 msgstr ""
 
@@ -1917,6 +1932,14 @@ msgstr ""
 
 #: theme/single-product.php:322
 msgid "Nhiệt độ kết thúc"
+msgstr ""
+
+#: theme/taxonomy-journal-cat.php:120
+msgid "Điều hướng chủ đề"
+msgstr ""
+
+#: theme/taxonomy-journal-cat.php:127
+msgid "Tất cả chủ đề"
 msgstr ""
 
 #: theme/template-parts/block-stats-info.php:24
