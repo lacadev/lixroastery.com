@@ -113,6 +113,9 @@ export default function Edit( { attributes, setAttributes } ) {
 		bgColor,
 		titleAlign = 'center',
 		descAlign = 'center',
+		buttonText = '',
+		buttonLink = '',
+		buttonTarget = '_self',
 		items,
 	} = attributes;
 
@@ -224,6 +227,10 @@ export default function Edit( { attributes, setAttributes } ) {
 								),
 								value: 'checkerboard',
 							},
+							{
+								label: __( 'Thanh trượt (Carousel)', 'laca' ),
+								value: 'carousel',
+							},
 						] }
 						onChange={ ( v ) => setAttributes( { layoutMode: v } ) }
 					/>
@@ -303,6 +310,49 @@ export default function Edit( { attributes, setAttributes } ) {
 						options={ DESC_ALIGN_OPTIONS }
 						onChange={ ( v ) => setAttributes( { descAlign: v } ) }
 					/>
+				</PanelBody>
+
+				<PanelBody
+					title={ __( 'Nút hành động', 'laca' ) }
+					initialOpen={ Boolean( buttonText ) }
+				>
+					<TextControl
+						label={ __( 'Nhãn nút', 'laca' ) }
+						value={ buttonText }
+						onChange={ ( v ) => setAttributes( { buttonText: v } ) }
+						help={ __(
+							'Để trống nếu không muốn hiển thị nút dưới lưới ảnh.',
+							'laca'
+						) }
+					/>
+					{ Boolean( buttonText ) && (
+						<>
+							<TextControl
+								label={ __( 'Liên kết nút', 'laca' ) }
+								value={ buttonLink }
+								onChange={ ( v ) =>
+									setAttributes( { buttonLink: v } )
+								}
+							/>
+							<SelectControl
+								label={ __( 'Mở liên kết', 'laca' ) }
+								value={ buttonTarget }
+								options={ [
+									{
+										label: __( 'Cùng tab (_self)', 'laca' ),
+										value: '_self',
+									},
+									{
+										label: __( 'Tab mới (_blank)', 'laca' ),
+										value: '_blank',
+									},
+								] }
+								onChange={ ( v ) =>
+									setAttributes( { buttonTarget: v } )
+								}
+							/>
+						</>
+					) }
 				</PanelBody>
 
 				<PanelBody
@@ -458,109 +508,146 @@ export default function Edit( { attributes, setAttributes } ) {
 					>
 						<div
 							className={
-								'block-image-card-grid__grid' +
-								( isCheckerboard
-									? ' block-image-card-grid__grid--checkerboard'
-									: '' )
-							}
-							style={
-								isCheckerboard
-									? undefined
-									: {
-											'--icg-columns': columns,
-											'--icg-ratio': aspectRatio.replace(
-												':',
-												'/'
-											),
-									  }
+								layoutMode === 'carousel'
+									? 'block-image-card-grid__carousel-wrap'
+									: ''
 							}
 						>
-							{ items.map( ( item, index ) => {
-								const isTall =
-									isCheckerboard &&
-									Boolean(
-										( Math.floor( index / 2 ) + index ) % 2
-									);
-								return (
-									<div
-										className="block-image-card-grid__card"
-										key={ index }
-										style={
-											isCheckerboard
-												? {
-														gridColumn: `span ${
-															isTall ? 6 : 4
-														}`,
-												  }
-												: undefined
-										}
-									>
+							<div
+								className={
+									'block-image-card-grid__grid' +
+									( isCheckerboard
+										? ' block-image-card-grid__grid--checkerboard'
+										: '' ) +
+									( layoutMode === 'carousel'
+										? ' block-image-card-grid__grid--carousel'
+										: '' )
+								}
+								style={
+									isCheckerboard
+										? undefined
+										: {
+												'--icg-columns': columns,
+												'--icg-ratio':
+													aspectRatio.replace(
+														':',
+														'/'
+													),
+										  }
+								}
+							>
+								{ items.map( ( item, index ) => {
+									const isTall =
+										isCheckerboard &&
+										Boolean(
+											( Math.floor( index / 2 ) +
+												index ) %
+												2
+										);
+									return (
 										<div
-											className={
-												'block-image-card-grid__image' +
-												( isTall
-													? ' block-image-card-grid__image--tall'
-													: '' )
+											className="block-image-card-grid__card"
+											key={ index }
+											style={
+												isCheckerboard
+													? {
+															gridColumn: `span ${
+																isTall ? 6 : 4
+															}`,
+													  }
+													: undefined
 											}
-											style={ {
-												background: item.imageUrl
-													? undefined
-													: bgColor,
-											} }
 										>
-											{ item.imageUrl && (
-												<img
-													src={ item.imageUrl }
-													alt=""
-												/>
-											) }
-											<div className="block-image-card-grid__overlay" />
-											<div className="block-image-card-grid__content">
-												<RichText
-													tagName="h3"
-													className={
-														'block-image-card-grid__title block-image-card-grid__title--' +
-														titleAlign
-													}
-													value={ item.title }
-													onChange={ ( v ) =>
-														updateItem(
-															index,
-															'title',
-															v
-														)
-													}
-													placeholder={ __(
-														'Tiêu đề…',
-														'laca'
-													) }
-													allowedFormats={ [] }
-												/>
-												<RichText
-													tagName="p"
-													className={
-														'block-image-card-grid__desc block-image-card-grid__desc--' +
-														descAlign
-													}
-													value={ item.desc }
-													onChange={ ( v ) =>
-														updateItem(
-															index,
-															'desc',
-															v
-														)
-													}
-													placeholder={ __(
-														'Mô tả…',
-														'laca'
-													) }
-												/>
+											<div
+												className={
+													'block-image-card-grid__image' +
+													( isTall
+														? ' block-image-card-grid__image--tall'
+														: '' )
+												}
+												style={ {
+													background: item.imageUrl
+														? undefined
+														: bgColor,
+												} }
+											>
+												{ item.imageUrl && (
+													<img
+														src={ item.imageUrl }
+														alt=""
+													/>
+												) }
+												<div className="block-image-card-grid__overlay" />
+												<div className="block-image-card-grid__content">
+													<RichText
+														tagName="h3"
+														className={
+															'block-image-card-grid__title block-image-card-grid__title--' +
+															titleAlign
+														}
+														value={ item.title }
+														onChange={ ( v ) =>
+															updateItem(
+																index,
+																'title',
+																v
+															)
+														}
+														placeholder={ __(
+															'Tiêu đề…',
+															'laca'
+														) }
+														allowedFormats={ [] }
+													/>
+													<RichText
+														tagName="p"
+														className={
+															'block-image-card-grid__desc block-image-card-grid__desc--' +
+															descAlign
+														}
+														value={ item.desc }
+														onChange={ ( v ) =>
+															updateItem(
+																index,
+																'desc',
+																v
+															)
+														}
+														placeholder={ __(
+															'Mô tả…',
+															'laca'
+														) }
+													/>
+												</div>
 											</div>
 										</div>
-									</div>
-								);
-							} ) }
+									);
+								} ) }
+							</div>
+							{ layoutMode === 'carousel' && (
+								<div className="block-image-card-grid__nav">
+									<button
+										type="button"
+										className="block-image-card-grid__btn block-image-card-grid__btn--prev"
+									>
+										{ __( 'Trước', 'laca' ) }
+									</button>
+									<button
+										type="button"
+										className="block-image-card-grid__btn block-image-card-grid__btn--next"
+									>
+										{ __( 'Sau', 'laca' ) }
+									</button>
+								</div>
+							) }
 						</div>
+						{ Boolean( buttonText ) && (
+							<div className="block-image-card-grid__action">
+								<span className="block-cta-section__link">
+									{ buttonText }
+								</span>
+							</div>
+						) }
 					</div>
 				</div>
 			</section>

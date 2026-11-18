@@ -69,6 +69,19 @@
             "type": "string",
             "default": "center"
         },
+        "buttonText": {
+            "type": "string",
+            "translatable": true,
+            "default": ""
+        },
+        "buttonLink": {
+            "type": "string",
+            "default": ""
+        },
+        "buttonTarget": {
+            "type": "string",
+            "default": "_self"
+        },
         "items": {
             "type": "array",
             "translatable": true,

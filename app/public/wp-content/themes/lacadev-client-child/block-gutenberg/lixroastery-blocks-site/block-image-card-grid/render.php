@@ -15,11 +15,17 @@ $content_align_mobile = in_array($attributes['contentAlignMobile'] ?? '', ['left
     ? $attributes['contentAlignMobile']
     : 'center';
 $margin_map = ['left' => '0 auto 0 0', 'center' => '0 auto', 'right' => '0 0 0 auto'];
-$layout_mode = ($attributes['layoutMode'] ?? 'grid') === 'checkerboard' ? 'checkerboard' : 'grid';
+$layout_mode = in_array($attributes['layoutMode'] ?? '', ['grid', 'checkerboard', 'carousel'], true)
+    ? $attributes['layoutMode']
+    : 'grid';
 $columns = max(2, min(4, intval($attributes['columns'] ?? 3)));
 $aspect_ratio = preg_match('/^\d+:\d+$/', $attributes['aspectRatio'] ?? '') ? $attributes['aspectRatio'] : '3:4';
 $items = is_array($attributes['items'] ?? null) ? $attributes['items'] : [];
 $is_checkerboard = $layout_mode === 'checkerboard';
+$is_carousel = $layout_mode === 'carousel';
+$button_text = trim((string) ($attributes['buttonText'] ?? ''));
+$button_link = esc_url($attributes['buttonLink'] ?? '');
+$button_target = ($attributes['buttonTarget'] ?? '_self') === '_blank' ? '_blank' : '_self';
 $title_align = in_array($attributes['titleAlign'] ?? '', ['left', 'center', 'right'], true)
     ? $attributes['titleAlign']
     : 'center';
@@ -41,49 +47,64 @@ $wrapper_attrs = get_block_wrapper_attributes(['class' => trim('block-image-card
 <section <?php echo $wrapper_attrs; ?>>
     <div class="block-image-card-grid__maxwidth"
         style="--mw-pc:<?php echo esc_attr($max_width); ?>%;--mw-tablet:<?php echo esc_attr($max_width_tablet); ?>%;--mw-mobile:<?php echo esc_attr($max_width_mobile); ?>%;--align-margin-pc:<?php echo esc_attr($margin_map[$content_align]); ?>;--align-margin-tablet:<?php echo esc_attr($margin_map[$content_align_tablet]); ?>;--align-margin-mobile:<?php echo esc_attr($margin_map[$content_align_mobile]); ?>;">
-        <div class="block-image-card-grid__grid<?php echo $is_checkerboard ? ' block-image-card-grid__grid--checkerboard' : ''; ?>"
-            <?php echo $is_checkerboard ? '' : 'style="--icg-columns: ' . esc_attr($columns) . '; --icg-ratio: ' . esc_attr(str_replace(':', '/', $aspect_ratio)) . ';"'; ?>>
-            <?php foreach ($items as $index => $item):
-                $image_url = esc_url($item['imageUrl'] ?? '');
-                $title = esc_html($item['title'] ?? '');
-                // desc cho phép format cơ bản (in đậm/nghiêng…) qua RichText.
-                $desc = wp_kses_post($item['desc'] ?? '');
-                $link = esc_url($item['link'] ?? '');
-                $link_target = ($item['linkTarget'] ?? '_self') === '_blank' ? '_blank' : '_self';
-                if (!$title && !$desc && !$image_url) {
-                    continue;
-                }
-                $tag = $link ? 'a' : 'div';
-                // Xen kẽ vuông (30%)/chữ nhật (70%) theo checkerboard 2 cột —
-                // cùng công thức vị trí đã dùng ở Coffee Journal
-                // (theme/single-product.php), chỉ đổi từ aspect-ratio độc
-                // lập sang chia cột 30/70 + chiều cao bằng nhau trong 1 dòng.
-                $is_tall = $is_checkerboard && (bool) ((intdiv($index, 2) + $index) % 2);
-                $col_span = $is_tall ? 6 : 4;
-                ?>
-                <div class="block-image-card-grid__card" <?php echo $is_checkerboard ? 'style="grid-column: span ' . $col_span . ';"' : ''; ?>>
-                    <<?php echo $tag; ?>     <?php echo $link ? 'href="' . $link . '" target="' . esc_attr($link_target) . '"' . ($link_target === '_blank' ? ' rel="noopener noreferrer"' : '') : ''; ?> class="block-image-card-grid__image<?php echo $is_tall ? ' block-image-card-grid__image--tall' : ''; ?>" style="<?php echo $image_url ? '' : 'background:' . esc_attr($bg_color) . ';'; ?>">
-                            <?php if ($image_url): ?>
-                                     <?php
-                                     // Ảnh theo bố cục lưới: mobile 1 cột, desktop chia theo số cột / ô checkerboard 70%.
-                                     $icg_sizes = $is_checkerboard
-                                         ? '(max-width: 768px) 100vw, ' . ($is_tall ? '60vw' : '40vw')
-                                         : '(max-width: 768px) 100vw, ' . round(100 / $columns) . 'vw';
-                                     echo laca_block_image_html((int) ($item['imageId'] ?? 0), $image_url, wp_strip_all_tags($item['title'] ?? ''), $icg_sizes); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-                                     ?>
-                            <?php endif; ?>
-                            <div class="block-image-card-grid__overlay"></div>
-                            <div class="block-image-card-grid__content">
-                                <?php if ($title): ?>
-                                         <h3 class="block-image-card-grid__title block-image-card-grid__title--<?php echo esc_attr($title_align); ?>"><?php echo $title; ?></h3>
+        <div class="block-image-card-grid__inner<?php echo $is_carousel ? ' block-image-card-grid__carousel-wrap' : ''; ?>"<?php echo $is_carousel ? ' data-icg-carousel' : ''; ?>>
+            <div class="block-image-card-grid__grid<?php echo $is_checkerboard ? ' block-image-card-grid__grid--checkerboard' : ($is_carousel ? ' block-image-card-grid__grid--carousel' : ''); ?>"
+                <?php echo $is_checkerboard ? '' : 'style="--icg-columns: ' . esc_attr($columns) . '; --icg-ratio: ' . esc_attr(str_replace(':', '/', $aspect_ratio)) . ';"'; ?>>
+                <?php foreach ($items as $index => $item):
+                    $image_url = esc_url($item['imageUrl'] ?? '');
+                    $title = esc_html($item['title'] ?? '');
+                    // desc cho phép format cơ bản (in đậm/nghiêng…) qua RichText.
+                    $desc = wp_kses_post($item['desc'] ?? '');
+                    $link = esc_url($item['link'] ?? '');
+                    $link_target = ($item['linkTarget'] ?? '_self') === '_blank' ? '_blank' : '_self';
+                    if (!$title && !$desc && !$image_url) {
+                        continue;
+                    }
+                    $tag = $link ? 'a' : 'div';
+                    // Xen kẽ vuông (30%)/chữ nhật (70%) theo checkerboard 2 cột —
+                    // cùng công thức vị trí đã dùng ở Coffee Journal
+                    // (theme/single-product.php), chỉ đổi từ aspect-ratio độc
+                    // lập sang chia cột 30/70 + chiều cao bằng nhau trong 1 dòng.
+                    $is_tall = $is_checkerboard && (bool) ((intdiv($index, 2) + $index) % 2);
+                    $col_span = $is_tall ? 6 : 4;
+                    ?>
+                    <div class="block-image-card-grid__card" <?php echo $is_checkerboard ? 'style="grid-column: span ' . $col_span . ';"' : ''; ?>>
+                        <<?php echo $tag; ?>     <?php echo $link ? 'href="' . $link . '" target="' . esc_attr($link_target) . '"' . ($link_target === '_blank' ? ' rel="noopener noreferrer"' : '') : ''; ?> class="block-image-card-grid__image<?php echo $is_tall ? ' block-image-card-grid__image--tall' : ''; ?>" style="<?php echo $image_url ? '' : 'background:' . esc_attr($bg_color) . ';'; ?>">
+                                <?php if ($image_url): ?>
+                                         <?php
+                                         // Ảnh theo bố cục lưới: mobile 1 cột, desktop chia theo số cột / ô checkerboard 70%.
+                                         $icg_sizes = $is_checkerboard
+                                             ? '(max-width: 768px) 100vw, ' . ($is_tall ? '60vw' : '40vw')
+                                             : '(max-width: 768px) 100vw, ' . round(100 / $columns) . 'vw';
+                                         echo laca_block_image_html((int) ($item['imageId'] ?? 0), $image_url, wp_strip_all_tags($item['title'] ?? ''), $icg_sizes); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+                                         ?>
                                 <?php endif; ?>
-                                <?php if ($desc): ?>
-                                         <p class="block-image-card-grid__desc block-image-card-grid__desc--<?php echo esc_attr($desc_align); ?>"><?php echo $desc; ?></p>
-                                <?php endif; ?>
-                            </div>
-                        </<?php echo $tag; ?>>
-                    </div>
-            <?php endforeach; ?>
+                                <div class="block-image-card-grid__overlay"></div>
+                                <div class="block-image-card-grid__content">
+                                    <?php if ($title): ?>
+                                             <h3 class="block-image-card-grid__title block-image-card-grid__title--<?php echo esc_attr($title_align); ?>"><?php echo $title; ?></h3>
+                                    <?php endif; ?>
+                                    <?php if ($desc): ?>
+                                             <p class="block-image-card-grid__desc block-image-card-grid__desc--<?php echo esc_attr($desc_align); ?>"><?php echo $desc; ?></p>
+                                    <?php endif; ?>
+                                </div>
+                            </<?php echo $tag; ?>>
+                        </div>
+                <?php endforeach; ?>
+            </div>
+            <?php if ($is_carousel): ?>
+            <div class="block-image-card-grid__nav">
+                <button type="button" class="block-image-card-grid__btn block-image-card-grid__btn--prev" data-icg-prev aria-label="<?php esc_attr_e('Ảnh trước', 'laca'); ?>"><?php esc_html_e('Trước', 'laca'); ?></button>
+                <button type="button" class="block-image-card-grid__btn block-image-card-grid__btn--next" data-icg-next aria-label="<?php esc_attr_e('Ảnh sau', 'laca'); ?>"><?php esc_html_e('Sau', 'laca'); ?></button>
+            </div>
+            <?php endif; ?>
         </div>
+        <?php if ($button_text && $button_link): ?>
+        <div class="block-image-card-grid__action">
+            <a href="<?php echo $button_link; ?>" target="<?php echo esc_attr($button_target); ?>"<?php echo $button_target === '_blank' ? ' rel="noopener noreferrer"' : ''; ?> class="block-cta-section__link">
+                <?php echo esc_html($button_text); ?>
+            </a>
+        </div>
+        <?php endif; ?>
     </div>
 </section>
