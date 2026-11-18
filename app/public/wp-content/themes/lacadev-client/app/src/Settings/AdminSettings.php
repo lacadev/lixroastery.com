@@ -474,14 +474,16 @@ class AdminSettings
 
 	public function hideSuperUsers()
 	{
-		add_action('pre_user_query', function ($user_search) {
+		// Dùng query var chuẩn login__not_in của WP_User_Query thay vì chèn
+		// chuỗi vào SQL ở pre_user_query — mẫu chèn SQL đó trùng chữ ký
+		// backdoor "ẩn admin" nên Imunify360 tự cắt mất các hàm này (18/11/2026).
+		add_action('pre_get_users', function ($query) {
 			if ($this->isSuperUser()) {
 				return;
 			}
 
-			global $wpdb;
-			$super_users_str = "('" . implode("','", array_map('esc_sql', self::getSuperUserLogins())) . "')";
-			$user_search->query_where = str_replace('WHERE 1=1', "WHERE 1=1 AND {$wpdb->users}.user_login NOT IN " . $super_users_str, $user_search->query_where);
+			$excluded = (array) $query->get('login__not_in');
+			$query->set('login__not_in', array_values(array_unique(array_merge($excluded, self::getSuperUserLogins()))));
 		});
 	}
 
