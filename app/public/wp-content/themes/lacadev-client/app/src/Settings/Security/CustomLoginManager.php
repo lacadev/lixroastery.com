@@ -97,6 +97,7 @@ class CustomLoginManager
         }
 
         if ($pagenow === 'wp-login.php'
+            && ($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'GET'
             && $path !== $this->userTrailingslashit($path)
             && get_option('permalink_structure')
         ) {
@@ -173,7 +174,10 @@ class CustomLoginManager
             return $url;
         }
 
-        return preg_replace('/wp-login\\.php/', $this->slug, $url, 1);
+        // Thêm "/" cuối theo permalink: form login gửi tới "/slug" (thiếu "/")
+        // sẽ dính redirect chuẩn hoá trailing slash → POST thành GET, mất
+        // log/pwd, đăng nhập lặng lẽ thất bại.
+        return preg_replace('/wp-login\\.php/', $this->userTrailingslashit($this->slug), $url, 1);
     }
 
     private function useTrailingSlashes(): bool
