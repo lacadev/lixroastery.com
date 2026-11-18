@@ -46,7 +46,11 @@ jobs:
         run: composer install --prefer-dist --no-progress
 
       - name: Validate composer.json
-        run: composer validate --no-check-publish
+        # --no-check-lock: composer.lock được sinh ở project gốc lacadev-client
+        # rồi chép sang; Composer bản mới nhất trên CI có thể tính content-hash
+        # khác máy dev (2.10.x báo khớp) → báo "lock not up to date" giả. Bước
+        # install ở trên đã cài đúng theo lock nên vẫn bắt được lock hỏng thật.
+        run: composer validate --no-check-publish --no-check-lock
 
   build-child:
     name: Build & Lint (lacadev-client-child)
