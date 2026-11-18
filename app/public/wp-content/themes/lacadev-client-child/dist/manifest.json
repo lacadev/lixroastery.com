@@ -7,6 +7,7 @@
   "login.js": "login.js",
   "editor.css": "styles/editor.css",
   "editor.js": "editor.js",
+  "editor-quote.js": "editor-quote.js",
   "child.css": "styles/child.css",
   "child.js": "child.js",
   "laca-seo.css": "styles/laca-seo.css",
