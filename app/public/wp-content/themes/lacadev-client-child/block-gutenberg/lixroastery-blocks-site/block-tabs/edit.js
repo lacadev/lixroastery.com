@@ -69,8 +69,10 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 		contentAlign,
 		contentAlignTablet,
 		contentAlignMobile,
-		showNavButtons = true,
+		showNavButtons = false,
+		showPrevNext = false,
 	} = attributes;
+	const hasNavButtons = Boolean( showPrevNext || showNavButtons );
 	const maxWidthStyle = {
 		'--mw-pc': `${ maxWidth }%`,
 		'--mw-tablet': `${ maxWidthTablet }%`,
@@ -257,9 +259,12 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 										'laca'
 								  )
 						}
-						checked={ showNavButtons }
+						checked={ hasNavButtons }
 						onChange={ ( v ) =>
-							setAttributes( { showNavButtons: v } )
+							setAttributes( {
+								showNavButtons: v,
+								showPrevNext: v,
+							} )
 						}
 					/>
 				</PanelBody>
@@ -307,7 +312,7 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 						</button>
 					</nav>
 					<div { ...innerBlocksProps } />
-					{ showNavButtons && (
+					{ hasNavButtons && (
 						<div className="tabs-block__footer">
 							<button
 								type="button"

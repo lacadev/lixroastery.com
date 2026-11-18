@@ -29,7 +29,7 @@
         display: flex;
         justify-content: center;
         align-items: center;
-        gap: 0.6em;
+        gap: 1.2em;
         margin-bottom: 3rem;
         flex-wrap: wrap;
     }
@@ -46,7 +46,7 @@
         opacity: 0.3;
         transition: opacity 0.2s ease;
 
-        @include resFont(rem(16), rem(18));
+        @include resFont(rem(20), rem(24));
 
         &.is-active {
             opacity: 1;

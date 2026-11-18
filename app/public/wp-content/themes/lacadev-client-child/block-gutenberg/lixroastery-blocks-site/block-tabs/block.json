@@ -43,7 +43,11 @@
         },
         "showNavButtons": {
             "type": "boolean",
-            "default": true
+            "default": false
+        },
+        "showPrevNext": {
+            "type": "boolean",
+            "default": false
         },
         "__isPreview": {
             "type": "boolean",
