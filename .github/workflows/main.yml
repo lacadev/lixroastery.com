@@ -17,7 +17,9 @@ jobs:
 
     strategy:
       matrix:
-        php-version: ["8.1"]
+        # Khớp PHP của hosting (8.3) — composer.lock có gói cần PHP >= 8.3
+        # (maennchen/zipstream-php 3.2.2), chạy 8.1 thì composer install lỗi.
+        php-version: ["8.3"]
 
     steps:
       - uses: actions/checkout@v4
