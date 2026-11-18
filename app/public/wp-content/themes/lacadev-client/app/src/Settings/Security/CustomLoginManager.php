@@ -120,6 +120,10 @@ class CustomLoginManager
                 exit;
             }
 
+            // require bên trong method → các biến wp-login.php vốn đọc ở
+            // phạm vi toàn cục thành biến cục bộ chưa gán (Undefined variable
+            // $user_login/$error in wp-login.php). Khai global như WPS Hide Login.
+            global $error, $interim_login, $action, $user_login;
             require ABSPATH . 'wp-login.php';
             exit;
         }
