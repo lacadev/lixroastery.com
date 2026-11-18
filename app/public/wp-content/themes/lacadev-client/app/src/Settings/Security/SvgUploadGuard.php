@@ -104,11 +104,11 @@ class SvgUploadGuard
      * @param array       $data     Values for the extension, mime type, and corrected filename.
      * @param string      $file     Full path to the file.
      * @param string      $filename The name of the file.
-     * @param string[]    $mimes    Array of allowed mime types keyed by their file extension regex.
+     * @param string[]|null $mimes  Array of allowed mime types keyed by their file extension regex.
      * @param string|false $real_mime The actual mime type or false if the type cannot be determined.
      * @return array
      */
-    public function fixSvgFiletype(array $data, string $file, string $filename, array $mimes, $real_mime): array
+    public function fixSvgFiletype(array $data, string $file, string $filename, ?array $mimes, $real_mime): array
     {
         $ext = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
 
