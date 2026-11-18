@@ -90,12 +90,14 @@
 
     &__desc {
         margin: 0;
+        max-width: 66%;
         font-weight: $regular;
         text-align: var(--stats-desc-align-pc, justify);
 
         @include resFont(rem(14), rem(16));
 
         @include maxWidth($md) {
+            max-width: 100%;
             text-align: var(--stats-desc-align-tablet, justify);
         }
 
@@ -106,11 +108,11 @@
 
     &--footer {
         padding-top: rem(60) !important;
-        padding-bottom: rem(40) !important;
+        padding-bottom: rem(100) !important;
 
         @include maxWidth($md) {
             padding-top: rem(40) !important;
-            padding-bottom: rem(30) !important;
+            padding-bottom: rem(60) !important;
         }
     }
 

@@ -102,7 +102,38 @@ $config = [
             data-cpt-grid-config='<?php echo esc_attr(wp_json_encode($config)); ?>'
             data-journal-cat-header
         >
-            <?php if (count($tabs) > 1) : ?>
+            <?php
+            $nav_mode = function_exists('laca_journal_topic_nav_mode') ? laca_journal_topic_nav_mode() : 'full';
+            if ($nav_mode === 'compact') :
+                $archive_link = get_post_type_archive_link('journal') ?: home_url('/journal/');
+                $cur_idx = -1;
+                foreach ($tabs as $i => $t) {
+                    if ($t->slug === $active_slug) {
+                        $cur_idx = $i;
+                        break;
+                    }
+                }
+                $prev_term = ($cur_idx > 0) ? $tabs[$cur_idx - 1] : null;
+                $next_term = ($cur_idx >= 0 && $cur_idx < count($tabs) - 1) ? $tabs[$cur_idx + 1] : null;
+            ?>
+                <div class="block-cpt-grid__tabs-wrap journal-archive__compact-nav-wrap">
+                    <nav class="journal-archive__compact-nav" aria-label="<?php esc_attr_e('Điều hướng chủ đề', 'laca'); ?>">
+                        <?php if ($prev_term) : ?>
+                            <a href="<?php echo esc_url(get_term_link($prev_term)); ?>" class="journal-archive__compact-link journal-archive__compact-link--prev"><?php esc_html_e('Trước', 'laca'); ?></a>
+                        <?php else : ?>
+                            <span class="journal-archive__compact-link journal-archive__compact-link--disabled"><?php esc_html_e('Trước', 'laca'); ?></span>
+                        <?php endif; ?>
+                        <span class="journal-archive__compact-sep">|</span>
+                        <a href="<?php echo esc_url($archive_link); ?>" class="journal-archive__compact-link journal-archive__compact-link--all"><?php esc_html_e('Tất cả chủ đề', 'laca'); ?></a>
+                        <span class="journal-archive__compact-sep">|</span>
+                        <?php if ($next_term) : ?>
+                            <a href="<?php echo esc_url(get_term_link($next_term)); ?>" class="journal-archive__compact-link journal-archive__compact-link--next"><?php esc_html_e('Sau', 'laca'); ?></a>
+                        <?php else : ?>
+                            <span class="journal-archive__compact-link journal-archive__compact-link--disabled"><?php esc_html_e('Sau', 'laca'); ?></span>
+                        <?php endif; ?>
+                    </nav>
+                </div>
+            <?php elseif (count($tabs) > 1) : ?>
                 <div class="block-cpt-grid__tabs-wrap">
                     <div class="block-cpt-grid__tabs">
                         <?php foreach ($tabs as $tab_term) :

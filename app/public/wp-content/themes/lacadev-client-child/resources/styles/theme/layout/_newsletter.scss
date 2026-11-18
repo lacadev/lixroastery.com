@@ -10,6 +10,7 @@ $newsletterLineColor: rgba($darkColor, 0.45);
     display: grid;
     grid-template-columns: 2fr 1fr;
     column-gap: rem(10);
+    margin-top: rem(60);
     margin-bottom: rem(48);
 
     &__title {
@@ -86,6 +87,7 @@ $newsletterLineColor: rgba($darkColor, 0.45);
         padding: rem(6) 0;
         border: 0;
         background: transparent;
+        font-family: $mainFont;
         font-weight: $light;
         color: $darkColor;
         cursor: pointer;
@@ -150,6 +152,7 @@ $newsletterLineColor: rgba($darkColor, 0.45);
 
     @include maxWidth($md) {
         grid-template-columns: 1fr;
+        margin-top: rem(30);
 
         &__field,
         &__msg,
@@ -200,7 +203,7 @@ $newsletterLineColor: rgba($darkColor, 0.45);
         padding: rem(12) rem(32);
         border: 1px solid $primaryColor;
         background: $primaryColor;
-        font-family: $subFont;
+        font-family: $mainFont;
         color: $lightColor;
         cursor: pointer;
         transition: background-color 0.2s ease, color 0.2s ease;

@@ -12,15 +12,19 @@
         text-align: center;
         margin: 0 0 4rem;
 
-        @include resFont(rem(24), rem(30));
+        @include resFont(rem(32), rem(56));
     }
 
     &__body {
+        --glossary-inset: clamp(#{rem(48)}, 6vw, #{rem(120)});
+
         display: flex;
         align-items: flex-start;
-        gap: rem(68);
+        gap: var(--glossary-inset);
 
         @include maxWidth($sm) {
+            --glossary-inset: 0;
+
             flex-direction: column;
             gap: 1.5rem;
         }
@@ -63,6 +67,11 @@
     &__list {
         flex: 1 1 auto;
         min-width: 0;
+        padding-right: var(--glossary-inset);
+
+        @include maxWidth($sm) {
+            padding-right: 0;
+        }
     }
 
     // Neo chữ cái A-Z (tách khỏi item vì item đã có id = slug).
@@ -114,7 +123,7 @@
             }
         }
 
-        @include resFont(rem(14), rem(16));
+        @include resFont(rem(18), rem(24));
     }
 
     &__definition {
@@ -146,10 +155,12 @@
     }
 
     &__related-label {
-        font-family: $mainFont;
-        font-weight: $semiBold;
-        font-style: italic;
-        font-size: rem(16);
+        font-family: $subFont;
+        font-weight: $regular;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        opacity: 0.5;
+        font-size: rem(14);
         margin: 0 0 0.3rem;
     }
 
@@ -159,8 +170,8 @@
         padding: 0;
 
         li {
-            font-style: italic;
-            font-size: rem(16);
+            font-family: $subFont;
+            font-size: rem(14);
             color: $darkColor;
             margin-bottom: 0.2rem;
         }

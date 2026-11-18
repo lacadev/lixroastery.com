@@ -43,7 +43,8 @@ body.menu-open {
         left: 0;
         width: 100%;
         background: transparent;
-        transition: background 0.25s ease, box-shadow 0.25s ease;
+        padding-top: calc(1.2rem + #{rem(16)});
+        transition: background 0.25s ease, box-shadow 0.25s ease, padding 0.25s ease;
 
         // Dùng combinator "> .menu-item" (CHỈ con trực tiếp của
         // .header__menu-list) — lỗi thật đã gặp: viết ".header__menu-list
@@ -54,9 +55,15 @@ body.menu-open {
         // trống, không đọc được chữ.
         .header__menu-list > .menu-item > a,
         .header__menu-list > .menu-item.actived-menu > a,
+        .header__menu-list > .menu-item.current-menu-item > a,
+        .header__menu-list > .menu-item.current-menu-ancestor > a,
         .header__logo-text,
         .header__icon-btn {
             color: #fff;
+        }
+
+        .header__menu-list > .menu-item > a::after {
+            background-color: #fff;
         }
 
         // Viết riêng, ghép thêm ".header" vào trước (".header.header--hero-
@@ -85,6 +92,7 @@ body.menu-open {
         &.is-scrolled {
             position: sticky;
             background: #fff;
+            padding-top: 1.2rem;
 
             .header__logo-img--white:not(.header__logo-img--only) {
                 display: none;
@@ -98,8 +106,14 @@ body.menu-open {
                 color: $darkColor;
             }
 
-            .header__menu-list > .menu-item.actived-menu > a {
+            .header__menu-list > .menu-item.actived-menu > a,
+            .header__menu-list > .menu-item.current-menu-item > a,
+            .header__menu-list > .menu-item.current-menu-ancestor > a {
                 color: $primaryColor;
+            }
+
+            .header__menu-list > .menu-item > a::after {
+                background-color: $primaryColor;
             }
 
             .header__logo-text,
@@ -143,6 +157,7 @@ body.menu-open {
         padding: 0;
 
         .menu-item > a {
+            position: relative;
             font-family: $subFont;
             font-weight: $light;
             letter-spacing: 0;
@@ -151,19 +166,39 @@ body.menu-open {
             color: $darkColor;
             transition: color 0.2s ease;
 
-            &:hover {
-                color: $primaryColor !important;
+            &::after {
+                content: "";
+                position: absolute;
+                bottom: -2px;
+                left: 0;
+                width: 0;
+                height: 1px;
+                background-color: $primaryColor;
+                transition: width 0.2s ease;
             }
 
-             @include resFont(rem(14), rem(16));
+            &:hover {
+                color: $primaryColor !important;
+
+                &::after {
+                    width: 100%;
+                }
+            }
+
+            @include resFont(rem(14), rem(16));
         }
 
-        .menu-item.actived-menu > a {
+        .menu-item.actived-menu > a,
+        .menu-item.current-menu-item > a,
+        .menu-item.current-menu-ancestor > a {
             color: $primaryColor !important;
+
+            &::after {
+                width: 100%;
+            }
         }
 
-        // Dropdown submenu (menu item có menu con, vd "Journal") — mặc định
-        // ẩn, chỉ hiện khi hover/focus vào item cha.
+        // Dropdown submenu (menu item có menu con, vd "Journal") — hiển thị giống XLIII
         .menu-item {
             position: relative;
         }
@@ -173,34 +208,39 @@ body.menu-open {
             top: 100%;
             left: 0;
             z-index: 10;
-            display: none;
+            display: flex;
+            visibility: hidden;
+            opacity: 0;
+            transition: opacity 0.15s linear, visibility 0.15s linear;
             flex-direction: column;
             min-width: 160px;
             background: #fff;
-            border: 1px solid rgba(0, 0, 0, 0.15);
-            padding: 0;
+            box-shadow: rgba(149, 157, 165, 0.2) 0 8px 24px;
+            padding: rem(8);
             margin: 0;
             list-style: none;
 
             .menu-item > a {
                 display: block;
-                padding: rem(10) rem(16);
+                padding: rem(12) rem(16);
                 white-space: nowrap;
+                transition: background 0.25s linear;
+
+                &::after {
+                    content: none;
+                }
 
                 &:hover {
-                    background: rgba(0, 0, 0, 0.05);
+                    background: #e3e3e3;
                     color: $darkColor;
                 }
             }
 
-            // Menu cấp 3 trở lên xổ ra BÊN CẠNH (flyout), không nằm chung
-            // cột với cấp 2 — .menu-item cha đã có position:relative nên
-            // .sub-menu con định vị theo đúng item đó, không theo cấp 1.
-            // margin âm để bù viền 1px của khung cha, tránh lệch viền.
+            // Menu cấp 3 trở lên xổ ra BÊN CẠNH (flyout)
             .sub-menu {
                 top: 0;
                 left: 100%;
-                margin: -1px 0 0 -1px;
+                margin: 0;
             }
         }
 
@@ -208,7 +248,8 @@ body.menu-open {
         .menu-item.has-children:focus-within > .sub-menu,
         .menu-item-has-children:hover > .sub-menu,
         .menu-item-has-children:focus-within > .sub-menu {
-            display: flex;
+            visibility: visible;
+            opacity: 1;
         }
     }
 
@@ -226,7 +267,7 @@ body.menu-open {
 
     &__logo-img {
         display: block;
-        height: 24px !important;
+        height: 16px !important;
         width: auto;
 
         &--white {
@@ -245,7 +286,7 @@ body.menu-open {
     &__logo-text {
         font-family: $subFont;
         font-weight: $medium;
-        font-size: rem(18);
+        font-size: rem(12);
         letter-spacing: 0.02em;
         text-transform: uppercase;
         color: $darkColor;

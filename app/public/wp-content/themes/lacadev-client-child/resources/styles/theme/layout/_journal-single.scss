@@ -23,6 +23,22 @@
   scroll-margin-top: rem(110);
 }
 
+.single-post__content h2.wp-block-heading {
+  font-family: $subFont;
+  font-weight: $regular;
+  text-transform: uppercase;
+  margin-bottom: rem(28);
+
+  strong,
+  b {
+    font-weight: inherit;
+  }
+
+  @include maxWidth($sm) {
+    margin-bottom: rem(18);
+  }
+}
+
 .journal-toc {
   margin-top: rem(30);
   margin-bottom: rem(30);
@@ -34,9 +50,11 @@
 
   &__title {
     margin: 0 0 rem(15);
+    font-family: $subFont;
     font-size: rem(24);
-    font-weight: $semiBold;
+    font-weight: $regular;
     line-height: 1.5;
+    text-transform: uppercase;
   }
 
   &__list {

@@ -131,7 +131,9 @@ if (!function_exists('laca_journal_anchor_headings')) {
             }
 
             $used[$id] = true;
-            $items[] = ['id' => $id, 'text' => $text];
+            $lower = mb_strtolower($text, 'UTF-8');
+            $toc_text = mb_strtoupper(mb_substr($lower, 0, 1, 'UTF-8'), 'UTF-8') . mb_substr($lower, 1, null, 'UTF-8');
+            $items[] = ['id' => $id, 'text' => $toc_text];
 
             return '<h2' . $attrs . '>' . $m[2] . '</h2>';
         }, $html);

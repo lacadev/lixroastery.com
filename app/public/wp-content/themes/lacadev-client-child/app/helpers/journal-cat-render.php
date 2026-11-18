@@ -63,3 +63,13 @@ function laca_journal_render_category_directory(WP_Term $term, ?array $children 
     <?php endif; ?>
     <?php
 }
+
+/**
+ * Chế độ điều hướng thanh chủ đề trên trang taxonomy journal-cat.
+ *
+ * @return string 'full' (mặc định) hoặc 'compact' (PREV | TẤT CẢ CHỦ ĐỀ | NEXT).
+ */
+function laca_journal_topic_nav_mode(): string
+{
+    return (string) apply_filters('laca_journal_topic_nav_mode', 'full');
+}

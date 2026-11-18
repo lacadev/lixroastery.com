@@ -31,9 +31,9 @@
         font-family: $subFont;
         text-transform: uppercase;
         letter-spacing: 0.02em;
-        line-height: 1.5;
+        line-height: 1.25;
 
-        @include resFont(rem(20), rem(32));
+        @include resFont(rem(28), rem(56));
     }
 
     &__desc {
@@ -45,7 +45,7 @@
     }
 
     &__link {
-        padding: 0.85em 2em;
+        padding: 0.55em 1.35em;
         display: inline-block;
         font-family: $subFont;
         background-color: $primaryColor;
