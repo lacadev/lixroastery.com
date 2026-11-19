@@ -87,6 +87,15 @@ add_action('init', function () {
 });
 
 /**
+ * Hướng dẫn cấu hình Laca Admin + Laca SEO (Laca Admin → Bắt đầu, menu HD Sử dụng).
+ */
+add_action('init', function () {
+    if (is_admin() && class_exists('\App\Settings\LacaAdmin\ConfigGuidePage')) {
+        (new \App\Settings\LacaAdmin\ConfigGuidePage())->register();
+    }
+});
+
+/**
  * Checklist phát hành production — đầu trang Laca Admin (chỉ Super User).
  */
 add_action('init', function () {

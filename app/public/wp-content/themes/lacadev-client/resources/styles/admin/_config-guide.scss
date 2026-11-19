@@ -1,0 +1,154 @@
+// -------------------------------------------------------------
+// Trang "Hướng dẫn cấu hình" (laca-guide) — chỉ dùng token đơn sắc sẵn có.
+// -------------------------------------------------------------
+
+.laca-guide {
+  max-width: 1080px;
+
+  .laca-card + .laca-card {
+    margin-top: var(--laca-space-5);
+  }
+
+  &__quickstart {
+    margin-top: var(--laca-space-5);
+  }
+
+  &__steps {
+    counter-reset: laca-guide-step;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: var(--laca-space-3);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  &__step {
+    counter-increment: laca-guide-step;
+    margin: 0;
+  }
+
+  &__step-link {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: var(--laca-space-1);
+    height: 100%;
+    padding: var(--laca-space-3) var(--laca-space-4) var(--laca-space-3) var(--laca-space-10);
+    border: 1px solid var(--laca-border);
+    border-radius: var(--laca-radius-l2);
+    color: var(--laca-fg);
+    text-decoration: none;
+    transition: var(--laca-transition);
+    box-sizing: border-box;
+
+    &::before {
+      content: counter(laca-guide-step);
+      position: absolute;
+      top: var(--laca-space-3);
+      left: var(--laca-space-4);
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: var(--laca-fg);
+      color: var(--laca-bg);
+      font-size: var(--laca-font-size-xs);
+      font-weight: 600;
+      line-height: 24px;
+      text-align: center;
+    }
+
+    &:hover,
+    &:focus-visible {
+      background: var(--laca-bg-subtle);
+      border-color: var(--laca-fg-muted);
+      color: var(--laca-fg);
+    }
+  }
+
+  &__step-title {
+    font-size: var(--laca-font-size-sm);
+    font-weight: 600;
+  }
+
+  &__step-desc {
+    font-size: var(--laca-font-size-xs);
+    color: var(--laca-fg-muted);
+    line-height: 1.5;
+  }
+
+  &__items {
+    display: flex;
+    flex-direction: column;
+    gap: var(--laca-space-2);
+  }
+
+  &__item {
+    border: 1px solid var(--laca-border);
+    border-radius: var(--laca-radius-l2);
+
+    &[open] .laca-guide__summary::after {
+      transform: rotate(180deg);
+    }
+  }
+
+  &__summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--laca-space-3);
+    padding: var(--laca-space-3) var(--laca-space-4);
+    font-size: var(--laca-font-size-sm);
+    font-weight: 600;
+    color: var(--laca-fg);
+    cursor: pointer;
+    list-style: none;
+
+    &::-webkit-details-marker {
+      display: none;
+    }
+
+    &::after {
+      content: "▾";
+      color: var(--laca-fg-muted);
+      transition: var(--laca-transition);
+    }
+
+    &:hover {
+      background: var(--laca-bg-subtle);
+    }
+  }
+
+  &__detail {
+    padding: 0 var(--laca-space-4) var(--laca-space-4);
+    font-size: var(--laca-font-size-sm);
+    color: var(--laca-fg);
+    line-height: 1.6;
+
+    p {
+      margin: 0;
+    }
+  }
+
+  &__list {
+    margin: 0 0 var(--laca-space-3);
+    padding-left: var(--laca-space-5);
+    list-style: disc;
+
+    li {
+      margin-bottom: var(--laca-space-1);
+    }
+  }
+
+  &__routines {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: var(--laca-space-5);
+  }
+
+  &__routine-title {
+    margin: 0 0 var(--laca-space-2);
+    font-size: var(--laca-font-size-sm);
+    font-weight: 600;
+  }
+}
