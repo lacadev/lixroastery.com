@@ -93,6 +93,14 @@ body.laca-layout-fluid {
   }
 }
 
+// 100vw tính cả thanh cuộn dọc (Windows / macOS "luôn hiện thanh cuộn") →
+// khối .alignfull rộng hơn vùng hiển thị vài px → cuộn ngang (vd khối trích
+// dẫn Content Text "Full width" ở /manifesto/the-lab/). Cùng cách đã dùng cho
+// .block-top-hero--bleed: clip thay vì hidden để không phá sticky header.
+body:has(.entry-content > .alignfull) {
+  overflow-x: clip;
+}
+
 h1.page-title {
     text-transform: uppercase;
     font-size: rem(30);
