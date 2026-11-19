@@ -126,6 +126,17 @@ class ThemeOptionsCache
                 return $snapshot[$cleanKey] !== null ? $snapshot[$cleanKey] : $default;
             }
 
+            // Snapshot chỉ chứa khoá theo ngôn ngữ đang chọn lúc dựng (vd dựng
+            // khi admin xem "all" → chỉ có "addressall"), còn getOption() ghép
+            // hậu tố liền ("addressvi") nên bước 2 không bắt được → footer rỗng
+            // dù đã nhập. Thiếu khoá thì đọc thẳng Carbon Fields và nhớ lại
+            // trong request để không query lặp.
+            if (function_exists('carbon_get_theme_option')) {
+                $val = carbon_get_theme_option($name);
+                self::$memoryCache[$name] = $val;
+                return $val !== null && $val !== '' ? $val : $default;
+            }
+
             return $default;
         }
 
