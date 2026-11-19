@@ -9,8 +9,19 @@
 # Build modules
 /node_modules/
 
-# Composer packages
-/vendor/
+# Composer packages — vendor/ ĐƯỢC track (deploy FTP chỉ đẩy file có trong git).
+# Chỉ bỏ qua các gói require-dev (khớp packages-dev trong composer.lock).
+# Trước đây ghi "/vendor/" → mọi file MỚI của thư viện production (vd
+# guzzlehttp/promises/src/State.php) bị bỏ qua lặng lẽ, server thiếu file → fatal.
+# Luôn sinh autoload bằng: composer dump-autoload --no-dev --optimize
+/vendor/bin/
+/vendor/dealerdirect/
+/vendor/phpcsstandards/
+/vendor/psr/log/
+/vendor/squizlabs/
+/vendor/symfony/error-handler/
+/vendor/symfony/var-dumper/
+/vendor/wp-coding-standards/
 
 # WordPress Coding Standards
 /wpcs/

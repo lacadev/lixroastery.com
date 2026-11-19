@@ -33,7 +33,8 @@
 		"illuminate/validation": "^8.0",
 		"overtrue/socialite": "^2.0",
 		"johnbillion/extended-cpts": "^5.0",
-		"phpoffice/phpspreadsheet": "^1.29"
+		"phpoffice/phpspreadsheet": "^1.29",
+		"enshrined/svg-sanitize": "^1.1.1"
 	},
 	"require-dev": {
 		"symfony/error-handler": "^6.4",
