@@ -28,6 +28,12 @@ use App\Databases\ContactFormTable;
  */
 class ContactFormAjaxHandler
 {
+    // Cùng ngưỡng với form footer (FooterContactHandler): 5 lần / 10 phút / IP.
+    private const RATE_LIMIT_MAX = 5;
+    private const RATE_LIMIT_TTL = 600;
+    // Ô bẫy bot: người thật không thấy nên để trống; bot điền mọi ô.
+    public const HONEYPOT_FIELD = 'laca_cf_website';
+
     public function init(): void
     {
         add_action('wp_ajax_laca_cf_submit',        [$this, 'handleSubmit']);
@@ -69,6 +75,19 @@ class ContactFormAjaxHandler
 
         $styleSettings = json_decode($form['style_settings'] ?? '{}', true) ?: [];
         $popup         = ContactFormPopupSettings::resolveForLang($styleSettings, $lang);
+
+        // 2.5. Honeypot: bot điền ô ẩn → trả "thành công" giả (không lưu, không
+        // gửi mail) để bot không biết mà đổi cách.
+        if (trim((string) wp_unslash($_POST[self::HONEYPOT_FIELD] ?? '')) !== '') {
+            wp_send_json_success(['message' => $popup['popup_success_desc']]);
+        }
+
+        // 2.6. Giới hạn tần suất theo IP (chống spam / flood form).
+        if (self::isRateLimited(self::getClientIp())) {
+            wp_send_json_error([
+                'message' => __('Bạn đã gửi quá nhiều yêu cầu. Vui lòng thử lại sau ít phút.', 'laca'),
+            ], 429);
+        }
 
         // 3. Validate & Sanitize từng field
         $data   = [];
@@ -313,6 +332,11 @@ class ContactFormAjaxHandler
                 <input type="hidden" name="_nonce" value="<?php echo esc_attr($nonce); ?>">
                 <input type="hidden" name="form_id" value="<?php echo esc_attr($formId); ?>">
                 <input type="hidden" name="action" value="laca_cf_submit">
+                <?php // Ô bẫy bot — ẩn khỏi người dùng và trình đọc màn hình. ?>
+                <div class="laca-cf-hp" aria-hidden="true">
+                    <label for="<?php echo esc_attr($formElId); ?>-hp"><?php esc_html_e('Để trống ô này', 'laca'); ?></label>
+                    <input type="text" id="<?php echo esc_attr($formElId); ?>-hp" name="<?php echo esc_attr(self::HONEYPOT_FIELD); ?>" value="" tabindex="-1" autocomplete="off">
+                </div>
                 <input type="hidden" name="_lang" value="<?php echo esc_attr(function_exists('pll_current_language') ? (pll_current_language() ?: '') : ''); ?>">
                 <?php if ($recaptchaEnabled): ?>
                     <input type="hidden" name="laca_recaptcha_response" value="">
@@ -948,6 +972,8 @@ class ContactFormAjaxHandler
         ?>
         <style id="laca-contact-form-css">
         .laca-contact-form-wrap { max-width: 700px; }
+        /* Ô bẫy bot: đẩy ra ngoài màn hình (không display:none — nhiều bot bỏ qua ô bị ẩn hẳn) */
+        .laca-cf-hp { position: absolute !important; left: -9999px !important; width: 1px; height: 1px; overflow: hidden; }
         /* New row-based layout: flex column of layout rows */
         .laca-contact-form { display: flex; flex-direction: column; gap: 16px; align-items: stretch; }
         /* Each layout row uses CSS grid (inline style sets grid-template-columns) */
@@ -1264,6 +1290,29 @@ class ContactFormAjaxHandler
         }
 
         return $css;
+    }
+
+    /**
+     * Đếm lượt gửi theo IP trong cửa sổ cố định; true = đã vượt ngưỡng.
+     * IP lưu dạng băm (không giữ IP thô trong option/transient).
+     */
+    private static function isRateLimited(string $ip): bool
+    {
+        $key   = 'laca_cf_rl_' . substr(hash('sha256', $ip !== '' ? $ip : 'unknown'), 0, 32);
+        $now   = time();
+        $state = get_transient($key);
+
+        if (!is_array($state) || empty($state['expires']) || (int) $state['expires'] <= $now) {
+            $state = ['count' => 0, 'expires' => $now + self::RATE_LIMIT_TTL];
+        }
+        if ((int) $state['count'] >= self::RATE_LIMIT_MAX) {
+            return true;
+        }
+
+        $state['count'] = (int) $state['count'] + 1;
+        set_transient($key, $state, max(1, (int) $state['expires'] - $now));
+
+        return false;
     }
 
     public static function getClientIp(): string

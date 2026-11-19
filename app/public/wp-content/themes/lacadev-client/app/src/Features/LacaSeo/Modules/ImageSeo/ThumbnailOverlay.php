@@ -29,7 +29,9 @@ class ThumbnailOverlay
     public static function getChoices(): array
     {
         $rmImgDir = WP_CONTENT_DIR . '/plugins/seo-by-rank-math/assets/admin/img/';
-        $themeImgDir = get_template_directory() . '/resources/images/seo/';
+        // get_template_directory() của theme này là .../lacadev-client/theme
+        // (cấu trúc WPEmerge) → resources/ nằm ở thư mục cha của nó.
+        $themeImgDir = dirname(get_template_directory()) . '/resources/images/seo/';
 
         $playPath = file_exists($rmImgDir . 'icon-play.png') ? $rmImgDir . 'icon-play.png' : $themeImgDir . 'icon-play.png';
         $gifPath  = file_exists($rmImgDir . 'icon-gif.png') ? $rmImgDir . 'icon-gif.png' : $themeImgDir . 'icon-gif.png';
@@ -86,7 +88,7 @@ class ThumbnailOverlay
             die();
         }
 
-        if ($secret !== self::getSecret($thumbnailId, $type)) {
+        if (!hash_equals(self::getSecret($thumbnailId, $type), $secret)) {
             die();
         }
 
@@ -98,9 +100,45 @@ class ThumbnailOverlay
 
         $position = $choices[$type]['position'] ?? 'middle_center';
 
+        // Trước đây mỗi lượt gọi (bot mạng xã hội, crawler…) đều vẽ lại PNG
+        // bằng GD → tốn CPU. Lưu file đã vẽ vào uploads; tên gắn mtime ảnh gốc
+        // + icon nên đổi ảnh là tự vẽ lại, không cần xoá cache tay.
+        $cacheFile = self::cachePath($thumbnailId, $type, $imagePath, $overlayPath);
+        $png = ($cacheFile && is_readable($cacheFile)) ? (string) file_get_contents($cacheFile) : '';
+        if ($png === '') {
+            $png = self::renderOverlayGd($imagePath, $overlayPath, $position);
+            if ($png !== '' && $cacheFile && wp_mkdir_p(dirname($cacheFile))) {
+                // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents
+                @file_put_contents($cacheFile, $png);
+            }
+        }
+
+        header('Cache-Control: public, max-age=604800');
+        if ($png === '') {
+            // Thiếu icon overlay / GD lỗi → trả ẢNH GỐC thay vì phản hồi rỗng,
+            // để ảnh chia sẻ mạng xã hội không bị vỡ.
+            $mime = wp_check_filetype($imagePath)['type'] ?: 'image/jpeg';
+            header('Content-Type: ' . $mime);
+            readfile($imagePath);
+            die();
+        }
         header('Content-Type: image/png');
-        echo self::renderOverlayGd($imagePath, $overlayPath, $position);
+        echo $png; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- dữ liệu ảnh nhị phân
         die();
+    }
+
+    /**
+     * Đường dẫn file cache ảnh overlay trong uploads; '' nếu không xác định được.
+     */
+    private static function cachePath(int $thumbnailId, string $type, string $imagePath, string $overlayPath): string
+    {
+        $uploads = wp_upload_dir(null, false);
+        if (empty($uploads['basedir']) || !empty($uploads['error'])) {
+            return '';
+        }
+        $version = substr(md5((string) @filemtime($imagePath) . '|' . (string) @filemtime($overlayPath)), 0, 10);
+
+        return trailingslashit($uploads['basedir']) . 'laca-seo-overlay/' . $thumbnailId . '-' . sanitize_key($type) . '-' . $version . '.png';
     }
 
     /**
@@ -155,7 +193,9 @@ class ThumbnailOverlay
         if ($ext === 'jpg') {
             $ext = 'jpeg';
         }
-        if (in_array($ext, ['jpeg', 'png', 'gif'], true)) {
+        // Ảnh tải lên của theme thường là WebP (tự chuyển đổi) — trước đây chỉ
+        // nhận jpeg/png/gif nên overlay luôn thất bại với ảnh WebP.
+        if (in_array($ext, ['jpeg', 'png', 'gif', 'webp'], true) && function_exists('imagecreatefrom' . $ext)) {
             return 'imagecreatefrom' . $ext;
         }
         return '';
