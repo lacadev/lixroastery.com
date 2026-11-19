@@ -50,18 +50,6 @@ add_action('admin_bar_menu', function (\WP_Admin_Bar $wp_admin_bar) {
 }, 1);
 
 /**
- * Text chân trang bên trái của trang quản trị.
- */
-add_filter('admin_footer_text', function () {
-    return sprintf(
-        /* translators: 1: author name, 2: author URL */
-        __('Website được phát triển bởi <a href="%s" target="_blank" rel="noopener">%s</a>', 'laca'),
-        esc_url(AUTHOR['website'] ?? 'https://lacadev.com'),
-        esc_html(AUTHOR['name'] ?? 'LacaDev')
-    );
-}, 11);
-
-/**
  * Text chân trang bên phải: ẩn phiên bản WP core, chỉ hiện "WordPress + phiên bản".
  */
 add_filter('update_footer', function () {

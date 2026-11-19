@@ -636,8 +636,15 @@ body.wp-admin {
 
 // General Admin Links — Monochromatic, no blue
 body.wp-admin {
-  a:not(.button):not(.laca-btn):not(.nav-tab):not(.ab-item):not(.page-title-action):not(.components-button):not(.laca-seo-tabs-list__link):not(.laca-admin-dock__item),
-  a:not(.button):not(.laca-btn):not(.nav-tab):not(.ab-item):not(.page-title-action):not(.components-button):not(.laca-seo-tabs-list__link):not(.laca-admin-dock__item):visited {
+  // Menu điều hướng (menu trái WP, sidebar Laca SEO) không gạch chân khi
+  // hover — đã có nền/màu đánh dấu, gạch chân chỉ dành cho link trong nội dung.
+  #adminmenu a:hover,
+  #adminmenu a:focus {
+    text-decoration: none !important;
+  }
+
+  a:not(.button):not(.laca-btn):not(.nav-tab):not(.ab-item):not(.page-title-action):not(.components-button):not(.laca-seo-tabs-list__link):not(.laca-seo-nav__link):not(.laca-admin-dock__item),
+  a:not(.button):not(.laca-btn):not(.nav-tab):not(.ab-item):not(.page-title-action):not(.components-button):not(.laca-seo-tabs-list__link):not(.laca-seo-nav__link):not(.laca-admin-dock__item):visited {
     color: var(--laca-fg) !important;
 
     &:hover {
