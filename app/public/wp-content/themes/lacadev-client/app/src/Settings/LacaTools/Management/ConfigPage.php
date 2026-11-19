@@ -148,32 +148,32 @@ class ConfigPage
                         <div class="laca-field">
                             <span class="laca-field__label"><?php esc_html_e('Chọn các phần cấu hình cần xuất:', 'laca'); ?></span>
                             <div style="display:grid;grid-template-columns:repeat(auto-fill, minmax(240px, 1fr));gap:10px;margin-top:8px;">
-                                <label class="laca-checkbox" style="display:flex;align-items:center;gap:8px;">
-                                    <input type="checkbox" name="section_theme_options" value="1" checked>
+                                <label class="laca-check-group__item" style="display:flex;align-items:center;gap:8px;">
+                                    <input type="checkbox" class="laca-checkbox" name="section_theme_options" value="1" checked>
                                     <span><?php esc_html_e('Giao diện & Laca Theme', 'laca'); ?></span>
                                 </label>
-                                <label class="laca-checkbox" style="display:flex;align-items:center;gap:8px;">
-                                    <input type="checkbox" name="section_security" value="1" checked>
+                                <label class="laca-check-group__item" style="display:flex;align-items:center;gap:8px;">
+                                    <input type="checkbox" class="laca-checkbox" name="section_security" value="1" checked>
                                     <span><?php esc_html_e('Bảo mật & Đăng nhập', 'laca'); ?></span>
                                 </label>
-                                <label class="laca-checkbox" style="display:flex;align-items:center;gap:8px;">
-                                    <input type="checkbox" name="section_tools" value="1" checked>
+                                <label class="laca-check-group__item" style="display:flex;align-items:center;gap:8px;">
+                                    <input type="checkbox" class="laca-checkbox" name="section_tools" value="1" checked>
                                     <span><?php esc_html_e('Công cụ & Tối ưu', 'laca'); ?></span>
                                 </label>
-                                <label class="laca-checkbox" style="display:flex;align-items:center;gap:8px;">
-                                    <input type="checkbox" name="section_notifications" value="1" checked>
+                                <label class="laca-check-group__item" style="display:flex;align-items:center;gap:8px;">
+                                    <input type="checkbox" class="laca-checkbox" name="section_notifications" value="1" checked>
                                     <span><?php esc_html_e('Thông báo (Discord/Zalo/PM)', 'laca'); ?></span>
                                 </label>
-                                <label class="laca-checkbox" style="display:flex;align-items:center;gap:8px;">
-                                    <input type="checkbox" name="section_contact_forms" value="1" checked>
+                                <label class="laca-check-group__item" style="display:flex;align-items:center;gap:8px;">
+                                    <input type="checkbox" class="laca-checkbox" name="section_contact_forms" value="1" checked>
                                     <span><?php esc_html_e('Mẫu Form liên hệ', 'laca'); ?></span>
                                 </label>
-                                <label class="laca-checkbox" style="display:flex;align-items:center;gap:8px;">
-                                    <input type="checkbox" name="section_custom_post_types" value="1" checked>
+                                <label class="laca-check-group__item" style="display:flex;align-items:center;gap:8px;">
+                                    <input type="checkbox" class="laca-checkbox" name="section_custom_post_types" value="1" checked>
                                     <span><?php esc_html_e('Custom Post Types động', 'laca'); ?></span>
                                 </label>
-                                <label class="laca-checkbox" style="display:flex;align-items:center;gap:8px;">
-                                    <input type="checkbox" name="section_seo" value="1" checked>
+                                <label class="laca-check-group__item" style="display:flex;align-items:center;gap:8px;">
+                                    <input type="checkbox" class="laca-checkbox" name="section_seo" value="1" checked>
                                     <span><?php esc_html_e('Laca SEO', 'laca'); ?></span>
                                 </label>
                             </div>
@@ -184,12 +184,12 @@ class ConfigPage
                         <div class="laca-field">
                             <span class="laca-field__label"><?php esc_html_e('Tuỳ chọn xuất nâng cao:', 'laca'); ?></span>
                             <div style="display:flex;flex-direction:column;gap:8px;margin-top:8px;">
-                                <label class="laca-checkbox" style="display:flex;align-items:center;gap:8px;">
-                                    <input type="checkbox" name="include_media" value="1" checked>
+                                <label class="laca-check-group__item" style="display:flex;align-items:center;gap:8px;">
+                                    <input type="checkbox" class="laca-checkbox" name="include_media" value="1" checked>
                                     <span><?php esc_html_e('Kèm thông tin ảnh (logo, ảnh mặc định, favicon...)', 'laca'); ?></span>
                                 </label>
-                                <label class="laca-checkbox" style="display:flex;align-items:center;gap:8px;">
-                                    <input type="checkbox" name="include_secrets" value="1" id="laca-cfg-export-secrets-chk">
+                                <label class="laca-check-group__item" style="display:flex;align-items:center;gap:8px;">
+                                    <input type="checkbox" class="laca-checkbox" name="include_secrets" value="1" id="laca-cfg-export-secrets-chk">
                                     <span><?php esc_html_e('Kèm mật khẩu và khoá API (SMTP, Discord, reCAPTCHA...)', 'laca'); ?></span>
                                 </label>
                             </div>
@@ -246,20 +246,20 @@ class ConfigPage
                                 <div class="laca-card__title" style="font-size:14px;"><?php esc_html_e('Tuỳ chọn khi áp dụng', 'laca'); ?></div>
                             </div>
                             <div class="laca-card__body" style="padding:12px 16px;display:flex;flex-direction:column;gap:10px;">
-                                <label class="laca-checkbox" style="display:flex;align-items:center;gap:8px;">
-                                    <input type="checkbox" id="laca-opt-replace-domain" checked>
+                                <label class="laca-check-group__item" style="display:flex;align-items:center;gap:8px;">
+                                    <input type="checkbox" class="laca-checkbox" id="laca-opt-replace-domain" checked>
                                     <span id="laca-opt-replace-domain-label"><?php esc_html_e('Thay domain cũ bằng domain site này trong toàn bộ chuỗi cấu hình', 'laca'); ?></span>
                                 </label>
-                                <label class="laca-checkbox" id="laca-opt-media-wrap" style="display:flex;align-items:center;gap:8px;">
-                                    <input type="checkbox" id="laca-opt-import-media" checked>
+                                <label class="laca-check-group__item" id="laca-opt-media-wrap" style="display:flex;align-items:center;gap:8px;">
+                                    <input type="checkbox" class="laca-checkbox" id="laca-opt-import-media" checked>
                                     <span><?php esc_html_e('Tải ảnh (logo, ảnh mặc định...) về thư viện Media (tự bỏ qua nếu ảnh cùng tên đã có)', 'laca'); ?></span>
                                 </label>
-                                <label class="laca-checkbox" id="laca-opt-seo-creds-wrap" style="display:flex;align-items:center;gap:8px;">
-                                    <input type="checkbox" id="laca-opt-preserve-creds" checked>
+                                <label class="laca-check-group__item" id="laca-opt-seo-creds-wrap" style="display:flex;align-items:center;gap:8px;">
+                                    <input type="checkbox" class="laca-checkbox" id="laca-opt-preserve-creds" checked>
                                     <span><?php esc_html_e('Giữ thông tin xác thực Google của site này cho Laca SEO', 'laca'); ?></span>
                                 </label>
-                                <label class="laca-checkbox" id="laca-opt-secrets-wrap" style="display:none;align-items:center;gap:8px;">
-                                    <input type="checkbox" id="laca-opt-import-secrets">
+                                <label class="laca-check-group__item" id="laca-opt-secrets-wrap" style="display:none;align-items:center;gap:8px;">
+                                    <input type="checkbox" class="laca-checkbox" id="laca-opt-import-secrets">
                                     <span style="color:var(--laca-danger, #e11d48);font-weight:500;">
                                         <?php esc_html_e('Nhập cả mật khẩu và khoá API (sẽ được mã hoá lại an toàn bằng AUTH_KEY của site này)', 'laca'); ?>
                                     </span>
