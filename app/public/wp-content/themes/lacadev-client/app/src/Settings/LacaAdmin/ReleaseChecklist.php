@@ -23,9 +23,14 @@ final class ReleaseChecklist
     public const DNS_HOOK = 'laca_release_checklist_dns';
     private const DNS_TRANSIENT = 'laca_rc_dns_';
 
+    // Checklist là việc "tổng quan" trước khi phát hành → hiện ở trang Tổng
+    // quan & Checklist (trước 19/11/2026 nằm ở laca-admin = Bảo trì & Khu quản trị).
+    private const HOST_PAGE = 'laca-dashboard';
+
     public function register(): void
     {
-        add_action('all_admin_notices', [$this, 'render'], 20);
+        // Vẽ trong khung dashboard (sau hero) để đồng bộ độ rộng/lề với các thẻ.
+        add_action('laca_dashboard_after_hero', [$this, 'render']);
         add_action('admin_post_' . self::ACTION, [$this, 'handle']);
         add_action('wp_ajax_' . self::ACTION, [$this, 'handle']);
     }
@@ -53,8 +58,8 @@ final class ReleaseChecklist
                 'title' => 'Laca Admin',
                 'items' => [
                     ['id' => 'laca_brand', 'title' => 'Logo trang đăng nhập', 'type' => 'manual',
-                        'guide' => 'Tab LOGIN ngay bên dưới: tải logo cho trang đăng nhập.',
-                        'url' => admin_url('admin.php?page=laca-admin'),
+                        'guide' => 'Laca Admin → Website → Trang đăng nhập: tải logo cho trang đăng nhập.',
+                        'url' => admin_url('admin.php?page=laca-login-page'),
                         'check' => static function () {
                             $missing = array_keys(array_filter([
                                 'logo đăng nhập' => !get_option('_login_logo'),
@@ -62,7 +67,7 @@ final class ReleaseChecklist
                             return [!$missing, $missing ? 'Chưa có ' . implode(', ', $missing) : 'Đã tải logo trang đăng nhập'];
                         }],
                     ['id' => 'smtp', 'title' => 'SMTP gửi mail & gửi thử', 'type' => 'manual', 'high' => true,
-                        'guide' => 'Tab SMTP: nhập máy chủ mail của khách rồi gửi một form liên hệ thử. Email Log phải ghi "Đã gửi" — không có SMTP, mail lead hay rơi vào spam hoặc mất.',
+                        'guide' => 'Laca Admin → Website → Email (SMTP): nhập máy chủ mail của khách rồi gửi một form liên hệ thử. Email Log phải ghi "Đã gửi" — không có SMTP, mail lead hay rơi vào spam hoặc mất.',
                         'url' => admin_url('admin.php?page=laca-email-log'),
                         'check' => static function () {
                             global $wpdb;
@@ -84,8 +89,8 @@ final class ReleaseChecklist
                                 : [false, 'Lần gửi gần nhất THẤT BẠI (' . $at . ') — xem Email Log'];
                         }],
                     ['id' => 'mail_domain', 'title' => 'Mail gửi đi bằng hộp thư tên miền riêng', 'type' => 'auto',
-                        'guide' => 'Tab SMTP: dùng hộp thư theo tên miền (vd info@tenmien.com — email hosting hoặc Google Workspace) thay vì Gmail cá nhân. Mail tự động gửi bằng Gmail miễn phí hay bị chấm spam, giới hạn ~500 mail/ngày, và không hưởng SPF/DKIM/DMARC của tên miền.',
-                        'url' => admin_url('admin.php?page=laca-admin'),
+                        'guide' => 'Laca Admin → Website → Email (SMTP): dùng hộp thư theo tên miền (vd info@tenmien.com — email hosting hoặc Google Workspace) thay vì Gmail cá nhân. Mail tự động gửi bằng Gmail miễn phí hay bị chấm spam, giới hạn ~500 mail/ngày, và không hưởng SPF/DKIM/DMARC của tên miền.',
+                        'url' => admin_url('admin.php?page=laca-smtp'),
                         'check' => static function () {
                             if (get_option('_use_smtp') !== 'yes') {
                                 return [false, 'Chưa bật SMTP — mail gửi bằng hàm mail() của hosting'];
@@ -1052,7 +1057,7 @@ final class ReleaseChecklist
             ]);
         }
 
-        wp_safe_redirect(add_query_arg('rc', $id, admin_url('admin.php?page=laca-admin')) . '#rc-' . $id);
+        wp_safe_redirect(add_query_arg('rc', $id, admin_url('admin.php?page=' . self::HOST_PAGE)) . '#rc-' . $id);
         exit;
     }
 
@@ -1060,7 +1065,7 @@ final class ReleaseChecklist
 
     public function render(): void
     {
-        if ('laca-admin' !== sanitize_key(wp_unslash($_GET['page'] ?? '')) || !self::canManage()) {
+        if (self::HOST_PAGE !== sanitize_key(wp_unslash($_GET['page'] ?? '')) || !self::canManage()) {
             return;
         }
 

@@ -13,8 +13,8 @@ class LacaAdminTabBar
      */
     private const TAB_GROUPS = [
         'performance' => [
-            'title' => 'Hiệu năng & Bảo trì',
-            'pages' => ['laca-tools', 'laca-db-cleaner', 'laca-email-log'],
+            'title' => 'Hiệu năng & Dọn dẹp',
+            'pages' => ['laca-tools', 'laca-db-cleaner'],
             'tabs'  => [
                 'laca-tools' => [
                     'label' => 'Tối ưu hóa',
@@ -23,6 +23,18 @@ class LacaAdminTabBar
                 'laca-db-cleaner' => [
                     'label' => 'Dọn dẹp Database',
                     'url'   => 'admin.php?page=laca-db-cleaner',
+                ],
+            ],
+        ],
+        // Cấu hình SMTP và nhật ký mail đặt cạnh nhau: cấu hình xong là xem
+        // ngay mail có gửi được không.
+        'email' => [
+            'title' => 'Email',
+            'pages' => ['laca-smtp', 'laca-email-log'],
+            'tabs'  => [
+                'laca-smtp' => [
+                    'label' => 'Cấu hình SMTP',
+                    'url'   => 'admin.php?page=laca-smtp',
                 ],
                 'laca-email-log' => [
                     'label' => 'Nhật ký Email',
@@ -54,7 +66,7 @@ class LacaAdminTabBar
         ],
         'sync' => [
             'title' => 'Kết nối LacaDev',
-            'pages' => ['laca-block-sync', 'lacadev-block-categories', 'laca-tracker'],
+            'pages' => ['laca-block-sync', 'lacadev-block-categories', 'laca-tracker', 'laca-block-catalog-source'],
             'tabs'  => [
                 'laca-block-sync' => [
                     'label' => 'Đồng bộ Block',
@@ -67,6 +79,11 @@ class LacaAdminTabBar
                 'laca-tracker' => [
                     'label' => 'Site Tracker',
                     'url'   => 'admin.php?page=laca-tracker',
+                ],
+                // Trước đây không nằm ở menu/tab nào — chỉ vào được bằng URL.
+                'laca-block-catalog-source' => [
+                    'label' => 'Nguồn khối giao diện',
+                    'url'   => 'admin.php?page=laca-block-catalog-source',
                 ],
             ],
         ],
@@ -85,8 +102,8 @@ class LacaAdminTabBar
             ],
         ],
         'marketing' => [
-            'title' => 'Marketing & AI',
-            'pages' => ['laca-exit-popup', 'laca-chatbot'],
+            'title' => 'Marketing',
+            'pages' => ['laca-exit-popup', 'laca-chatbot', 'laca-post-audio'],
             'tabs'  => [
                 'laca-exit-popup' => [
                     'label' => 'Exit Popup',
@@ -95,6 +112,10 @@ class LacaAdminTabBar
                 'laca-chatbot' => [
                     'label' => 'Chatbot',
                     'url'   => 'admin.php?page=laca-chatbot',
+                ],
+                'laca-post-audio' => [
+                    'label' => 'Nghe bài viết',
+                    'url'   => 'admin.php?page=laca-post-audio',
                 ],
             ],
         ],

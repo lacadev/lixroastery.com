@@ -10,6 +10,27 @@
     box-sizing: border-box;
 }
 
+/* ── Checklist phát hành (ReleaseChecklist) trong dashboard ──────────────────
+ * Vẽ qua hook laca_dashboard_after_hero → nằm trong khung dashboard. Đồng bộ
+ * với .laca-card: không viền, bóng nhẹ, cùng bo góc, cùng khoảng cách 24px. */
+
+.laca-dashboard-wrap .laca-rc {
+    margin: 0 0 24px;
+    border: none;
+    box-shadow: 0 1px 3px rgba(24, 24, 27, 0.06), 0 1px 2px rgba(24, 24, 27, 0.04);
+    overflow: hidden;
+
+    .laca-rc__head {
+        padding: var(--laca-space-5) 20px var(--laca-space-4); // = lề 20px của nhóm/mục bên dưới
+        border-bottom-color: var(--laca-border-subtle, var(--laca-border));
+    }
+
+    .laca-rc__title {
+        font-size: var(--laca-font-size-md);
+        font-weight: 600;
+    }
+}
+
 /* ── A. Hero Section ──────────────────────────────────────────────────────── */
 
 .laca-dashboard-hero {

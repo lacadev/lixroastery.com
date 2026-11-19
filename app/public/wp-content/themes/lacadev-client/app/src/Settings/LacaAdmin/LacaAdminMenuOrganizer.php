@@ -22,54 +22,64 @@ class LacaAdminMenuOrganizer
     /**
      * @var array<string,array{label:string,items:string[]}>
      */
+    // Nhóm theo VIỆC admin cần làm (phương án A, 19/11/2026): bắt đầu →
+    // website → bảo mật → nội dung → kết nối → marketing → nâng cao. Trang ít
+    // dùng/kỹ thuật dồn xuống "Nâng cao" để mục hay dùng nằm trên.
     private const GROUPS = [
-        'general' => [
-            'label' => 'Tổng quan',
+        'start' => [
+            'label' => 'Bắt đầu',
             'items' => [
                 'laca-dashboard',
+                'laca-guide',
+            ],
+        ],
+        'website' => [
+            'label' => 'Website',
+            'items' => [
                 'laca-admin',
+                'laca-login-page',
+                'laca-smtp',
                 'laca-management-settings',
             ],
         ],
-        // Gộp các nhóm chỉ có 1 mục để dock không lặp tên nhóm = tên mục.
-        'system' => [
-            'label' => 'Hệ thống',
+        'security' => [
+            'label' => 'Bảo mật & tài khoản',
             'items' => [
-                'laca-system',
-                'laca-tools',
                 'laca-security',
                 'laca-traffic',
-                'laca-config',
-            ],
-        ],
-        'users' => [
-            'label' => 'Người dùng & đăng nhập',
-            'items' => [
                 'laca-2fa',
-                'laca-login-log',
                 'laca-super-user',
+                'laca-login-log',
             ],
         ],
         'content' => [
-            'label' => 'Nội dung & Form',
+            'label' => 'Nội dung',
             'items' => [
                 'laca-dynamic-cpt',
                 'laca-contact-forms',
             ],
         ],
         'integrations' => [
-            'label' => 'Kết nối & dịch vụ',
+            'label' => 'Kết nối',
             'items' => [
                 'laca-recaptcha',
-                'laca-block-sync',
                 'laca-project-notifications',
+                'laca-block-sync',
             ],
         ],
         'marketing' => [
-            'label' => 'Marketing & AI',
+            'label' => 'Marketing',
             'items' => [
                 'laca-exit-popup',
                 'laca-post-audio',
+            ],
+        ],
+        'advanced' => [
+            'label' => 'Nâng cao',
+            'items' => [
+                'laca-tools',
+                'laca-system',
+                'laca-config',
             ],
         ],
     ];
@@ -265,12 +275,13 @@ class LacaAdminMenuOrganizer
     private function getGroupLabel(string $key, string $fallback): string
     {
         $labels = [
-            'general'      => __('Tổng quan', 'laca'),
-            'system'       => __('Hệ thống', 'laca'),
-            'users'        => __('Người dùng & đăng nhập', 'laca'),
-            'content'      => __('Nội dung & Form', 'laca'),
-            'integrations' => __('Kết nối & dịch vụ', 'laca'),
-            'marketing'    => __('Marketing & AI', 'laca'),
+            'start'        => __('Bắt đầu', 'laca'),
+            'website'      => __('Website', 'laca'),
+            'security'     => __('Bảo mật & tài khoản', 'laca'),
+            'content'      => __('Nội dung', 'laca'),
+            'integrations' => __('Kết nối', 'laca'),
+            'marketing'    => __('Marketing', 'laca'),
+            'advanced'     => __('Nâng cao', 'laca'),
         ];
 
         return $labels[$key] ?? $fallback;
@@ -279,24 +290,28 @@ class LacaAdminMenuOrganizer
     private function getFallbackItemLabel(string $slug): string
     {
         $labels = [
-            'laca-dashboard'             => 'Tổng quan',
-            'laca-admin'                 => 'Cấu hình chung',
-            'laca-management-settings'   => 'Quản trị & HD Sử dụng',
-            'laca-system'                => 'Hệ thống',
-            'laca-tools'                 => 'Hiệu năng & Bảo trì',
-            'laca-security'              => 'Bảo mật',
+            'laca-dashboard'             => __('Tổng quan & Checklist', 'laca'),
+            'laca-guide'                 => __('Hướng dẫn cấu hình', 'laca'),
+            'laca-admin'                 => __('Bảo trì & Khu quản trị', 'laca'),
+            'laca-login-page'            => __('Trang đăng nhập', 'laca'),
+            'laca-smtp'                  => __('Email (SMTP)', 'laca'),
+            'laca-management-settings'   => __('Giao diện admin cho khách', 'laca'),
+            'laca-security'              => __('Tường lửa & Gia cố', 'laca'),
             'laca-traffic'               => __('Giám sát truy cập', 'laca'),
-            'laca-config'                => 'Cấu hình',
-            'laca-2fa'                   => 'Xác thực 2 bước (2FA)',
-            'laca-super-user'            => 'Super User',
-            'laca-login-log'             => 'Login Log',
-            'laca-recaptcha'             => 'Dịch vụ Google',
-            'laca-dynamic-cpt'           => 'Custom Post Types',
-            'laca-contact-forms'         => 'Form Liên Hệ',
-            'laca-block-sync'            => 'Kết nối LacaDev',
-            'laca-project-notifications' => 'Dự án & Thông báo',
-            'laca-exit-popup'            => 'Exit Popup & Chatbot',
-            'laca-block-catalog-source'  => 'Nguồn khối giao diện',
+            'laca-2fa'                   => __('Xác thực 2 bước (2FA)', 'laca'),
+            'laca-super-user'            => __('Super User', 'laca'),
+            'laca-login-log'             => __('Nhật ký đăng nhập', 'laca'),
+            'laca-dynamic-cpt'           => __('Custom Post Types', 'laca'),
+            'laca-contact-forms'         => __('Form liên hệ', 'laca'),
+            'laca-recaptcha'             => __('Dịch vụ Google', 'laca'),
+            'laca-project-notifications' => __('Thông báo (Zalo, Discord…)', 'laca'),
+            'laca-block-sync'            => __('Kết nối LacaDev', 'laca'),
+            'laca-exit-popup'            => __('Exit Popup & Chatbot', 'laca'),
+            'laca-post-audio'            => __('Nghe bài viết', 'laca'),
+            'laca-tools'                 => __('Hiệu năng & Dọn dẹp', 'laca'),
+            'laca-system'                => __('Thông tin hệ thống', 'laca'),
+            'laca-config'                => __('Xuất / nhập cấu hình', 'laca'),
+            'laca-block-catalog-source'  => __('Nguồn khối giao diện', 'laca'),
         ];
 
         return $labels[$slug] ?? $slug;
@@ -326,7 +341,8 @@ class LacaAdminMenuOrganizer
 
         $map = [
             'laca-db-cleaner'            => 'laca-tools',
-            'laca-email-log'             => 'laca-tools',
+            'laca-email-log'             => 'laca-smtp',
+            'laca-block-catalog-source'  => 'laca-block-sync',
             'laca-login-socials'         => 'laca-recaptcha',
             'laca-google-analytics'      => 'laca-recaptcha',
             'laca-google-search-console' => 'laca-recaptcha',

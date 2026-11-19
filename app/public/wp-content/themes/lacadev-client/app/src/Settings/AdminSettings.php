@@ -966,7 +966,10 @@ class AdminSettings
 			$options = Container::make('theme_options', __('Laca Admin', 'laca'))
 				->set_page_file(__('laca-admin', 'laca'))
 				->set_page_menu_position(3)
-				->add_tab(__('ADMIN', 'laca'), [
+				// Trước đây 1 trang gom 3 tab ADMIN/SMTP/LOGIN → khó tìm. Tách
+				// thành 3 trang riêng (laca-admin / laca-smtp / laca-login-page);
+				// TÊN FIELD GIỮ NGUYÊN nên dữ liệu đã lưu không đổi.
+				->add_fields([
 					Field::make('checkbox', 'is_maintenance', __('Bật chế độ bảo trì', 'laca'))
 						->set_width(30),
 					Field::make('html', 'is_maintenance_desc')
@@ -1004,8 +1007,13 @@ class AdminSettings
 						->set_width(70)
 						->set_html('<i class="fa-regular fa-lightbulb-on"></i> Khi bật chế độ này, bạn sẽ không thể xem menu bình luận trong trang admin.'),
 
-				])
-				->add_tab(__('SMTP', 'laca'), [
+				]);
+
+			Container::make('theme_options', __('Email SMTP', 'laca'))
+				->set_page_parent($options)
+				->set_page_file('laca-smtp')
+				->set_page_menu_title(__('Email (SMTP)', 'laca'))
+				->add_fields([
 					Field::make('checkbox', 'use_smtp', __('Sử dụng SMTP để gửi mail', 'laca')),
 
 					Field::make('separator', 'smtp_separator_1', __('Thông tin máy chủ SMTP', 'laca')),
@@ -1026,8 +1034,12 @@ class AdminSettings
 						->set_width(50)
 						->set_attribute('type', 'password')
 						->set_attribute('data-field', 'password-field'),
-				])
-				->add_tab(__('LOGIN', 'laca'), [
+				]);
+
+			Container::make('theme_options', __('Trang đăng nhập', 'laca'))
+				->set_page_parent($options)
+				->set_page_file('laca-login-page')
+				->add_fields([
 					Field::make('image', 'login_logo', __('Login logo', 'laca'))
 						->set_width(20)
 						->set_help_text('Nếu để trống sẽ dùng logo mặc định của website'),

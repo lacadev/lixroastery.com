@@ -99,6 +99,12 @@ class LacaDashboard
                 <?php echo $this->renderHeroInner($audit); ?>
             </div>
 
+            <?php
+            // Chèn khối vào TRONG khung dashboard (vd Checklist phát hành) để
+            // cùng độ rộng/lề với các thẻ, thay vì all_admin_notices tràn ngoài.
+            do_action('laca_dashboard_after_hero');
+            ?>
+
             <!-- B. 2 Cột: Việc nên làm (C) & Dung lượng (D) -->
             <div class="laca-dashboard-grid-2">
                 <!-- C. Việc nên làm -->
@@ -279,7 +285,7 @@ class LacaDashboard
             </a>
 
             <!-- KPI 2: Gửi email -->
-            <a href="<?php echo esc_url(admin_url('admin.php?page=laca-admin')); ?>" class="laca-kpi-card">
+            <a href="<?php echo esc_url(admin_url('admin.php?page=laca-smtp')); ?>" class="laca-kpi-card">
                 <div class="laca-kpi-card__header">
                     <span class="dashicons dashicons-email-alt laca-kpi-card__icon" aria-hidden="true"></span>
                     <span class="laca-kpi-card__title"><?php echo esc_html__('Gửi email', 'laca'); ?></span>
@@ -645,7 +651,7 @@ class LacaDashboard
                 'title' => __('Chưa cấu hình gửi email qua SMTP', 'laca'),
                 'desc'  => __('Website đang dùng hàm gửi mail mặc định, dễ bị rơi vào thư rác hoặc bị chặn gửi.', 'laca'),
                 'level' => 'warning',
-                'url'   => admin_url('admin.php?page=laca-admin'),
+                'url'   => admin_url('admin.php?page=laca-smtp'),
             ];
         }
 
