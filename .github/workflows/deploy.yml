@@ -108,6 +108,12 @@ jobs:
           # chỉ có wp-content/... ở gốc (không có thư mục app/ trên server).
           local-dir: app/public/
 
+          # File ghi nhớ đồng bộ trên server. Đổi tên (v2, 19/11/2026) để ép 1 lần
+          # upload lại toàn bộ theme: file cũ còn liệt kê vendor/enshrined đã mất
+          # trên server → mỗi lần deploy cố xoá → lỗi 550; và vì nội dung trùng
+          # nên không bao giờ upload lại. Lần sau server lệch git: tăng số v3, v4…
+          state-name: .ftp-deploy-sync-state-v2.json
+
           # Chỉ deploy 2 thư mục quan trọng (đường dẫn tính từ local-dir ở trên)
           include: |
             wp-content/themes/**
