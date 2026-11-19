@@ -64,12 +64,43 @@ class Security
                 return $result;
             }
 
-            if (!is_user_logged_in()) {
+            if (!is_user_logged_in() && !self::isPublicThemeRoute()) {
                 return new \WP_Error('rest_not_logged_in', __('You are not logged in', 'laca'), ['status' => 401]);
             }
 
             return $result;
         });
+    }
+
+    /**
+     * Route REST công khai CỦA THEME vẫn phải chạy khi chặn REST với khách —
+     * trước đây chặn luôn cả chúng nên chatbot, đếm lượt xem, làm mới nonce
+     * cho trang cache và remote-update im lặng không hoạt động. Mỗi route tự
+     * kiểm soát quyền/giới hạn bên trong (rate limit, secret key…).
+     */
+    private static function isPublicThemeRoute(): bool
+    {
+        $route = '';
+        if (isset($GLOBALS['wp']) && !empty($GLOBALS['wp']->query_vars['rest_route'])) {
+            $route = (string) $GLOBALS['wp']->query_vars['rest_route'];
+        } else {
+            $path   = (string) wp_parse_url(wp_unslash($_SERVER['REQUEST_URI'] ?? ''), PHP_URL_PATH);
+            $prefix = '/' . trim(rest_get_url_prefix(), '/') . '/';
+            $pos    = strpos($path, $prefix);
+            if ($pos !== false) {
+                $route = '/' . substr($path, $pos + strlen($prefix));
+            }
+        }
+        $route = '/' . trim($route, '/');
+
+        $allowed = (array) apply_filters('laca_rest_public_routes', [
+            '/laca/v1/chatbot',
+            '/laca/v1/view',
+            '/laca/v1/nonce',
+            '/laca/v1/remote-update',
+        ]);
+
+        return in_array($route, $allowed, true);
     }
 
     public function disableXmlRpc()
