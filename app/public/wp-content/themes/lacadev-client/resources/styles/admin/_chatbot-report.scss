@@ -1,0 +1,85 @@
+// -------------------------------------------------------------
+// Báo cáo nhật ký chatbot (Laca Admin → Chatbot) — ô số liệu + 2 cột bảng.
+// Chỉ dùng token đơn sắc + component laca-card / laca-stat / laca-table.
+// -------------------------------------------------------------
+
+.laca-cbot-report {
+  margin-top: var(--laca-space-8);
+
+  &__title {
+    margin: 0 0 var(--laca-space-1);
+    font-size: var(--laca-font-size-lg);
+    line-height: var(--laca-line-height-lg);
+  }
+
+  &__note {
+    margin: 0 0 var(--laca-space-4);
+    color: var(--laca-fg-muted);
+  }
+
+  &__stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: var(--laca-space-3);
+    margin: var(--laca-space-4) 0 var(--laca-space-5);
+  }
+
+  &__stat {
+    padding: var(--laca-space-4);
+  }
+
+  &__grid {
+    display: grid;
+    grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
+    gap: var(--laca-space-5);
+    align-items: start;
+
+    @media (max-width: 1280px) {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+
+  &__scroll {
+    overflow-x: auto;
+  }
+
+  .laca-table td {
+    vertical-align: top;
+  }
+
+  &__q {
+    display: block;
+    font-weight: 500;
+  }
+
+  &__a {
+    display: block;
+    margin-top: var(--laca-space-1);
+    color: var(--laca-fg-muted);
+  }
+
+  &__num {
+    width: 1%;
+    white-space: nowrap;
+    text-align: right;
+  }
+
+  &__time {
+    width: 1%;
+    white-space: nowrap;
+    color: var(--laca-fg-muted);
+  }
+
+  &__flag {
+    color: var(--laca-fg-muted);
+    white-space: nowrap;
+  }
+
+  .laca-empty {
+    padding: var(--laca-space-6) var(--laca-space-5);
+  }
+
+  .laca-empty__description {
+    margin: 0;
+  }
+}

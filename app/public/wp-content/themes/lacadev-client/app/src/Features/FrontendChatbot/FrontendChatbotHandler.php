@@ -911,49 +911,104 @@ class FrontendChatbotHandler
         $unanswered = ChatbotLog::unanswered(20, 30);
         $recent     = ChatbotLog::recent(30);
         $aiToday    = (int) get_transient('laca_cbot_day_' . gmdate('Ymd'));
+        $cap        = (int) get_option('laca_chatbot_daily_cap', 300);
+        $tiles      = [
+            [__('Câu hỏi', 'laca'), (string) $stats['total'], ''],
+            [__('Cuộc chat', 'laca'), (string) $stats['sessions'], ''],
+            [__('Chưa trả lời được', 'laca'), (string) $stats['unanswered'], ''],
+            [__('Trả lời bằng FAQ', 'laca'), (string) $stats['faq'], ''],
+            ['👍 / 👎', $stats['up'] . ' / ' . $stats['down'], ''],
+            /* translators: %s: giới hạn câu gọi AI mỗi ngày */
+            [__('Gọi AI hôm nay', 'laca'), (string) $aiToday, $cap ? sprintf(__('trên %s', 'laca'), number_format_i18n($cap)) : __('không giới hạn', 'laca')],
+        ];
+        $rating = ['-1' => '👎', '0' => '', '1' => '👍'];
+        $time   = static fn(string $dt): string => $dt !== '' ? mysql2date('d/m H:i', $dt) : '';
         ?>
-        <h2>Báo cáo 30 ngày</h2>
-        <?php if (!ChatbotLog::enabled()): ?>
-            <p class="description">Nhật ký đang tắt — bật "Nhật ký hội thoại" ở trên để có báo cáo.</p>
-        <?php endif; ?>
-        <table class="widefat striped">
-            <tbody>
-                <tr><th>Số câu hỏi</th><td><?php echo esc_html((string) $stats['total']); ?></td><th>Số cuộc chat</th><td><?php echo esc_html((string) $stats['sessions']); ?></td></tr>
-                <tr><th>Chưa trả lời được</th><td><?php echo esc_html((string) $stats['unanswered']); ?></td><th>Trả lời bằng FAQ</th><td><?php echo esc_html((string) $stats['faq']); ?></td></tr>
-                <tr><th>👍 / 👎</th><td><?php echo esc_html($stats['up'] . ' / ' . $stats['down']); ?></td><th>Câu gọi AI hôm nay</th><td><?php echo esc_html($aiToday . ' / ' . ((int) get_option('laca_chatbot_daily_cap', 300) ?: '∞')); ?></td></tr>
-            </tbody>
-        </table>
+        <section class="laca-cbot-report">
+            <h2 class="laca-cbot-report__title"><?php esc_html_e('Báo cáo 30 ngày', 'laca'); ?></h2>
+            <?php if (!ChatbotLog::enabled()): ?>
+                <p class="laca-cbot-report__note"><?php esc_html_e('Nhật ký đang tắt — bật "Nhật ký hội thoại" ở trên để có báo cáo.', 'laca'); ?></p>
+            <?php endif; ?>
 
-        <h3>Câu chưa trả lời được</h3>
-        <p class="description">Website chưa có nội dung cho các câu này — gợi ý viết bài hoặc thêm vào FAQ ghim.</p>
-        <table class="widefat striped">
-            <thead><tr><th>Câu hỏi</th><th>Số lần</th><th>Gần nhất</th></tr></thead>
-            <tbody>
-            <?php if (!$unanswered): ?>
-                <tr><td colspan="3">Chưa có.</td></tr>
-            <?php else: foreach ($unanswered as $u): ?>
-                <tr><td><?php echo esc_html($u['q']); ?></td><td><?php echo esc_html((string) $u['n']); ?></td><td><?php echo esc_html((string) $u['last_at']); ?></td></tr>
-            <?php endforeach; endif; ?>
-            </tbody>
-        </table>
+            <div class="laca-cbot-report__stats">
+                <?php foreach ($tiles as [$label, $value, $help]): ?>
+                    <div class="laca-card laca-cbot-report__stat">
+                        <div class="laca-stat">
+                            <span class="laca-stat__label"><?php echo esc_html($label); ?></span>
+                            <span class="laca-stat__value"><?php echo esc_html($value); ?></span>
+                            <?php if ($help !== ''): ?>
+                                <span class="laca-stat__help"><?php echo esc_html($help); ?></span>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                <?php endforeach; ?>
+            </div>
 
-        <h3>Hội thoại gần đây</h3>
-        <table class="widefat striped">
-            <thead><tr><th>Thời gian</th><th>Câu hỏi</th><th>Trả lời</th><th>Nguồn</th><th>Đánh giá</th></tr></thead>
-            <tbody>
-            <?php if (!$recent): ?>
-                <tr><td colspan="5">Chưa có.</td></tr>
-            <?php else: foreach ($recent as $r): ?>
-                <tr>
-                    <td><?php echo esc_html((string) $r['created_at']); ?></td>
-                    <td><?php echo esc_html((string) $r['question']); ?></td>
-                    <td><?php echo esc_html(wp_trim_words((string) $r['answer'], 30)); ?></td>
-                    <td><?php echo esc_html(((int) $r['found'] ? '' : '⚠ ') . $r['source']); ?></td>
-                    <td><?php echo esc_html(['-1' => '👎', '0' => '', '1' => '👍'][(string) $r['rating']] ?? ''); ?></td>
-                </tr>
-            <?php endforeach; endif; ?>
-            </tbody>
-        </table>
+            <div class="laca-cbot-report__grid">
+                <div class="laca-card">
+                    <div class="laca-card__header">
+                        <h3 class="laca-card__header-title"><?php esc_html_e('Câu chưa trả lời được', 'laca'); ?></h3>
+                        <p class="laca-card__header-description"><?php esc_html_e('Website chưa có nội dung cho các câu này — gợi ý viết bài hoặc thêm vào FAQ ghim.', 'laca'); ?></p>
+                    </div>
+                    <?php if (!$unanswered): ?>
+                        <div class="laca-empty"><p class="laca-empty__description"><?php esc_html_e('Chưa có câu nào.', 'laca'); ?></p></div>
+                    <?php else: ?>
+                        <div class="laca-cbot-report__scroll">
+                            <table class="laca-table">
+                                <thead><tr>
+                                    <th><?php esc_html_e('Câu hỏi', 'laca'); ?></th>
+                                    <th class="laca-cbot-report__num"><?php esc_html_e('Số lần', 'laca'); ?></th>
+                                    <th class="laca-cbot-report__time"><?php esc_html_e('Gần nhất', 'laca'); ?></th>
+                                </tr></thead>
+                                <tbody>
+                                <?php foreach ($unanswered as $u): ?>
+                                    <tr>
+                                        <td><?php echo esc_html((string) $u['q']); ?></td>
+                                        <td class="laca-cbot-report__num"><?php echo esc_html((string) $u['n']); ?></td>
+                                        <td class="laca-cbot-report__time"><?php echo esc_html($time((string) $u['last_at'])); ?></td>
+                                    </tr>
+                                <?php endforeach; ?>
+                                </tbody>
+                            </table>
+                        </div>
+                    <?php endif; ?>
+                </div>
+
+                <div class="laca-card">
+                    <div class="laca-card__header">
+                        <h3 class="laca-card__header-title"><?php esc_html_e('Hội thoại gần đây', 'laca'); ?></h3>
+                        <p class="laca-card__header-description"><?php esc_html_e('30 câu hỏi mới nhất. ⚠ = chưa trả lời được.', 'laca'); ?></p>
+                    </div>
+                    <?php if (!$recent): ?>
+                        <div class="laca-empty"><p class="laca-empty__description"><?php esc_html_e('Chưa có hội thoại nào.', 'laca'); ?></p></div>
+                    <?php else: ?>
+                        <div class="laca-cbot-report__scroll">
+                            <table class="laca-table">
+                                <thead><tr>
+                                    <th class="laca-cbot-report__time"><?php esc_html_e('Thời gian', 'laca'); ?></th>
+                                    <th><?php esc_html_e('Câu hỏi / trả lời', 'laca'); ?></th>
+                                    <th class="laca-cbot-report__num"><?php esc_html_e('Nguồn', 'laca'); ?></th>
+                                    <th class="laca-cbot-report__num"><?php esc_html_e('Đánh giá', 'laca'); ?></th>
+                                </tr></thead>
+                                <tbody>
+                                <?php foreach ($recent as $r): ?>
+                                    <tr>
+                                        <td class="laca-cbot-report__time"><?php echo esc_html($time((string) $r['created_at'])); ?></td>
+                                        <td>
+                                            <span class="laca-cbot-report__q"><?php echo esc_html((string) $r['question']); ?></span>
+                                            <span class="laca-cbot-report__a"><?php echo esc_html(wp_trim_words((string) $r['answer'], 30)); ?></span>
+                                        </td>
+                                        <td class="laca-cbot-report__num laca-cbot-report__flag"><?php echo esc_html(((int) $r['found'] ? '' : '⚠ ') . $r['source']); ?></td>
+                                        <td class="laca-cbot-report__num"><?php echo esc_html($rating[(string) $r['rating']] ?? ''); ?></td>
+                                    </tr>
+                                <?php endforeach; ?>
+                                </tbody>
+                            </table>
+                        </div>
+                    <?php endif; ?>
+                </div>
+            </div>
+        </section>
         <?php
     }
 
