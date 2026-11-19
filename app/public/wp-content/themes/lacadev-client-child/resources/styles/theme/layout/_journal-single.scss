@@ -93,6 +93,11 @@
     justify-content: space-between;
     column-gap: rem(30);
 
+    // Sao thẳng hàng với dòng đầu của "Thực hiện bởi" khi tên tác giả xuống 2 dòng (như XLIII).
+    &--rating {
+      align-items: flex-start;
+    }
+
     &--share {
       margin-top: rem(32);
 
@@ -102,7 +107,13 @@
     }
   }
 
+  // Sao giữ nguyên bề rộng; khối tác giả chiếm phần còn lại và cho chữ xuống
+  // dòng BÊN TRONG (như XLIII). Trước đây author không co → sau khi bình
+  // chọn, chú thích "5/5 - (n bình chọn)" dài hơn làm cả khối author rớt
+  // xuống dòng dưới.
   &__rating {
+    flex: 0 0 auto;
+
     .kk-star-ratings {
       margin: 0;
     }
@@ -115,12 +126,19 @@
   }
 
   &__author {
+    flex: 1 1 0;
+    min-width: 0;
+    max-width: rem(380);
+    margin-left: auto;
     font-size: rem(15);
+    line-height: 1.9;
     text-align: right;
 
     @include maxWidth($sm) {
+      flex-basis: 100%;
+      max-width: none;
       margin-top: rem(30);
-      width: 100%;
+      margin-left: 0;
       text-align: left;
     }
   }
