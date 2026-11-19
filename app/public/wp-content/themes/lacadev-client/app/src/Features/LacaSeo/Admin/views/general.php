@@ -6,21 +6,26 @@ use App\Features\LacaSeo\Fields\GeneralFields;
 
 defined('ABSPATH') || exit;
 
+// Thứ tự theo việc cần làm khi dựng site: nền tảng đường dẫn/ảnh → kết nối
+// Google → robots → WooCommerce → phần phụ. Tab "redirections"/"404-monitor"
+// là CÀI ĐẶT của 2 công cụ cùng tên ở sidebar → ẩn khỏi danh sách để không
+// trùng, vẫn mở được qua nút "Cài đặt" trong trang công cụ (giữ key ở đây).
 $tabs = [
-    'links'       => 'Đường dẫn (Links)',
-    'images'      => 'Tối ưu hình ảnh (Images)',
-    'breadcrumbs' => 'Breadcrumbs',
-    'podcast'     => 'Podcast',
-    'webmaster'   => 'Webmaster Tools',
-    'analytics'   => 'Google Analytics / GTM',
-    'robots'      => 'Chỉnh sửa robots.txt',
-    'htaccess'    => 'Chỉnh sửa .htaccess',
-    'woocommerce' => 'WooCommerce SEO',
-    'redirections'=> 'Chuyển hướng (Redirections)',
-    '404-monitor' => 'Theo dõi lỗi 404 (404 Monitor)',
-    'blocks'      => 'Khối Block Mục lục',
-    'others'      => 'Khác (Others)',
+    'links'       => __('Đường dẫn', 'laca'),
+    'images'      => __('Hình ảnh (alt, title)', 'laca'),
+    'breadcrumbs' => __('Breadcrumbs', 'laca'),
+    'webmaster'   => __('Xác minh Google / Bing', 'laca'),
+    'analytics'   => __('Google Analytics / GTM', 'laca'),
+    'robots'      => __('robots.txt', 'laca'),
+    'htaccess'    => __('.htaccess', 'laca'),
+    'woocommerce' => __('WooCommerce', 'laca'),
+    'blocks'      => __('Khối Mục lục', 'laca'),
+    'podcast'     => __('Podcast', 'laca'),
+    'others'      => __('Khác', 'laca'),
+    'redirections'=> __('Cài đặt chuyển hướng', 'laca'),
+    '404-monitor' => __('Cài đặt theo dõi 404', 'laca'),
 ];
+$nav_hidden_tabs = ['redirections', '404-monitor'];
 
 $is_super_user = apply_filters('lacadev_is_super_user', false, wp_get_current_user());
 if (!$is_super_user) {
@@ -48,7 +53,10 @@ $current_options = Settings::getGroup('general');
         <!-- Vertical Tab Navigation -->
         <aside class="laca-seo-tabs-sidebar" aria-label="Tabs Cài đặt chung">
             <ul class="laca-seo-tabs-list">
-                <?php foreach ($tabs as $tab_key => $tab_label): ?>
+                <?php foreach ($tabs as $tab_key => $tab_label):
+                    if (in_array($tab_key, $nav_hidden_tabs, true) && $active_tab !== $tab_key) {
+                        continue;
+                    } ?>
                     <li class="laca-seo-tabs-list__item">
                         <a
                             href="<?php echo esc_url(add_query_arg(['page' => 'laca-seo', 'view' => 'general', 'tab' => $tab_key], admin_url('admin.php'))); ?>"

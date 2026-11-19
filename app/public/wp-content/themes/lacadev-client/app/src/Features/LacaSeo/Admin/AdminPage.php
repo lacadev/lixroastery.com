@@ -139,6 +139,20 @@ class AdminPage
     }
 
     /**
+     * Nút tới phần cài đặt của công cụ (tab ẩn trong "Cài đặt chung") — mỗi
+     * công cụ chỉ còn 1 chỗ trong menu, cài đặt mở từ chính trang công cụ.
+     */
+    private function renderToolSettingsLink(string $tab, string $label): void
+    {
+        $url = add_query_arg(['page' => 'laca-seo', 'view' => 'general', 'tab' => $tab], admin_url('admin.php'));
+        printf(
+            '<p class="laca-seo-tool-settings"><a class="button button-secondary" href="%s"><span class="dashicons dashicons-admin-generic" aria-hidden="true"></span> %s</a></p>',
+            esc_url($url),
+            esc_html($label)
+        );
+    }
+
+    /**
      * Render the main Laca SEO page layout with navigation tabs.
      */
     public function renderPage(): void
@@ -149,34 +163,39 @@ class AdminPage
 
         $view = sanitize_key($_GET['view'] ?? 'dashboard');
 
+        // Sắp theo LUỒNG THIẾT LẬP (19/11/2026): tổng quan → thiết lập (theo thứ
+        // tự cần làm khi dựng site) → công cụ dùng hằng ngày → sao lưu & hướng
+        // dẫn. Mục có 'url' là trang riêng ngoài view. Setup Wizard
+        // (laca-seo-wizard) CHƯA có form (render() chỉ in số bước) → không
+        // đưa vào menu cho tới khi làm xong.
         $nav_groups = [
             'overview' => [
-                'title' => 'Tổng quan',
+                'title' => __('Tổng quan', 'laca'),
                 'items' => [
-                    'dashboard' => ['label' => 'Bảng điều khiển', 'icon' => 'dashicons-dashboard'],
+                    'dashboard' => ['label' => __('Bảng điều khiển', 'laca'), 'icon' => 'dashicons-dashboard'],
                 ],
             ],
-            'settings' => [
-                'title' => 'Cài đặt',
+            'setup' => [
+                'title' => __('Thiết lập', 'laca'),
                 'items' => [
-                    'general' => ['label' => 'Cài đặt chung', 'icon' => 'dashicons-admin-settings'],
-                    'titles'  => ['label' => 'Tiêu đề & Thẻ Meta', 'icon' => 'dashicons-heading'],
-                    'sitemap' => ['label' => 'Sơ đồ trang XML', 'icon' => 'dashicons-networking'],
+                    'general' => ['label' => __('Cài đặt chung', 'laca'), 'icon' => 'dashicons-admin-settings'],
+                    'titles'  => ['label' => __('Tiêu đề & Meta', 'laca'), 'icon' => 'dashicons-heading'],
+                    'sitemap' => ['label' => __('Sitemap', 'laca'), 'icon' => 'dashicons-networking'],
                 ],
             ],
             'tools' => [
-                'title' => 'Công cụ',
+                'title' => __('Công cụ', 'laca'),
                 'items' => [
-                    'instant-indexing' => ['label' => 'Index tức thì (IndexNow)', 'icon' => 'dashicons-update'],
-                    'redirections'     => ['label' => 'Chuyển hướng (Redirections)', 'icon' => 'dashicons-randomize'],
-                    '404-monitor'      => ['label' => 'Theo dõi 404 (404 Monitor)', 'icon' => 'dashicons-dismiss'],
+                    'redirections'     => ['label' => __('Chuyển hướng (Redirections)', 'laca'), 'icon' => 'dashicons-randomize'],
+                    '404-monitor'      => ['label' => __('Theo dõi lỗi 404', 'laca'), 'icon' => 'dashicons-dismiss'],
+                    'instant-indexing' => ['label' => __('Báo Google/Bing index ngay', 'laca'), 'icon' => 'dashicons-update'],
                 ],
             ],
             'system' => [
-                'title' => 'Hệ thống',
+                'title' => __('Sao lưu & Hướng dẫn', 'laca'),
                 'items' => [
-                    'import-export' => ['label' => 'Sao lưu & Nhập/Xuất', 'icon' => 'dashicons-migrate'],
-                    'guide'         => ['label' => 'Hướng dẫn tối ưu SEO', 'icon' => 'dashicons-book'],
+                    'import-export' => ['label' => __('Sao lưu & Nhập từ Rank Math', 'laca'), 'icon' => 'dashicons-migrate'],
+                    'guide'         => ['label' => __('Hướng dẫn tối ưu SEO', 'laca'), 'icon' => 'dashicons-book'],
                 ],
             ],
         ];
@@ -220,7 +239,7 @@ class AdminPage
                         <?php foreach ($nav_groups as $group): ?>
                             <optgroup label="<?php echo esc_attr($group['title']); ?>">
                                 <?php foreach ($group['items'] as $key => $info): ?>
-                                    <option value="<?php echo esc_url(add_query_arg(['page' => 'laca-seo', 'view' => $key], admin_url('admin.php'))); ?>" <?php selected($view, $key); ?>>
+                                    <option value="<?php echo esc_url($info['url'] ?? add_query_arg(['page' => 'laca-seo', 'view' => $key], admin_url('admin.php'))); ?>" <?php selected($view, $key); ?>>
                                         <?php echo esc_html($info['label']); ?>
                                     </option>
                                 <?php endforeach; ?>
@@ -239,7 +258,7 @@ class AdminPage
                                     <?php foreach ($group['items'] as $view_key => $view_info): ?>
                                         <li class="laca-seo-nav__item">
                                             <a
-                                                href="<?php echo esc_url(add_query_arg(['page' => 'laca-seo', 'view' => $view_key], admin_url('admin.php'))); ?>"
+                                                href="<?php echo esc_url($view_info['url'] ?? add_query_arg(['page' => 'laca-seo', 'view' => $view_key], admin_url('admin.php'))); ?>"
                                                 class="laca-seo-nav__link<?php echo ($view === $view_key) ? ' is-active' : ''; ?>"
                                             >
                                                 <span class="dashicons <?php echo esc_attr($view_info['icon']); ?>" aria-hidden="true"></span>
@@ -275,9 +294,11 @@ class AdminPage
                             include __DIR__ . '/views/instant-indexing.php';
                             break;
                         case 'redirections':
+                            $this->renderToolSettingsLink('redirections', __('Cài đặt chuyển hướng', 'laca'));
                             include __DIR__ . '/views/redirections.php';
                             break;
                         case '404-monitor':
+                            $this->renderToolSettingsLink('404-monitor', __('Cài đặt theo dõi 404', 'laca'));
                             include __DIR__ . '/views/404-monitor.php';
                             break;
                         case 'search-console':
