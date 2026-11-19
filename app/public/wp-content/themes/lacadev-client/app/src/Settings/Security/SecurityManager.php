@@ -346,7 +346,7 @@ class SecurityManager
 
         $policy             = class_exists(LoginPolicy::class) ? LoginPolicy::config() : [];
         $allRoles           = function_exists('wp_roles') ? wp_roles()->get_names() : [];
-        $is2faMasterEnabled = (int) get_option('laca_enable_2fa', 0) === 1;
+        $is2faMasterEnabled = (int) get_option('laca_2fa_master_enabled', 0) === 1;
 
         $hasDiscord     = class_exists(\App\Features\DiscordHub\Settings::class);
         $discordStatus  = $hasDiscord
