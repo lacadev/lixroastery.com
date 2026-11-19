@@ -40,6 +40,8 @@ class ConfigRegistry
         'carbon_fields_container_laca_admin'           => self::SECTION_THEME_OPTIONS,
         'carbon_fields_container_toi_uu_hoa'           => self::SECTION_TOOLS,
         'carbon_fields_container_google_recaptcha'     => self::SECTION_SECURITY,
+        // Trước nằm trong Laca Theme → giữ cùng section khi xuất/nhập.
+        'carbon_fields_container_ai_api_key'           => self::SECTION_THEME_OPTIONS,
         'carbon_fields_container_lacadev_pm_bots'      => self::SECTION_NOTIFICATIONS,
         'carbon_fields_container_login_socials'        => self::SECTION_SECURITY,
         'carbon_fields_container_quan_tri_hd_su_dung'  => self::SECTION_THEME_OPTIONS,

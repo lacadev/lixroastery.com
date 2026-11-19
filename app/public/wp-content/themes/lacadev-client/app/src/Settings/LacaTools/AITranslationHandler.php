@@ -23,6 +23,8 @@ class AITranslationHandler
     private $mistral_key;
     private $cohere_key;
     private $nvidia_key;
+    private $kira_key;
+    private $kira_model;
     private $default_provider;
 
     // Thứ tự fallback khi nhà cung cấp ưu tiên (default_provider) lỗi/hết
@@ -30,7 +32,7 @@ class AITranslationHandler
     // thứ tự chữ cái. Chỉ những provider ĐÃ có key cấu hình mới được thử
     // (xem buildProviderChain()).
     private const PROVIDER_CHAIN_ORDER = [
-        'gemini', 'groq', 'openrouter', 'cloudflare', 'mistral',
+        'gemini', 'kira', 'groq', 'openrouter', 'cloudflare', 'mistral',
         'cohere', 'nvidia', 'deepseek', 'openai', 'anthropic',
     ];
 
@@ -47,6 +49,8 @@ class AITranslationHandler
         $this->mistral_key = trim((string) carbon_get_theme_option('ai_mistral_key'));
         $this->cohere_key = trim((string) carbon_get_theme_option('ai_cohere_key'));
         $this->nvidia_key = trim((string) carbon_get_theme_option('ai_nvidia_key'));
+        $this->kira_key = trim((string) carbon_get_theme_option('ai_kira_key'));
+        $this->kira_model = trim((string) carbon_get_theme_option('ai_kira_model'));
         $this->default_provider = trim((string) carbon_get_theme_option('ai_default_provider')) ?: 'gemini';
     }
 
@@ -139,7 +143,7 @@ class AITranslationHandler
     {
         $chain = $this->buildProviderChain();
         if (empty($chain)) {
-            return new \WP_Error('no_ai_key', 'Vui lòng cấu hình ít nhất 1 API Key trong Laca Admin > AI Translation.');
+            return new \WP_Error('no_ai_key', 'Vui lòng cấu hình ít nhất 1 API Key trong Laca Admin > AI & API Key.');
         }
 
         $errors = [];
@@ -183,6 +187,8 @@ class AITranslationHandler
         switch ($provider) {
             case 'gemini':
                 return $this->callGemini($text, $system_prompt);
+            case 'kira':
+                return $this->callKira($text, $system_prompt);
             case 'groq':
                 return $this->callGroq($text, $system_prompt);
             case 'openrouter':
@@ -209,6 +215,7 @@ class AITranslationHandler
     {
         switch ($provider) {
             case 'gemini': return !empty($this->gemini_key);
+            case 'kira': return !empty($this->kira_key);
             case 'groq': return !empty($this->groq_key);
             case 'openrouter': return !empty($this->openrouter_key);
             // Workers AI cần CẢ Account ID lẫn API Token mới gọi được.
@@ -315,6 +322,41 @@ class AITranslationHandler
         }
 
         return $last_error ?: new \WP_Error($errorCode, "Không thể kết nối tới {$providerLabel} API.");
+    }
+
+    /**
+     * Kira AI (kiraai.vn) — gateway tương thích OpenAI chat/completions.
+     * Mặc định CHỈ dùng model "-free" (trừ vào "Free Model Tokens" của tài
+     * khoản, không trừ ví) — model ở ô "Kira Model" (nếu nhập) được thử
+     * trước: model "kira-*" trừ token gói, model đối tác (gpt/claude/
+     * deepseek...) trừ tiền ví. Danh sách model: kiraai.vn/api/v1/models.
+     */
+    private function callKira($text, $system_prompt)
+    {
+        $models = array_values(array_unique(array_filter([
+            $this->kira_model,
+            'hy4-flash-free',
+            'qwen4-max-free',
+        ])));
+
+        return $this->tryModelsSequentially(
+            'https://kiraai.vn/api/v1/chat/completions',
+            [
+                'Content-Type'  => 'application/json',
+                'Authorization' => 'Bearer ' . $this->kira_key,
+            ],
+            [
+                'messages' => [
+                    ['role' => 'system', 'content' => $system_prompt],
+                    ['role' => 'user', 'content' => $text],
+                ],
+                'temperature' => 0.3,
+                'max_tokens'  => $this->maxTokens ?? 1024,
+            ],
+            $models,
+            'kira_api_error',
+            'Kira AI'
+        );
     }
 
     private function callGroq($text, $system_prompt)

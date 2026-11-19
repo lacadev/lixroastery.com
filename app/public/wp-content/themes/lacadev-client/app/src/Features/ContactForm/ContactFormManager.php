@@ -67,7 +67,7 @@ class ContactFormManager
         add_action('admin_post_laca_cf_export_csv', [$this, 'handleExportCsv']);
         add_action('admin_post_laca_cf_save_popup_defaults', [$this, 'handleSavePopupDefaults']);
         // Nút "✨ Dịch bằng AI" trong khối "🌐 Dịch" của builder — tái dùng
-        // AITranslationHandler có sẵn (Laca Admin > AI Translation), KHÔNG
+        // AITranslationHandler có sẵn (Laca Admin > AI & API Key), KHÔNG
         // phải tính năng dịch riêng mới. Gợi ý AI, admin vẫn sửa tay được.
         add_action('wp_ajax_laca_cf_ai_translate_field', [$this, 'handleAjaxTranslateField']);
     }
@@ -1330,7 +1330,7 @@ class ContactFormManager
     /**
      * AJAX: dịch label/placeholder/other_label/content/options của 1 field
      * sang ngôn ngữ đích bằng AI (tái dùng AITranslationHandler có sẵn ở
-     * Laca Admin > AI Translation — cùng API key/provider dùng để dịch bài
+     * Laca Admin > AI & API Key — cùng API key/provider dùng để dịch bài
      * viết). Chỉ trả về gợi ý, admin bấm nút mới gọi và vẫn sửa tay được
      * sau đó — không tự động ghi đè khi lưu form.
      */

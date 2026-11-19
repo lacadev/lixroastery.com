@@ -560,6 +560,7 @@ class AdminSettings
 			'laca-2fa',
 			'laca-super-user',
 			'laca-recaptcha',
+			'laca-ai',
 			'laca-login-socials',
 			'laca-block-sync',
 			'lacadev-block-categories',
@@ -1435,6 +1436,86 @@ class AdminSettings
 						->set_attribute('min', '0.0')
 						->set_attribute('max', '1.0')
 						->set_help_text('Bot thường < 0.5. Người dùng thật thường > 0.5.'),
+				]);
+
+			// AI & API Key — dùng chung cho dịch nội dung, AI chat admin, dịch email
+			// form liên hệ và chatbot ngoài trang (AITranslationHandler). Trước nằm ở
+			// Laca Theme (theme con) → mỗi site phải chép riêng; tên option giữ nguyên.
+			Container::make('theme_options', __('AI & API Key', 'laca'))
+				->set_page_parent($options)
+				->set_page_file('laca-ai')
+				->set_page_menu_title(__('AI & API Key', 'laca'))
+				->add_fields([
+					Field::make('html', 'ai_intro', '')
+						->set_html('<div class="carbon-field-description">' . esc_html__('Key ở đây dùng chung cho: dịch nội dung bằng AI, AI chat trong admin, dịch email form liên hệ và chatbot ngoài trang. Có thể nhập nhiều key — nếu nhà cung cấp đang dùng lỗi hoặc hết quota, hệ thống tự chuyển sang nhà cung cấp kế tiếp (theo "Bộ xử lý ưu tiên" bên dưới).', 'laca') . '</div>'),
+
+					Field::make('text', 'ai_gemini_key', __('Gemini API Key', 'laca'))
+						->set_attribute('type', 'password')
+						->set_help_text('Model: Gemini 1.5 Flash. ~15-30 request/phút, hàng trăm-1.500 request/ngày miễn phí. Lấy tại: <a href="https://aistudio.google.com/app/apikey" target="_blank">Google AI Studio</a>'),
+
+					Field::make('text', 'ai_kira_key', __('Kira AI API Key', 'laca'))
+						->set_attribute('type', 'password')
+						->set_help_text('Gateway Việt Nam, tương thích OpenAI, 1 key dùng được Kira + GPT/Claude/Gemini/DeepSeek/Qwen... Mặc định chỉ dùng model miễn phí (hy4-flash-free, qwen4-max-free — trừ vào "Free Model Tokens", không trừ ví). Tạo key tại: <a href="https://kiraai.vn/dashboard/" target="_blank" rel="noopener">kiraai.vn/dashboard</a> → API Keys &amp; Dev.'),
+
+					Field::make('text', 'ai_kira_model', __('Kira Model (tuỳ chọn)', 'laca'))
+						->set_attribute('placeholder', 'kira-chatbox')
+						->set_help_text('Để trống = chỉ dùng model miễn phí. Nhập 1 model ID để thử TRƯỚC, lỗi thì quay về model miễn phí: model "kira-*" (vd kira-chatbox, kira-translate) trừ token gói; model đối tác (vd gpt-5.4-nano, claude-haiku-5-5) trừ tiền ví. Xem danh sách: <a href="https://kiraai.vn/api/v1/models" target="_blank" rel="noopener">kiraai.vn/api/v1/models</a>'),
+
+					Field::make('text', 'ai_groq_key', __('Groq API Key', 'laca'))
+						->set_attribute('type', 'password')
+						->set_help_text('Model: Llama 3.1 / 3.3. Nhanh nhất (hàng trăm-nghìn token/giây), 30 request/phút, 1.000 request/ngày miễn phí. Lấy tại: <a href="https://console.groq.com/keys" target="_blank">Groq Console</a>'),
+
+					Field::make('text', 'ai_openrouter_key', __('OpenRouter API Key', 'laca'))
+						->set_attribute('type', 'password')
+						->set_help_text('1 key dùng được rất nhiều model free (DeepSeek, Qwen, Llama, Gemma...). 20 request/phút, 50 request/ngày (lên 1.000/ngày nếu nạp $10 một lần). Lấy tại: <a href="https://openrouter.ai/keys" target="_blank">openrouter.ai/keys</a>'),
+
+					Field::make('text', 'ai_cloudflare_account_id', __('Cloudflare Account ID', 'laca'))
+						->set_help_text('Lấy tại Cloudflare Dashboard, nằm ở URL hoặc sidebar phải trang chủ Dashboard. Cần nhập CÙNG với API Token bên dưới mới dùng được.'),
+
+					Field::make('text', 'ai_cloudflare_api_token', __('Cloudflare API Token', 'laca'))
+						->set_attribute('type', 'password')
+						->set_help_text('Model: Llama 3.1/Mistral/DeepSeek chạy trên edge, 10.000 Neurons/ngày miễn phí. Tạo token tại Cloudflare Dashboard > My Profile > API Tokens (quyền "Workers AI").'),
+
+					Field::make('text', 'ai_mistral_key', __('Mistral API Key', 'laca'))
+						->set_attribute('type', 'password')
+						->set_help_text('Model: Mistral Small/Codestral. Rate-limit theo gói Experiment (miễn phí). Lấy tại: <a href="https://console.mistral.ai/" target="_blank">console.mistral.ai</a>'),
+
+					Field::make('text', 'ai_cohere_key', __('Cohere API Key', 'laca'))
+						->set_attribute('type', 'password')
+						->set_help_text('Model: Command R, tốt cho dịch/RAG. ~1.000 call/tháng (trial). Lấy tại: <a href="https://dashboard.cohere.com/" target="_blank">dashboard.cohere.com</a>'),
+
+					Field::make('text', 'ai_nvidia_key', __('NVIDIA NIM API Key', 'laca'))
+						->set_attribute('type', 'password')
+						->set_help_text('Nhiều model open-source mạnh (Llama 3.1...), rate-limit + cần xác minh số điện thoại. Lấy tại: <a href="https://build.nvidia.com/" target="_blank">build.nvidia.com</a>'),
+
+					Field::make('text', 'ai_deepseek_key', __('DeepSeek API Key', 'laca'))
+						->set_attribute('type', 'password')
+						->set_help_text('Model: DeepSeek Chat. Lấy tại: <a href="https://platform.deepseek.com/" target="_blank">DeepSeek Platform</a>'),
+
+					Field::make('text', 'ai_openai_key', __('OpenAI API Key', 'laca'))
+						->set_attribute('type', 'password')
+						->set_help_text('Model: GPT-4o, GPT-4o-mini. Lấy tại: <a href="https://platform.openai.com/" target="_blank">OpenAI Platform</a>'),
+
+					Field::make('text', 'ai_anthropic_key', __('Anthropic API Key', 'laca'))
+						->set_attribute('type', 'password')
+						->set_help_text('Model: Claude 3.5 Sonnet/Haiku. Lấy tại: <a href="https://console.anthropic.com/" target="_blank">Anthropic Console</a>'),
+
+					Field::make('select', 'ai_default_provider', __('Bộ xử lý ưu tiên', 'laca'))
+						->set_help_text('Nhà cung cấp được thử ĐẦU TIÊN. Nếu lỗi/hết quota, hệ thống tự động chuyển qua các nhà cung cấp khác (đã nhập key) theo thứ tự: Gemini → Kira AI → Groq → OpenRouter → Cloudflare Workers AI → Mistral → Cohere → NVIDIA NIM → DeepSeek → OpenAI → Anthropic.')
+						->set_options([
+							'gemini' => 'Google Gemini (Khuyên dùng)',
+							'kira' => 'Kira AI (Việt Nam, nhiều model)',
+							'groq' => 'Groq (Llama 3 - Tốc độ cực nhanh)',
+							'openrouter' => 'OpenRouter (Nhiều model free)',
+							'cloudflare' => 'Cloudflare Workers AI',
+							'mistral' => 'Mistral',
+							'cohere' => 'Cohere',
+							'nvidia' => 'NVIDIA NIM',
+							'deepseek' => 'DeepSeek (Giá rẻ/Chất lượng cao)',
+							'openai' => 'OpenAI GPT',
+							'anthropic' => 'Anthropic Claude',
+						])
+						->set_default_value('gemini'),
 				]);
 
 			// LacaDev Project Notifications

@@ -63,6 +63,7 @@ class LacaAdminMenuOrganizer
             'label' => 'Kết nối',
             'items' => [
                 'laca-recaptcha',
+                'laca-ai',
                 'laca-project-notifications',
                 'laca-block-sync',
             ],
@@ -304,6 +305,7 @@ class LacaAdminMenuOrganizer
             'laca-dynamic-cpt'           => __('Custom Post Types', 'laca'),
             'laca-contact-forms'         => __('Form liên hệ', 'laca'),
             'laca-recaptcha'             => __('Dịch vụ Google', 'laca'),
+            'laca-ai'                    => __('AI & API Key', 'laca'),
             'laca-project-notifications' => __('Thông báo (Zalo, Discord…)', 'laca'),
             'laca-block-sync'            => __('Kết nối LacaDev', 'laca'),
             'laca-exit-popup'            => __('Exit Popup & Chatbot', 'laca'),

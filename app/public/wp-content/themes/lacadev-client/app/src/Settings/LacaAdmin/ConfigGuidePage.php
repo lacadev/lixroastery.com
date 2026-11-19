@@ -194,7 +194,7 @@ class ConfigGuidePage
             ],
             [
                 'title' => __('Kết nối', 'laca'),
-                'intro' => __('Google, thông báo và LacaDev.', 'laca'),
+                'intro' => __('Google, AI, thông báo và LacaDev.', 'laca'),
                 'items' => [
                     [
                         'title' => __('Dịch vụ Google', 'laca'),
@@ -204,6 +204,16 @@ class ConfigGuidePage
                             __('Google Analytics & GTM: nhập Client ID / Secret (OAuth), chọn property GA4 và điền Measurement ID hoặc GTM Container ID; giữ bật "Ẩn danh địa chỉ IP" và "Bỏ qua người dùng đăng nhập".', 'laca'),
                             __('Google Search Console: chọn đúng property của site để xem báo cáo ngay trong admin.', 'laca'),
                             __('Đăng nhập Google: chỉ bật khi đã có Client ID / Secret; dùng đúng "Redirect URI" hiển thị sẵn.', 'laca'),
+                        ],
+                    ],
+                    [
+                        'title' => __('AI & API Key', 'laca'),
+                        'url'   => self::url('page=laca-ai'),
+                        'steps' => [
+                            __('Key ở đây dùng chung cho dịch nội dung, AI chat trong admin, dịch email form liên hệ và chatbot ngoài trang.', 'laca'),
+                            __('Nhập ít nhất 1 key miễn phí (Gemini, Kira AI, Groq hoặc OpenRouter); nhập thêm key khác làm dự phòng — lỗi hoặc hết quota thì tự chuyển nhà cung cấp.', 'laca'),
+                            __('"Bộ xử lý ưu tiên": chọn nhà cung cấp thử đầu tiên. Kira AI để trống "Kira Model" thì chỉ dùng model miễn phí, không trừ tiền ví.', 'laca'),
+                            __('Sau khi lưu, vào Exit Popup & Chatbot → Chatbot bấm "Kiểm tra kết nối AI" để chắc key hoạt động.', 'laca'),
                         ],
                     ],
                     [
