@@ -74,18 +74,7 @@
         color: $darkColor;
         max-width: 70%;
         margin: 0 auto;
-        font-size: var(--ctg-desc-pc, #{rem(20)});
 
-        @include maxWidth($lg) {
-            font-size: var(--ctg-desc-pc, #{rem(18)});
-        }
-
-        @include maxWidth($md) {
-            font-size: var(--ctg-desc-tablet, #{rem(18)});
-        }
-
-        @include maxWidth($sm) {
-            font-size: var(--ctg-desc-mobile, #{rem(16)});
-        }
+        @include resFont(rem(14), rem(16));
     }
 }
