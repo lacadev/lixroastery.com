@@ -406,6 +406,10 @@ class ContactFormManager
                 ]); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>;
             </script>
 
+            <?php if (class_exists(SubmissionRetention::class)) {
+                SubmissionRetention::renderSettingsForm();
+            } ?>
+
             <?php if ($message): ?>
                 <div class="laca-cf-notice laca-cf-notice--<?php echo esc_attr($message['type']); ?>">
                     <?php echo esc_html($message['text']); ?>
@@ -902,6 +906,9 @@ class ContactFormManager
         $perPage = 20;
         $subs    = ContactFormTable::getSubmissions($formId, $page, $perPage);
         $total   = ContactFormTable::countSubmissions($formId);
+        // Mở trang xem = đã đọc. Lấy $subs TRƯỚC khi đánh dấu nên các dòng
+        // mới vẫn được tô nổi (laca-cf-row-unread) trong lần xem này.
+        ContactFormTable::markAllRead($formId);
         $pages   = (int) ceil($total / $perPage);
         $fields  = self::extractFlatFields($form);
         $message = $this->getFlashMessage();
@@ -1547,6 +1554,7 @@ class ContactFormManager
             'marked_read' => ['type' => 'success', 'text' => 'Đã đánh dấu đã đọc.'],
             'error_name' => ['type' => 'error', 'text' => 'Vui lòng nhập tên form.'],
             'popup_saved' => ['type' => 'success', 'text' => 'Đã lưu cài đặt Popup chung.'],
+            'retention_saved' => ['type' => 'success', 'text' => __('Đã lưu thời gian giữ submission và dọn bản cũ.', 'laca')],
         ];
         return $map[$msg] ?? null;
     }

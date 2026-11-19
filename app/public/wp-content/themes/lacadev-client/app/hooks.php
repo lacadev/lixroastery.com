@@ -87,6 +87,14 @@ add_action('init', function () {
 });
 
 /**
+ * Form liên hệ: tự xoá submission cũ (mặc định 90 ngày) — đăng ký ở mọi ngữ
+ * cảnh vì WP-Cron chạy ngoài admin.
+ */
+if (class_exists('\\App\\Features\\ContactForm\\SubmissionRetention')) {
+    (new \App\Features\ContactForm\SubmissionRetention())->register();
+}
+
+/**
  * Hướng dẫn cấu hình Laca Admin + Laca SEO (Laca Admin → Bắt đầu, menu HD Sử dụng).
  */
 add_action('init', function () {

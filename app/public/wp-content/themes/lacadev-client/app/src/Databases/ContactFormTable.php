@@ -378,6 +378,43 @@ class ContactFormTable
     }
 
     /**
+     * Đánh dấu MỌI submission trên toàn hệ thống là đã đọc (dùng 1 lần khi
+     * chuyển sang cơ chế "xem là đã đọc").
+     */
+    public static function markAllReadEverywhere(): int
+    {
+        global $wpdb;
+        return (int) $wpdb->query(
+            "UPDATE " . self::getSubmissionsTable() . " SET is_read = 1 WHERE is_read = 0"
+        );
+    }
+
+    /**
+     * Xoá submission cũ hơn $days ngày, theo lô để không khoá bảng lâu.
+     *
+     * @return int Số dòng đã xoá.
+     */
+    public static function purgeOlderThan(int $days, int $batch = 500): int
+    {
+        global $wpdb;
+        if ($days <= 0) {
+            return 0;
+        }
+        $table   = self::getSubmissionsTable();
+        $deleted = 0;
+        do {
+            // created_at do MySQL ghi (CURRENT_TIMESTAMP) → so bằng NOW() của
+            // chính MySQL để không lệch múi giờ PHP/DB.
+            $n = (int) $wpdb->query(
+                $wpdb->prepare("DELETE FROM {$table} WHERE created_at < (NOW() - INTERVAL %d DAY) ORDER BY id LIMIT %d", $days, max(1, $batch))
+            );
+            $deleted += $n;
+        } while ($n >= $batch);
+
+        return $deleted;
+    }
+
+    /**
      * Xóa 1 submission
      */
     public static function deleteSubmission(int $submissionId): bool
