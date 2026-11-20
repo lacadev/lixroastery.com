@@ -14,7 +14,8 @@ $post_id = get_the_ID();
 $is_journal = get_post_type() === 'journal';
 // Chi tiết Glossary dùng chung bố cục Journal (mục lục, bình chọn, chia sẻ,
 // bài viết liên quan) — trừ "Sản phẩm liên quan".
-$has_journal_layout = $is_journal || get_post_type() === 'glossary';
+// Partnership dùng nguyên bố cục Journal (trừ "Sản phẩm liên quan").
+$has_journal_layout = $is_journal || in_array(get_post_type(), ['glossary', 'partnership'], true);
 ?>
 
 <article class="single-post">

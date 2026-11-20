@@ -23,7 +23,9 @@ if (!($current_term instanceof WP_Term)) {
 }
 
 $taxonomy  = $current_term->taxonomy;
-$post_type = 'journal';
+// Dùng chung cho taxonomy-partnership-cat.php: post type lấy từ taxonomy.
+$tax_object = get_taxonomy($taxonomy);
+$post_type  = ($tax_object && !empty($tax_object->object_type)) ? (string) reset($tax_object->object_type) : 'journal';
 
 // Đang xem 1 danh mục CHA (có con) → tab = các con của nó, active mặc định
 // = con đầu tiên (giống thiết kế: vào /journal-cat/find-the-origin thấy
@@ -105,7 +107,7 @@ $config = [
             <?php
             $nav_mode = function_exists('laca_journal_topic_nav_mode') ? laca_journal_topic_nav_mode() : 'full';
             if ($nav_mode === 'compact') :
-                $archive_link = get_post_type_archive_link('journal') ?: home_url('/journal/');
+                $archive_link = get_post_type_archive_link($post_type) ?: home_url('/' . $post_type . '/');
                 $cur_idx = -1;
                 foreach ($tabs as $i => $t) {
                     if ($t->slug === $active_slug) {

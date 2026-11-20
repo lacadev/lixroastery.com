@@ -365,6 +365,9 @@ if (!function_exists('laca_journal_related_posts')) {
             return laca_glossary_related_posts($post_id);
         }
 
+        // Journal & Partnership: bài liên quan cùng post type, danh mục "{post_type}-cat".
+        $post_type = get_post_type($post_id) ?: 'journal';
+        $taxonomy = $post_type . '-cat';
         $mode =carbon_get_post_meta($post_id, 'related_posts_mode') ?: 'auto';
 
         if ($mode === 'manual') {
@@ -379,9 +382,11 @@ if (!function_exists('laca_journal_related_posts')) {
                 'post__in' => $ids,
                 'orderby' => 'post__in',
                 'posts_per_page' => count($ids),
+                // Field chọn tay cho phép cả Journal lẫn Partnership.
+                'post_type' => ['journal', 'partnership'],
             ];
         } else {
-            $term_ids = wp_get_post_terms($post_id, 'journal-cat', ['fields' => 'ids']);
+            $term_ids = wp_get_post_terms($post_id, $taxonomy, ['fields' => 'ids']);
             if (is_wp_error($term_ids) || empty($term_ids)) {
                 return [];
             }
@@ -389,13 +394,13 @@ if (!function_exists('laca_journal_related_posts')) {
                 'post__not_in' => [$post_id],
                 'posts_per_page' => 6,
                 'tax_query' => [
-                    ['taxonomy' => 'journal-cat', 'field' => 'term_id', 'terms' => $term_ids],
+                    ['taxonomy' => $taxonomy, 'field' => 'term_id', 'terms' => $term_ids],
                 ],
             ];
         }
 
         $query = new WP_Query($args + [
-            'post_type' => 'journal',
+            'post_type' => $post_type,
             'post_status' => 'publish',
             'no_found_rows' => true,
             'ignore_sticky_posts' => true,

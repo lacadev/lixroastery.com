@@ -113,7 +113,7 @@ add_action('wp_enqueue_scripts', function () {
 // block — phải enqueue tay handle đã được lacadev_child_register_synced_blocks()
 // đăng ký sẵn (init priority 15, chạy trước wp_enqueue_scripts).
 add_action('wp_enqueue_scripts', function () {
-    if (is_post_type_archive('journal') || is_tax('journal-cat')) {
+    if (is_post_type_archive(['journal', 'partnership']) || is_tax(['journal-cat', 'partnership-cat'])) {
         wp_enqueue_style('block-block-cpt-grid');
     }
 });
@@ -179,9 +179,9 @@ add_filter('lacadev_critical_css_path', function ($path, $dist_path) {
         $type = 'product';
     } elseif (function_exists('is_woocommerce') && is_woocommerce()) {
         $type = 'shop';
-    } elseif (is_post_type_archive('journal') || is_tax(['journal-cat', 'journal-tags'])) {
+    } elseif (is_post_type_archive(['journal', 'partnership']) || is_tax(['journal-cat', 'journal-tags', 'partnership-cat'])) {
         $type = 'journal';
-    } elseif (is_singular(['journal', 'post'])) {
+    } elseif (is_singular(['journal', 'post', 'partnership'])) {
         $type = 'single';
     } elseif (is_singular() && has_block('lacadev/top-hero-block')) {
         $type = 'page-hero';
@@ -297,7 +297,7 @@ add_action('wp_enqueue_scripts', function () {
     }
 
     // kk-star-ratings: chỉ giữ trên bài Journal / bài viết có tính năng rating
-    if (!is_singular(['post', 'journal'])) {
+    if (!is_singular(['post', 'journal', 'partnership'])) {
         wp_dequeue_style('kk-star-ratings');
         wp_dequeue_script('kk-star-ratings');
     }

@@ -17,7 +17,11 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-$taxonomy = 'journal-cat';
+// Dùng chung cho archive-partnership.php: taxonomy danh mục = "{post_type}-cat".
+$post_type = get_query_var('post_type');
+$post_type = is_array($post_type) ? (string) reset($post_type) : (string) $post_type;
+$post_type = $post_type ?: 'journal';
+$taxonomy = $post_type . '-cat';
 $terms = taxonomy_exists($taxonomy) ? laca_get_top_level_terms_with_content($taxonomy) : [];
 $unique_id = wp_unique_id('lix-journal-archive-');
 ?>
@@ -25,7 +29,7 @@ $unique_id = wp_unique_id('lix-journal-archive-');
 <section class="journal-archive">
     <div class="container-fluid">
         <h1 class="journal-archive__title"><?php post_type_archive_title(); ?></h1>
-        <?php laca_render_dynamic_cpt_archive_intro('journal'); ?>
+        <?php laca_render_dynamic_cpt_archive_intro($post_type); ?>
 
         <?php if (!empty($terms)): ?>
             <?php

@@ -58,8 +58,31 @@ function laca_journal_render_category_directory(WP_Term $term, ?array $children 
                 </a>
             <?php endforeach; ?>
         </div>
-    <?php else : ?>
-        <p class="journal-directory__empty"><?php esc_html_e('Chưa có danh mục con nào.', 'laca'); ?></p>
+    <?php else :
+        // Danh mục không có con (vd partnership-cat chỉ 1 cấp) → hiện luôn
+        // lưới bài viết của danh mục đó (card của block CPT Grid).
+        $tax_object = get_taxonomy($term->taxonomy);
+        $post_type  = ($tax_object && !empty($tax_object->object_type)) ? (string) reset($tax_object->object_type) : 'journal';
+        $query = new WP_Query([
+            'post_type'              => $post_type,
+            'post_status'            => 'publish',
+            'posts_per_page'         => 60,
+            'no_found_rows'          => true,
+            'ignore_sticky_posts'    => true,
+            'update_post_meta_cache' => true,
+            'update_post_term_cache' => true,
+            'tax_query'              => [ // phpcs:ignore WordPress.DB.SlowDBQuery
+                [
+                    'taxonomy' => $term->taxonomy,
+                    'field'    => 'term_id',
+                    'terms'    => $term->term_id,
+                ],
+            ],
+        ]);
+    ?>
+        <div class="block-cpt-grid__list block-cpt-grid__list--cols-3">
+            <?php laca_cpt_grid_render_cards($query, $term->taxonomy); ?>
+        </div>
     <?php endif; ?>
     <?php
 }

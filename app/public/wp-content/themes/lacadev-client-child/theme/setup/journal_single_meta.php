@@ -18,7 +18,7 @@ add_action('carbon_fields_register_fields', function () {
     Container::make('post_meta', __('Mục lục & bài viết liên quan', 'laca'))
         ->set_context('normal')
         ->set_priority('default')
-        ->where('post_type', '=', 'journal')
+        ->where('post_type', 'IN', ['journal', 'partnership'])
         ->add_fields([
             Field::make('checkbox', 'journal_hide_toc', __('Ẩn mục lục ở bài này', 'laca'))
                 ->set_option_value('yes')
@@ -35,6 +35,7 @@ add_action('carbon_fields_register_fields', function () {
             Field::make('association', 'related_posts_manual', __('Chọn bài viết', 'laca'))
                 ->set_types([
                     ['type' => 'post', 'post_type' => 'journal'],
+                    ['type' => 'post', 'post_type' => 'partnership'],
                 ])
                 ->set_max(10)
                 ->set_width(66.66)
