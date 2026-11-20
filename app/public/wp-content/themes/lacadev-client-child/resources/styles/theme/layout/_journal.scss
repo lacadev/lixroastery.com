@@ -50,6 +50,38 @@
         }
     }
 
+    // Đoạn giới thiệu dưới tiêu đề (Page gắn làm nội dung Archive).
+    .dynamic-cpt-archive-intro {
+        max-width: 60%;
+        margin: 0 auto rem(60);
+
+        > * {
+            max-width: 100%;
+            margin-left: 0;
+            margin-right: 0;
+            padding-left: 0;
+            padding-right: 0;
+        }
+
+        p {
+            font-family: $mainFont;
+            color: rgba(0, 0, 0, 0.7);
+            line-height: 1.7;
+            margin: 0 0 1em;
+
+            &:last-child {
+                margin-bottom: 0;
+            }
+
+            @include resFont(rem(13), rem(15));
+        }
+
+        @include maxWidth($sm) {
+            max-width: 100%;
+            margin-bottom: rem(32);
+        }
+    }
+
     &__compact-nav-wrap {
         border-bottom: 0;
         padding-bottom: 0;

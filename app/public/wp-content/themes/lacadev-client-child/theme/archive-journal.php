@@ -29,7 +29,21 @@ $unique_id = wp_unique_id('lix-journal-archive-');
 <section class="journal-archive">
     <div class="container-fluid">
         <h1 class="journal-archive__title"><?php post_type_archive_title(); ?></h1>
-        <?php laca_render_dynamic_cpt_archive_intro($post_type); ?>
+        <?php
+        // Đoạn giới thiệu = Page gắn ở Laca Admin → Custom Post Types → "Trang
+        // nội dung Archive". Chưa gắn thì dùng Page có slug trùng post type
+        // (vd Page "partnership") nếu đã publish.
+        $has_intro_page = class_exists(\App\Features\DynamicCPT\DynamicCptManager::class)
+            && \App\Features\DynamicCPT\DynamicCptManager::getArchiveContentPageId($post_type);
+        $fallback_page = $has_intro_page ? null : get_page_by_path($post_type, OBJECT, 'page');
+        if ($fallback_page instanceof WP_Post && 'publish' === $fallback_page->post_status && '' !== trim($fallback_page->post_content)) :
+        ?>
+            <div class="dynamic-cpt-archive-intro">
+                <?php echo apply_filters('the_content', $fallback_page->post_content); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+            </div>
+        <?php else : ?>
+            <?php laca_render_dynamic_cpt_archive_intro($post_type); ?>
+        <?php endif; ?>
 
         <?php if (!empty($terms)): ?>
             <?php
