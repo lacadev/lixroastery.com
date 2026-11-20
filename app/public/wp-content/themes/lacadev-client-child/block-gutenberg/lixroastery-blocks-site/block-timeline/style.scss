@@ -94,7 +94,7 @@
         color: $darkColor;
         margin: 0;
 
-        @include resFont(rem(16), rem(20));
+        @include resFont(rem(14), rem(16));
     }
 
     &__content p {
@@ -103,6 +103,6 @@
         color: $darkColor;
         margin: 0;
 
-        @include resFont(rem(16), rem(20));
+        @include resFont(rem(14), rem(16));
     }
 }
