@@ -612,6 +612,8 @@ class FrontendChatbotHandler
             'leadEndpoint'     => esc_url_raw(rest_url('laca/v1/chatbot/lead')),
             'feedbackEndpoint' => esc_url_raw(rest_url('laca/v1/chatbot/feedback')),
             'liveEnabled'      => ChatbotLive::enabled(),
+            // Đã đăng nhập → server tự lấy tên/email, không hỏi tên.
+            'knownUser'        => is_user_logged_in(),
             'liveEndpoint'     => esc_url_raw(rest_url('laca/v1/chatbot/live/')),
             // Câu chữ giao diện đi qua gettext (JS không ghi cứng chữ).
             'i18n'        => [
@@ -641,6 +643,10 @@ class FrontendChatbotHandler
                 'liveStatus'      => __('Đang chat với nhân viên', 'laca'),
                 'livePlaceholder' => __('Nhắn cho nhân viên…', 'laca'),
                 'agent'           => __('Nhân viên', 'laca'),
+                'liveAskName'     => __('Nhân viên nên gọi bạn là gì?', 'laca'),
+                'liveNameOptional' => __('Tên của bạn (không bắt buộc)', 'laca'),
+                'liveSkip'        => __('Bỏ qua', 'laca'),
+                'liveStart'       => __('Bắt đầu chat', 'laca'),
                 'newMessage'      => __('Có tin nhắn mới', 'laca'),
             ],
         ]);

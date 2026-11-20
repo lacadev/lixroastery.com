@@ -253,7 +253,9 @@ class ChatbotLive
             ], 200);
         }
 
-        if (self::rateLimited('start', 3, 10 * MINUTE_IN_SECONDS)) {
+        // Chỉ tính lượt khi tạo được chủ đề (lần lỗi không trừ lượt); admin thử không giới hạn.
+        $isAdmin = current_user_can('manage_options');
+        if (!$isAdmin && self::rateLimited('start', 4, 10 * MINUTE_IN_SECONDS, false)) {
             return new \WP_Error('rate_limited', __('Bạn đã gửi quá nhiều yêu cầu. Vui lòng thử lại sau ít phút.', 'laca'), ['status' => 429]);
         }
 
@@ -261,14 +263,20 @@ class ChatbotLive
         $lang   = sanitize_key((string) $r->get_param('lang'));
         $short  = substr($session, 0, 4);
         $title  = $pageId ? wp_strip_all_tags(get_the_title($pageId)) : '';
-        $name   = mb_substr('💬 #' . $short . ($title !== '' ? ' · ' . $title : ''), 0, 120);
+        [$guest, $contact] = self::guestIdentity($r);
+        $label  = $guest !== '' ? $guest : '#' . $short;
+        $topicName = mb_substr('💬 ' . $label . ($title !== '' ? ' · ' . $title : ''), 0, 120);
 
-        $topic = self::tg('createForumTopic', ['chat_id' => self::chatId(), 'name' => $name]);
+        $topic = self::tg('createForumTopic', ['chat_id' => self::chatId(), 'name' => $topicName]);
         if (is_wp_error($topic) || empty($topic['message_thread_id'])) {
-            error_log('[ChatbotLive] createForumTopic: ' . (is_wp_error($topic) ? $topic->get_error_message() : 'no thread id'));
-            return new \WP_Error('live_failed', __('Chưa kết nối được nhân viên. Bạn để lại thông tin, chúng tôi sẽ liên hệ lại sớm nhé!', 'laca'), ['status' => 502]);
+            $why = is_wp_error($topic) ? $topic->get_error_message() : 'no thread id';
+            self::rememberError('createForumTopic', $why);
+            return new \WP_Error('live_failed', self::forAdmin(__('Chưa kết nối được nhân viên. Bạn để lại thông tin, chúng tôi sẽ liên hệ lại sớm nhé!', 'laca'), $why), ['status' => 502]);
         }
         $threadId = (int) $topic['message_thread_id'];
+        if (!$isAdmin) {
+            self::rateLimited('start', 4, 10 * MINUTE_IN_SECONDS, true);
+        }
 
         global $wpdb;
         $now = gmdate('Y-m-d H:i:s');
@@ -283,7 +291,10 @@ class ChatbotLive
             'updated_at' => $now,
         ]);
 
-        $intro = "🆕 Khách #{$short} cần hỗ trợ";
+        $intro = '🆕 Khách ' . ($guest !== '' ? $guest . ' (#' . $short . ')' : '#' . $short) . ' cần hỗ trợ';
+        if ($contact !== '') {
+            $intro .= "\nLiên hệ: " . $contact;
+        }
         if ($pageId) {
             $intro .= "\nĐang xem: " . get_permalink($pageId);
         }
@@ -327,7 +338,8 @@ class ChatbotLive
                 self::close($session);
                 return new \WP_Error('live_closed', __('Cuộc chat với nhân viên đã kết thúc.', 'laca'), ['status' => 410]);
             }
-            return new \WP_Error('live_failed', __('Chưa gửi được tin nhắn. Vui lòng thử lại.', 'laca'), ['status' => 502]);
+            self::rememberError('sendMessage', $sent->get_error_message());
+            return new \WP_Error('live_failed', self::forAdmin(__('Chưa gửi được tin nhắn. Vui lòng thử lại.', 'laca'), $sent->get_error_message()), ['status' => 502]);
         }
 
         return new \WP_REST_Response(['ok' => true, 'id' => self::addMessage($session, 'user', '', $text)], 200);
@@ -358,7 +370,8 @@ class ChatbotLive
             'messages' => array_map(static fn($m) => [
                 'id'     => (int) $m['id'],
                 'sender' => $m['sender'],
-                'name'   => $m['name'],
+                // Khách thấy tên chung do admin đặt, không lộ tên Telegram của nhân viên.
+                'name'   => $m['sender'] === 'admin' ? self::agentName() : '',
                 'text'   => $m['body'],
             ], $msgs),
         ], 200));
@@ -446,6 +459,37 @@ class ChatbotLive
         return new \WP_REST_Response(['ok' => true], 200);
     }
 
+    /** Tên hiển thị cho khách thay tên Telegram của nhân viên. */
+    public static function agentName(): string
+    {
+        $name = trim((string) get_option('laca_chatbot_live_agent_name', ''));
+        return $name !== '' ? $name : __('Nhân viên tư vấn', 'laca');
+    }
+
+    /**
+     * Tên + liên hệ của khách: tài khoản đang đăng nhập trước, sau đó tới tên
+     * khách tự nhập / form "Để lại thông tin" trong phiên (trình duyệt gửi kèm).
+     *
+     * @return array{0:string,1:string}
+     */
+    private static function guestIdentity(\WP_REST_Request $r): array
+    {
+        $name    = mb_substr(trim(sanitize_text_field((string) $r->get_param('name'))), 0, 60);
+        $contact = mb_substr(trim(sanitize_text_field((string) $r->get_param('contact'))), 0, 120);
+        $user    = wp_get_current_user();
+        if ($user && $user->exists()) {
+            $name    = $name !== '' ? $name : trim($user->display_name);
+            $contact = $contact !== '' ? $contact : (string) $user->user_email;
+            if (function_exists('get_user_meta')) {
+                $phone = trim((string) get_user_meta($user->ID, 'billing_phone', true));
+                if ($phone !== '' && strpos($contact, $phone) === false) {
+                    $contact .= ($contact !== '' ? ' · ' : '') . $phone;
+                }
+            }
+        }
+        return [$name, $contact];
+    }
+
     // ── Telegram API ──────────────────────────────────────────────────────────
 
     /** @return array|true|\WP_Error Kết quả "result" của Telegram. */
@@ -505,6 +549,10 @@ class ChatbotLive
                     <?php endforeach; ?>
                 </p>
                 <p>
+                    <label for="laca-live-agent"><?php esc_html_e('Tên nhân viên hiển thị cho khách', 'laca'); ?></label><br>
+                    <input type="text" id="laca-live-agent" name="laca_chatbot_live_agent_name" class="regular-text" maxlength="60" value="<?php echo esc_attr((string) get_option('laca_chatbot_live_agent_name', '')); ?>" placeholder="<?php esc_attr_e('Nhân viên tư vấn', 'laca'); ?>">
+                </p>
+                <p>
                     <label for="laca-live-wait"><?php esc_html_e('Chờ nhân viên tối đa', 'laca'); ?></label>
                     <input type="number" id="laca-live-wait" name="laca_chatbot_live_wait" min="1" max="60" class="small-text" value="<?php echo esc_attr((string) self::waitMinutes()); ?>">
                     <?php esc_html_e('phút — quá thời gian chưa ai trả lời thì mời khách để lại thông tin.', 'laca'); ?>
@@ -513,7 +561,7 @@ class ChatbotLive
                     <?php esc_html_e('Cách cài:', 'laca'); ?><br>
                     1. <?php esc_html_e('Tạo bot bằng @BotFather, dán Bot Token ở trên (để trống = dùng bot ở mục Thông báo → Telegram).', 'laca'); ?><br>
                     2. <?php esc_html_e('Tạo nhóm Telegram, bật "Chủ đề" (Topics), thêm bot làm quản trị viên có quyền "Quản lý chủ đề".', 'laca'); ?><br>
-                    3. <?php esc_html_e('Lưu cài đặt, bấm "Kết nối Telegram" bên phải, rồi gõ /chatid trong nhóm — bot trả Chat ID, dán vào ô trên và lưu lại.', 'laca'); ?><br>
+                    3. <?php esc_html_e('Gửi 1 tin bất kỳ trong nhóm, rồi Lưu cài đặt và bấm "Kết nối Telegram" bên phải — hệ thống tự tìm Chat ID nhóm và kiểm tra quyền của bot (hoặc gõ /chatid trong nhóm để bot trả Chat ID).', 'laca'); ?><br>
                     4. <?php esc_html_e('Mỗi khách là 1 chủ đề trong nhóm: trả lời ngay trong chủ đề, gõ /end để kết thúc.', 'laca'); ?>
                 </p>
             </td>
@@ -530,6 +578,7 @@ class ChatbotLive
         update_option('laca_chatbot_live_end', self::cleanTime((string) wp_unslash($post['laca_chatbot_live_end'] ?? ''), '21:00'));
         $days = array_values(array_unique(array_filter(array_map('absint', (array) ($post['laca_chatbot_live_days'] ?? [])), static fn($d) => $d >= 1 && $d <= 7)));
         update_option('laca_chatbot_live_days', implode(',', $days));
+        update_option('laca_chatbot_live_agent_name', mb_substr(sanitize_text_field(wp_unslash($post['laca_chatbot_live_agent_name'] ?? '')), 0, 60));
         update_option('laca_chatbot_live_wait', max(1, min(60, absint($post['laca_chatbot_live_wait'] ?? 3))));
     }
 
@@ -543,11 +592,27 @@ class ChatbotLive
             <input type="hidden" name="action" value="laca_chatbot_live_connect">
             <button type="submit" class="button"><?php esc_html_e('Kết nối Telegram', 'laca'); ?></button>
         </form>
+        <?php $last = get_option('laca_chatbot_live_last_error'); ?>
+        <?php if (is_array($last) && (time() - (int) $last['time']) < 3 * DAY_IN_SECONDS): ?>
+            <div class="notice notice-warning inline"><p><?php
+                /* translators: 1: thời điểm, 2: thao tác Telegram, 3: lỗi */
+                echo esc_html(sprintf(__('Lỗi Telegram gần nhất (%1$s, %2$s): %3$s', 'laca'), wp_date('d/m H:i', (int) $last['time']), (string) $last['method'], self::explain((string) $last['error'])));
+            ?></p></div>
+        <?php endif; ?>
         <?php if (is_array($result)): ?>
-            <div class="notice <?php echo esc_attr($result['ok'] ? 'notice-success' : 'notice-error'); ?> inline"><p><?php echo esc_html($result['msg']); ?></p></div>
+            <div class="notice <?php echo esc_attr($result['ok'] ? 'notice-success' : 'notice-error'); ?> inline">
+                <?php foreach ((array) ($result['lines'] ?? [$result['msg'] ?? '']) as $line): ?>
+                    <p><?php echo esc_html((string) $line); ?></p>
+                <?php endforeach; ?>
+            </div>
         <?php endif;
     }
 
+    /**
+     * "Kết nối Telegram": kiểm tra token, tự tìm Chat ID nhóm (nếu chưa nhập),
+     * đặt webhook, kiểm tra nhóm có Chủ đề + bot có quyền Quản lý chủ đề, và
+     * báo lỗi gần nhất Telegram gặp khi gửi tin về site.
+     */
     public static function handleConnect(): void
     {
         if (!current_user_can('manage_options')) {
@@ -555,33 +620,137 @@ class ChatbotLive
         }
         check_admin_referer(FrontendChatbotHandler::NONCE, '_nonce');
 
-        $out = ['ok' => false, 'msg' => ''];
-        if (self::token() === '') {
-            $out['msg'] = __('Chưa có Bot Token.', 'laca');
-        } else {
-            $hook = self::tg('setWebhook', [
-                'url'             => rest_url('laca/v1/chatbot/live/telegram'),
-                'secret_token'    => self::secret(),
-                'allowed_updates' => ['message'],
-            ]);
-            if (is_wp_error($hook)) {
-                $out['msg'] = sprintf(__('Không đặt được webhook: %s', 'laca'), $hook->get_error_message());
-            } elseif (self::chatId() === '') {
-                $out = ['ok' => true, 'msg' => __('Đã kết nối webhook. Giờ gõ /chatid trong nhóm Telegram để lấy Chat ID, dán vào ô "Chat ID của nhóm" rồi lưu.', 'laca')];
-            } else {
-                $chat = self::tg('getChat', ['chat_id' => self::chatId()]);
-                if (is_wp_error($chat)) {
-                    $out['msg'] = sprintf(__('Đã kết nối webhook nhưng không đọc được nhóm: %s', 'laca'), $chat->get_error_message());
-                } elseif (empty($chat['is_forum'])) {
-                    $out['msg'] = __('Đã kết nối webhook nhưng nhóm chưa bật "Chủ đề" (Topics).', 'laca');
-                } else {
-                    $out = ['ok' => true, 'msg' => sprintf(__('Đã kết nối: nhóm "%s". Hãy cấp cho bot quyền "Quản lý chủ đề".', 'laca'), (string) ($chat['title'] ?? ''))];
-                }
+        $out = ['ok' => false, 'lines' => []];
+        $say = static function (string $line) use (&$out): void {
+            $out['lines'][] = $line;
+        };
+
+        $me = self::token() !== '' ? self::tg('getMe', []) : new \WP_Error('no_token', '');
+        if (is_wp_error($me)) {
+            $say(self::token() === ''
+                ? __('Chưa có Bot Token — dán token BotFather gửi vào ô "Bot Token" rồi lưu.', 'laca')
+                : sprintf(__('Bot Token không đúng: %s', 'laca'), $me->get_error_message()));
+            self::finishConnect($out);
+        }
+        $botId = (int) $me['id'];
+        $say(sprintf(
+            /* translators: %s: username của bot */
+            __('Bot đang dùng: @%s', 'laca') . (trim((string) get_option('laca_chatbot_live_token', '')) === '' ? ' ' . __('(lấy từ mục Thông báo → Telegram)', 'laca') : ''),
+            (string) ($me['username'] ?? '')
+        ));
+
+        // Lỗi gần nhất khi Telegram gửi tin về site (trước khi đặt lại webhook).
+        $info = self::tg('getWebhookInfo', []);
+        if (is_array($info) && !empty($info['last_error_message']) && (time() - (int) ($info['last_error_date'] ?? 0)) < DAY_IN_SECONDS) {
+            $say(sprintf(__('Lỗi gần nhất Telegram gặp khi gửi tin về site: %s', 'laca'), (string) $info['last_error_message']));
+        }
+
+        // Chưa có Chat ID → đọc tin mới nhất bot nhận được để tìm nhóm.
+        if (self::chatId() === '') {
+            self::tg('deleteWebhook', []);
+            $found = self::findGroup((array) self::tg('getUpdates', ['limit' => 100, 'allowed_updates' => ['message', 'my_chat_member']]));
+            if ($found) {
+                update_option('laca_chatbot_live_chat_id', $found['id']);
+                $say(sprintf(__('Đã tự tìm thấy nhóm "%1$s" — Chat ID %2$s (đã lưu).', 'laca'), $found['title'], $found['id']));
             }
         }
+
+        $hook = self::tg('setWebhook', [
+            'url'                  => rest_url('laca/v1/chatbot/live/telegram'),
+            'secret_token'         => self::secret(),
+            'allowed_updates'      => ['message'],
+            'drop_pending_updates' => true,
+        ]);
+        if (is_wp_error($hook)) {
+            $say(sprintf(__('Không đặt được webhook: %s', 'laca'), $hook->get_error_message()));
+            self::finishConnect($out);
+        }
+        $say(__('Đã đặt webhook — Telegram sẽ gửi tin trong nhóm về website.', 'laca'));
+
+        if (self::chatId() === '') {
+            $say(__('Chưa tìm thấy nhóm: hãy chắc bot đã ở trong nhóm, gửi 1 tin bất kỳ trong nhóm rồi bấm "Kết nối Telegram" lần nữa.', 'laca'));
+            self::finishConnect($out);
+        }
+
+        $chat = self::tg('getChat', ['chat_id' => self::chatId()]);
+        if (is_wp_error($chat)) {
+            $say(sprintf(__('Không đọc được nhóm (Chat ID %1$s): %2$s', 'laca'), self::chatId(), $chat->get_error_message()));
+            self::finishConnect($out);
+        }
+        $title = (string) ($chat['title'] ?? '');
+        if (empty($chat['is_forum'])) {
+            $say(sprintf(__('Nhóm "%s" chưa bật Chủ đề (Topics).', 'laca'), $title));
+            self::finishConnect($out);
+        }
+        $member = self::tg('getChatMember', ['chat_id' => self::chatId(), 'user_id' => $botId]);
+        $isAdmin = is_array($member) && ($member['status'] ?? '') === 'administrator';
+        if (!$isAdmin || empty($member['can_manage_topics'])) {
+            $say(sprintf(__('Bot chưa là quản trị viên có quyền "Quản lý chủ đề" (Manage Topics) trong nhóm "%s".', 'laca'), $title));
+            self::finishConnect($out);
+        }
+
+        $out['ok'] = true;
+        delete_option('laca_chatbot_live_last_error');
+        $say(sprintf(__('Sẵn sàng: nhóm "%s". Thử mở chatbot ngoài trang và bấm "Chat với nhân viên".', 'laca'), $title));
+        self::finishConnect($out);
+    }
+
+    /** Nhóm (ưu tiên nhóm có Chủ đề) xuất hiện gần nhất trong các update. */
+    private static function findGroup(array $updates): ?array
+    {
+        $best = null;
+        foreach ($updates as $u) {
+            $chat = $u['message']['chat'] ?? ($u['my_chat_member']['chat'] ?? null);
+            if (!is_array($chat) || !in_array($chat['type'] ?? '', ['group', 'supergroup'], true)) {
+                continue;
+            }
+            // Nhóm thường lên supergroup (khi bật Chủ đề) thì đổi Chat ID.
+            $id = (string) ($u['message']['migrate_to_chat_id'] ?? $chat['id']);
+            $cand = ['id' => $id, 'title' => (string) ($chat['title'] ?? ''), 'forum' => !empty($chat['is_forum'])];
+            if ($best === null || $cand['forum'] || !$best['forum']) {
+                $best = $cand;
+            }
+        }
+        return $best;
+    }
+
+    private static function finishConnect(array $out): never
+    {
         set_transient('laca_cbot_live_conn_' . get_current_user_id(), $out, 10 * MINUTE_IN_SECONDS);
         wp_safe_redirect(admin_url('admin.php?page=' . FrontendChatbotHandler::MENU_SLUG));
         exit;
+    }
+
+    /** Lưu lỗi Telegram gần nhất để admin thấy ở trang cài đặt (không lưu token). */
+    private static function rememberError(string $method, string $error): void
+    {
+        error_log('[ChatbotLive] ' . $method . ': ' . $error);
+        update_option('laca_chatbot_live_last_error', ['time' => time(), 'method' => $method, 'error' => mb_substr($error, 0, 300)], false);
+    }
+
+    /** Admin đang đăng nhập thử chat → kèm lý do thật; khách chỉ thấy câu thân thiện. */
+    private static function forAdmin(string $message, string $error): string
+    {
+        return current_user_can('manage_options') ? $message . ' [Admin: ' . self::explain($error) . ']' : $message;
+    }
+
+    /** Diễn giải các lỗi Telegram hay gặp khi cài đặt. */
+    private static function explain(string $error): string
+    {
+        $map = [
+            'not enough rights'      => __('bot chưa có quyền "Quản lý chủ đề" (Manage Topics) — vào Administrators, chọn bot, bật quyền này.', 'laca'),
+            'chat is not a forum'    => __('nhóm chưa bật Chủ đề (Topics).', 'laca'),
+            'chat not found'         => __('sai Chat ID hoặc bot chưa ở trong nhóm.', 'laca'),
+            'bot was kicked'         => __('bot đã bị xoá khỏi nhóm.', 'laca'),
+            'unauthorized'           => __('Bot Token sai hoặc đã bị thu hồi.', 'laca'),
+            'group chat was upgraded' => __('nhóm đã đổi Chat ID — bấm "Kết nối Telegram" để cập nhật.', 'laca'),
+        ];
+        foreach ($map as $needle => $text) {
+            if (stripos($error, $needle) !== false) {
+                return $text . ' (' . $error . ')';
+            }
+        }
+        return $error;
     }
 
     // ── Tiện ích ──────────────────────────────────────────────────────────────
@@ -605,7 +774,8 @@ class ChatbotLive
         return implode("\n", $lines);
     }
 
-    private static function rateLimited(string $bucket, int $max, int $ttl): bool
+    /** @param bool $count false = chỉ kiểm tra, không cộng lượt. */
+    private static function rateLimited(string $bucket, int $max, int $ttl, bool $count = true): bool
     {
         $ip  = class_exists(\App\Helpers\ClientIp::class) ? \App\Helpers\ClientIp::get() : (string) ($_SERVER['REMOTE_ADDR'] ?? '');
         $key = 'laca_cbot_live_' . substr(hash('sha256', $bucket . '|' . $ip), 0, 30);
@@ -613,7 +783,9 @@ class ChatbotLive
         if ($n >= $max) {
             return true;
         }
-        set_transient($key, $n + 1, $ttl);
+        if ($count) {
+            set_transient($key, $n + 1, $ttl);
+        }
         return false;
     }
 

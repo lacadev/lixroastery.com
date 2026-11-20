@@ -538,6 +538,11 @@
 							);
 							return;
 						}
+						// Nhớ tên/liên hệ để "Chat với nhân viên" không phải hỏi lại.
+						state.profile = {
+							name: box.elements.name.value.trim(),
+							contact: box.elements.contact.value.trim(),
+						};
 						box.remove();
 						const m = {
 							role: 'bot',
@@ -637,6 +642,7 @@
 			return cfg.liveEndpoint + path;
 		}
 
+		// Chưa biết tên (chưa đăng nhập, chưa điền form) → hỏi tên, không bắt buộc.
 		function startLive() {
 			if ( state.live.active || ! cfg.liveEnabled ) {
 				return;
@@ -646,6 +652,57 @@
 				.forEach( function ( b ) {
 					b.remove();
 				} );
+			if ( cfg.knownUser || ( state.profile && state.profile.name ) ) {
+				connectLive( ( state.profile && state.profile.name ) || '' );
+				return;
+			}
+			if ( body.querySelector( '.laca-cbot-askname' ) ) {
+				body.querySelector( '.laca-cbot-askname input' ).focus();
+				return;
+			}
+			const box = document.createElement( 'form' );
+			box.className = 'laca-cbot-lead laca-cbot-askname';
+			box.innerHTML =
+				'<strong>' +
+				escHtml( t.liveAskName || '' ) +
+				'</strong>' +
+				'<input name="name" maxlength="60" autocomplete="name" aria-label="' +
+				escHtml( t.leadName || '' ) +
+				'" placeholder="' +
+				escHtml( t.liveNameOptional || '' ) +
+				'">' +
+				'<div class="laca-cbot-lead-row">' +
+				'<button type="button" class="laca-cbot-btn laca-cbot-btn--ghost" data-skip>' +
+				escHtml( t.liveSkip || '' ) +
+				'</button>' +
+				'<button type="submit" class="laca-cbot-btn laca-cbot-btn--primary">' +
+				escHtml( t.liveStart || '' ) +
+				'</button>' +
+				'</div>';
+			body.appendChild( box );
+			scrollDown();
+			box.querySelector( 'input' ).focus();
+			function go( name ) {
+				box.remove();
+				if ( name ) {
+					state.profile = { name, contact: '' };
+					saveState();
+				}
+				connectLive( name );
+			}
+			box.querySelector( '[data-skip]' ).addEventListener(
+				'click',
+				function () {
+					go( '' );
+				}
+			);
+			box.addEventListener( 'submit', function ( e ) {
+				e.preventDefault();
+				go( box.elements.name.value.trim() );
+			} );
+		}
+
+		function connectLive( name ) {
 			const loadingRow = appendRow(
 				'loading',
 				escHtml( t.loading || '…' )
@@ -655,6 +712,8 @@
 				page_id: cfg.pageId || 0,
 				lang: cfg.lang || '',
 				history: historyForApi(),
+				name: name || '',
+				contact: ( state.profile && state.profile.contact ) || '',
 			} )
 				.then( function ( r ) {
 					loadingRow.remove();
