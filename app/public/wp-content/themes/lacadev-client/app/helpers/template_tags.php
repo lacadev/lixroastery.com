@@ -465,6 +465,15 @@ function laca_render_dynamic_cpt_archive_intro(string $post_type = ''): void
         return;
     }
 
+    // Đa ngôn ngữ (Polylang): Page đã chọn ở 1 ngôn ngữ → tự dùng bản dịch
+    // theo ngôn ngữ đang xem; chưa dịch thì giữ Page gốc.
+    if (function_exists('pll_get_post')) {
+        $translated_id = (int) pll_get_post($page_id);
+        if ($translated_id) {
+            $page_id = $translated_id;
+        }
+    }
+
     $page = get_post($page_id);
     if (!$page || 'page' !== $page->post_type || 'publish' !== $page->post_status) {
         return;

@@ -36,6 +36,9 @@ $unique_id = wp_unique_id('lix-journal-archive-');
         $has_intro_page = class_exists(\App\Features\DynamicCPT\DynamicCptManager::class)
             && \App\Features\DynamicCPT\DynamicCptManager::getArchiveContentPageId($post_type);
         $fallback_page = $has_intro_page ? null : get_page_by_path($post_type, OBJECT, 'page');
+        if ($fallback_page instanceof WP_Post && function_exists('pll_get_post') && ($tr_id = (int) pll_get_post($fallback_page->ID))) {
+            $fallback_page = get_post($tr_id);
+        }
         if ($fallback_page instanceof WP_Post && 'publish' === $fallback_page->post_status && '' !== trim($fallback_page->post_content)) :
         ?>
             <div class="dynamic-cpt-archive-intro">

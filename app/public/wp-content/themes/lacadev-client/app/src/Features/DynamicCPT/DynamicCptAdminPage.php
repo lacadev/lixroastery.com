@@ -290,6 +290,9 @@ class DynamicCptAdminPage
                                 <label for="cpt_archive_page_id">
                                     <?php esc_html_e('Trang nội dung Archive (tùy chọn)', 'laca'); ?>
                                     <span class="laca-field-hint"><?php esc_html_e('soạn bằng Block Editor, hiện ở đầu trang archive — giống Shop page của WooCommerce', 'laca'); ?></span>
+                                    <?php if (function_exists('pll_get_post')) : ?>
+                                        <span class="laca-field-hint"><?php esc_html_e('Chọn Page ở 1 ngôn ngữ — trang archive tự dùng bản dịch của Page theo ngôn ngữ đang xem.', 'laca'); ?></span>
+                                    <?php endif; ?>
                                 </label>
                                 <?php
                                 wp_dropdown_pages([
@@ -566,7 +569,10 @@ class DynamicCptAdminPage
         DynamicCptManager::saveAll($cpts);
         flush_rewrite_rules();
 
-        wp_redirect(add_query_arg('laca_cpt_msg', 'saved', $page_url));
+        // Quay lại đúng form CPT vừa lưu (không về form "Thêm mới") để thấy
+        // giá trị đã lưu, vd Page nội dung Archive đã chọn.
+        $saved_index = $is_new ? count($cpts) - 1 : $index;
+        wp_redirect(add_query_arg(['laca_cpt_msg' => 'saved', 'edit' => $saved_index], $page_url));
         exit;
     }
 
