@@ -10,11 +10,8 @@ if (!defined('ABSPATH')) {
 // SECURITY & PERMISSIONS
 // =============================================================================
 /**
- * Define super users (Developers) who can see system menus and hidden users.
+ * Super User (Developer): xem App\Settings\SuperUser (filter 'lacadev_super_user_logins').
  */
-add_filter('lacadev_super_user_logins', function($logins) {
-    return ['lacadev']; // Add your developer username here
-});
 
 /**
  * Chốt an toàn khi parent tự cập nhật trước khi child build lại CSS:
@@ -340,17 +337,6 @@ add_action('login_header', function () {
     <?php
 });
 
-/**
- * Custom check for super user status
- */
-add_filter('lacadev_is_super_user', function($is_super, $current_user) {
-    // Developers are always super users regardless of role
-    $super_logins = apply_filters('lacadev_super_user_logins', ['lacadev']);
-    if (in_array($current_user->user_login, $super_logins, true)) {
-        return true;
-    }
-    return $is_super;
-}, 10, 2);
 
 // =============================================================================
 // THEME INFORMATION

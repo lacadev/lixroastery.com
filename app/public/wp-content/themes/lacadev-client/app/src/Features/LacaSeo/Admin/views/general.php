@@ -27,7 +27,7 @@ $tabs = [
 ];
 $nav_hidden_tabs = ['redirections', '404-monitor'];
 
-$is_super_user = apply_filters('lacadev_is_super_user', false, wp_get_current_user());
+$is_super_user = \App\Settings\SuperUser::check();
 if (!$is_super_user) {
     unset($tabs['htaccess']);
 }

